@@ -1,0 +1,40 @@
+{
+  "name": "shambaluv-auth",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Self-hosted social-login -> sovereign wallet -> 1-trillion-LUV airdrop backend for SHAMBA LUV. Off-chain Sybil gate for the signature-gated ShambaLuvAirdrop contract. Cypherpunk2048 wallet hosting; no paid third-party service.",
+  "license": "MIT",
+  "type": "commonjs",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "migrate": "node src/migrate.js",
+    "selftest": "node test/voucher-selftest.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.16.0",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "express-validator": "^7.2.0",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "passport": "^0.7.0",
+    "passport-discord": "^0.1.4",
+    "passport-github2": "^0.1.12",
+    "passport-google-oauth20": "^2.0.0",
+    "pg": "^8.12.0"
+  },
+  "optionalDependencies": {
+    "express-session": "^1.18.0"
+  },
+  "comments": {
+    "providers": "Google, Discord, GitHub wired concretely. Apple (passport-apple) and X/Twitter (OAuth2 PKCE strategy) are pluggable — add the dep + env vars, then uncomment in src/auth/strategies.js.",
+    "ethers": "The dependency is declared for standalone installs, but at runtime src/ethers.js prefers the repo's vendored ../../../vendor/ethers.umd.min.js (clean-room, no CDN) and only falls back to this npm copy."
+  }
+}

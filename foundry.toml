@@ -1,0 +1,11 @@
+# SHAMBA LUV — self-contained Foundry project (corrected emotonomics token).
+[profile.default]
+src = "contracts"
+test = "test"
+out = "out"
+libs = []
+solc = "0.8.24"
+optimizer = true
+optimizer_runs = 200
+via_ir = true
+auto_detect_remappings = false

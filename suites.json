@@ -1,0 +1,53 @@
+{
+  "$schema": "https://deltaverse.pythai.net/schema/suites.v2.json",
+  "description": "SHAMBA LUV deploy manifest — the corrected emotonomics reflection token. NOTE: unlike the cypherpunk2048 immutable suites, LUV is a fee/reflection token with an owner+admin (fees lower-only; owner renounces after liquidity; admin retains router/weth maintenance for cross-chain). Primary chain = Ethereum.",
+  "owner": "deployer (becomes owner + initial admin)",
+  "posture": "fee-on-transfer reflection (RFI) · owner renounceable · admin for cross-chain router maintenance",
+  "pillars": {
+    "community": { "label": "Community / emotonomics", "orchestration": "SHAMBA LUV — hold LUV earn LUV (3% reflection / 1% liquidity / 1% team); ETH primary, cross-chain ready", "subgroups": ["luv"] }
+  },
+  "suites": [
+    {
+      "id": "community-luv",
+      "pillar": "community", "subgroup": "luv", "layer": "evm", "stage": "L1",
+      "source": "shambaluv/contracts/ShambaLuv.sol",
+      "deploy": "shambaluv/deploy/deploy-luv-anvil.mjs (rehearsal) | pages/deploy.html (production)",
+      "primaryChain": "ethereum",
+      "contracts": [
+        {
+          "name": "ShambaLuv",
+          "artifact": "deploy/artifacts/community-luv/ShambaLuv.json",
+          "args": [
+            { "label": "teamWallet", "role": "team fee recipient (ETH)" },
+            { "label": "liquidityWallet", "role": "liquidity fee recipient (ETH)" },
+            { "label": "router", "default": "0x0 → ETH Uniswap V2 0x7a25…488D", "role": "DEX router (cross-chain configurable)" },
+            { "label": "weth", "default": "0x0 → ETH WETH 0xC02a…6Cc2", "role": "wrapped native of the active chain" }
+          ],
+          "note": "ctor(teamWallet, liquidityWallet, router, weth). Mints 100 Quadrillion (1e35) LUV to deployer. router/weth default to Ethereum mainnet when zero.",
+          "postDeploy": [
+            "createPair(LUV, WETH) on the router's factory",
+            "setPair(pairAddress)",
+            "approve router + addLiquidityETH (seed the pair)",
+            "setFeeExemption(airdropAddress, true) — so the 1T-LUV gesture arrives whole",
+            "renounceOwnership() once configured (admin retains router/weth maintenance)"
+          ]
+        },
+        {
+          "name": "ShambaLuvAirdrop",
+          "artifact": "deploy/artifacts/community-luv/ShambaLuvAirdrop.json",
+          "args": [
+            { "label": "token", "role": "the deployed LUV token address" },
+            { "label": "signer", "role": "the self-hosted backend voucher key (auth/) — NOT the owner" }
+          ],
+          "note": "Signature-gated 'digital gesture' airdrop: 1 trillion LUV per real social signup, hard-capped at 1% of supply (1 Quadrillion = 1000 trillion = 1000 gestures). Replaces the Sybil-trivial open-claim contract. Off-chain Sybil gate = the self-hosted social-login → wallet → voucher service in shambaluv/auth/ (cypherpunk2048 wallet hosting; no paid third-party service).",
+          "postDeploy": [
+            "on the LUV token: setFeeExemption(thisAddress, true)",
+            "fund: owner approve + deposit up to 1 Quadrillion LUV (1% of supply)",
+            "point auth/ at this address (AIRDROP_CONTRACT_ADDRESS) with VOUCHER_SIGNER = signer",
+            "renounceOwnership() once funded + signer set"
+          ]
+        }
+      ]
+    }
+  ]
+}
