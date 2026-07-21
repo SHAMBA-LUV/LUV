@@ -7,7 +7,13 @@ The complete, corrected SHAMBA LUV project: the rewritten token, a signature-gat
 self-hosted social-login → wallet → gesture backend, full tests, and a live-anvil deployment +
 hard-test harness.
 
-- **Mint / name / symbol unchanged:** 100 Quadrillion (`1e35`) · `SHAMBA` · `LUV`, 18 decimals.
+- **Supply:** **111 Quadrillion** — the repunit of ones (`111,111,111,111,111,111.111111111111111111`
+  LUV, 18 decimals) · `SHAMBA` · `LUV` · **fixed at genesis, no mint function**.
+- **Allocation:** **100 Quadrillion circulating** in the public liquidity pool, **paired with ETH**;
+  the remaining **11.1 Quadrillion** startup allocation splits evenly four ways — Founders **2.777Q**
+  (liquid) · Treasury **2.777Q** (liquid; funds the gesture campaign) · Marketing **2.777Q** (locked
+  in the LUVlocker) · Community **2.778Q** (locked — the split's rounding remainder is deliberately
+  given to the community).
 - **Primary chain:** Ethereum (router + WETH configurable → cross-chain ready).
 
 ## Fee model (rewards on buy/sell)
@@ -31,11 +37,11 @@ auth/        self-hosted social login → sovereign wallet → wallet-to-wallet 
 LUV.md       complete contract guide   ·   AUDIT.md   full audit + remediation
 ```
 
-## The gesture (1% of supply)
+## The gesture (the 1-Quadrillion campaign)
 A new signup signs in with a social account → the backend provisions a wallet → the treasury
 **sends 1 trillion LUV wallet-to-wallet** (EOA→EOA, 0 fee, full trillion). One social identity =
-one wallet = one gesture. The whole campaign is hard-capped at **1% of supply** (1 Quadrillion =
-1,000 trillion = 1,000 gestures). Self-hosted (cypherpunk2048 wallet hosting), no paid third-party
+one wallet = one gesture. The whole campaign is hard-capped at a **1-Quadrillion pool** drawn from
+the treasury wallet's 2.777-Quadrillion allocation (1,000 gestures of 1 Trillion each). Self-hosted (cypherpunk2048 wallet hosting), no paid third-party
 service. See [`auth/README.md`](auth/README.md).
 
 ## Build · test · deploy
