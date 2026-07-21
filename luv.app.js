@@ -155,12 +155,14 @@
   }
 
   async function loadProviders() {
-    // The live social providers; google+github are the shipped defaults if the desk is quiet.
+    // The live social providers. The static pair is ONLY a fallback for when the desk is
+    // unreachable — when it answers, its list is authoritative (even empty), so we never
+    // render a button whose provider would 404.
     let providers = ['google', 'github'];
     try {
       const r = await j('/auth/providers');
-      if (Array.isArray(r.providers) && r.providers.length) providers = r.providers;
-    } catch (e) { /* fall back to the shipped pair */ }
+      if (Array.isArray(r.providers)) providers = r.providers;
+    } catch (e) { /* desk unreachable — show the shipped pair */ }
 
     // The expanded connect dialog: social sign-ins, then the wallet path.
     const or = document.createElement('div');
