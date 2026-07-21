@@ -55,6 +55,28 @@ CREATE TABLE IF NOT EXISTS airdrop_claims (
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Proof-of-action submissions for the IncentiveDistributor tasks rail (earn LUV for
+-- tweet/post/interaction). action_id is the on-chain dedup key (claimWithSignature);
+-- amounts/limits always come from the on-chain registry — `amount` here is a display copy.
+CREATE TABLE IF NOT EXISTS action_submissions (
+    id              BIGSERIAL PRIMARY KEY,
+    identity_key    TEXT        NOT NULL
+                        REFERENCES identities (identity_key) ON DELETE CASCADE,
+    action          TEXT        NOT NULL,             -- 'tweet' | 'post' | 'interaction' | ...
+    action_id       TEXT        NOT NULL UNIQUE,      -- derived: luv:<action>:<sha256(identity+proof)>
+    proof_url       TEXT        NOT NULL,
+    platform        TEXT,                             -- detected from the proof URL host
+    amount          NUMERIC(78, 0),                   -- registry reward at submission time (display)
+    -- 'queued' -> 'approved' (operator or ACTIONS_AUTO_APPROVE) -> 'paid' | 'failed' | 'rejected'
+    status          TEXT        NOT NULL DEFAULT 'queued',
+    tx_hash         TEXT,
+    error           TEXT,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_action_submissions_status ON action_submissions (status);
+CREATE INDEX IF NOT EXISTS idx_action_submissions_identity ON action_submissions (identity_key);
+
 -- Idempotent upgrade for databases created before batch mode existed.
 ALTER TABLE airdrop_claims ADD COLUMN IF NOT EXISTS attempts INT NOT NULL DEFAULT 0;
 

@@ -116,6 +116,12 @@ function start() {
     // eslint-disable-next-line no-console
     console.log(`[shambaluv-auth] batch gesture mode: flush every ${config.batchIntervalMs}ms or at ${config.batchMaxSize} queued`);
   }
+  if (config.incentiveDistributorAddress) {
+    const { startPayoutWorker } = require('./actions');
+    startPayoutWorker();
+    // eslint-disable-next-line no-console
+    console.log(`[shambaluv-auth] tasks rail live: distributor ${config.incentiveDistributorAddress}, sweep every ${config.actionsPayoutIntervalMs}ms`);
+  }
   const server = app.listen(config.port, () => {
     // eslint-disable-next-line no-console
     console.log(`[shambaluv-auth] listening on :${config.port} (${config.env})`);

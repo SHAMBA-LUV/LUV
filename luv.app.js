@@ -165,6 +165,123 @@
     try { renderStatus(await j('/airdrop/status')); } catch (e) { /* keep last */ }
   }
 
+  // ── the tasks widget (IncentiveDistributor actions) ────────────────────────
+  // Human units for registry rewards: 1e30 → "1 Trillion".
+  function fmtReward(weiStr) {
+    try {
+      const t = BigInt(weiStr) / 10n ** 18n;
+      if (t >= 10n ** 12n && t % 10n ** 12n === 0n) return (t / 10n ** 12n).toString() + ' Trillion';
+      if (t >= 10n ** 9n && t % 10n ** 9n === 0n) return (t / 10n ** 9n).toString() + ' Billion';
+      return t.toLocaleString('en-US');
+    } catch (e) { return '—'; }
+  }
+  const SUB_CHIP = {
+    queued: 'under review', approved: 'approved', paid: 'paid ❤',
+    failed: 'failed', rejected: 'rejected',
+  };
+  const SUBMIT_ERR = {
+    already_submitted: 'that proof is already in — each link counts once',
+    bad_proof_url: 'paste the full https:// link to your post',
+    inactive_action: 'this action is paused right now',
+    unknown_action: 'unknown action',
+    not_submittable: 'this one is delivered automatically',
+  };
+
+  function renderSubs(subs) {
+    const box = $('mysubs');
+    if (!subs.length) return;
+    box.replaceChildren(...subs.map((s) => {
+      const row = document.createElement('div');
+      row.className = 'sub';
+      const act = Object.assign(document.createElement('span'), { className: 'act', textContent: s.action });
+      const chip = Object.assign(document.createElement('span'), { className: 'chip ' + s.status, textContent: SUB_CHIP[s.status] || s.status });
+      const amt = Object.assign(document.createElement('span'), { textContent: fmtReward(s.amount) + ' LUV' });
+      row.append(act, chip, amt);
+      if (s.tx_hash) {
+        const a = document.createElement('a');
+        a.href = cfg.explorer + '/tx/' + s.tx_hash; a.rel = 'noopener';
+        a.textContent = s.tx_hash.slice(0, 10) + '…';
+        row.append(a);
+      }
+      const proof = document.createElement('a');
+      proof.href = s.proof_url; proof.rel = 'noopener';
+      proof.textContent = (s.platform || 'proof') + ' ↗';
+      row.append(proof);
+      return row;
+    }));
+  }
+
+  async function refreshMine() {
+    try {
+      const mine = await j('/airdrop/actions/mine');
+      renderSubs(mine.submissions || []);
+      return mine;
+    } catch (e) { return { submissions: [], stats: {} }; }
+  }
+
+  async function loadTasks() {
+    let reg;
+    try { reg = await j('/airdrop/actions'); } catch (e) {
+      $('tasklist').replaceChildren(Object.assign(document.createElement('div'),
+        { className: 'taskmsg', textContent: 'the tasks desk opens at launch' }));
+      return;
+    }
+    const mine = await refreshMine();
+    const tasks = (reg.actions || []).filter((a) => a.active && !a.oneTime);
+    const PROMPT = {
+      tweet: 'tweet some LUV — paste the link to your tweet',
+      post: 'post about LUV anywhere — paste the link to your post',
+      interaction: 'engage with the community — paste the link (reply, share, star…)',
+    };
+    $('tasklist').replaceChildren(...tasks.map((a) => {
+      const el = document.createElement('div');
+      el.className = 'task';
+      const head = document.createElement('div');
+      head.className = 'taskhead';
+      const stat = (mine.stats || {})[a.name];
+      const today = stat ? stat.countToday : 0;
+      head.append(
+        Object.assign(document.createElement('span'), { className: 'name', textContent: a.name }),
+        Object.assign(document.createElement('span'), { className: 'reward', textContent: fmtReward(a.reward) + ' LUV' }),
+        Object.assign(document.createElement('span'), { className: 'lim', textContent: (a.dailyLimit ? today + '/' + a.dailyLimit + ' today' : 'unlimited') + (a.cooldown ? ' · ' + (a.cooldown >= 60 ? (a.cooldown / 60) + 'm' : a.cooldown + 's') + ' cooldown' : '') })
+      );
+      const form = document.createElement('div');
+      form.className = 'taskform';
+      const input = document.createElement('input');
+      input.type = 'url'; input.placeholder = PROMPT[a.name] || 'paste the proof link';
+      input.setAttribute('aria-label', 'proof link for ' + a.name);
+      const btn = Object.assign(document.createElement('button'), { className: 'btn', type: 'button', textContent: 'submit ❤' });
+      const msg = Object.assign(document.createElement('div'), { className: 'taskmsg', textContent: '' });
+      btn.addEventListener('click', async () => {
+        const proofUrl = input.value.trim();
+        if (!proofUrl) { msg.textContent = SUBMIT_ERR.bad_proof_url; return; }
+        btn.disabled = true; msg.className = 'taskmsg'; msg.textContent = 'submitting…';
+        try {
+          const r = await fetch('/airdrop/actions/submit', {
+            method: 'POST', credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: a.name, proofUrl }),
+          });
+          const body = await r.json().catch(() => ({}));
+          if (r.ok) {
+            input.value = '';
+            msg.className = 'taskmsg ok';
+            msg.textContent = body.submission && body.submission.status === 'approved'
+              ? 'in! approved — your LUV is on the way ❤'
+              : 'in! under review — your LUV follows approval ❤';
+            refreshMine();
+          } else {
+            msg.textContent = SUBMIT_ERR[body.error] || 'that didn’t go through — try again';
+          }
+        } catch (e) { msg.textContent = 'that didn’t go through — try again'; }
+        btn.disabled = false;
+      });
+      form.append(input, btn);
+      el.append(head, form, msg);
+      return el;
+    }));
+  }
+
   async function loadSession() {
     let me;
     try { me = await j('/auth/me'); } catch (e) { return false; } // not signed in
@@ -181,6 +298,7 @@
       }
     }
     await refreshStatus();
+    loadTasks();
     // the old dashboard refreshed the balance every 30s while visible
     if (!balTimer) balTimer = setInterval(() => { if (!document.hidden) refreshStatus(); }, 30000);
     return true;

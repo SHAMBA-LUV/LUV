@@ -69,6 +69,38 @@ router.get('/status', requireAuth, async (req, res) => {
   });
 });
 
+// ── The tasks rail (IncentiveDistributor actions) ──────────────────────────────
+const actions = require('../actions');
+
+// Public: the action registry (on-chain when configured, seeded fallback otherwise).
+router.get('/actions', async (req, res) => {
+  const { live, actions: list } = await actions.registry();
+  res.json({ live, actions: list });
+});
+
+// Signed in: my submissions + my per-action on-chain stats (daily counts, cooldown clock).
+router.get('/actions/mine', requireAuth, async (req, res) => {
+  const { identityKey } = req.identity;
+  const w = await db.query('SELECT address, smart_account FROM wallets WHERE identity_key = $1', [identityKey]);
+  const wallet = (w.rows[0] && (w.rows[0].smart_account || w.rows[0].address)) || null;
+  const { actions: list } = await actions.registry();
+  const [submissions, stats] = await Promise.all([
+    actions.mySubmissions(identityKey),
+    actions.userStats(wallet, list.map((a) => a.name)),
+  ]);
+  res.json({ submissions, stats });
+});
+
+// Signed in: submit a proof URL for an action. Amounts/limits are the contract's alone.
+router.post('/actions/submit', requireAuth, async (req, res) => {
+  const { identityKey } = req.identity;
+  const { action, proofUrl } = req.body || {};
+  if (typeof action !== 'string' || action.length > 64) return res.status(400).json({ error: 'invalid_request' });
+  const result = await actions.submitAction(identityKey, action, proofUrl);
+  if (result.error) return res.status(400).json({ error: result.error });
+  res.json(result);
+});
+
 // Public live stats for the landing page (no session; cheap DB counts + one chain read).
 router.get('/stats', async (req, res) => {
   const agg = await db.query(

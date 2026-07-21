@@ -73,6 +73,13 @@ const config = {
   luvTokenAddress: req('LUV_TOKEN_ADDRESS'),
   airdropContractAddress: req('AIRDROP_CONTRACT_ADDRESS'),
 
+  // ── IncentiveDistributor tasks rail (earn LUV for social actions) ──
+  // Empty ⇒ the tasks widget renders the seeded registry read-only and submissions queue
+  // without payouts. VOUCHER_SIGNER_PRIVATE_KEY must equal the contract's `signer`.
+  incentiveDistributorAddress: opt('INCENTIVE_DISTRIBUTOR_ADDRESS', ''),
+  actionsAutoApprove: bool('ACTIONS_AUTO_APPROVE', false),
+  actionsPayoutIntervalMs: parseInt(opt('ACTIONS_PAYOUT_INTERVAL_MS', '60000'), 10),
+
   // Keys (hex, 0x-prefixed). VOUCHER signer must equal the contract's `signer`.
   voucherSignerPrivateKey: req('VOUCHER_SIGNER_PRIVATE_KEY'),
   relayerPrivateKey: req('RELAYER_PRIVATE_KEY'),

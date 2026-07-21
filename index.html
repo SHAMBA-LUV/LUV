@@ -159,6 +159,31 @@ section{padding:52px 0 0}
 .statusline b{color:var(--gold)}
 .dashfoot{margin-top:18px;display:flex;flex-wrap:wrap;gap:10px}
 
+/* ── tasks widget (IncentiveDistributor actions) ── */
+.task{border-top:1px solid var(--seam);padding:16px 0}
+.task:first-child{border-top:0;padding-top:4px}
+.taskhead{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline}
+.taskhead .name{font-family:var(--mono);font-size:14px;letter-spacing:.08em;color:var(--cream);text-transform:uppercase}
+.taskhead .reward{font-family:var(--mono);font-size:13px;color:var(--gold);font-weight:700}
+.taskhead .lim{font-family:var(--mono);font-size:11px;color:var(--dim)}
+.taskform{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.taskform input{flex:1;min-width:220px;font-family:var(--mono);font-size:13px;padding:10px 12px;min-height:44px;
+  background:var(--ink);border:1px solid var(--seam);border-radius:7px;color:var(--cream)}
+.taskform input::placeholder{color:var(--dim)}
+.taskform input:focus{outline:none;border-color:var(--rose)}
+.taskmsg{font-family:var(--mono);font-size:11px;margin-top:8px;color:var(--dim)}
+.taskmsg.ok{color:var(--rose)}
+.subs .sub{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;border-top:1px solid var(--seam);padding:10px 0;font-family:var(--mono);font-size:12px}
+.subs .sub:first-child{border-top:0}
+.subs .sub .act{color:var(--cream);text-transform:uppercase;letter-spacing:.08em}
+.subs .sub a{color:var(--dim);word-break:break-all}
+.chip{font-size:10px;letter-spacing:.12em;text-transform:uppercase;border:1px solid var(--seam);border-radius:999px;padding:2px 10px;color:var(--dim)}
+.chip.paid{color:var(--ink);background:var(--rose);border-color:var(--rose)}
+.chip.approved{color:var(--gold);border-color:var(--gold)}
+.chip.queued{color:var(--blush);border-color:var(--blush)}
+.chip.failed,.chip.rejected{color:var(--dim)}
+.subs .empty{font-family:var(--mono);font-size:12px;color:var(--dim);padding:8px 0}
+
 /* ── how LUV works ── */
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
 .card{border:1px solid var(--seam);border-radius:12px;padding:24px;background:var(--wine)}
@@ -242,6 +267,12 @@ footer .spacer{flex:1}
         <div class="step" data-step="confirmed"><div class="t">delivered</div><div class="d">1 trillion LUV is in your wallet.</div></div>
       </div>
       <div class="statusline" id="statusline">checking your gesture…</div>
+    </div>
+    <div class="panel" style="margin-top:16px" id="taskspanel">
+      <div class="k">earn more LUV — be an ambassador of LUV</div>
+      <div id="tasklist"><div class="taskmsg">loading actions…</div></div>
+      <div class="k" style="margin-top:24px">my submissions</div>
+      <div class="subs" id="mysubs"><div class="empty">nothing yet — share some LUV above ❤</div></div>
     </div>
     <div class="dashfoot">
       <button class="btn" id="addtoken2" type="button" hidden>add LUV to wallet</button>
