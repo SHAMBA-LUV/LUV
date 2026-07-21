@@ -125,10 +125,28 @@ router.get('/stats', async (req, res) => {
 });
 
 // Idempotent trigger (normally auto on first login). Acts ONLY on the session identity.
+// "Claim now": re-boards an expired self-claim voucher onto the luvbus, ensures the claim
+// row, and (batch mode) asks the bus to depart — ONE operator-paid transaction delivers
+// every queued rider at once.
 router.post('/trigger', requireAuth, handleValidation, async (req, res) => {
   const { identityKey } = req.identity;
   try {
+    // A 'pending' row is a self-claim voucher in flight; if its deadline passed unclaimed,
+    // put the rider back on the bus.
+    await db.query(
+      `UPDATE airdrop_claims SET status='queued', nonce=NULL, deadline=NULL, updated_at=now()
+        WHERE identity_key=$1 AND status='pending' AND deadline IS NOT NULL
+          AND deadline < EXTRACT(EPOCH FROM now())::bigint`,
+      [identityKey]
+    );
     const result = await ensureProvisionedAndAirdropped(identityKey);
+    if (config.gestureMode === 'batch' && config.batchGestureAddress) {
+      const { flushBatch } = require('../airdrop/batch');
+      flushBatch().catch((e) => {
+        // eslint-disable-next-line no-console
+        console.error('[airdrop] claim-now flush error (non-fatal):', e.message);
+      });
+    }
     res.json({
       walletAddress: result.walletAddress,
       airdrop: result.airdrop,
@@ -138,6 +156,68 @@ router.post('/trigger', requireAuth, handleValidation, async (req, res) => {
     console.error('[airdrop] trigger error:', err.message);
     res.status(500).json({ error: 'airdrop_failed' });
   }
+});
+
+// ── ETH self-claim: a signed voucher for ShambaLuvAirdrop.claim() — the user's own wallet
+// submits and pays gas; LUV goes to the identity's wallet either way. Taking a voucher
+// steps the rider OFF the luvbus (status 'pending'); an expired unclaimed voucher re-boards
+// via /trigger. On-chain usedNonce+hasClaimed and the UNIQUE identity row prevent doubles.
+const { buildSignedVoucher, AIRDROP_ABI, allocateNonce } = require('../airdrop/voucher');
+const ZERO = '0x0000000000000000000000000000000000000000';
+
+router.post('/voucher', requireAuth, async (req, res) => {
+  if (!config.airdropContractAddress || config.airdropContractAddress === ZERO) {
+    return res.status(404).json({ error: 'campaign_not_live' });
+  }
+  const { identityKey } = req.identity;
+  const r = await db.query('SELECT * FROM airdrop_claims WHERE identity_key=$1', [identityKey]);
+  const row = r.rows[0];
+  if (row && ['batching', 'submitted', 'confirmed'].includes(row.status)) {
+    return res.status(409).json({ error: 'already_on_the_way', status: row.status });
+  }
+  const w = await db.query('SELECT address, smart_account FROM wallets WHERE identity_key=$1', [identityKey]);
+  const recipient = (row && row.wallet_address)
+    || (w.rows[0] && (w.rows[0].smart_account || w.rows[0].address)) || null;
+  if (!recipient) return res.status(400).json({ error: 'no_wallet' });
+
+  const now = Math.floor(Date.now() / 1000);
+  let nonce; let deadline;
+  if (row && row.status === 'pending' && row.nonce && Number(row.deadline) > now + 60) {
+    nonce = BigInt(row.nonce); deadline = BigInt(row.deadline); // re-issue the live voucher
+  } else {
+    nonce = allocateNonce(); deadline = BigInt(now + config.voucherTtlSeconds);
+    if (row) {
+      await db.query(
+        `UPDATE airdrop_claims SET status='pending', nonce=$2, deadline=$3, updated_at=now() WHERE identity_key=$1`,
+        [identityKey, nonce.toString(), Number(deadline)]
+      );
+    } else {
+      await db.query(
+        `INSERT INTO airdrop_claims (identity_key, wallet_address, nonce, amount, deadline, status)
+         VALUES ($1, $2, $3, $4, $5, 'pending')`,
+        [identityKey, recipient, nonce.toString(), config.claimAmount.toString(), Number(deadline)]
+      );
+    }
+  }
+
+  const voucher = await buildSignedVoucher({ recipient, amount: config.claimAmount, nonce, deadline });
+  // Pre-encoded calldata so the browser needs no ABI library (CSP: no CDNs).
+  const iface = new ethers.Interface(AIRDROP_ABI);
+  const data = iface.encodeFunctionData('claim', [
+    voucher.recipient, voucher.amount, voucher.nonce, voucher.deadline, voucher.signature,
+  ]);
+  res.json({
+    to: config.airdropContractAddress,
+    data,
+    chainId: config.chainId,
+    voucher: {
+      recipient: voucher.recipient,
+      amount: voucher.amount.toString(),
+      nonce: voucher.nonce.toString(),
+      deadline: Number(voucher.deadline),
+      signature: voucher.signature,
+    },
+  });
 });
 
 module.exports = router;

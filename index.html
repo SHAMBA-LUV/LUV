@@ -157,6 +157,15 @@ section{padding:52px 0 0}
 .step.now .d{color:var(--cream)}
 .statusline{margin-top:14px;font-size:14px;color:var(--cream)}
 .statusline b{color:var(--gold)}
+.congrats{margin-top:12px;font-size:clamp(18px,2.6vw,24px);font-weight:800;line-height:1.35;
+  background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+.congrats b{color:var(--gold);-webkit-text-fill-color:var(--gold)}
+.congratssub{margin-top:6px;color:var(--dim);font-size:14px}
+.claimnow{margin-top:16px;font-size:15px;letter-spacing:.06em;padding:15px 32px;min-height:48px;border-radius:999px;border:0;
+  background:linear-gradient(100deg,var(--pink),var(--purple));color:#fff;font-weight:700;font-family:var(--sans)}
+.claimnow:hover{filter:brightness(1.12)}
+.claimnow:disabled{filter:grayscale(.6);cursor:wait}
+.ethclaimrow{margin-top:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:baseline}
 .dashfoot{margin-top:18px;display:flex;flex-wrap:wrap;gap:10px}
 
 /* ── tasks widget (IncentiveDistributor actions) ── */
@@ -261,6 +270,13 @@ footer .spacer{flex:1}
     </div>
     <div class="panel" style="margin-top:16px">
       <div class="k">your 1-trillion-LUV gesture</div>
+      <div class="congrats" id="congrats" hidden>🎉 CONGRATULATIONS — you are eligible for <b>1,000,000,000,000 LUV</b></div>
+      <div class="congratssub" id="congratssub" hidden>claim now — or wait for any participant to claim and your LUV will be automatically delivered</div>
+      <button class="claimnow" id="claimnow" type="button" hidden>🎁 Claim 1,000,000,000,000 LUV 🎁</button>
+      <div class="ethclaimrow" id="ethclaimrow" hidden>
+        <button class="btn" id="ethclaim" type="button">⚡ claim yourself with ETH — your wallet submits &amp; pays gas</button>
+        <span class="taskmsg" id="ethclaimmsg"></span>
+      </div>
       <div class="timeline" id="timeline">
         <div class="step" data-step="queued"><div class="t">queued</div><div class="d">You're on the list for the next luvbus.</div></div>
         <div class="step" data-step="batching"><div class="t">boarding</div><div class="d">Your gesture is in the batch being assembled.</div></div>
@@ -390,6 +406,6 @@ footer .spacer{flex:1}
 </footer>
 
 <!-- ?v= busts the immutable .js cache — bump it whenever luv.app.js changes -->
-<script src="luv.app.js?v=4"></script>
+<script src="luv.app.js?v=5"></script>
 </body>
 </html>

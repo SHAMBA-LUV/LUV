@@ -197,6 +197,14 @@
       return;
     }
     const state = (s.claim && s.claim.status) || (s.claimed ? 'confirmed' : 'queued');
+    // Eligibility banner + claim-now: shown until the gesture is on-chain.
+    const eligible = state === 'queued' || state === 'batching' || state === 'failed';
+    for (const id of ['congrats', 'congratssub']) { const el = $(id); if (el) el.hidden = !eligible && state !== 'submitted'; }
+    const cn = $('claimnow');
+    if (cn) cn.hidden = !eligible;
+    // ETH self-claim: only once the airdrop contract is live and a wallet is injected.
+    const er = $('ethclaimrow');
+    if (er) er.hidden = !(eligible && cfg.status === 'live' && cfg.contracts && cfg.contracts.ShambaLuvAirdrop && window.ethereum);
     const at = Math.max(0, STEPS.indexOf(state));
     document.querySelectorAll('#timeline .step').forEach((el) => {
       const i = STEPS.indexOf(el.dataset.step);
@@ -312,7 +320,7 @@
       const input = document.createElement('input');
       input.type = 'url'; input.placeholder = PROMPT[a.name] || 'paste the proof link';
       input.setAttribute('aria-label', 'proof link for ' + a.name);
-      const btn = Object.assign(document.createElement('button'), { className: 'btn', type: 'button', textContent: 'submit ❤' });
+      const btn = Object.assign(document.createElement('button'), { className: 'btn', type: 'button', textContent: 'EARN ❤' });
       const msg = Object.assign(document.createElement('div'), { className: 'taskmsg', textContent: '' });
       btn.addEventListener('click', async () => {
         const proofUrl = input.value.trim();
@@ -390,6 +398,36 @@
     } catch (e) { /* clipboard blocked */ }
   });
   on('refreshbal', 'click', refreshStatus);
+  on('ethclaim', 'click', async () => {
+    const msg = $('ethclaimmsg');
+    try {
+      const [from] = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      msg.textContent = 'fetching your signed voucher…';
+      const v = await j('/airdrop/voucher', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      msg.textContent = 'confirm the claim in your wallet (you pay the gas)…';
+      const txHash = await window.ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [{ from, to: v.to, data: v.data }],
+      });
+      msg.textContent = 'claim submitted — ' + txHash.slice(0, 10) + '… · your LUV arrives with the next confirmation';
+      setTimeout(refreshStatus, 15000);
+    } catch (e) {
+      msg.textContent = String(e && e.code) === '4001'
+        ? 'transaction declined — you can also just wait for the luvbus'
+        : 'that didn’t go through — the luvbus will still deliver your LUV';
+      refreshStatus();
+    }
+  });
+  on('claimnow', 'click', async () => {
+    const cn = $('claimnow');
+    cn.disabled = true;
+    const was = cn.textContent;
+    cn.textContent = '⏳ Processing…';
+    try { await j('/airdrop/trigger', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }); } catch (e) { /* status shows the truth */ }
+    await refreshStatus();
+    cn.textContent = was;
+    cn.disabled = false;
+  });
   on('logout', 'click', async () => {
     try { await j('/auth/logout', { method: 'POST' }); } catch (e) { /* cookie cleared anyway */ }
     location.reload();
