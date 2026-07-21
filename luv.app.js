@@ -363,7 +363,7 @@
   }
 
   // ── wire the controls ──────────────────────────────────────────────────────
-  for (const id of ['loginbtn', 'collectbtn']) $(id).addEventListener('click', openModal);
+  for (const id of ['connectbtn', 'collectword', 'collectbtn']) $(id).addEventListener('click', openModal);
   document.querySelectorAll('[data-open-login]').forEach((el) => el.addEventListener('click', openModal));
   $('modalclose').addEventListener('click', closeModal);
   $('loginmodal').addEventListener('click', (e) => { if (e.target === $('loginmodal')) closeModal(); });
