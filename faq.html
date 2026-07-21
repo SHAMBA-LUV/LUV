@@ -91,6 +91,25 @@ footer .spacer{flex:1}
   </details>
 
   <details>
+    <summary>Where does the supply live — is there real liquidity?</summary>
+    <div class="a"><p>Yes — the overwhelming majority of all LUV is in the open market:
+    <b class="g">100 quadrillion LUV</b> — about <b>90% of the total supply</b> — is placed in the
+    public <b>liquidity pool, paired with ETH</b> on the DEX. That pool is permissionless market depth:
+    anyone can buy or sell LUV against ETH at any time, at a price set purely by the pool — no
+    allowlists, no market-maker gatekeeping.</p>
+    <p>The ETH pairing matters three ways. It's the <b>price anchor</b>: LUV's value is measured in
+    hard ETH terms, and the multichain design routes every chain back to this single deep pool rather
+    than fragmenting liquidity. It's the <b>fee engine</b>: the pool is the trading counterparty, so
+    buys and sells against it are exactly where the 5% (3% reflections · 1% liquidity · 1% development)
+    applies — and the 1% auto-liquidity share continuously deepens this same pool. And it's the
+    <b>reflection source</b>: every trade through the pool feeds the reflections that all holders earn.</p>
+    <p>The rest of the supply serves the community: <b>1 quadrillion (1%)</b> is the free-gesture
+    campaign (1,000 airdrops of 1 trillion), and the remaining treasury balance powers the platform —
+    ambassador rewards, locker interest, and operations. Wallet-to-wallet transfers never touch the
+    pool and stay 0%.</p></div>
+  </details>
+
+  <details>
     <summary>What are the fees?</summary>
     <div class="a"><p>A <b>5% fee on trades only</b> (buys and sells against the market):
     <b class="g">3% reflections</b> to every holder, <b class="g">1% auto-liquidity</b>,
@@ -204,6 +223,25 @@ footer .spacer{flex:1}
     <b class="g">interaction (50 Billion)</b> — each with daily limits and cooldowns. Paste the link to
     your post, and once it's approved the reward pays out <b>on-chain</b> to your wallet. And of course:
     simply holding LUV earns reflections forever.</p></div>
+  </details>
+
+  <details>
+    <summary>What is the IncentiveDistributor?</summary>
+    <div class="a"><p>The <b>IncentiveDistributor</b> is the on-chain rewards engine — the contract that
+    turns community actions into LUV. Its heart is a <b>named action registry</b>: every reward type
+    (<code>welcome</code>, <code>tweet</code>, <code>post</code>, <code>interaction</code>, and any
+    added later) lives in the contract with its own <b>reward amount, daily limit, cooldown, one-time
+    flag and active switch</b> — all public, all owner-editable live, so the economy can evolve without
+    redeploying anything.</p>
+    <p>Payouts flow two ways: a <b>signed voucher</b> path (the platform signs an EIP-712 approval
+    binding <em>you + the action + a unique action id + a deadline</em>, and the claim is verified
+    against a rotatable signer key on-chain), and a <b>relayer push</b> for operator-driven or batch
+    rewards. Either way the contract enforces everything itself: each action id pays <b>once ever</b>,
+    per-user daily limits and cooldowns are checked on-chain, and the distributor pays from its own
+    funded LUV balance — it's fee-exempt, so rewards arrive whole.</p>
+    <p>Your dashboard's <b>EARN ❤</b> panel is the doorway to it: pick an action, drop your proof link,
+    and once approved the reward lands in your wallet with a transaction you can verify on
+    Etherscan.</p></div>
   </details>
 
   <details>
