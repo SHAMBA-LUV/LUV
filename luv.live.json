@@ -1,0 +1,13 @@
+{
+  "status": "imminent",
+  "network": "ethereum",
+  "chainId": 1,
+  "explorer": "https://etherscan.io",
+  "deployer": "0x10f7Ee226B16bea7f365Dc1eDEF159Fc1957D169",
+  "salt": "shambaluv.launcher.v1",
+  "contracts": {
+    "Create3d": "0xa5A2581d564248801cc5e06DbB764c99c170320A",
+    "LuvLauncher": "0x9FbCA6C5034099e7bF93D751C817186f4810B059",
+    "ShambaLuv": "0x9b46ad18eb135cA8E90895E97fD79F9f7526041B"
+  }
+}

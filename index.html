@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SHAMBA LUV — hold LUV, earn LUV</title>
+<meta name="description" content="SHAMBA LUV (LUV) — emotonomics. A reflection token where holding grows your balance, and every real new signup receives a 1-trillion-LUV gesture. LUV is priceless. Wealth is ownership.">
+<meta name="author" content="SHAMBA LUV">
+<link rel="canonical" href="https://luv.pythai.net/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SHAMBA LUV">
+<meta property="og:title" content="SHAMBA LUV — hold LUV, earn LUV">
+<meta property="og:description" content="111 quadrillion LUV, fixed at genesis. Sign in, get your wallet, receive the 1-trillion-LUV gesture. LUV is priceless.">
+<meta property="og:url" content="https://luv.pythai.net/">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --ink:#160a0f;        /* wine-black ground */
+  --wine:#2b111c;       /* raised panels */
+  --seam:#4a1f30;       /* borders */
+  --rose:#ff4d6d;       /* the heart */
+  --blush:#ffb3c1;      /* soft secondary */
+  --cream:#f6e7eb;      /* body text */
+  --dim:#b98da0;        /* muted text */
+  --gold:#e3b25f;       /* wealth-ledger accent, sparing */
+  --mono:ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--cream);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--blush)}
+a:hover{color:var(--rose)}
+:focus-visible{outline:2px solid var(--rose);outline-offset:3px;border-radius:2px}
+.wrap{max-width:1060px;margin:0 auto;padding:0 24px}
+
+/* ── header ── */
+header{border-bottom:1px solid var(--seam)}
+.bar{display:flex;align-items:center;gap:14px;padding:18px 0}
+.brand{font-family:var(--mono);font-size:15px;letter-spacing:.14em;color:var(--cream);text-decoration:none}
+.brand b{color:var(--rose)}
+.bar .spacer{flex:1}
+.healthdot{width:9px;height:9px;border-radius:50%;background:var(--seam);display:inline-block}
+.healthdot.up{background:var(--rose);animation:heartbeat 1.4s ease-in-out infinite}
+.bar small{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--dim)}
+.bar a.gh{font-family:var(--mono);font-size:12px;text-decoration:none;color:var(--dim)}
+.bar a.gh:hover{color:var(--blush)}
+
+/* ── hero: the repunit wall ── */
+.hero{padding:72px 0 44px;text-align:left}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold)}
+.repunit{font-family:var(--mono);font-weight:700;color:var(--cream);
+  font-size:clamp(30px,6.6vw,78px);line-height:1.08;letter-spacing:.01em;
+  margin:18px 0 6px}
+.repunit .heart{color:var(--rose);display:inline-block;animation:heartbeat 1.4s ease-in-out infinite}
+.repunit-frac{font-family:var(--mono);color:var(--dim);font-size:clamp(15px,2.4vw,26px)}
+.repunit-frac .ones{word-break:break-all}
+.repunit-frac b{color:var(--blush);font-weight:700}
+@media(max-width:600px){#healthtext{display:none}}
+.hero .thesis{margin-top:30px;max-width:640px}
+.hero .thesis h1{font-size:clamp(22px,3.4vw,32px);font-weight:650;letter-spacing:-.01em;line-height:1.25}
+.hero .thesis h1 em{font-style:normal;color:var(--rose)}
+.hero .thesis p{margin-top:10px;color:var(--dim);font-size:16px}
+.hero .thesis p b{color:var(--gold);font-weight:600}
+
+/* ── status strip ── */
+.strip{display:flex;flex-wrap:wrap;gap:12px;align-items:center;border:1px solid var(--seam);
+  background:var(--wine);border-radius:10px;padding:14px 18px;margin:26px 0 0;font-family:var(--mono);font-size:13px}
+.badge{padding:3px 11px;border-radius:999px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--seam)}
+.badge.imminent{color:var(--gold);border-color:var(--gold)}
+.badge.live{color:var(--ink);background:var(--rose);border-color:var(--rose)}
+.strip .addr{color:var(--blush);word-break:break-all}
+.strip .note{color:var(--dim);font-size:12px}
+.strip button,.gesturebtns a,.strip a.explore{font-family:var(--mono);font-size:12px;cursor:pointer;
+  background:none;border:1px solid var(--seam);color:var(--cream);border-radius:7px;padding:7px 13px;text-decoration:none}
+.strip button:hover,.strip a.explore:hover{border-color:var(--rose);color:var(--rose)}
+
+/* ── sections ── */
+section{padding:56px 0 0}
+.sechead{font-family:var(--mono);font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--rose);margin-bottom:18px}
+.sechead.gold{color:var(--gold)}
+
+/* ── the gesture ── */
+.gesture{border:1px solid var(--seam);border-radius:12px;background:var(--wine);padding:30px}
+.gesture h2{font-size:clamp(20px,2.6vw,26px);font-weight:650;line-height:1.3}
+.gesture h2 b{color:var(--rose)}
+.gesture>p{color:var(--dim);margin-top:8px;max-width:62ch}
+.gesturebtns{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+.gesturebtns a{font-size:13px;padding:11px 20px;background:var(--ink);display:inline-block}
+.gesturebtns a:hover{border-color:var(--rose);color:var(--rose)}
+.gesture .fineprint{margin-top:16px;font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.04em}
+/* signed-in state */
+.you{margin-top:22px;border-top:1px solid var(--seam);padding-top:20px;display:none}
+.you .row{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;font-family:var(--mono);font-size:13px}
+.you .row .k{color:var(--dim);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.you .row .v{color:var(--blush);word-break:break-all}
+.timeline{display:flex;flex-wrap:wrap;gap:0;margin-top:18px}
+.step{flex:1;min-width:120px;padding:10px 12px;border-top:2px solid var(--seam);font-family:var(--mono)}
+.step .t{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.step .d{font-size:12px;color:var(--dim);margin-top:4px;line-height:1.45}
+.step.done{border-top-color:var(--rose)}
+.step.done .t{color:var(--blush)}
+.step.now{border-top-color:var(--gold)}
+.step.now .t{color:var(--gold)}
+.step.now .d{color:var(--cream)}
+.you .statusline{margin-top:14px;font-size:14px;color:var(--cream)}
+.you .statusline b{color:var(--gold)}
+.you .actions{margin-top:14px;display:flex;gap:10px}
+.you .actions button{font-family:var(--mono);font-size:12px;cursor:pointer;background:none;border:1px solid var(--seam);color:var(--dim);border-radius:7px;padding:6px 12px}
+.you .actions button:hover{border-color:var(--rose);color:var(--rose)}
+
+/* ── how LUV works ── */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.card{border:1px solid var(--seam);border-radius:12px;padding:24px;background:var(--wine)}
+.card .n{font-family:var(--mono);font-size:26px;color:var(--rose);font-weight:700}
+.card h3{font-size:16px;font-weight:650;margin-top:10px}
+.card p{color:var(--dim);font-size:14px;margin-top:8px}
+.card p b{color:var(--blush);font-weight:600}
+
+/* ── contracts ledger ── */
+.ledger{border:1px solid var(--seam);border-radius:12px;overflow:hidden}
+.ledger .lrow{display:grid;grid-template-columns:220px 1fr 110px;gap:14px;padding:13px 18px;border-top:1px solid var(--seam);font-family:var(--mono);font-size:13px;align-items:baseline}
+.ledger .lrow:first-child{border-top:0;background:var(--wine)}
+.ledger .lrow .role{color:var(--cream)}
+.ledger .lrow .role small{display:block;color:var(--dim);font-size:11px;font-family:var(--sans)}
+.ledger .lrow .a{color:var(--blush);word-break:break-all}
+.ledger .lrow .a.pending{color:var(--dim);font-style:italic}
+.ledger .lrow .tag{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);text-align:right}
+@media(max-width:640px){.ledger .lrow{grid-template-columns:1fr;gap:4px}.ledger .lrow .tag{text-align:left}}
+
+/* ── footer ── */
+footer{margin-top:72px;border-top:1px solid var(--seam);padding:28px 0 44px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:18px;align-items:baseline;font-family:var(--mono);font-size:12px;color:var(--dim)}
+footer a{text-decoration:none}
+footer .spacer{flex:1}
+
+@keyframes heartbeat{0%,100%{transform:scale(1)}12%{transform:scale(1.18)}24%{transform:scale(1)}36%{transform:scale(1.12)}48%{transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.repunit .heart,.healthdot.up{animation:none}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="/">❤ SHAMBA <b>LUV</b></a>
+    <small>emotonomics</small>
+    <span class="spacer"></span>
+    <span class="healthdot" id="healthdot" title="backend status"></span>
+    <small id="healthtext">checking…</small>
+    <a class="gh" href="https://github.com/SHAMBA-LUV" rel="noopener">github.com/SHAMBA-LUV</a>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- The supply is the headline: a repunit — every digit a one. -->
+  <div class="hero">
+    <div class="eyebrow">111 quadrillion LUV · fixed at genesis · a repunit of ones</div>
+    <div class="repunit" aria-label="111,111,111,111,111,111 LUV">111,111,111,111,<wbr>111,11<span class="heart" aria-hidden="true">❤</span>.111…</div>
+    <div class="repunit-frac"><span class="ones">…111111111111111111</span> <b>LUV</b> — eighteen ones, a point, eighteen ones. Nothing else will ever be minted.</div>
+    <div class="thesis">
+      <h1>Hold LUV, <em>earn LUV</em>. A reflection token where simply holding grows your balance — and every real new signup receives a <em>1-trillion-LUV gesture</em>.</h1>
+      <p><b>LUV is priceless. Wealth is ownership.</b> 3% of every trade reflects to all holders. Sending LUV wallet-to-wallet is always free.</p>
+    </div>
+
+    <div class="strip" id="strip">
+      <span class="badge imminent" id="statebadge">launch imminent</span>
+      <span class="addr" id="luvaddr">0x9b46ad18eb135cA8E90895E97fD79F9f7526041B</span>
+      <button id="copyaddr" type="button">copy</button>
+      <a class="explore" id="explorelink" href="https://etherscan.io/address/0x9b46ad18eb135cA8E90895E97fD79F9f7526041B" rel="noopener">etherscan</a>
+      <button id="addtoken" type="button" hidden>add LUV to wallet</button>
+      <span class="note">Ethereum first — and this address is deterministic: LUV lives here on <em>every</em> chain it opens on.</span>
+    </div>
+  </div>
+
+  <!-- The gesture -->
+  <section id="gesture">
+    <div class="sechead">the gesture</div>
+    <div class="gesture">
+      <h2>Sign in once. Get a wallet. Receive <b>1,000,000,000,000 LUV</b>.</h2>
+      <p>One social identity, one wallet, one gesture — sent wallet-to-wallet from the treasury, zero fee, the full trillion. Your wallet is provisioned for you and encrypted at rest; no browser extension needed to receive.</p>
+      <div class="gesturebtns" id="providers">
+        <a href="/auth/google">Sign in with Google</a>
+        <a href="/auth/discord">Sign in with Discord</a>
+        <a href="/auth/github">Sign in with GitHub</a>
+      </div>
+      <div class="fineprint">campaign hard cap: 1% of supply · 1 quadrillion LUV · 1,000 gestures — first come, first LUVed</div>
+
+      <div class="you" id="you">
+        <div class="row"><span class="k">signed in via</span> <span class="v" id="youprovider"></span>
+          <span class="k">your wallet</span> <span class="v" id="youwallet"></span></div>
+        <div class="timeline" id="timeline">
+          <div class="step" data-step="queued"><div class="t">queued</div><div class="d">You're on the list for the next luvbus.</div></div>
+          <div class="step" data-step="batching"><div class="t">boarding</div><div class="d">Your gesture is in the batch being assembled.</div></div>
+          <div class="step" data-step="submitted"><div class="t">on-chain</div><div class="d">The bus is on-chain, awaiting confirmation.</div></div>
+          <div class="step" data-step="confirmed"><div class="t">delivered</div><div class="d">1 trillion LUV is in your wallet.</div></div>
+        </div>
+        <div class="statusline" id="statusline"></div>
+        <div class="actions">
+          <button id="refreshstatus" type="button">refresh status</button>
+          <button id="logout" type="button">sign out</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How LUV works -->
+  <section>
+    <div class="sechead">how LUV works</div>
+    <div class="cards">
+      <div class="card"><div class="n">3%</div>
+        <h3>Hold LUV, earn LUV</h3>
+        <p>Every buy or sell reflects <b>3%</b> to all holders — no staking, no claiming. Your balance grows because you hold.</p></div>
+      <div class="card"><div class="n">0%</div>
+        <h3>Sharing LUV is free</h3>
+        <p>Wallet-to-wallet transfers carry <b>zero fee</b>, always. The 5% (3% reflection + 1% liquidity + 1% team) applies only to trades against the market.</p></div>
+      <div class="card"><div class="n">10T</div>
+        <h3>One unified payout</h3>
+        <p>Fees accumulate to <b>10 trillion LUV</b>, then reflections, liquidity, and team distribute together in a single transaction. Anyone may trigger it — fees can only ever be lowered.</p></div>
+    </div>
+  </section>
+
+  <!-- Contracts ledger -->
+  <section>
+    <div class="sechead gold">the ledger</div>
+    <div class="ledger" id="ledger">
+      <div class="lrow"><span class="role">SHAMBA LUV (token)<small>ERC-20 · 18 decimals · symbol LUV</small></span><span class="a" data-c="ShambaLuv">0x9b46ad18eb135cA8E90895E97fD79F9f7526041B</span><span class="tag">deterministic</span></div>
+      <div class="lrow"><span class="role">LuvLauncher<small>one-shot genesis — deploys the token, hands everything to the treasury</small></span><span class="a" data-c="LuvLauncher">0x9FbCA6C5034099e7bF93D751C817186f4810B059</span><span class="tag">deterministic</span></div>
+      <div class="lrow"><span class="role">Create3d<small>the multichain rail — same address, every chain</small></span><span class="a" data-c="Create3d">0xa5A2581d564248801cc5e06DbB764c99c170320A</span><span class="tag">rail</span></div>
+      <div class="lrow"><span class="role">LuvBatchGesture<small>the luvbus — one transaction delivers the gesture to a whole batch</small></span><span class="a pending" data-c="LuvBatchGesture">at launch</span><span class="tag">platform</span></div>
+      <div class="lrow"><span class="role">ShambaLuvAirdrop<small>signature-gated self-serve claim</small></span><span class="a pending" data-c="ShambaLuvAirdrop">at launch</span><span class="tag">platform</span></div>
+      <div class="lrow"><span class="role">IncentiveDistributor<small>action rewards — welcome, post, interact</small></span><span class="a pending" data-c="IncentiveDistributor">at launch</span><span class="tag">platform</span></div>
+      <div class="lrow"><span class="role">LUVLocker<small>lock principal, harvest reflections</small></span><span class="a pending" data-c="LUVLocker">at launch</span><span class="tag">platform</span></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>❤ LUV is priceless</span>
+    <span class="spacer"></span>
+    <a href="https://github.com/SHAMBA-LUV/LUV" rel="noopener">source &amp; audit</a>
+    <a href="https://github.com/SHAMBA-LUV" rel="noopener">SHAMBA-LUV</a>
+    <span>© 2026 emotonomics</span>
+  </div>
+</footer>
+
+<script src="luv.app.js"></script>
+</body>
+</html>
