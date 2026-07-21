@@ -64,7 +64,7 @@ router.get('/providers', (req, res) => {
 router.get('/me', requireAuth, async (req, res) => {
   const { identityKey, provider } = req.identity;
   const r = await db.query(
-    `SELECT i.email, w.address
+    `SELECT i.email, w.address, w.smart_account
        FROM identities i
        LEFT JOIN wallets w ON w.identity_key = i.identity_key
       WHERE i.identity_key = $1`,
@@ -73,8 +73,11 @@ router.get('/me', requireAuth, async (req, res) => {
   const row = r.rows[0] || {};
   res.json({
     provider,
+    // The user-facing wallet: the ERC-4337 smart account when the AA rail is on, else the EOA.
+    walletAddress: row.smart_account || row.address || null,
+    ownerAddress: row.address || null,
+    smartAccount: row.smart_account || null,
     // Do not echo the raw identity key publicly beyond what the session already holds.
-    walletAddress: row.address || null,
     email: row.email || null,
   });
 });

@@ -22,8 +22,15 @@ CREATE TABLE IF NOT EXISTS wallets (
     enc_iv          TEXT        NOT NULL,             -- base64 12-byte GCM nonce
     enc_tag         TEXT        NOT NULL,             -- base64 16-byte GCM auth tag
     enc_alg         TEXT        NOT NULL DEFAULT 'AES-256-GCM',
+    -- ERC-4337: the counterfactual LuvAccount for this identity (factory.getAddress(owner,
+    -- salt)). The gesture is delivered HERE while the account has no code (0-fee window);
+    -- `address` above stays the owner EOA (the signing key). NULL on pre-AA rows.
+    smart_account   TEXT        UNIQUE,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Idempotent upgrade for databases created before the ERC-4337 wallet rail.
+ALTER TABLE wallets ADD COLUMN IF NOT EXISTS smart_account TEXT UNIQUE;
 
 -- One airdrop claim per identity. nonce is globally unique (matches on-chain usedNonce[]).
 CREATE TABLE IF NOT EXISTS airdrop_claims (
@@ -36,13 +43,20 @@ CREATE TABLE IF NOT EXISTS airdrop_claims (
                                                       -- optional on-chain voucher path
     amount          NUMERIC(78, 0) NOT NULL,          -- base units (wei)
     deadline        BIGINT,                           -- unix seconds the voucher expires
-    tx_hash         TEXT,                             -- relayed claim() tx
-    -- status: 'pending' -> 'submitted' -> 'confirmed' | 'failed' | 'already_claimed' | 'cap_reached'
+    tx_hash         TEXT,                             -- relayed claim() tx, or the SHARED batch tx
+    -- status:
+    --   direct mode: 'pending' -> 'submitted' -> 'confirmed' | 'failed' | 'already_claimed' | 'cap_reached'
+    --   batch  mode: 'queued' -> 'batching' -> 'submitted' -> 'confirmed'
+    --               | back to 'queued' on send failure (attempts++) | 'failed' | 'cap_reached'
     status          TEXT        NOT NULL DEFAULT 'pending',
+    attempts        INT         NOT NULL DEFAULT 0,   -- batch send retries (failed at BATCH_MAX_ATTEMPTS)
     error           TEXT,                             -- short non-PII error note on failure
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Idempotent upgrade for databases created before batch mode existed.
+ALTER TABLE airdrop_claims ADD COLUMN IF NOT EXISTS attempts INT NOT NULL DEFAULT 0;
 
 CREATE INDEX IF NOT EXISTS idx_airdrop_claims_status ON airdrop_claims (status);
 CREATE INDEX IF NOT EXISTS idx_wallets_address ON wallets (address);

@@ -64,40 +64,82 @@ function decryptPrivateKey(identityKey, enc) {
   return '0x' + plaintext.toString('hex');
 }
 
+// ── ERC-4337: counterfactual LuvAccount (the in-house factory) ──
+// NB: ethers v6 Contract.getAddress() shadows the ABI function, so we call via the raw
+// interface instead of a Contract instance.
+const FACTORY_IFACE = new ethers.Interface([
+  'function getAddress(address owner, uint256 salt) view returns (address)',
+]);
+
+let _aaProvider = null;
+function aaProvider() {
+  if (!_aaProvider) _aaProvider = new ethers.JsonRpcProvider(config.rpcUrl, config.chainId);
+  return _aaProvider;
+}
+
+/**
+ * Counterfactual LuvAccount address for an owner EOA — a pure CREATE2 computation on the
+ * factory's side, so this works before ANYTHING is deployed to the account address.
+ * Returns null when the AA rail is not configured.
+ */
+async function counterfactualAccount(ownerAddress) {
+  if (!config.aaFactoryAddress) return null;
+  const data = FACTORY_IFACE.encodeFunctionData('getAddress', [ownerAddress, config.aaSalt]);
+  const ret = await aaProvider().call({ to: config.aaFactoryAddress, data });
+  return ethers.getAddress(FACTORY_IFACE.decodeFunctionResult('getAddress', ret)[0]);
+}
+
 /**
  * Provision (or fetch) the embedded wallet for an identity. Idempotent.
- * @returns {Promise<{ address: string, created: boolean }>}
+ * `address` is the owner EOA (the signing key, encrypted at rest); `smartAccount` is the
+ * counterfactual ERC-4337 LuvAccount — the user-facing wallet and the gesture target — when
+ * the AA rail is configured, else null.
+ * @returns {Promise<{ address: string, smartAccount: string|null, created: boolean }>}
  */
 async function provisionWallet(identityKey) {
-  // Fast path: already provisioned.
-  const existing = await db.query('SELECT address FROM wallets WHERE identity_key = $1', [
-    identityKey,
-  ]);
+  // Fast path: already provisioned. Backfill smart_account on pre-AA rows.
+  const existing = await db.query(
+    'SELECT address, smart_account FROM wallets WHERE identity_key = $1',
+    [identityKey]
+  );
   if (existing.rowCount > 0) {
-    return { address: existing.rows[0].address, created: false };
+    const row = existing.rows[0];
+    let smartAccount = row.smart_account || null;
+    if (!smartAccount && config.aaFactoryAddress) {
+      smartAccount = await counterfactualAccount(row.address);
+      await db.query(
+        'UPDATE wallets SET smart_account = $2 WHERE identity_key = $1 AND smart_account IS NULL',
+        [identityKey, smartAccount]
+      );
+    }
+    return { address: row.address, smartAccount, created: false };
   }
 
   const wallet = ethers.Wallet.createRandom();
   const enc = encryptPrivateKey(identityKey, wallet.privateKey);
+  const smartAccount = await counterfactualAccount(wallet.address);
 
   try {
     await db.query(
-      `INSERT INTO wallets (identity_key, address, enc_ciphertext, enc_iv, enc_tag, enc_alg)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [identityKey, wallet.address, enc.ciphertext, enc.iv, enc.tag, 'AES-256-GCM']
+      `INSERT INTO wallets (identity_key, address, enc_ciphertext, enc_iv, enc_tag, enc_alg, smart_account)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [identityKey, wallet.address, enc.ciphertext, enc.iv, enc.tag, 'AES-256-GCM', smartAccount]
     );
   } catch (err) {
     // Unique-violation => a concurrent request provisioned first; return that wallet.
     if (err && err.code === '23505') {
-      const row = await db.query('SELECT address FROM wallets WHERE identity_key = $1', [
-        identityKey,
-      ]);
-      if (row.rowCount > 0) return { address: row.rows[0].address, created: false };
+      const row = await db.query(
+        'SELECT address, smart_account FROM wallets WHERE identity_key = $1',
+        [identityKey]
+      );
+      if (row.rowCount > 0) {
+        return { address: row.rows[0].address, smartAccount: row.rows[0].smart_account || null, created: false };
+      }
     }
     throw err;
   }
 
-  return { address: wallet.address, created: true };
+  return { address: wallet.address, smartAccount, created: true };
 }
 
 /**

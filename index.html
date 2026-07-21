@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>SHAMBA LUV — hold LUV, earn LUV</title>
 <meta name="description" content="SHAMBA LUV (LUV) — emotonomics. A reflection token where holding grows your balance, and every real new signup receives a 1-trillion-LUV gesture. LUV is priceless. Wealth is ownership.">
 <meta name="author" content="SHAMBA LUV">
@@ -10,7 +10,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="SHAMBA LUV">
 <meta property="og:title" content="SHAMBA LUV — hold LUV, earn LUV">
-<meta property="og:description" content="111 quadrillion LUV, fixed at genesis. Sign in, get your wallet, receive the 1-trillion-LUV gesture. LUV is priceless.">
+<meta property="og:description" content="111 quadrillion LUV, fixed at genesis. Sign in, get your smart wallet, receive the 1-trillion-LUV gesture. LUV is priceless.">
 <meta property="og:url" content="https://luv.pythai.net/">
 <meta name="twitter:card" content="summary">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E">
@@ -28,75 +28,126 @@
   --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}
 html{scroll-behavior:smooth}
 body{background:var(--ink);color:var(--cream);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
 a{color:var(--blush)}
 a:hover{color:var(--rose)}
 :focus-visible{outline:2px solid var(--rose);outline-offset:3px;border-radius:2px}
+button{font-family:var(--mono);cursor:pointer;touch-action:manipulation}
 .wrap{max-width:1060px;margin:0 auto;padding:0 24px}
+
+/* page-swap: signed-in ⇒ dashboard replaces the landing (the previous flow) */
+body.authed .landing-only{display:none}
+#dashboard{display:none}
+body.authed #dashboard{display:block}
 
 /* ── header ── */
 header{border-bottom:1px solid var(--seam)}
-.bar{display:flex;align-items:center;gap:14px;padding:18px 0}
+.bar{display:flex;align-items:center;gap:14px;padding:16px 0}
 .brand{font-family:var(--mono);font-size:15px;letter-spacing:.14em;color:var(--cream);text-decoration:none}
 .brand b{color:var(--rose)}
 .bar .spacer{flex:1}
-.healthdot{width:9px;height:9px;border-radius:50%;background:var(--seam);display:inline-block}
+.loginbtn{font-size:13px;letter-spacing:.14em;padding:10px 22px;min-height:44px;border-radius:9px;border:1px solid var(--rose);
+  background:linear-gradient(120deg,var(--rose),#c2355c);color:#fff}
+.loginbtn:hover{filter:brightness(1.1)}
+body.authed .loginbtn{display:none}
+.socials{display:flex;gap:10px}
+.socials a{width:38px;height:38px;border:1px solid var(--seam);border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:14px;text-decoration:none;color:var(--dim);background:var(--wine)}
+.socials a:hover{border-color:var(--rose);color:var(--rose)}
+.healthdot{width:9px;height:9px;border-radius:50%;background:var(--seam);display:inline-block;flex:none}
 .healthdot.up{background:var(--rose);animation:heartbeat 1.4s ease-in-out infinite}
 .bar small{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--dim)}
-.bar a.gh{font-family:var(--mono);font-size:12px;text-decoration:none;color:var(--dim)}
-.bar a.gh:hover{color:var(--blush)}
 
 /* ── hero: the repunit wall ── */
-.hero{padding:72px 0 44px;text-align:left}
+.hero{padding:64px 0 40px}
 .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold)}
 .repunit{font-family:var(--mono);font-weight:700;color:var(--cream);
-  font-size:clamp(30px,6.6vw,78px);line-height:1.08;letter-spacing:.01em;
-  margin:18px 0 6px}
+  font-size:clamp(30px,6.6vw,78px);line-height:1.08;letter-spacing:.01em;margin:18px 0 6px}
 .repunit .heart{color:var(--rose);display:inline-block;animation:heartbeat 1.4s ease-in-out infinite}
 .repunit-frac{font-family:var(--mono);color:var(--dim);font-size:clamp(15px,2.4vw,26px)}
 .repunit-frac .ones{word-break:break-all}
 .repunit-frac b{color:var(--blush);font-weight:700}
-@media(max-width:600px){#healthtext{display:none}}
-.hero .thesis{margin-top:30px;max-width:640px}
+.hero .thesis{margin-top:28px;max-width:640px}
 .hero .thesis h1{font-size:clamp(22px,3.4vw,32px);font-weight:650;letter-spacing:-.01em;line-height:1.25}
 .hero .thesis h1 em{font-style:normal;color:var(--rose)}
 .hero .thesis p{margin-top:10px;color:var(--dim);font-size:16px}
 .hero .thesis p b{color:var(--gold);font-weight:600}
+.collectrow{margin-top:26px;display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.collect{font-size:15px;letter-spacing:.1em;padding:14px 30px;min-height:48px;border-radius:11px;border:1px solid var(--rose);
+  background:linear-gradient(120deg,var(--rose),#c2355c);color:#fff}
+.collect:hover{filter:brightness(1.1)}
+.collectrow .hint{font-family:var(--mono);font-size:12px;color:var(--dim)}
+
+/* ── live stats (the old LiveStats grid, self-hosted) ── */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-top:34px}
+.stat{border:1px solid var(--seam);border-radius:12px;background:var(--wine);padding:18px 20px}
+.stat .v{font-family:var(--mono);font-size:clamp(18px,2.4vw,24px);font-weight:700;color:var(--blush);overflow-wrap:break-word}
+.stat .k{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-top:6px}
+.stat.gold .v{color:var(--gold)}
 
 /* ── status strip ── */
 .strip{display:flex;flex-wrap:wrap;gap:12px;align-items:center;border:1px solid var(--seam);
-  background:var(--wine);border-radius:10px;padding:14px 18px;margin:26px 0 0;font-family:var(--mono);font-size:13px}
+  background:var(--wine);border-radius:10px;padding:14px 18px;margin:30px 0 0;font-family:var(--mono);font-size:13px}
 .badge{padding:3px 11px;border-radius:999px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--seam)}
 .badge.imminent{color:var(--gold);border-color:var(--gold)}
 .badge.live{color:var(--ink);background:var(--rose);border-color:var(--rose)}
 .strip .addr{color:var(--blush);word-break:break-all}
 .strip .note{color:var(--dim);font-size:12px}
-.strip button,.gesturebtns a,.strip a.explore{font-family:var(--mono);font-size:12px;cursor:pointer;
-  background:none;border:1px solid var(--seam);color:var(--cream);border-radius:7px;padding:7px 13px;text-decoration:none}
-.strip button:hover,.strip a.explore:hover{border-color:var(--rose);color:var(--rose)}
+.btn{font-family:var(--mono);font-size:12px;background:none;border:1px solid var(--seam);color:var(--cream);border-radius:7px;padding:7px 13px;text-decoration:none;display:inline-block}
+.btn:hover{border-color:var(--rose);color:var(--rose)}
 
 /* ── sections ── */
-section{padding:56px 0 0}
+section{padding:52px 0 0}
 .sechead{font-family:var(--mono);font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--rose);margin-bottom:18px}
 .sechead.gold{color:var(--gold)}
 
-/* ── the gesture ── */
+/* ── the gesture CTA (landing) ── */
 .gesture{border:1px solid var(--seam);border-radius:12px;background:var(--wine);padding:30px}
 .gesture h2{font-size:clamp(20px,2.6vw,26px);font-weight:650;line-height:1.3}
 .gesture h2 b{color:var(--rose)}
 .gesture>p{color:var(--dim);margin-top:8px;max-width:62ch}
 .gesturebtns{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
-.gesturebtns a{font-size:13px;padding:11px 20px;background:var(--ink);display:inline-block}
-.gesturebtns a:hover{border-color:var(--rose);color:var(--rose)}
+.gesturebtns a,.gesturebtns button{font-family:var(--mono);font-size:13px;padding:12px 20px;min-height:44px;background:var(--ink);
+  border:1px solid var(--seam);color:var(--cream);border-radius:7px;text-decoration:none;display:inline-flex;align-items:center}
+.gesturebtns a:hover,.gesturebtns button:hover{border-color:var(--rose);color:var(--rose)}
 .gesture .fineprint{margin-top:16px;font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.04em}
-/* signed-in state */
-.you{margin-top:22px;border-top:1px solid var(--seam);padding-top:20px;display:none}
-.you .row{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;font-family:var(--mono);font-size:13px}
-.you .row .k{color:var(--dim);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
-.you .row .v{color:var(--blush);word-break:break-all}
-.timeline{display:flex;flex-wrap:wrap;gap:0;margin-top:18px}
-.step{flex:1;min-width:120px;padding:10px 12px;border-top:2px solid var(--seam);font-family:var(--mono)}
+
+/* ── login modal (the previous connect modal, self-hosted) ── */
+#loginmodal{position:fixed;inset:0;background:rgba(10,4,7,.8);backdrop-filter:blur(3px);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px}
+#loginmodal.open{display:flex}
+.modalcard{background:var(--wine);border:1px solid var(--seam);border-radius:14px;max-width:380px;width:100%;padding:28px}
+.modalcard h3{font-family:var(--mono);font-size:15px;letter-spacing:.14em;text-align:center}
+.modalcard h3 b{color:var(--rose)}
+.modalcard .sub{text-align:center;color:var(--dim);font-size:13px;margin-top:6px}
+.modalproviders{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+.modalproviders a{font-family:var(--mono);font-size:14px;padding:13px 18px;min-height:48px;border:1px solid var(--seam);border-radius:9px;
+  background:var(--ink);color:var(--cream);text-decoration:none;display:flex;align-items:center;gap:10px}
+.modalproviders a:hover{border-color:var(--rose);color:var(--rose)}
+.modalproviders .soon{font-family:var(--mono);font-size:12px;color:var(--dim);text-align:center;padding:12px;border:1px dashed var(--seam);border-radius:9px}
+.modalcard .close{margin-top:18px;width:100%;padding:10px;font-size:12px;background:none;border:1px solid var(--seam);border-radius:8px;color:var(--dim)}
+.modalcard .close:hover{border-color:var(--rose);color:var(--rose)}
+.modalcard .fine{margin-top:12px;font-family:var(--mono);font-size:10px;color:var(--dim);text-align:center;letter-spacing:.04em}
+
+/* ── dashboard (signed in — the previous post-login view) ── */
+#dashboard{padding:48px 0 0}
+.dashhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px}
+.dashhead h2{font-size:clamp(22px,3vw,30px);font-weight:650}
+.dashhead h2 b{color:var(--rose)}
+.dashhead .via{font-family:var(--mono);font-size:12px;color:var(--dim)}
+.dashgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:22px}
+.panel{border:1px solid var(--seam);border-radius:12px;background:var(--wine);padding:26px}
+.panel .k{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.walletaddr{font-family:var(--mono);font-size:14px;color:var(--blush);word-break:break-all;margin-top:8px}
+.panel .row{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.aatag{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold);border-radius:999px;padding:3px 10px}
+.ownerline{margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--dim);word-break:break-all}
+.balance{font-family:var(--mono);font-weight:700;font-size:clamp(26px,4vw,40px);color:var(--cream);margin-top:8px;overflow-wrap:break-word}
+.balance small{font-size:.45em;color:var(--rose);white-space:nowrap}
+.balline{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:6px}
+.timeline{display:flex;flex-wrap:wrap;gap:0;margin-top:16px}
+.step{flex:1;min-width:110px;padding:10px 12px;border-top:2px solid var(--seam);font-family:var(--mono)}
 .step .t{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
 .step .d{font-size:12px;color:var(--dim);margin-top:4px;line-height:1.45}
 .step.done{border-top-color:var(--rose)}
@@ -104,14 +155,12 @@ section{padding:56px 0 0}
 .step.now{border-top-color:var(--gold)}
 .step.now .t{color:var(--gold)}
 .step.now .d{color:var(--cream)}
-.you .statusline{margin-top:14px;font-size:14px;color:var(--cream)}
-.you .statusline b{color:var(--gold)}
-.you .actions{margin-top:14px;display:flex;gap:10px}
-.you .actions button{font-family:var(--mono);font-size:12px;cursor:pointer;background:none;border:1px solid var(--seam);color:var(--dim);border-radius:7px;padding:6px 12px}
-.you .actions button:hover{border-color:var(--rose);color:var(--rose)}
+.statusline{margin-top:14px;font-size:14px;color:var(--cream)}
+.statusline b{color:var(--gold)}
+.dashfoot{margin-top:18px;display:flex;flex-wrap:wrap;gap:10px}
 
 /* ── how LUV works ── */
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
 .card{border:1px solid var(--seam);border-radius:12px;padding:24px;background:var(--wine)}
 .card .n{font-family:var(--mono);font-size:26px;color:var(--rose);font-weight:700}
 .card h3{font-size:16px;font-weight:650;margin-top:10px}
@@ -137,6 +186,7 @@ footer .spacer{flex:1}
 
 @keyframes heartbeat{0%,100%{transform:scale(1)}12%{transform:scale(1.18)}24%{transform:scale(1)}36%{transform:scale(1.12)}48%{transform:scale(1)}}
 @media(prefers-reduced-motion:reduce){.repunit .heart,.healthdot.up{animation:none}}
+@media(max-width:600px){#healthtext,.bar small.tagline{display:none}}
 </style>
 </head>
 <body>
@@ -144,18 +194,63 @@ footer .spacer{flex:1}
 <header>
   <div class="wrap bar">
     <a class="brand" href="/">❤ SHAMBA <b>LUV</b></a>
-    <small>emotonomics</small>
+    <small class="tagline">emotonomics</small>
+    <button class="loginbtn" id="loginbtn" type="button">LOGIN</button>
     <span class="spacer"></span>
-    <span class="healthdot" id="healthdot" title="backend status"></span>
+    <span class="healthdot" id="healthdot" title="gesture desk status"></span>
     <small id="healthtext">checking…</small>
-    <a class="gh" href="https://github.com/SHAMBA-LUV" rel="noopener">github.com/SHAMBA-LUV</a>
+    <nav class="socials" aria-label="SHAMBA LUV socials">
+      <a href="https://x.com/shambaluv" rel="noopener" title="X" aria-label="X">𝕏</a>
+      <a href="https://t.me/+yTfFYQlH53pmODcx" rel="noopener" title="Telegram" aria-label="Telegram">✈</a>
+      <a href="https://github.com/SHAMBA-LUV" rel="noopener" title="GitHub" aria-label="GitHub">⌥</a>
+    </nav>
   </div>
 </header>
 
 <main class="wrap">
 
-  <!-- The supply is the headline: a repunit — every digit a one. -->
-  <div class="hero">
+  <!-- ═══ DASHBOARD — replaces the landing when signed in (the previous flow) ═══ -->
+  <div id="dashboard">
+    <div class="dashhead">
+      <h2>welcome home <b>bonus</b></h2>
+      <span class="via">✨ your reward awaits ✨ · signed in via <span id="youprovider">—</span></span>
+    </div>
+    <div class="dashgrid">
+      <div class="panel">
+        <div class="k">your wallet</div>
+        <div class="walletaddr" id="youwallet">provisioning…</div>
+        <div class="row">
+          <button class="btn" id="copywallet" type="button">copy</button>
+          <a class="btn" id="walletexplorer" href="#" rel="noopener">etherscan</a>
+        </div>
+        <div class="aatag" id="aatag" hidden>ERC-4337 smart account · created for you</div>
+        <div class="ownerline" id="ownerline" hidden></div>
+      </div>
+      <div class="panel">
+        <div class="k">balance</div>
+        <div class="balance" id="balance">—<small> LUV</small></div>
+        <div class="balline" id="balline">hold LUV, earn LUV — reflections accrue to holders automatically</div>
+        <div class="row"><button class="btn" id="refreshbal" type="button">🔄 refresh</button></div>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:16px">
+      <div class="k">your 1-trillion-LUV gesture</div>
+      <div class="timeline" id="timeline">
+        <div class="step" data-step="queued"><div class="t">queued</div><div class="d">You're on the list for the next luvbus.</div></div>
+        <div class="step" data-step="batching"><div class="t">boarding</div><div class="d">Your gesture is in the batch being assembled.</div></div>
+        <div class="step" data-step="submitted"><div class="t">on-chain</div><div class="d">The bus is on-chain, awaiting confirmation.</div></div>
+        <div class="step" data-step="confirmed"><div class="t">delivered</div><div class="d">1 trillion LUV is in your wallet.</div></div>
+      </div>
+      <div class="statusline" id="statusline">checking your gesture…</div>
+    </div>
+    <div class="dashfoot">
+      <button class="btn" id="addtoken2" type="button" hidden>add LUV to wallet</button>
+      <button class="btn" id="logout" type="button">sign out</button>
+    </div>
+  </div>
+
+  <!-- ═══ LANDING (signed out) ═══ -->
+  <div class="hero landing-only">
     <div class="eyebrow">111 quadrillion LUV · fixed at genesis · a repunit of ones</div>
     <div class="repunit" aria-label="111,111,111,111,111,111 LUV">111,111,111,111,<wbr>111,11<span class="heart" aria-hidden="true">❤</span>.111…</div>
     <div class="repunit-frac"><span class="ones">…111111111111111111</span> <b>LUV</b> — eighteen ones, a point, eighteen ones. Nothing else will ever be minted.</div>
@@ -163,79 +258,87 @@ footer .spacer{flex:1}
       <h1>Hold LUV, <em>earn LUV</em>. A reflection token where simply holding grows your balance — and every real new signup receives a <em>1-trillion-LUV gesture</em>.</h1>
       <p><b>LUV is priceless. Wealth is ownership.</b> 3% of every trade reflects to all holders. Sending LUV wallet-to-wallet is always free.</p>
     </div>
+    <div class="collectrow">
+      <button class="collect" id="collectbtn" type="button">connect to collect ❤</button>
+      <span class="hint">one identity · one smart wallet · one trillion LUV</span>
+    </div>
+
+    <div class="stats" id="stats">
+      <div class="stat gold"><div class="v">111 Quadrillion</div><div class="k">total supply · fixed</div></div>
+      <div class="stat"><div class="v" id="stat-delivered">—</div><div class="k">gestures delivered</div></div>
+      <div class="stat"><div class="v" id="stat-aboard">—</div><div class="k">riders aboard the luvbus</div></div>
+      <div class="stat"><div class="v" id="stat-remaining">—</div><div class="k">gestures remaining</div></div>
+    </div>
 
     <div class="strip" id="strip">
       <span class="badge imminent" id="statebadge">launch imminent</span>
       <span class="addr" id="luvaddr">0x9b46ad18eb135cA8E90895E97fD79F9f7526041B</span>
-      <button id="copyaddr" type="button">copy</button>
-      <a class="explore" id="explorelink" href="https://etherscan.io/address/0x9b46ad18eb135cA8E90895E97fD79F9f7526041B" rel="noopener">etherscan</a>
-      <button id="addtoken" type="button" hidden>add LUV to wallet</button>
+      <button class="btn" id="copyaddr" type="button">copy</button>
+      <a class="btn" id="explorelink" href="https://etherscan.io/address/0x9b46ad18eb135cA8E90895E97fD79F9f7526041B" rel="noopener">etherscan</a>
+      <button class="btn" id="addtoken" type="button" hidden>add LUV to wallet</button>
       <span class="note">Ethereum first — and this address is deterministic: LUV lives here on <em>every</em> chain it opens on.</span>
     </div>
   </div>
 
-  <!-- The gesture -->
-  <section id="gesture">
-    <div class="sechead">the gesture</div>
+  <!-- The gesture CTA -->
+  <section id="gesture" class="landing-only">
+    <div class="sechead">🎁 free gesture available 🎁</div>
     <div class="gesture">
-      <h2>Sign in once. Get a wallet. Receive <b>1,000,000,000,000 LUV</b>.</h2>
-      <p>One social identity, one wallet, one gesture — sent wallet-to-wallet from the treasury, zero fee, the full trillion. Your wallet is provisioned for you and encrypted at rest; no browser extension needed to receive.</p>
+      <h2>Create your LUV wallet now — receive <b>1,000,000,000,000 LUV</b>.</h2>
+      <p>Sign in once with a social account. We create your <b>ERC-4337 smart wallet</b> from our own in-house contracts — no extension, no seed phrase, no gas — and the treasury sends the full trillion straight to it. One identity = one wallet = one gesture.</p>
       <div class="gesturebtns" id="providers">
-        <a href="/auth/google">Sign in with Google</a>
-        <a href="/auth/discord">Sign in with Discord</a>
-        <a href="/auth/github">Sign in with GitHub</a>
+        <button type="button" data-open-login>Sign in to collect ❤</button>
       </div>
-      <div class="fineprint">campaign hard cap: 1% of supply · 1 quadrillion LUV · 1,000 gestures — first come, first LUVed</div>
-
-      <div class="you" id="you">
-        <div class="row"><span class="k">signed in via</span> <span class="v" id="youprovider"></span>
-          <span class="k">your wallet</span> <span class="v" id="youwallet"></span></div>
-        <div class="timeline" id="timeline">
-          <div class="step" data-step="queued"><div class="t">queued</div><div class="d">You're on the list for the next luvbus.</div></div>
-          <div class="step" data-step="batching"><div class="t">boarding</div><div class="d">Your gesture is in the batch being assembled.</div></div>
-          <div class="step" data-step="submitted"><div class="t">on-chain</div><div class="d">The bus is on-chain, awaiting confirmation.</div></div>
-          <div class="step" data-step="confirmed"><div class="t">delivered</div><div class="d">1 trillion LUV is in your wallet.</div></div>
-        </div>
-        <div class="statusline" id="statusline"></div>
-        <div class="actions">
-          <button id="refreshstatus" type="button">refresh status</button>
-          <button id="logout" type="button">sign out</button>
-        </div>
-      </div>
+      <div class="fineprint">one-time per identity · no fees on receipt · delivered by the luvbus · campaign hard cap 1% of supply (1,000 gestures)</div>
     </div>
   </section>
 
   <!-- How LUV works -->
-  <section>
-    <div class="sechead">how LUV works</div>
+  <section class="landing-only">
+    <div class="sechead">emotonomics — how LUV works</div>
     <div class="cards">
       <div class="card"><div class="n">3%</div>
-        <h3>Hold LUV, earn LUV</h3>
-        <p>Every buy or sell reflects <b>3%</b> to all holders — no staking, no claiming. Your balance grows because you hold.</p></div>
+        <h3>Reflections</h3>
+        <p>Every buy or sell reflects <b>3%</b> to all holders — no staking, no claiming. Hold LUV, earn LUV.</p></div>
+      <div class="card"><div class="n">1%+1%</div>
+        <h3>Liquidity &amp; team</h3>
+        <p><b>1%</b> deepens liquidity, <b>1%</b> funds the team — collected with reflections in one unified <b>10T</b> payout anyone can trigger. Fees can only ever be lowered.</p></div>
       <div class="card"><div class="n">0%</div>
-        <h3>Sharing LUV is free</h3>
-        <p>Wallet-to-wallet transfers carry <b>zero fee</b>, always. The 5% (3% reflection + 1% liquidity + 1% team) applies only to trades against the market.</p></div>
-      <div class="card"><div class="n">10T</div>
-        <h3>One unified payout</h3>
-        <p>Fees accumulate to <b>10 trillion LUV</b>, then reflections, liquidity, and team distribute together in a single transaction. Anyone may trigger it — fees can only ever be lowered.</p></div>
+        <h3>P2P is free</h3>
+        <p>Wallet-to-wallet transfers carry <b>zero fee</b>, always. Share the LUV freely — the 5% applies only to trades against the market.</p></div>
     </div>
   </section>
 
   <!-- Contracts ledger -->
-  <section>
-    <div class="sechead gold">the ledger</div>
+  <section class="landing-only">
+    <div class="sechead gold">the ledger — in-house contracts</div>
     <div class="ledger" id="ledger">
       <div class="lrow"><span class="role">SHAMBA LUV (token)<small>ERC-20 · 18 decimals · symbol LUV</small></span><span class="a" data-c="ShambaLuv">0x9b46ad18eb135cA8E90895E97fD79F9f7526041B</span><span class="tag">deterministic</span></div>
       <div class="lrow"><span class="role">LuvLauncher<small>one-shot genesis — deploys the token, hands everything to the treasury</small></span><span class="a" data-c="LuvLauncher">0x9FbCA6C5034099e7bF93D751C817186f4810B059</span><span class="tag">deterministic</span></div>
       <div class="lrow"><span class="role">Create3d<small>the multichain rail — same address, every chain</small></span><span class="a" data-c="Create3d">0xa5A2581d564248801cc5e06DbB764c99c170320A</span><span class="tag">rail</span></div>
+      <div class="lrow"><span class="role">LuvAccountFactory<small>your smart wallet — in-house ERC-4337, counterfactual, upgradeable</small></span><span class="a pending" data-c="LuvAccountFactory">at launch</span><span class="tag">wallets</span></div>
+      <div class="lrow"><span class="role">LuvPaymaster<small>gas sponsorship — the platform pays, you don't</small></span><span class="a pending" data-c="LuvPaymaster">at launch</span><span class="tag">wallets</span></div>
       <div class="lrow"><span class="role">LuvBatchGesture<small>the luvbus — one transaction delivers the gesture to a whole batch</small></span><span class="a pending" data-c="LuvBatchGesture">at launch</span><span class="tag">platform</span></div>
       <div class="lrow"><span class="role">ShambaLuvAirdrop<small>signature-gated self-serve claim</small></span><span class="a pending" data-c="ShambaLuvAirdrop">at launch</span><span class="tag">platform</span></div>
-      <div class="lrow"><span class="role">IncentiveDistributor<small>action rewards — welcome, post, interact</small></span><span class="a pending" data-c="IncentiveDistributor">at launch</span><span class="tag">platform</span></div>
+      <div class="lrow"><span class="role">IncentiveDistributor<small>action rewards — welcome, post, interaction (owner-editable live)</small></span><span class="a pending" data-c="IncentiveDistributor">at launch</span><span class="tag">platform</span></div>
       <div class="lrow"><span class="role">LUVLocker<small>lock principal, harvest reflections</small></span><span class="a pending" data-c="LUVLocker">at launch</span><span class="tag">platform</span></div>
     </div>
   </section>
 
 </main>
+
+<!-- login modal (self-hosted — replaces the old vendor connect modal) -->
+<div id="loginmodal" role="dialog" aria-modal="true" aria-labelledby="modaltitle">
+  <div class="modalcard">
+    <h3 id="modaltitle">❤ SHAMBA <b>LUV</b></h3>
+    <div class="sub">connect to collect — your smart wallet &amp; 1T LUV await</div>
+    <div class="modalproviders" id="modalproviders">
+      <div class="soon">the gesture desk opens at launch</div>
+    </div>
+    <button class="close" id="modalclose" type="button">close</button>
+    <div class="fine">self-hosted login · your wallet is yours · no third-party wallet vendor</div>
+  </div>
+</div>
 
 <footer>
   <div class="wrap">
@@ -243,7 +346,7 @@ footer .spacer{flex:1}
     <span class="spacer"></span>
     <a href="https://github.com/SHAMBA-LUV/LUV" rel="noopener">source &amp; audit</a>
     <a href="https://github.com/SHAMBA-LUV" rel="noopener">SHAMBA-LUV</a>
-    <span>© 2026 emotonomics</span>
+    <span>© 2026 emotonomics · luv@pythai.net</span>
   </div>
 </footer>
 

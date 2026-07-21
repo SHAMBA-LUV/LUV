@@ -80,12 +80,32 @@ const config = {
   // Wallet-at-rest encryption master key (hex, 32 bytes). Generate: openssl rand -hex 32
   walletEncryptionKey: req('WALLET_ENCRYPTION_KEY'),
 
+  // ── ERC-4337 smart accounts (in-house LuvAccountFactory) ──
+  // When AA_FACTORY_ADDRESS is set, each identity's wallet becomes the COUNTERFACTUAL
+  // LuvAccount at factory.getAddress(ownerEOA, salt): the gesture is delivered there while
+  // the account has no code (code.length==0 on both sides ⇒ wallet-to-wallet, 0 fee, full
+  // trillion); the account materializes on the user's first UserOperation. Empty ⇒ legacy
+  // EOA-only provisioning.
+  aaFactoryAddress: opt('AA_FACTORY_ADDRESS', ''),
+  aaEntryPoint: opt('AA_ENTRYPOINT', '0x0000000071727De22E5E9d8BAf0edAc6f37da032'),
+  aaSalt: BigInt(opt('AA_SALT', '0')),
+
   // The gesture amount in base units (wei). Default 1 trillion LUV = 1e30.
   // 1_000_000_000_000 * 1e18 = 1e30.
   claimAmount: BigInt(opt('CLAIM_AMOUNT', '1000000000000000000000000000000')),
 
   // How long a signed voucher is valid for (seconds) before its deadline expires.
   voucherTtlSeconds: parseInt(opt('VOUCHER_TTL_SECONDS', '3600'), 10),
+
+  // ── Batched gesture delivery (Ethereum gas saver) ──
+  // 'direct'  → one treasury→signup transfer per signup (gesture.js; the original path)
+  // 'batch'   → signups queue and the LuvBatchGesture contract delivers N per transaction
+  //             (transferFrom treasury→signup stays EOA→EOA, so each hop is still 0-fee).
+  gestureMode: opt('GESTURE_MODE', 'direct'),
+  batchGestureAddress: opt('BATCH_GESTURE_ADDRESS', ''),
+  batchMaxSize: parseInt(opt('BATCH_MAX_SIZE', '100'), 10), // flush when this many are queued…
+  batchIntervalMs: parseInt(opt('BATCH_INTERVAL_MS', '300000'), 10), // …or every 5 min, whichever first
+  batchMaxAttempts: parseInt(opt('BATCH_MAX_ATTEMPTS', '5'), 10), // then the row is marked failed
 
   // OAuth providers
   oauth: {
