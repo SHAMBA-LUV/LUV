@@ -19,6 +19,9 @@
  */
 (function () {
   const $ = (id) => document.getElementById(id);
+  // Null-safe wiring: a missing element must never crash the whole app (the lesson of the
+  // stale-cache loginbtn incident — old JS + new HTML has to degrade, not die).
+  const on = (id, evt, fn) => { const el = $(id); if (el) el.addEventListener(evt, fn); };
   const j = async (url, opts) => {
     const r = await fetch(url, Object.assign({ credentials: 'same-origin' }, opts));
     if (!r.ok) throw new Error(url + ' → ' + r.status);
@@ -363,20 +366,20 @@
   }
 
   // ── wire the controls ──────────────────────────────────────────────────────
-  for (const id of ['connectbtn', 'collectword', 'collectbtn']) $(id).addEventListener('click', openModal);
+  for (const id of ['connectbtn', 'collectword', 'collectbtn', 'loginbtn']) on(id, 'click', openModal);
   document.querySelectorAll('[data-open-login]').forEach((el) => el.addEventListener('click', openModal));
-  $('modalclose').addEventListener('click', closeModal);
-  $('loginmodal').addEventListener('click', (e) => { if (e.target === $('loginmodal')) closeModal(); });
+  on('modalclose', 'click', closeModal);
+  on('loginmodal', 'click', (e) => { if (e.target === $('loginmodal')) closeModal(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
-  $('copyaddr').addEventListener('click', async () => {
+  on('copyaddr', 'click', async () => {
     try {
       await navigator.clipboard.writeText(luvAddr);
       $('copyaddr').textContent = 'copied ❤';
       setTimeout(() => { $('copyaddr').textContent = 'copy'; }, 1600);
     } catch (e) { /* clipboard blocked */ }
   });
-  $('copywallet').addEventListener('click', async () => {
+  on('copywallet', 'click', async () => {
     if (!myWallet) return;
     try {
       await navigator.clipboard.writeText(myWallet);
@@ -384,8 +387,8 @@
       setTimeout(() => { $('copywallet').textContent = 'copy'; }, 1600);
     } catch (e) { /* clipboard blocked */ }
   });
-  $('refreshbal').addEventListener('click', refreshStatus);
-  $('logout').addEventListener('click', async () => {
+  on('refreshbal', 'click', refreshStatus);
+  on('logout', 'click', async () => {
     try { await j('/auth/logout', { method: 'POST' }); } catch (e) { /* cookie cleared anyway */ }
     location.reload();
   });
