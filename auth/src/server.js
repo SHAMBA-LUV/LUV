@@ -110,6 +110,12 @@ function createApp() {
 
 function start() {
   const app = createApp();
+  if (config.gestureMode === 'batch') {
+    const { startBatchFlusher } = require('./airdrop/batch');
+    startBatchFlusher();
+    // eslint-disable-next-line no-console
+    console.log(`[shambaluv-auth] batch gesture mode: flush every ${config.batchIntervalMs}ms or at ${config.batchMaxSize} queued`);
+  }
   const server = app.listen(config.port, () => {
     // eslint-disable-next-line no-console
     console.log(`[shambaluv-auth] listening on :${config.port} (${config.env})`);

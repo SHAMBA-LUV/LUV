@@ -9,7 +9,8 @@
   "scripts": {
     "start": "node src/server.js",
     "migrate": "node src/migrate.js",
-    "selftest": "node test/voucher-selftest.mjs"
+    "selftest": "node test/voucher-selftest.mjs",
+    "selftest:batch": "node test/batch-selftest.mjs"
   },
   "engines": {
     "node": ">=18"
