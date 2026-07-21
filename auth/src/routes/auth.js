@@ -57,7 +57,78 @@ if (ENABLED.includes('github')) wireProvider('github', ['read:user', 'user:email
 
 // List which providers are live (handy for the frontend to render buttons).
 router.get('/providers', (req, res) => {
-  res.json({ providers: ENABLED });
+  res.json({ providers: ENABLED, wallet: true });
+});
+
+// ── MetaMask / wallet sign-in (challenge → personal_sign → verify) ──────────────
+// Identity: `metamask:<address>` — a session like any other, BUT the 1T gesture stays
+// gated to SOCIAL identities (a wallet is free to mint endlessly; social accounts are the
+// Sybil unit — the lesson from the luvdrop audit). Wallet users get the dashboard, balance
+// and the tasks rail on their OWN address; no custodial wallet is provisioned.
+const jwt = require('jsonwebtoken');
+const ethers = require('../ethers');
+
+const ADDR_RE = /^0x[0-9a-fA-F]{40}$/;
+
+router.post('/wallet/challenge', (req, res) => {
+  const { address } = req.body || {};
+  if (typeof address !== 'string' || !ADDR_RE.test(address)) {
+    return res.status(400).json({ error: 'bad_address' });
+  }
+  const checksummed = ethers.getAddress(address);
+  const nonce = require('crypto').randomBytes(16).toString('hex');
+  const message =
+    `SHAMBA LUV ❤ sign-in\n\n` +
+    `wallet: ${checksummed}\n` +
+    `nonce: ${nonce}\n\n` +
+    `Signing proves you control this wallet. This request costs nothing.`;
+  // Stateless challenge: the message is bound to the address+nonce in a short-lived JWT.
+  const challengeToken = jwt.sign(
+    { sub: 'wallet-challenge', address: checksummed, nonce },
+    config.jwtSecret,
+    { expiresIn: 300, issuer: 'shambaluv-auth' }
+  );
+  res.json({ message, challengeToken });
+});
+
+router.post('/wallet/verify', async (req, res) => {
+  const { address, signature, challengeToken } = req.body || {};
+  if (typeof address !== 'string' || !ADDR_RE.test(address)
+    || typeof signature !== 'string' || typeof challengeToken !== 'string') {
+    return res.status(400).json({ error: 'invalid_request' });
+  }
+  let claim;
+  try {
+    claim = jwt.verify(challengeToken, config.jwtSecret, { issuer: 'shambaluv-auth' });
+  } catch (e) {
+    return res.status(400).json({ error: 'challenge_expired' });
+  }
+  const checksummed = ethers.getAddress(address);
+  if (claim.sub !== 'wallet-challenge' || claim.address !== checksummed) {
+    return res.status(400).json({ error: 'challenge_mismatch' });
+  }
+  const message =
+    `SHAMBA LUV ❤ sign-in\n\n` +
+    `wallet: ${claim.address}\n` +
+    `nonce: ${claim.nonce}\n\n` +
+    `Signing proves you control this wallet. This request costs nothing.`;
+  let recovered;
+  try {
+    recovered = ethers.verifyMessage(message, signature);
+  } catch (e) {
+    return res.status(400).json({ error: 'bad_signature' });
+  }
+  if (recovered.toLowerCase() !== checksummed.toLowerCase()) {
+    return res.status(401).json({ error: 'signature_mismatch' });
+  }
+  // Session identity — no custodial wallet, no automatic gesture (social-only Sybil gate).
+  const { identityKey } = await upsertIdentity({
+    provider: 'metamask',
+    providerUserId: checksummed.toLowerCase(),
+  });
+  const token = issueToken({ identityKey, provider: 'metamask' });
+  setSessionCookie(res, token);
+  res.json({ ok: true, walletAddress: checksummed });
 });
 
 // Current session identity + wallet. Requires auth.
@@ -71,11 +142,15 @@ router.get('/me', requireAuth, async (req, res) => {
     [identityKey]
   );
   const row = r.rows[0] || {};
+  // MetaMask identities bring their OWN wallet (identity_key = metamask:<address>) —
+  // no custodial row exists; the user-facing wallet is theirs.
+  const selfWallet = provider === 'metamask' && !row.address
+    ? require('../ethers').getAddress(identityKey.split(':')[1]) : null;
   res.json({
     provider,
     // The user-facing wallet: the ERC-4337 smart account when the AA rail is on, else the EOA.
-    walletAddress: row.smart_account || row.address || null,
-    ownerAddress: row.address || null,
+    walletAddress: row.smart_account || row.address || selfWallet,
+    ownerAddress: row.address || selfWallet,
     smartAccount: row.smart_account || null,
     // Do not echo the raw identity key publicly beyond what the session already holds.
     email: row.email || null,

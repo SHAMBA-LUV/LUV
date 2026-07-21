@@ -158,7 +158,9 @@ async function mySubmissions(identityKey) {
 async function payoutOne(row) {
   const d = distributor(new ethers.Wallet(config.relayerPrivateKey, provider()));
   const w = await db.query('SELECT address, smart_account FROM wallets WHERE identity_key = $1', [row.identity_key]);
-  const user = (w.rows[0] && (w.rows[0].smart_account || w.rows[0].address)) || null;
+  let user = (w.rows[0] && (w.rows[0].smart_account || w.rows[0].address)) || null;
+  // MetaMask identities bring their own wallet (identity_key = metamask:<address>).
+  if (!user && row.identity_key.startsWith('metamask:')) user = ethers.getAddress(row.identity_key.split(':')[1]);
   if (!user) throw new Error('no_wallet');
 
   if (await d.isActionClaimed(row.action_id)) {

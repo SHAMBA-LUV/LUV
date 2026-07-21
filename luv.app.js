@@ -24,8 +24,9 @@
     if (!r.ok) throw new Error(url + ' → ' + r.status);
     return r.json();
   };
-  const PROVIDER_LABEL = { google: 'Google', discord: 'Discord', github: 'GitHub', apple: 'Apple', x: 'X' };
+  const PROVIDER_LABEL = { google: 'Google', discord: 'Discord', github: 'GitHub', apple: 'Apple', x: 'X', metamask: 'MetaMask' };
   const PROVIDER_ICON = { google: 'G', discord: 'D', github: '⌥', apple: '', x: '𝕏' };
+  let myProvider = null;
   const STEPS = ['queued', 'batching', 'submitted', 'confirmed'];
 
   let cfg = { status: 'imminent', chainId: 1, explorer: 'https://etherscan.io', contracts: {} };
@@ -109,31 +110,87 @@
   function openModal() { $('loginmodal').classList.add('open'); }
   function closeModal() { $('loginmodal').classList.remove('open'); }
 
-  async function loadProviders() {
-    let providers = [];
-    try { providers = (await j('/auth/providers')).providers || []; } catch (e) { /* desk closed */ }
-    const box = $('modalproviders');
-    if (providers.length) {
-      box.replaceChildren(...providers.map((p) => {
-        const a = document.createElement('a');
-        a.href = '/auth/' + p;
-        const icon = document.createElement('b');
-        icon.textContent = PROVIDER_ICON[p] || '·';
-        a.append(icon, ' Sign in with ' + (PROVIDER_LABEL[p] || p));
-        return a;
-      }));
-      // mirror into the landing CTA card
-      $('providers').replaceChildren(...providers.map((p) => {
-        const a = document.createElement('a');
-        a.href = '/auth/' + p;
-        a.textContent = 'Sign in with ' + (PROVIDER_LABEL[p] || p);
-        return a;
-      }));
+  // ── MetaMask sign-in: challenge → personal_sign → verify → session cookie ──
+  async function metamaskLogin(msgEl) {
+    try {
+      if (!window.ethereum) {
+        // no injected wallet (mobile browser) → reopen inside the MetaMask in-app browser
+        location.href = 'https://metamask.app.link/dapp/' + location.host + location.pathname;
+        return;
+      }
+      msgEl.textContent = 'open MetaMask to connect…';
+      const [address] = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const { message, challengeToken } = await j('/auth/wallet/challenge', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address }),
+      });
+      msgEl.textContent = 'sign the message to prove the wallet is yours…';
+      const signature = await window.ethereum.request({ method: 'personal_sign', params: [message, address] });
+      await j('/auth/wallet/verify', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address, signature, challengeToken }),
+      });
+      location.reload(); // session cookie set — the page swaps to the dashboard
+    } catch (e) {
+      msgEl.textContent = String(e && e.code) === '4001'
+        ? 'signature declined — nothing was sent'
+        : 'that didn’t go through — try again';
     }
+  }
+
+  function socialButton(p, plain) {
+    const a = document.createElement('a');
+    a.href = '/auth/' + p;
+    if (!plain) {
+      const icon = document.createElement('b');
+      icon.textContent = PROVIDER_ICON[p] || '·';
+      a.append(icon, ' Sign in with ' + (PROVIDER_LABEL[p] || p));
+    } else {
+      a.textContent = 'Sign in with ' + (PROVIDER_LABEL[p] || p);
+    }
+    return a;
+  }
+
+  async function loadProviders() {
+    // The live social providers; google+github are the shipped defaults if the desk is quiet.
+    let providers = ['google', 'github'];
+    try {
+      const r = await j('/auth/providers');
+      if (Array.isArray(r.providers) && r.providers.length) providers = r.providers;
+    } catch (e) { /* fall back to the shipped pair */ }
+
+    // The expanded connect dialog: social sign-ins, then the wallet path.
+    const or = document.createElement('div');
+    or.className = 'or';
+    or.textContent = 'or connect a wallet';
+    const mm = document.createElement('button');
+    mm.type = 'button';
+    const fox = document.createElement('b');
+    fox.textContent = '🦊';
+    mm.append(fox, ' Sign in with MetaMask');
+    const msg = document.createElement('div');
+    msg.className = 'taskmsg';
+    mm.addEventListener('click', () => metamaskLogin(msg));
+    $('modalproviders').replaceChildren(...providers.map((p) => socialButton(p)), or, mm, msg);
+
+    // mirror the social options into the landing CTA card (the airdrop needs a social identity)
+    $('providers').replaceChildren(...providers.map((p) => socialButton(p, true)));
   }
 
   // ── dashboard (signed in) ──────────────────────────────────────────────────
   function renderStatus(s) {
+    // Wallet sign-ins have no gesture claim — the airdrop's Sybil unit is a social identity.
+    if (!s.claim && !s.claimed && myProvider === 'metamask') {
+      document.querySelectorAll('#timeline .step').forEach((el) => { el.className = 'step'; });
+      $('statusline').textContent =
+        'the free airdrop rides with social sign-ins — sign in with Google or GitHub to receive the gesture ❤';
+      const bal0 = fmtLuv(s.luvBalance);
+      if (bal0 !== null) {
+        $('balance').innerHTML = '';
+        $('balance').append(bal0, Object.assign(document.createElement('small'), { textContent: ' LUV' }));
+      }
+      return;
+    }
     const state = (s.claim && s.claim.status) || (s.claimed ? 'confirmed' : 'queued');
     const at = Math.max(0, STEPS.indexOf(state));
     document.querySelectorAll('#timeline .step').forEach((el) => {
@@ -286,6 +343,7 @@
     let me;
     try { me = await j('/auth/me'); } catch (e) { return false; } // not signed in
     document.body.classList.add('authed');
+    myProvider = me.provider || null;
     $('youprovider').textContent = PROVIDER_LABEL[me.provider] || me.provider || '—';
     myWallet = me.walletAddress || null;
     $('youwallet').textContent = myWallet || 'provisioning…';

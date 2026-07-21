@@ -50,7 +50,10 @@ router.get('/status', requireAuth, async (req, res) => {
   const w = await db.query('SELECT address, smart_account FROM wallets WHERE identity_key = $1', [identityKey]);
   const row = w.rows[0] || {};
   // The user-facing wallet (and gesture target): the smart account when the AA rail is on.
-  const walletAddress = row.smart_account || row.address || null;
+  // MetaMask identities have no custodial row — their own address IS the wallet.
+  const selfWallet = req.identity.provider === 'metamask' && !row.address
+    ? ethers.getAddress(identityKey.split(':')[1]) : null;
+  const walletAddress = row.smart_account || row.address || selfWallet;
   const pending = status && (status.status === 'queued' || status.status === 'batching');
   let queueDepth = null;
   if (pending) {

@@ -117,9 +117,11 @@ section{padding:52px 0 0}
 .modalcard h3 b{color:var(--rose)}
 .modalcard .sub{text-align:center;color:var(--dim);font-size:13px;margin-top:6px}
 .modalproviders{display:flex;flex-direction:column;gap:10px;margin-top:20px}
-.modalproviders a{font-family:var(--mono);font-size:14px;padding:13px 18px;min-height:48px;border:1px solid var(--seam);border-radius:9px;
-  background:var(--ink);color:var(--cream);text-decoration:none;display:flex;align-items:center;gap:10px}
-.modalproviders a:hover{border-color:var(--rose);color:var(--rose)}
+.modalproviders a,.modalproviders button{font-family:var(--mono);font-size:14px;padding:13px 18px;min-height:48px;border:1px solid var(--seam);border-radius:9px;
+  background:var(--ink);color:var(--cream);text-decoration:none;display:flex;align-items:center;gap:10px;width:100%;text-align:left}
+.modalproviders a:hover,.modalproviders button:hover{border-color:var(--rose);color:var(--rose)}
+.modalproviders .or{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase}
+.modalproviders .or::before,.modalproviders .or::after{content:'';flex:1;border-top:1px solid var(--seam)}
 .modalproviders .soon{font-family:var(--mono);font-size:12px;color:var(--dim);text-align:center;padding:12px;border:1px dashed var(--seam);border-radius:9px}
 .modalcard .close{margin-top:18px;width:100%;padding:10px;font-size:12px;background:none;border:1px solid var(--seam);border-radius:8px;color:var(--dim)}
 .modalcard .close:hover{border-color:var(--rose);color:var(--rose)}
@@ -186,6 +188,7 @@ section{padding:52px 0 0}
 .card h3{font-size:16px;font-weight:650;margin-top:10px}
 .card p{color:var(--dim);font-size:14px;margin-top:8px}
 .card p b{color:var(--blush);font-weight:600}
+.paperrow{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px;justify-content:center}
 
 /* ── contracts ledger ── */
 .ledger{border:1px solid var(--seam);border-radius:12px;overflow:hidden}
@@ -322,6 +325,10 @@ footer .spacer{flex:1}
       <div class="card"><div class="n">0%</div>
         <h3>P2P fees</h3>
         <p>Wallet-to-wallet is <b>always free</b>. Share the LUV.</p></div>
+    </div>
+    <div class="paperrow">
+      <a class="btn" href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/EMOTONOMICS.md" rel="noopener">📜 read EMOTONOMICS</a>
+      <a class="btn" href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/LUVPAPER.md" rel="noopener">❤ read the LUVPAPER</a>
     </div>
   </section>
 
