@@ -133,12 +133,32 @@ footer .spacer{flex:1}
   </details>
 
   <details>
-    <summary>What is the luvbus? When does my LUV arrive?</summary>
-    <div class="a"><p>Gestures are delivered in batches: signups board the <b>luvbus</b>, and one
-    transaction delivers everyone's trillion at once (about 37% cheaper than one-by-one — savings the
-    campaign spends on more gestures). The bus departs when it fills or on a timer; your dashboard shows
-    your seat: <b>queued → boarding → on-chain → delivered</b>. Every rider still receives the full
-    trillion, fee-free.</p></div>
+    <summary>What is the LUVbus? When does my LUV arrive?</summary>
+    <div class="a"><p>The <b>LUVbus</b> (the <code>LuvBatchGesture</code> contract) is how gestures are
+    delivered: signups board the bus, and <b>one on-chain transaction delivers every rider's trillion at
+    once</b>. Your dashboard shows your seat: <b>queued → boarding → on-chain → delivered</b>.</p>
+    <p>The bus departs when it fills (up to 100 riders), on a timer, or the moment <b>any participant
+    presses claim</b> — one claim delivers everyone aboard. Riders never pay anything: the treasury
+    operator pays the bus's gas.</p>
+    <p>Under the hood each seat is still a true <b>wallet-to-wallet hop</b> — treasury → your wallet by
+    allowance — so the token's 0% P2P rule applies and the <b>full 1,000,000,000,000 LUV</b> arrives,
+    no fee taken. The contract keeps an on-chain <b>delivered list</b>, so no wallet can ride twice, and
+    the treasury's allowance to the bus is hard-capped at the campaign's 1% of supply.</p></div>
+  </details>
+
+  <details>
+    <summary>Why a bus — what does batching actually save?</summary>
+    <div class="a"><p>Every solo airdrop transaction carries fixed overhead (base fee, calldata, nonce)
+    on top of the transfer itself. The bus pays that overhead <b>once per departure</b> instead of once
+    per person. Foundry-measured on the real token: a solo delivery costs ~112k gas, a bus seat
+    ~70k — a <b>~37% saving</b> that plateaus from about 25 riders (sweet spot 50–100 per bus). Across
+    the full 1,000-gesture campaign that's roughly 70M gas instead of 112M — savings the campaign spends
+    on <b>more LUV reaching more people</b>. To be precise: one bus = one transaction for everyone
+    aboard, but its gas grows with each rider — batching amortizes overhead; it isn't
+    "everyone for the price of one".</p>
+    <p>Prefer not to wait for a departure? Use <b>⚡ claim yourself with ETH</b> on your dashboard: you
+    get a signed voucher and your own wallet submits the claim, paying its own gas — you step off the
+    bus, and on-chain checks make double-delivery impossible either way.</p></div>
   </details>
 
   <details>
@@ -191,6 +211,41 @@ footer .spacer{flex:1}
     <div class="a"><p>The on-chain <b>IncentiveDistributor</b> registry does — rewards, daily limits and
     cooldowns live in the contract (owner-editable, fully public), never in a hidden backend. Payouts are
     signature-verified and <b>deduplicated on-chain</b>, so the same proof can never pay twice.</p></div>
+  </details>
+
+  <h2>the LUVlocker</h2>
+
+  <details>
+    <summary>What is the LUVlocker?</summary>
+    <div class="a"><p>The <b>LUVlocker</b> is the diamond-hands vault: lock your LUV principal and
+    <b>keep earning reflections the whole time</b>. The locker stays reflection-<b>included</b>, so the
+    token's 3% trade reflections keep landing on the vault — and your share of those reflections is your
+    <b>interest</b>, tracked per depositor. Lock the principal, harvest the LUV it earns.</p>
+    <p>It ships in the same in-house, zero-dependency suite as the token (no OpenZeppelin, fully
+    audited-in-repo) — see the ledger on the front page for its address at launch.</p></div>
+  </details>
+
+  <details>
+    <summary>How do I earn while my LUV is locked?</summary>
+    <div class="a"><p>Two interest modes, switchable per user at any time:</p>
+    <p><b class="g">CLAIMABLE</b> (default) — your reflections settle into an accrued interest balance
+    you can <b>harvest whenever you like</b>, while the principal stays locked. Above a threshold the
+    vault can even auto-pay it out.</p>
+    <p><b class="g">COMPOUND</b> — settled interest folds into your locked principal instead, growing
+    the position; it becomes withdrawable with the principal when the lock passes. Compounding
+    <b>never resets your lock</b>, and switching modes only affects future interest.</p></div>
+  </details>
+
+  <details>
+    <summary>When can I withdraw — can a lock be changed?</summary>
+    <div class="a"><p>Each deposit locks until <b>now + the lock duration</b> (plus a small block-count
+    guard). Locks are <b>extend-only</b>: you (or the owner) can push your unlock <em>later</em> —
+    never earlier — and changing the default duration only affects <em>future</em> deposits. No admin
+    control can ever shorten a lock, touch principal, or touch interest. Once your unlock time and
+    block guard have both passed, withdraw any amount of your principal.</p>
+    <p>The vault can also timelock <b>any other ERC-20</b> under an explicit per-lock unlock time
+    (independent of the LUV interest pool), and the owner's rescue power can only sweep surplus that
+    no accounting bucket claims — <b>never yours</b>.</p></div>
   </details>
 
   <h2 class="gold">trust &amp; the contracts</h2>
