@@ -27,13 +27,26 @@
     if (!r.ok) throw new Error(url + ' → ' + r.status);
     return r.json();
   };
+  // Ensure the injected wallet is on the launch chain (Ethereum mainnet) before any write — a
+  // claim sent from the wrong network wastes gas and never lands. Tries to switch; returns false
+  // if the user declines or the wallet can't switch.
+  async function ensureChain() {
+    if (!window.ethereum) return false;
+    const want = '0x' + Number(cfg.chainId || 1).toString(16);
+    try {
+      const cur = await window.ethereum.request({ method: 'eth_chainId' });
+      if (String(cur).toLowerCase() === want) return true;
+      await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: want }] });
+      return true;
+    } catch (e) { return false; }
+  }
   const PROVIDER_LABEL = { google: 'Google', discord: 'Discord', github: 'GitHub', apple: 'Apple', x: 'X', metamask: 'MetaMask' };
   const PROVIDER_ICON = { google: 'G', discord: 'D', github: '⌥', apple: '', x: '𝕏' };
   let myProvider = null;
-  const STEPS = ['queued', 'batching', 'submitted', 'confirmed'];
+  const STEPS = ['reserved', 'submitted', 'confirmed'];
 
   let cfg = { status: 'imminent', chainId: 1, explorer: 'https://etherscan.io', contracts: {} };
-  let luvAddr = '0x9b46ad18eb135cA8E90895E97fD79F9f7526041B';
+  let luvAddr = '0x2711111111683B8708cb9a48cBf36a51315F8254';
   let myWallet = null;
   let balTimer = null;
 
@@ -60,11 +73,6 @@
     luvAddr = (cfg.contracts && cfg.contracts.ShambaLuv) || luvAddr;
     $('luvaddr').textContent = luvAddr;
     $('explorelink').href = cfg.explorer + '/address/' + luvAddr;
-
-    document.querySelectorAll('#ledger .a[data-c]').forEach((el) => {
-      const addr = cfg.contracts && cfg.contracts[el.dataset.c];
-      if (addr) { el.textContent = addr; el.classList.remove('pending'); }
-    });
 
     if (live && window.ethereum) {
       for (const id of ['addtoken', 'addtoken2']) {
@@ -95,18 +103,20 @@
     }
   }
 
-  // ── landing live stats (the old LiveStats grid, via the backend) ───────────
+  // ── landing progress counters — shown ONLY once non-zero ───────────────────
+  // While the campaign is at 0 the landing stays clean (circulating supply only); the moment
+  // claims begin, the relevant counters appear. No zero-value clutter.
   async function loadStats() {
-    try {
-      const s = await j('/airdrop/stats');
-      if (typeof s.gesturesDelivered === 'number') $('stat-delivered').textContent = s.gesturesDelivered.toLocaleString('en-US');
-      if (typeof s.gesturesAboard === 'number') $('stat-aboard').textContent = s.gesturesAboard.toLocaleString('en-US');
-      if (typeof s.gesturesRemaining === 'number') $('stat-remaining').textContent = s.gesturesRemaining.toLocaleString('en-US');
-    } catch (e) {
-      $('stat-delivered').textContent = '0';
-      $('stat-aboard').textContent = '0';
-      $('stat-remaining').textContent = '1,000';
-    }
+    let s;
+    try { s = await j('/airdrop/stats'); } catch (e) { return; }
+    const show = (cardId, valId, n) => {
+      if (typeof n === 'number' && n > 0) {
+        const v = $(valId); if (v) v.textContent = n.toLocaleString('en-US');
+        const c = $(cardId); if (c) c.hidden = false;
+      }
+    };
+    show('card-delivered', 'stat-delivered', s.gesturesDelivered);
+    show('card-aboard', 'stat-aboard', s.gesturesAboard);
   }
 
   // ── login modal ────────────────────────────────────────────────────────────
@@ -196,32 +206,31 @@
       }
       return;
     }
-    const state = (s.claim && s.claim.status) || (s.claimed ? 'confirmed' : 'queued');
-    // Eligibility banner + claim-now: shown until the gesture is on-chain.
-    const eligible = state === 'queued' || state === 'batching' || state === 'failed';
-    for (const id of ['congrats', 'congratssub']) { const el = $(id); if (el) el.hidden = !eligible && state !== 'submitted'; }
-    const cn = $('claimnow');
-    if (cn) cn.hidden = !eligible;
-    // ETH self-claim: only once the airdrop contract is live and a wallet is injected.
+    const raw = (s.claim && s.claim.status) || (s.claimed ? 'confirmed' : 'reserved');
+    const delivered = raw === 'confirmed';
+    const inFlight = raw === 'submitted';
+    // Claimable = reserved and waiting (pending/queued/failed/reserved) — the gesture is yours to
+    // claim whenever you like; it never expires.
+    const claimable = !delivered && !inFlight;
+    // Banner shows until delivered; the claim panel shows while claimable + contract live + wallet.
+    for (const id of ['congrats', 'congratssub']) { const el = $(id); if (el) el.hidden = delivered; }
     const er = $('ethclaimrow');
-    if (er) er.hidden = !(eligible && cfg.status === 'live' && cfg.contracts && cfg.contracts.ShambaLuvAirdrop && window.ethereum);
-    const at = Math.max(0, STEPS.indexOf(state));
+    if (er) er.hidden = !(claimable && cfg.status === 'live' && cfg.contracts && cfg.contracts.ShambaLuvAirdrop && window.ethereum);
+    const step = delivered ? 'confirmed' : inFlight ? 'submitted' : 'reserved';
+    const at = Math.max(0, STEPS.indexOf(step));
     document.querySelectorAll('#timeline .step').forEach((el) => {
       const i = STEPS.indexOf(el.dataset.step);
-      el.className = 'step' + (i < at ? ' done' : i === at ? (state === 'confirmed' ? ' done' : ' now') : '');
+      el.className = 'step' + (i < at ? ' done' : i === at ? (delivered ? ' done' : ' now') : '');
     });
     const line = $('statusline');
-    if (state === 'confirmed') {
+    if (delivered) {
       line.innerHTML = '❤ Delivered — <b>1,000,000,000,000 LUV</b> is yours. Hold it and watch it grow.';
-    } else if (state === 'submitted') {
-      line.textContent = 'The luvbus is on-chain — your trillion arrives with the next confirmation.';
-    } else if (state === 'failed') {
-      line.textContent = 'The last delivery attempt failed — it retries automatically; check back soon.';
-    } else if (s.queue && typeof s.queue.depth === 'number') {
-      line.textContent = s.queue.depth + ' rider' + (s.queue.depth === 1 ? '' : 's') +
-        ' waiting for the next luvbus — one transaction delivers everyone’s gesture at once.';
+    } else if (inFlight) {
+      line.textContent = 'Your claim is on-chain — your trillion arrives with the next confirmation.';
+    } else if (raw === 'failed') {
+      line.textContent = 'That attempt didn’t go through — no harm done; claim again whenever you’re ready.';
     } else {
-      line.textContent = 'You’re aboard the next luvbus.';
+      line.textContent = 'Your 1 trillion LUV is reserved and waiting — claim it whenever you like. No rush.';
     }
 
     const bal = fmtLuv(s.luvBalance);
@@ -233,6 +242,18 @@
 
   async function refreshStatus() {
     try { renderStatus(await j('/airdrop/status')); } catch (e) { /* keep last */ }
+  }
+
+  // After a claim tx, poll status until it confirms on-chain (the backend reconciles via
+  // usedNonce/hasClaimed) — so the dashboard flips to "delivered" without a manual refresh.
+  async function pollConfirm(tries, ms) {
+    for (let i = 0; i < tries; i++) {
+      await new Promise((r) => setTimeout(r, ms));
+      let s;
+      try { s = await j('/airdrop/status'); } catch (e) { continue; }
+      renderStatus(s);
+      if (s && s.claim && s.claim.status === 'confirmed') return;
+    }
   }
 
   // ── the tasks widget (IncentiveDistributor actions) ────────────────────────
@@ -400,33 +421,42 @@
   on('refreshbal', 'click', refreshStatus);
   on('ethclaim', 'click', async () => {
     const msg = $('ethclaimmsg');
+    const btn = $('ethclaim');
     try {
       const [from] = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      msg.textContent = 'fetching your signed voucher…';
-      const v = await j('/airdrop/voucher', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      // Optional custom receive address — defaults to your created wallet if blank/invalid input.
+      const ri = $('recipientinput');
+      const wanted = ri && ri.value ? ri.value.trim() : '';
+      if (wanted && !/^0x[0-9a-fA-F]{40}$/.test(wanted)) {
+        msg.textContent = 'that receive address doesn’t look right — check it, or leave it blank to use your wallet.';
+        return;
+      }
+      btn.disabled = true;
+      // Must claim on Ethereum mainnet — switch the wallet if it's on another network.
+      if (!(await ensureChain())) {
+        msg.textContent = 'switch your wallet to Ethereum mainnet to claim (your gesture stays reserved).';
+        btn.disabled = false; return;
+      }
+      msg.textContent = 'preparing your signed voucher…';
+      const v = await j('/airdrop/voucher', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(wanted ? { recipient: wanted } : {}),
+      });
       msg.textContent = 'confirm the claim in your wallet (you pay the gas)…';
       const txHash = await window.ethereum.request({
         method: 'eth_sendTransaction',
         params: [{ from, to: v.to, data: v.data }],
       });
-      msg.textContent = 'claim submitted — ' + txHash.slice(0, 10) + '… · your LUV arrives with the next confirmation';
-      setTimeout(refreshStatus, 15000);
+      msg.textContent = 'claim submitted — ' + txHash.slice(0, 10) + '… · your 1 trillion LUV arrives to ' +
+        (v.recipient ? v.recipient.slice(0, 8) + '…' + v.recipient.slice(-4) : 'your wallet') + ' with the next confirmation ❤';
+      pollConfirm(8, 8000); // ~1 min of polling; flips the timeline to "delivered" on confirmation
     } catch (e) {
       msg.textContent = String(e && e.code) === '4001'
-        ? 'transaction declined — you can also just wait for the luvbus'
-        : 'that didn’t go through — the luvbus will still deliver your LUV';
+        ? 'claim declined — no rush, your gesture stays reserved. Claim whenever you like.'
+        : 'that didn’t go through — your gesture is still reserved; try again anytime.';
       refreshStatus();
-    }
-  });
-  on('claimnow', 'click', async () => {
-    const cn = $('claimnow');
-    cn.disabled = true;
-    const was = cn.textContent;
-    cn.textContent = '⏳ Processing…';
-    try { await j('/airdrop/trigger', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }); } catch (e) { /* status shows the truth */ }
-    await refreshStatus();
-    cn.textContent = was;
-    cn.disabled = false;
+    } finally { btn.disabled = false; }
   });
   on('logout', 'click', async () => {
     try { await j('/auth/logout', { method: 'POST' }); } catch (e) { /* cookie cleared anyway */ }

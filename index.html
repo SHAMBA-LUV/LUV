@@ -74,15 +74,34 @@ body.authed .ctc{display:none}
   background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
 .hero .phase{margin-top:8px;font-size:clamp(16px,2.4vw,22px);color:var(--blush)}
 .hero .connect{margin-top:6px;font-family:var(--mono);font-size:14px;letter-spacing:.12em;color:var(--dim)}
-.collect{margin-top:22px;font-size:15px;letter-spacing:.16em;padding:15px 44px;min-height:48px;border-radius:999px;border:0;
-  background:linear-gradient(100deg,var(--pink),var(--purple));color:#fff;font-weight:700}
-.collect:hover{filter:brightness(1.12)}
+.collect{margin-top:8px;font-size:16px;letter-spacing:.14em;padding:17px 46px;min-height:52px;border-radius:999px;border:0;
+  background:linear-gradient(100deg,var(--pink),var(--purple));color:#fff;font-weight:800;
+  box-shadow:0 12px 34px -10px rgba(255,0,110,.55);animation:pulseglow 2.6s ease-in-out infinite}
+.collect:hover{filter:brightness(1.12);transform:translateY(-1px)}
+@keyframes pulseglow{0%,100%{box-shadow:0 12px 34px -10px rgba(255,0,110,.45)}50%{box-shadow:0 14px 40px -8px rgba(131,56,236,.6)}}
+
+/* ── the claim callout: the 1-trillion gesture, front and centre ── */
+.claimhero{margin-top:22px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.claimhero .tag{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);
+  border:1px solid rgba(227,178,95,.55);border-radius:999px;padding:5px 14px}
+.claimhero .amt{font-family:var(--mono);font-weight:800;font-size:clamp(28px,6.5vw,56px);line-height:1;letter-spacing:-.01em;
+  background:linear-gradient(100deg,var(--pink),var(--purple),var(--rose));-webkit-background-clip:text;background-clip:text;color:transparent}
+.claimhero .amt span{font-size:.42em;color:var(--blush);-webkit-text-fill-color:var(--blush);letter-spacing:.12em;vertical-align:middle}
+.claimhero .cap{font-size:13.5px;color:var(--dim);max-width:46ch}
+.claimhero .cap b{color:var(--blush)}
 
 /* ── live stats (the old LiveStats grid, self-hosted) ── */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-top:34px}
-.stat{border:1px solid var(--seam);border-radius:12px;background:var(--wine);padding:18px 20px}
-.stat .v{font-family:var(--mono);font-size:clamp(18px,2.4vw,24px);font-weight:700;color:var(--blush);overflow-wrap:break-word}
-.stat .k{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-top:6px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:34px}
+.stat{position:relative;overflow:hidden;border:1px solid var(--seam);border-radius:14px;
+  background:linear-gradient(160deg,var(--wine),rgba(43,17,28,.5));padding:22px 22px 20px;
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.stat::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,var(--rose),var(--blush))}
+.stat.gold::before{background:linear-gradient(90deg,var(--gold),#ffe0a3)}
+.stat:hover{transform:translateY(-3px);border-color:var(--rose);box-shadow:0 12px 32px -14px rgba(255,120,150,.4)}
+.stat .icon{display:block;font-size:20px;line-height:1;margin-bottom:11px}
+.stat .v{font-family:var(--mono);font-size:clamp(20px,2.6vw,27px);font-weight:700;color:var(--blush);overflow-wrap:break-word;letter-spacing:-.01em}
+.stat .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--cream);margin-top:8px}
+.stat .sub{font-size:11.5px;color:var(--dim);margin-top:3px}
 .stat.gold .v{color:var(--gold)}
 
 /* ── status strip ── */
@@ -270,17 +289,18 @@ footer .spacer{flex:1}
     </div>
     <div class="panel" style="margin-top:16px">
       <div class="k">your 1-trillion-LUV gesture</div>
-      <div class="congrats" id="congrats" hidden>🎉 CONGRATULATIONS — you are eligible for <b>1,000,000,000,000 LUV</b></div>
-      <div class="congratssub" id="congratssub" hidden>claim now — or wait for any participant to claim and your LUV will be automatically delivered</div>
-      <button class="claimnow" id="claimnow" type="button" hidden>🎁 Claim 1,000,000,000,000 LUV 🎁</button>
-      <div class="ethclaimrow" id="ethclaimrow" hidden>
-        <button class="btn" id="ethclaim" type="button">⚡ claim yourself with ETH — your wallet submits &amp; pays gas</button>
-        <span class="taskmsg" id="ethclaimmsg"></span>
+      <div class="congrats" id="congrats" hidden>🎉 CONGRATULATIONS — <b>1,000,000,000,000 LUV</b> is reserved in your name</div>
+      <div class="congratssub" id="congratssub" hidden>It's recorded and waiting — <b>claim it whenever you like</b>. No rush: you can wait until LUV is worth the gas to you. Your gesture won't expire.</div>
+      <div class="ethclaimrow" id="ethclaimrow" hidden style="flex-direction:column;align-items:stretch;gap:8px">
+        <label style="font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)">receive address <span style="text-transform:none;letter-spacing:0">(optional — defaults to your LUV wallet)</span></label>
+        <input id="recipientinput" type="text" placeholder="0x… — leave blank to use your created wallet" spellcheck="false" autocomplete="off"
+          style="font-family:var(--mono);font-size:13px;padding:11px 13px;border-radius:8px;border:1px solid var(--seam);background:var(--ink);color:var(--cream)">
+        <button class="claimnow" id="ethclaim" type="button">🎁 Claim my 1,000,000,000,000 LUV 🎁</button>
+        <span class="taskmsg" id="ethclaimmsg">you submit the claim from your own wallet &amp; pay the gas — whenever you're ready</span>
       </div>
       <div class="timeline" id="timeline">
-        <div class="step" data-step="queued"><div class="t">queued</div><div class="d">You're on the list for the next luvbus.</div></div>
-        <div class="step" data-step="batching"><div class="t">boarding</div><div class="d">Your gesture is in the batch being assembled.</div></div>
-        <div class="step" data-step="submitted"><div class="t">on-chain</div><div class="d">The bus is on-chain, awaiting confirmation.</div></div>
+        <div class="step" data-step="reserved"><div class="t">reserved</div><div class="d">Your trillion is recorded and waiting for you.</div></div>
+        <div class="step" data-step="submitted"><div class="t">claiming</div><div class="d">Your claim is on-chain, awaiting confirmation.</div></div>
         <div class="step" data-step="confirmed"><div class="t">delivered</div><div class="d">1 trillion LUV is in your wallet.</div></div>
       </div>
       <div class="statusline" id="statusline">checking your gesture…</div>
@@ -302,17 +322,21 @@ footer .spacer{flex:1}
     <img class="logo" src="gfx/heart-512.png" alt="SHAMBA LUV" width="512" height="512">
     <h1>SHAMBA LUV</h1>
     <div class="phase">✨ Phase 1 LUV is priceless ✨</div>
-    <div class="connect">connect to collect 💰</div>
-    <button class="collect" id="collectbtn" type="button">CONNECT to COLLECT ❤</button>
+    <div class="claimhero">
+      <span class="tag">🎁 free airdrop · one per person</span>
+      <div class="amt">1,000,000,000,000 <span>LUV</span></div>
+      <div class="cap">claim your trillion — <b>0% fee, the full amount is yours</b>. Sign in with Google or GitHub and it's delivered to your wallet.</div>
+    </div>
+    <button class="collect" id="collectbtn" type="button">🎁 CLAIM 1,000,000,000,000 LUV ❤</button>
+    <div class="connect" style="margin-top:10px">connect to collect 💰</div>
   </div>
 
   <div class="landing-only">
     <div class="stats" id="stats">
-      <div class="stat gold"><div class="v">100 Quadrillion</div><div class="k">circulating supply · paired with ETH</div></div>
-      <div class="stat"><div class="v">111 Quadrillion</div><div class="k">total supply · fixed</div></div>
-      <div class="stat"><div class="v" id="stat-delivered">—</div><div class="k">airdrops claimed</div></div>
-      <div class="stat"><div class="v" id="stat-aboard">—</div><div class="k">aboard the luvbus</div></div>
-      <div class="stat"><div class="v" id="stat-remaining">—</div><div class="k">available</div></div>
+      <div class="stat gold"><span class="icon">💧</span><div class="v">100 Quadrillion</div><div class="k">circulating supply</div><div class="sub">paired with ETH liquidity</div></div>
+      <!-- Progress counters: HIDDEN while zero; auto-appear once claims begin (loadStats). -->
+      <div class="stat" id="card-delivered" hidden><span class="icon">🎁</span><div class="v" id="stat-delivered">—</div><div class="k">airdrops claimed</div><div class="sub">gestures delivered</div></div>
+      <div class="stat" id="card-aboard" hidden><span class="icon">⏳</span><div class="v" id="stat-aboard">—</div><div class="k">reserved &amp; waiting</div><div class="sub">not yet claimed</div></div>
     </div>
   </div>
 
@@ -320,8 +344,11 @@ footer .spacer{flex:1}
   <section id="gesture" class="landing-only">
     <div class="gesture">
       <div class="sechead" style="margin-bottom:10px">🎁 free airdrop available 🎁</div>
-      <h2>create your LUV wallet now — receive <b>1 trillion LUV</b> instantly</h2>
-      <p>Sign in once with a social account — your smart wallet is created for you and the treasury sends the full trillion straight to it.</p>
+      <h2>create your LUV wallet now — receive <b>1 trillion LUV</b></h2>
+      <p>Sign in once with <b>Google or GitHub</b> — a social identity is the fair-share pass to the
+      gesture (one person, one wallet, one trillion — so the pool reaches real people, not wallet farms).
+      A smart wallet is created for you (no seed phrase), and your trillion boards the LUVbus. Claim it
+      yourself, or ride free the moment anyone drives the bus. <b>0% fee — the full trillion arrives.</b></p>
       <div class="gesturebtns" id="providers">
         <button type="button" data-open-login>Sign in to collect ❤</button>
       </div>
@@ -355,29 +382,61 @@ footer .spacer{flex:1}
 
   <div class="landing-only">
     <div class="strip" id="strip">
-      <span class="badge imminent" id="statebadge">launch imminent</span>
-      <span class="addr" id="luvaddr">0x9b46ad18eb135cA8E90895E97fD79F9f7526041B</span>
+      <span class="badge live" id="statebadge">live on ethereum</span>
+      <span class="addr" id="luvaddr">0x2711111111683B8708cb9a48cBf36a51315F8254</span>
       <button class="btn" id="copyaddr" type="button">copy</button>
-      <a class="btn" id="explorelink" href="https://etherscan.io/address/0x9b46ad18eb135cA8E90895E97fD79F9f7526041B" rel="noopener">etherscan</a>
+      <a class="btn" id="explorelink" href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254" rel="noopener">etherscan</a>
       <button class="btn" id="addtoken" type="button" hidden>add LUV to wallet</button>
       <span class="note">Ethereum first — and this address is deterministic: LUV lives here on <em>every</em> chain it opens on.</span>
     </div>
   </div>
 
-  <!-- Contracts ledger -->
+  <!-- Contract ledger lives in the FAQ (every address, verifiable) -->
+  <section class="landing-only" style="text-align:center">
+    <div class="sechead gold">in-house contracts — all open, all verifiable</div>
+    <p style="color:var(--dim);max-width:60ch;margin:0 auto 16px">The full ledger — token, launcher, airdrop,
+    distributor, locker, and the ERC-4337 wallet stack — with every mainnet address and an explorer link,
+    lives in the FAQ.</p>
+    <a class="btn" href="faq.html#contracts">📜 see the full contract ledger →</a>
+  </section>
+
+  <!-- The roadmap — from priceless to multi-billion (emotonomics) -->
   <section class="landing-only">
-    <div class="sechead gold">the ledger — in-house contracts</div>
-    <div class="ledger" id="ledger">
-      <div class="lrow"><span class="role">SHAMBA LUV (token)<small>ERC-20 · 18 decimals · symbol LUV</small></span><span class="a" data-c="ShambaLuv">0x9b46ad18eb135cA8E90895E97fD79F9f7526041B</span><span class="tag">deterministic</span></div>
-      <div class="lrow"><span class="role">LuvLauncher<small>one-shot genesis — deploys the token, hands everything to the treasury</small></span><span class="a" data-c="LuvLauncher">0x9FbCA6C5034099e7bF93D751C817186f4810B059</span><span class="tag">deterministic</span></div>
-      <div class="lrow"><span class="role">Create3d<small>the multichain rail — same address, every chain</small></span><span class="a" data-c="Create3d">0xa5A2581d564248801cc5e06DbB764c99c170320A</span><span class="tag">rail</span></div>
-      <div class="lrow"><span class="role">LuvAccountFactory<small>your smart wallet — in-house ERC-4337, counterfactual, upgradeable</small></span><span class="a pending" data-c="LuvAccountFactory">at launch</span><span class="tag">wallets</span></div>
-      <div class="lrow"><span class="role">LuvPaymaster<small>gas sponsorship — the platform pays, you don't</small></span><span class="a pending" data-c="LuvPaymaster">at launch</span><span class="tag">wallets</span></div>
-      <div class="lrow"><span class="role">LuvBatchGesture<small>the luvbus — one transaction delivers the gesture to a whole batch</small></span><span class="a pending" data-c="LuvBatchGesture">at launch</span><span class="tag">platform</span></div>
-      <div class="lrow"><span class="role">ShambaLuvAirdrop<small>signature-gated self-serve claim</small></span><span class="a pending" data-c="ShambaLuvAirdrop">at launch</span><span class="tag">platform</span></div>
-      <div class="lrow"><span class="role">IncentiveDistributor<small>action rewards — welcome, post, interaction (owner-editable live)</small></span><span class="a pending" data-c="IncentiveDistributor">at launch</span><span class="tag">platform</span></div>
-      <div class="lrow"><span class="role">LUVLocker<small>lock principal, harvest reflections</small></span><span class="a pending" data-c="LUVLocker">at launch</span><span class="tag">platform</span></div>
+    <div class="sechead gold">the roadmap — from priceless to multi-billion</div>
+    <div class="roadmap" style="display:grid;gap:12px;margin-top:6px">
+      <div class="rmp" style="border-left:3px solid var(--gold);padding:12px 16px;background:rgba(0,0,0,.15);border-radius:8px">
+        <b>Phase 1 — LUV is Priceless.</b> The gesture is born: a fixed 111-quadrillion supply, fee-free
+        wallet-to-wallet, and a free <b>1-trillion-LUV</b> airdrop to everyone who arrives. Abundance over
+        scarcity — LUV enters the world priceless, in as many hands as will hold it.
+      </div>
+      <div class="rmp" style="border-left:3px solid var(--gold);padding:12px 16px;background:rgba(0,0,0,.15);border-radius:8px">
+        <b>Phase 2 — The Value of LUV.</b> Connection earns a price: <b>100 quadrillion LUV paired with
+        ETH</b> as liquidity, opening the LUV/ETH market. The gesture meets the market — tradable,
+        discoverable, real — and every trade feeds the 3% reflections that reward holding.
+      </div>
+      <div class="rmp" style="border-left:3px solid var(--gold);padding:12px 16px;background:rgba(0,0,0,.15);border-radius:8px">
+        <b>Phase 3 — Sharing is Caring.</b> Attention becomes capital: <b>earn LUV through the
+        IncentiveDistributor</b> for welcoming, posting, and interacting — each gesture rewarded on-chain.
+        Gestures are currency; impact is profit; wealth is engagement velocity, not idle balances.
+      </div>
+      <div class="rmp" style="border-left:3px solid var(--gold);padding:12px 16px;background:rgba(0,0,0,.15);border-radius:8px">
+        <b>Phase 4 — LUV Goes Global.</b> <b>Integration with existing social media channels</b> — a like,
+        a post, a share becomes a verifiable on-chain gesture that earns LUV. The emotional economy scales
+        to where attention already lives.
+      </div>
+      <div class="rmp" style="border-left:3px solid var(--gold);padding:12px 16px;background:rgba(0,0,0,.15);border-radius:8px">
+        <b>Phase 5 — LUV Immersive.</b> <b>Integration with DeltaVerse immersive technology</b> — spatial,
+        3D worlds where a gesture is something you make, not just click. LUV becomes the social currency of
+        presence itself.
+      </div>
+      <div class="rmp" style="border-left:3px solid var(--blush);padding:14px 16px;background:var(--wine);border-radius:8px">
+        <b>The horizon — a multi-billion-dollar valuation.</b> Each phase widens the circle, deepens
+        liquidity, and raises engagement velocity — and value follows <b>connection, not scarcity</b>. As
+        gestures multiply from thousands to millions to the mainstream, LUV's network value scales with the
+        emotional economy it creates. The future of value is not scarcity — it is <b>connection</b>. ❤
+      </div>
     </div>
+    <div style="text-align:center;margin-top:14px"><a class="btn" href="faq.html#roadmap">read the full roadmap in the FAQ 💬</a></div>
   </section>
 
 </main>
@@ -407,6 +466,6 @@ footer .spacer{flex:1}
 </footer>
 
 <!-- ?v= busts the immutable .js cache — bump it whenever luv.app.js changes -->
-<script src="luv.app.js?v=5"></script>
+<script src="luv.app.js?v=11"></script>
 </body>
 </html>

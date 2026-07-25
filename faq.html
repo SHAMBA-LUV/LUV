@@ -105,7 +105,10 @@ footer .spacer{flex:1}
     <b>reflection source</b>: every trade through the pool feeds the reflections that all holders earn.</p>
     <p>The remaining <b class="g">11.1 quadrillion</b> is the <b>team / founder startup
     allocation</b>, split <b>evenly four ways</b> — exactly:</p>
-    <p><b>Founders</b> — 2.777 quadrillion (2,777,777,777,777,777.777… LUV) · liquid<br>
+    <p><b>Founders</b> — 2.777 quadrillion — <b class="g">sold to raise the launch liquidity, with 100%
+    of the proceeds going straight into the 100-quadrillion circulating pool</b> (the ETH paired against
+    LUV). The founders took <b>nothing off the table</b>: every wei raised became public, permissionless
+    liquidity that the whole community trades against. Skin in the game, all in.<br>
     <b>Treasury</b> — 2.777 quadrillion · liquid (working capital — funds the 1-quadrillion
     free-gesture campaign, 1,000 airdrops of 1 trillion)<br>
     <b>Marketing</b> — 2.777 quadrillion · <b>locked</b> in the LUVlocker<br>
@@ -114,7 +117,8 @@ footer .spacer{flex:1}
     wei ❤</p>
     <p>The supply is <b>fixed</b> — minted once at genesis with no mint function, so the pool plus the
     startup allocation is the entire economy, forever. Wallet-to-wallet transfers never touch the pool
-    and stay 0%.</p></div>
+    and stay 0%. (The front page shows the <b>100-quadrillion circulating supply</b>; the 111-quadrillion
+    total lives here in the FAQ.)</p></div>
   </details>
 
   <details>
@@ -145,48 +149,74 @@ footer .spacer{flex:1}
 
   <details>
     <summary>How do I claim my 1 trillion LUV?</summary>
-    <div class="a"><p>Tap <b>COLLECT</b>, sign in with <b>Google or GitHub</b>, and you're done — your
-    smart wallet is created for you and the treasury sends the <b>full trillion</b> to it. One-time per
-    identity • no fees • no gas • no seed phrase.</p></div>
+    <div class="a"><p>Tap <b>COLLECT</b> and sign in with <b>Google or GitHub</b> — a social identity is
+    your fair-share pass to the gesture (<a href="#why-social">why social sign-in?</a>). A
+    <b>sovereign smart wallet</b> is minted for you (no seed phrase, no extension) and
+    <b>1,000,000,000,000 LUV</b> boards the LUVbus in your name. Then <b>claim it yourself</b> for a little
+    gas — or <b>ride the LUVbus free</b>: the moment any participant drives the bus, everyone waiting is
+    delivered in one transaction. One gesture per identity • <b>0% fee — the full trillion arrives</b>.</p></div>
   </details>
 
   <details>
-    <summary>Why do I need a social account — can't I just connect my wallet?</summary>
-    <div class="a"><p>You can sign in with MetaMask, and the dashboard, balance and earning actions all
-    work on your own wallet. But the free airdrop rides with <b>social sign-ins only</b>: wallets are free
-    to create in unlimited numbers, so a wallet can't be the "one person, one gesture" unit. A social
-    identity is the Sybil gate that keeps the campaign fair — <b>one identity = one wallet = one
-    gesture</b>.</p></div>
+    <summary>Can I claim to my own existing wallet (MetaMask, Ledger, …)?</summary>
+    <div class="a"><p><b>Yes.</b> When you claim, there's an optional <b>receive address</b> field — paste
+    any address you control (MetaMask, a hardware wallet, wherever you keep your LUV) and your trillion is
+    delivered <b>straight there</b>. Leave it blank and it goes to the sovereign smart wallet the dapp
+    created for you. Either way <b>you</b> submit the claim from your own wallet and pay the gas, whenever
+    you like.</p>
+    <p>Your chosen receive address is <b>recorded by the dapp and correlated with your social account</b>
+    — the ledger is <b>social identity → receive address → amount delivered</b>. That link is what keeps
+    the gesture <b>one person → one wallet → one trillion</b>: your allocation is stamped with a single
+    stable claim key, so you can even change the receive address before claiming and it can never pay
+    twice — whichever address you finally point it at is the one and only delivery.</p></div>
+  </details>
+
+  <details id="why-social">
+    <summary>Why is the airdrop social sign-in only — can't I just connect MetaMask?</summary>
+    <div class="a"><p>You <b>can</b> sign in with MetaMask — your dashboard, your balance, the LUVbus, and
+    every <b>earn LUV</b> action all work on your own wallet. But the <b>free 1-trillion airdrop is social
+    sign-in only</b>, and that's a deliberate fairness choice, not a limitation.</p>
+    <p><b>A gesture is meant for a person.</b> Wallet addresses are free and infinite — one laptop can mint
+    ten thousand of them in a minute. If a wallet were the unit of the airdrop, a single farmer could spin
+    up thousands of addresses and drain the whole campaign, and real people would get nothing. That's the
+    <b>Sybil problem</b>, and an on-chain guard can't fix it: <code>hasClaimed</code> only stops one
+    <em>address</em> claiming twice — it can't tell that one person owns a thousand addresses.</p>
+    <p>A <b>social identity</b> (Google/GitHub) is far scarcer to create than a wallet, so it makes a
+    practical <b>one person → one wallet → one gesture</b> unit. It keeps the 1,000-gesture pool reaching
+    <b>1,000 different people</b> — which is the whole point of an emotonomic airdrop: spreading LUV
+    <em>wide</em>, not letting it concentrate. Your social login is used only as that proof of personhood;
+    a fresh sovereign wallet is minted for you and <b>the keys are yours</b>. Connection over
+    accumulation — that's LUV. ❤</p></div>
   </details>
 
   <details>
     <summary>What is the LUVbus? When does my LUV arrive?</summary>
-    <div class="a"><p>The <b>LUVbus</b> (the <code>LuvBatchGesture</code> contract) is how gestures are
-    delivered: signups board the bus, and <b>one on-chain transaction delivers every rider's trillion at
-    once</b>. Your dashboard shows your seat: <b>queued → boarding → on-chain → delivered</b>.</p>
-    <p>The bus departs when it fills (up to 100 riders), on a timer, or the moment <b>any participant
-    presses claim</b> — one claim delivers everyone aboard. Riders never pay anything: the treasury
-    operator pays the bus's gas.</p>
-    <p>Under the hood each seat is still a true <b>wallet-to-wallet hop</b> — treasury → your wallet by
-    allowance — so the token's 0% P2P rule applies and the <b>full 1,000,000,000,000 LUV</b> arrives,
-    no fee taken. The contract keeps an on-chain <b>delivered list</b>, so no wallet can ride twice, and
-    the treasury's allowance to the bus is hard-capped at the campaign pool: <b>1 quadrillion LUV</b>,
-    drawn from the treasury wallet's 2.777-quadrillion allocation.</p></div>
+    <div class="a"><p>The <b>LUVbus</b> is how a whole community of gestures moves at once. When you sign
+    in, the platform signs a <b>claim voucher</b> in your name and you take a seat. Your dashboard shows
+    it: <b>waiting → on-chain → delivered</b>.</p>
+    <p>Two ways to arrive, both fee-free — the <b>full 1,000,000,000,000 LUV</b> always lands:</p>
+    <p><b class="g">Claim yourself</b> — press <b>⚡ claim yourself with ETH</b>; your own wallet submits
+    the claim and pays a little gas. Instant, in your hands.</p>
+    <p><b class="g">Ride the bus free</b> — wait, and the moment <b>any participant drives the bus</b>
+    (the <b>🚌 drive the LUVbus</b> button), one transaction delivers <b>everyone waiting</b> at once —
+    and the driver pays the gas for all of them. Sharing is caring: someone carries the whole bus, and
+    every rider steps off with their trillion.</p>
+    <p>It runs straight from the funded <code>ShambaLuvAirdrop</code> pool, batched permissionlessly
+    through <b>Multicall3</b> — anyone can drive, no special role. On-chain <code>hasClaimed</code> and a
+    one-time nonce make double-delivery impossible, and the pool is hard-capped at
+    <b>1 quadrillion LUV = 1,000 gestures</b>.</p></div>
   </details>
 
   <details>
-    <summary>Why a bus — what does batching actually save?</summary>
-    <div class="a"><p>Every solo airdrop transaction carries fixed overhead (base fee, calldata, nonce)
-    on top of the transfer itself. The bus pays that overhead <b>once per departure</b> instead of once
-    per person. Foundry-measured on the real token: a solo delivery costs ~112k gas, a bus seat
-    ~70k — a <b>~37% saving</b> that plateaus from about 25 riders (sweet spot 50–100 per bus). Across
-    the full 1,000-gesture campaign that's roughly 70M gas instead of 112M — savings the campaign spends
-    on <b>more LUV reaching more people</b>. To be precise: one bus = one transaction for everyone
-    aboard, but its gas grows with each rider — batching amortizes overhead; it isn't
-    "everyone for the price of one".</p>
-    <p>Prefer not to wait for a departure? Use <b>⚡ claim yourself with ETH</b> on your dashboard: you
-    get a signed voucher and your own wallet submits the claim, paying its own gas — you step off the
-    bus, and on-chain checks make double-delivery impossible either way.</p></div>
+    <summary>Who drives the LUVbus — and what does driving cost?</summary>
+    <div class="a"><p><b>Anyone can drive.</b> The claim is caller-agnostic: whoever submits the bus
+    delivers to every rider whose voucher is waiting, paying the gas <b>for all of them</b>. It is an act
+    of giving — the purest gesture there is — free for the riders, carried by the driver.</p>
+    <p>Be honest about the gas, though: a bus is <b>not</b> "everyone for the price of one". Each rider
+    still needs their own on-chain delivery, so a driver pays roughly <b>riders × ~130k gas</b> — you
+    pay <em>for</em> the people you carry. What batching saves is the shared overhead (~15–20% per rider
+    versus each going alone) and one confirmation instead of many. Drive when you want to lift the
+    community; claim yourself when you just want your own. Either way, <b>hold LUV, earn LUV</b>.</p></div>
   </details>
 
   <details>
@@ -318,14 +348,90 @@ footer .spacer{flex:1}
     no accounting bucket claims — <b>never yours</b>.</p></div>
   </details>
 
+  <h2 class="gold" id="roadmap">the roadmap — from priceless to multi-billion</h2>
+
+  <details open>
+    <summary>Where is LUV headed? The five phases.</summary>
+    <div class="a"><p>Value is no longer defined by scarcity alone — it is defined by <b>connection,
+    resonance, and participation</b>. SHAMBA LUV grows that value in five movements. In the 20th century
+    money was scarce and hoarded; in the 21st, memes became abundant and shared. LUV merges them: the
+    first large-scale <b>emotonomic</b> protocol, where gestures, attention, and impact become value
+    on-chain.</p>
+
+    <p><b class="g">Phase 1 — LUV is Priceless.</b> The gesture is born. A fixed 111-quadrillion supply,
+    fee-free wallet-to-wallet, and a free <b>1-trillion-LUV</b> airdrop to everyone who arrives. This is
+    abundance over scarcity — LUV enters the world priceless, in as many hands as will hold it.</p>
+
+    <p><b class="g">Phase 2 — The Value of LUV.</b> Connection earns a price. <b>100 quadrillion LUV is
+    paired with ETH as liquidity</b>, opening the LUV/ETH market on Uniswap. The gesture now meets the
+    market: LUV becomes tradable, discoverable, and real — and every trade feeds the 3% reflections that
+    reward holding.</p>
+
+    <p><b class="g">Phase 3 — Sharing is Caring.</b> Attention becomes capital. Through the
+    <b>IncentiveDistributor</b>, participants <b>earn LUV for gestures</b> — welcoming, posting,
+    interacting — each rewarded on-chain with its own amount, daily limit, and cooldown. Gestures are
+    currency; impact is profit; the community's wealth is measured in <b>engagement velocity</b>, not
+    idle balances.</p>
+
+    <p><b class="g">Phase 4 — LUV Goes Global.</b> The gesture crosses into the world's feeds:
+    <b>integration with existing social media channels</b>, so a like, a post, a share becomes a
+    verifiable on-chain gesture that earns LUV. The emotional economy scales to where the attention
+    already lives — millions of daily gestures, each carrying value.</p>
+
+    <p><b class="g">Phase 5 — LUV Immersive.</b> The economy steps off the screen:
+    <b>integration with DeltaVerse immersive technology</b> — spatial, 3D, and immersive worlds where a
+    gesture is something you <em>make</em>, not just click. LUV becomes the social currency of
+    presence itself.</p>
+
+    <p><b>The horizon — a multi-billion-dollar valuation.</b> Emotonomics compounds: each phase widens
+    the circle of participants, deepens liquidity, and raises engagement velocity — and value follows
+    connection, not scarcity. As gestures multiply from thousands to millions to the mainstream, and
+    reflections keep rewarding every holder, LUV's network value scales with the emotional economy it
+    creates — the path from <b>priceless</b> to a <b>multi-billion-dollar</b> protocol. The future of
+    value is not scarcity — it is <b>connection</b>. ❤</p></div>
+  </details>
+
   <h2 class="gold">trust &amp; the contracts</h2>
 
-  <details>
-    <summary>Where is the LUV contract?</summary>
-    <div class="a"><p>LUV deploys deterministically to
-    <code>0x9b46ad18eb135cA8E90895E97fD79F9f7526041B</code> — <b>the same address on every chain</b> it
-    opens on (Ethereum first). The full contract ledger is on the front page; verify everything against
-    the source.</p></div>
+  <details open>
+    <summary>What is the LUV contract address? (peer review &amp; Uniswap)</summary>
+    <div class="a"><p>The <b>SHAMBA LUV token</b> — the address for <b>peer review, Etherscan
+    verification, importing the token, and adding the LUV/ETH pair on Uniswap</b> — is:</p>
+    <p><code>0x2711111111683B8708cb9a48cBf36a51315F8254</code></p>
+    <p><a href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254" rel="noopener">Etherscan ↗</a>
+    · <a href="https://app.uniswap.org/tokens/ethereum/0x2711111111683B8708cb9a48cBf36a51315F8254" rel="noopener">Uniswap ↗</a>.
+    Always confirm this exact address before you trade — a gesture sent to the wrong contract is not a
+    gesture. It's <b>live on Ethereum</b>, deployed deterministically so LUV can open at the same address
+    on every chain it grows into.</p></div>
+  </details>
+
+  <details open id="contracts">
+    <summary>The full contract ledger — every address, in the open</summary>
+    <div class="a"><p>The whole in-house suite is live on <b>Ethereum mainnet</b> and verifiable. Nothing
+    hidden — read every one against the source.</p>
+    <p><b class="g">Token &amp; genesis</b><br>
+    SHAMBA LUV (token) — <code>0x2711111111683B8708cb9a48cBf36a51315F8254</code>
+    (<a href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254" rel="noopener">↗</a>) · the ERC-20; 111-quadrillion fixed supply, 18 decimals, symbol LUV<br>
+    LuvLauncher — <code>0xBAAc0a44698230661018A9eED48b4e52F14d7523</code>
+    (<a href="https://etherscan.io/address/0xBAAc0a44698230661018A9eED48b4e52F14d7523" rel="noopener">↗</a>) · one-shot genesis; minted the supply and handed everything to the treasury<br>
+    Create3d — <code>0xa5A2581d564248801cc5e06DbB764c99c170320A</code>
+    (<a href="https://etherscan.io/address/0xa5A2581d564248801cc5e06DbB764c99c170320A" rel="noopener">↗</a>) · the multichain rail — same address on every chain</p>
+    <p><b class="g">The gesture &amp; the LUVbus</b><br>
+    ShambaLuvAirdrop — <code>0xdf2C1836550c5711EF9c021cB0de86241dc1DEf3</code>
+    (<a href="https://etherscan.io/address/0xdf2C1836550c5711EF9c021cB0de86241dc1DEf3" rel="noopener">↗</a>) · signature-gated self-serve claim; funded with the 1-quadrillion campaign pool<br>
+    LuvBatchGesture — <code>0xc734e05A6E944D700FdA948fe7B2D0bDF115B4dD</code>
+    (<a href="https://etherscan.io/address/0xc734e05A6E944D700FdA948fe7B2D0bDF115B4dD" rel="noopener">↗</a>) · the treasury-push luvbus (allowance-based batch delivery)<br>
+    IncentiveDistributor — <code>0x607E477AB12406A3294A7Ba63817103f92D8f806</code>
+    (<a href="https://etherscan.io/address/0x607E477AB12406A3294A7Ba63817103f92D8f806" rel="noopener">↗</a>) · earn LUV for gestures — the on-chain rewards engine (Phase 3)<br>
+    LUVLocker — <code>0xe07ACAde4bE2bbc264EA702880ed988EBae9B898</code>
+    (<a href="https://etherscan.io/address/0xe07ACAde4bE2bbc264EA702880ed988EBae9B898" rel="noopener">↗</a>) · lock principal, harvest reflections — diamond-hands vault</p>
+    <p><b class="g">Your sovereign wallet (ERC-4337)</b><br>
+    LuvAccountFactory — <code>0xB8cb4780d79ce0c6DA7700ad46d976376AC21D09</code>
+    (<a href="https://etherscan.io/address/0xB8cb4780d79ce0c6DA7700ad46d976376AC21D09" rel="noopener">↗</a>) · mints your counterfactual smart wallet<br>
+    LuvPaymaster — <code>0xa5Bee1887F145893Fd3698Eb0b4c761d088Ea68A</code>
+    (<a href="https://etherscan.io/address/0xa5Bee1887F145893Fd3698Eb0b4c761d088Ea68A" rel="noopener">↗</a>) · gas sponsorship for your first moves</p>
+    <p>Deployed by the treasury <code>0x10f7Ee226B16bea7f365Dc1eDEF159Fc1957D169</code>. The same ledger,
+    live-verified, is on the front page.</p></div>
   </details>
 
   <details>
