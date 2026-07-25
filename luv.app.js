@@ -233,10 +233,20 @@
       line.textContent = 'Your 1 trillion LUV is reserved and waiting — claim it whenever you like. No rush.';
     }
 
+    // The balance panel reflects the GESTURE STATE — never a bare "0 LUV".
     const bal = fmtLuv(s.luvBalance);
-    if (bal !== null) {
-      $('balance').innerHTML = '';
-      $('balance').append(bal, Object.assign(document.createElement('small'), { textContent: ' LUV' }));
+    const hasLuv = bal !== null && !/^0(\.0*)?$/.test(bal);
+    const balEl = $('balance'); const line = $('balline');
+    const luvSmall = () => Object.assign(document.createElement('small'), { textContent: ' LUV' });
+    if (delivered || hasLuv) {
+      balEl.innerHTML = ''; balEl.append(bal || '0', luvSmall());
+      if (line) line.innerHTML = (delivered ? '<b>claimed ❤</b> · ' : '') + 'hold LUV, earn LUV — reflections accrue automatically';
+    } else if (inFlight) {
+      balEl.textContent = 'claiming…';
+      if (line) line.textContent = 'your claim is on-chain — arriving with the next confirmation';
+    } else {
+      balEl.textContent = 'reserved';
+      if (line) line.innerHTML = '<b>1,000,000,000,000 LUV</b> reserved for you — claim it to receive';
     }
   }
 
