@@ -389,6 +389,9 @@
         $('ownerline').textContent = 'owner key ' + me.ownerAddress + ' — encrypted at rest, migrating to your custody';
       }
     }
+    // Private-key self-custody export exists only for the wallet we created (custodial). MetaMask
+    // brings its own key — nothing to reveal.
+    if (myProvider !== 'metamask') { const pk = $('pkrow'); if (pk) pk.hidden = false; }
     await refreshStatus();
     loadTasks();
     // the old dashboard refreshed the balance every 30s while visible
@@ -462,6 +465,32 @@
     try { await j('/auth/logout', { method: 'POST' }); } catch (e) { /* cookie cleared anyway */ }
     location.reload();
   });
+
+  // ── private key: revealed ONLY while the button is pressed and held ──────────
+  // Fetch on hold, show while held, mask the instant it's released / the tab loses focus.
+  // The key is never rendered unless actively held, and never persisted.
+  (function wirePkReveal() {
+    const btn = $('revealpk'); const field = $('pkfield');
+    if (!btn || !field) return;
+    const MASK = '•••• hidden — press & hold to reveal ••••';
+    let holding = false; let reqId = 0;
+    async function reveal(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      holding = true; btn.classList.add('holding');
+      const myReq = ++reqId;
+      field.textContent = 'unlocking…';
+      let pk;
+      try {
+        pk = (await j('/auth/wallet/export', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })).privateKey;
+      } catch (err) { if (holding && myReq === reqId) field.textContent = 'could not unlock — release and try again'; return; }
+      if (holding && myReq === reqId) { field.textContent = pk; field.classList.add('shown'); }
+    }
+    function hide() { holding = false; reqId++; field.textContent = MASK; field.classList.remove('shown'); btn.classList.remove('holding'); }
+    btn.addEventListener('pointerdown', reveal);
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => btn.addEventListener(ev, hide));
+    window.addEventListener('blur', hide);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) hide(); });
+  })();
 
   // OAuth failure bounce (FRONTEND_FAILURE_URL = /?error=auth): reopen the modal so the
   // user can retry immediately.

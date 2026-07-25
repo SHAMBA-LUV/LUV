@@ -164,6 +164,23 @@ section{padding:52px 0 0}
 .panel .row{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
 .aatag{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold);border-radius:999px;padding:3px 10px}
 .ownerline{margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--dim);word-break:break-all}
+/* ── public address: highlighted profoundly after login ── */
+.pubkey-label{display:block;margin-top:10px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+.walletaddr.pub{margin-top:8px;font-size:clamp(13px,2vw,16px);font-weight:700;color:var(--cream);
+  background:linear-gradient(160deg,rgba(255,209,102,.12),rgba(255,77,109,.08));
+  border:2px solid var(--gold);border-radius:12px;padding:14px 16px;
+  box-shadow:0 0 0 4px rgba(227,178,95,.12), 0 14px 34px -16px rgba(227,178,95,.5)}
+/* ── private key: hidden; revealed only while the button is held ── */
+.pkrow{margin-top:18px;border-top:1px dashed var(--seam);padding-top:16px}
+.pkfield{margin-top:8px;font-family:var(--mono);font-size:13px;word-break:break-all;color:var(--dim);
+  background:var(--ink);border:1px solid var(--seam);border-radius:10px;padding:12px 14px;min-height:44px;user-select:none}
+.pkfield.shown{color:var(--rose);border-color:var(--rose);user-select:text}
+.pkhold{margin-top:10px;width:100%;padding:12px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;
+  background:none;border:2px dashed var(--rose);border-radius:10px;color:var(--rose);touch-action:none}
+.pkhold:hover{background:rgba(255,77,109,.08)}
+.pkhold.holding{background:var(--rose);color:var(--ink);border-style:solid}
+.pkwarn{margin-top:10px;font-size:11.5px;color:var(--dim);line-height:1.6}
+.pkwarn b{color:var(--rose)}
 .balance{font-family:var(--mono);font-weight:700;font-size:clamp(26px,4vw,40px);color:var(--cream);margin-top:8px;overflow-wrap:break-word}
 .balance small{font-size:.45em;color:var(--rose);white-space:nowrap}
 .balline{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:6px}
@@ -274,13 +291,21 @@ footer .spacer{flex:1}
     <div class="dashgrid">
       <div class="panel">
         <div class="k">your wallet</div>
-        <div class="walletaddr" id="youwallet">provisioning…</div>
+        <span class="pubkey-label">🔑 your public address — share this to receive LUV</span>
+        <div class="walletaddr pub" id="youwallet">provisioning…</div>
         <div class="row">
-          <button class="btn" id="copywallet" type="button">copy</button>
+          <button class="btn" id="copywallet" type="button">copy address</button>
           <a class="btn" id="walletexplorer" href="#" rel="noopener">etherscan</a>
         </div>
         <div class="aatag" id="aatag" hidden>ERC-4337 smart account · created for you</div>
         <div class="ownerline" id="ownerline" hidden></div>
+        <!-- private key: hidden by default; revealed ONLY while the button is pressed and held -->
+        <div class="pkrow" id="pkrow" hidden>
+          <div class="k">private key — self-custody</div>
+          <div class="pkfield" id="pkfield">•••• hidden — press &amp; hold to reveal ••••</div>
+          <button class="pkhold" id="revealpk" type="button">🔒 press &amp; hold to reveal private key</button>
+          <div class="pkwarn"><b>Never share this.</b> Anyone with your private key controls your wallet and your LUV. It appears only while you hold the button and is never stored. Save it somewhere safe to take full custody.</div>
+        </div>
       </div>
       <div class="panel">
         <div class="k">balance</div>
@@ -467,6 +492,6 @@ footer .spacer{flex:1}
 </footer>
 
 <!-- ?v= busts the immutable .js cache — bump it whenever luv.app.js changes -->
-<script src="luv.app.js?v=11"></script>
+<script src="luv.app.js?v=12"></script>
 </body>
 </html>

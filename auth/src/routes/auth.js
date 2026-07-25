@@ -166,4 +166,23 @@ router.post('/logout', (req, res) => {
   res.json({ ok: true });
 });
 
+// ── Export the sovereign wallet's private key (self-custody) ──────────────────────────────────
+// Session-gated: only the signed-in identity can export ITS OWN custodial key. MetaMask identities
+// bring their own key (nothing to export). The frontend reveals this only on press-and-hold and
+// never persists it. This is the "take custody" escape hatch for the wallet we created for you.
+router.post('/wallet/export', requireAuth, async (req, res) => {
+  const { identityKey, provider } = req.identity;
+  if (provider === 'metamask') return res.status(400).json({ error: 'external_wallet' });
+  try {
+    const { getUserSigner } = require('../wallet/provision');
+    const w = await getUserSigner(identityKey);
+    res.set('Cache-Control', 'no-store');
+    res.json({ address: w.address, privateKey: w.privateKey });
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('[auth] wallet export failed:', e.message);
+    res.status(500).json({ error: 'export_failed' });
+  }
+});
+
 module.exports = router;
