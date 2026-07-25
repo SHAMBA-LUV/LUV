@@ -180,7 +180,7 @@ router.post('/trigger', requireAuth, handleValidation, async (req, res) => {
 // submits and pays gas; LUV goes to the identity's wallet either way. Taking a voucher
 // steps the rider OFF the luvbus (status 'pending'); an expired unclaimed voucher re-boards
 // via /trigger. On-chain usedNonce+hasClaimed and the UNIQUE identity row prevent doubles.
-const { buildSignedVoucher, AIRDROP_ABI, ensurePendingVoucher } = require('../airdrop/voucher');
+const { buildSignedVoucher, AIRDROP_ABI, ensurePendingVoucher, sponsoredClaim } = require('../airdrop/voucher');
 const ZERO = '0x0000000000000000000000000000000000000000';
 
 // The LUVbus: canonical Multicall3 (same address on every chain). Anyone can "drive" — submit
@@ -241,6 +241,48 @@ router.post('/voucher', requireAuth, async (req, res) => {
   });
 });
 
+// ── Sponsored (gasless) claim: the relayer pays the gas, the user pays nothing ────────────────
+// Guardrails: only if sponsorship is ON, gas ≤ ceiling (SPONSOR_MAX_GWEI), and the relayer holds
+// enough ETH. Any guard failing returns 503 with a reason so the frontend falls back to self-serve.
+router.post('/claim-sponsored', requireAuth, async (req, res) => {
+  if (!config.airdropContractAddress || config.airdropContractAddress === ZERO) return res.status(404).json({ error: 'campaign_not_live' });
+  if (!config.sponsorClaims || !config.relayerPrivateKey) return res.status(503).json({ error: 'sponsor_off' });
+  const { identityKey } = req.identity;
+  try {
+    const fee = await provider().getFeeData();
+    const gp = fee.maxFeePerGas || fee.gasPrice || 0n;
+    const gwei = Number(gp) / 1e9;
+    if (gwei > config.sponsorMaxGwei) {
+      return res.status(503).json({ error: 'gas_too_high', gwei: Math.round(gwei * 1000) / 1000, ceiling: config.sponsorMaxGwei });
+    }
+    const relayer = new ethers.Wallet(config.relayerPrivateKey, provider());
+    const bal = await provider().getBalance(relayer.address);
+    if (bal < gp * 250000n) return res.status(503).json({ error: 'relayer_empty' });
+
+    // Optional custom receive address (else the wallet on file / connected metamask address).
+    let recipient = null;
+    const wanted = req.body && req.body.recipient;
+    if (wanted && String(wanted).trim() !== '') {
+      try { recipient = ethers.getAddress(String(wanted).trim()); } catch (e) { return res.status(400).json({ error: 'invalid_recipient' }); }
+    }
+    if (!recipient) {
+      const w = await db.query('SELECT address, smart_account FROM wallets WHERE identity_key=$1', [identityKey]);
+      const cr = await db.query('SELECT wallet_address FROM airdrop_claims WHERE identity_key=$1', [identityKey]);
+      recipient = (w.rows[0] && (w.rows[0].smart_account || w.rows[0].address))
+        || (req.identity.provider === 'metamask' ? ethers.getAddress(identityKey.split(':')[1]) : null)
+        || (cr.rows[0] && cr.rows[0].wallet_address) || null;
+    }
+    if (!recipient) return res.status(400).json({ error: 'no_wallet' });
+
+    const result = await sponsoredClaim(identityKey, recipient);
+    res.json(result);
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('[airdrop] sponsored claim error:', e.message);
+    res.status(500).json({ error: 'sponsor_failed' });
+  }
+});
+
 // ── Gas price for a claim (so the UI can show the ETH cost up front) ──────────────────────────
 // PUBLIC. Returns the live gas price + a representative claim() gas + the fee in ETH, and ETH/USD
 // read from the Chainlink mainnet feed (CSP-safe: browser → this backend → chain, no external API).
@@ -265,12 +307,31 @@ router.get('/gas', async (req, res) => {
     } catch (e) { /* feed unreachable — ETH-only estimate */ }
     const feeWei = gasPrice * CLAIM_GAS;
     const feeEth = ethers.formatEther(feeWei);
+    // Gas tank: the relayer's ETH + how many claims it can sponsor at the current fee.
+    let relayerAddress = null; let relayerEth = null; let sponsorsLeft = null;
+    if (config.relayerPrivateKey) {
+      try {
+        relayerAddress = new ethers.Wallet(config.relayerPrivateKey).address;
+        const bal = await provider().getBalance(relayerAddress);
+        relayerEth = ethers.formatEther(bal);
+        if (feeWei > 0n) sponsorsLeft = Number(bal / feeWei);
+      } catch (e) { /* relayer unset/unreadable */ }
+    }
+    const gwei = Number(gasPrice) / 1e9;
+    const sponsorActive = !!(config.sponsorClaims && relayerEth != null && Number(relayerEth) > 0 && gwei <= config.sponsorMaxGwei);
     const payload = {
       gasPriceWei: gasPrice.toString(),
+      gwei: Math.round(gwei * 1000) / 1000,
       claimGas: Number(CLAIM_GAS),
       claimFeeEth: feeEth,
       ethUsd,
       claimFeeUsd: ethUsd != null ? Number(feeEth) * ethUsd : null,
+      // gas tank
+      relayerAddress,
+      relayerEth,
+      sponsorsLeft,
+      sponsorActive,
+      maxGwei: config.sponsorMaxGwei,
     };
     _gasCache = { t: now, data: payload };
     res.json(payload);

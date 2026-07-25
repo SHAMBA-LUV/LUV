@@ -301,6 +301,41 @@ async function listBusVouchers({ max = 200 } = {}) {
   return out;
 }
 
+/**
+ * Sponsored (gasless) claim: the RELAYER submits claim() for the user and pays the gas — the user
+ * pays nothing and needs no ETH. Reuses the identity's stable-nonce voucher (so it can never
+ * double-claim vs a self-serve attempt). Submits and returns 'submitted' immediately; the receipt
+ * is finalized in the background and /status reconciles via usedNonce. Gas-ceiling / relayer-funding
+ * checks are enforced by the route before this is called.
+ */
+async function sponsoredClaim(identityKey, recipient) {
+  const v = await ensurePendingVoucher(identityKey, recipient);
+  if (v.alreadyOnWay) return { status: v.status, walletAddress: recipient, alreadyClaimed: true };
+  const contract = airdropContract();
+  try {
+    const [isPaused, claimedAlready, totalClaimed, cap] = await Promise.all([
+      contract.paused(), contract.hasClaimed(v.recipient), contract.totalClaimed(), contract.AIRDROP_CAP(),
+    ]);
+    if (isPaused) return finalize(identityKey, 'failed', null, 'contract_paused');
+    if (claimedAlready) {
+      await db.query("UPDATE airdrop_claims SET status='confirmed', updated_at=now() WHERE identity_key=$1", [identityKey]);
+      return { status: 'confirmed', walletAddress: v.recipient, alreadyClaimed: true };
+    }
+    if (totalClaimed + v.amount > cap) return finalize(identityKey, 'cap_reached', null, 'cap_reached');
+  } catch (e) { /* proceed — the contract is the ultimate guard */ }
+
+  const voucher = await buildSignedVoucher(v);
+  const relayer = relayerWallet();
+  const withSigner = airdropContract(relayer);
+  const tx = await withSigner.claim(voucher.recipient, voucher.amount, voucher.nonce, voucher.deadline, voucher.signature);
+  await db.query("UPDATE airdrop_claims SET status='submitted', tx_hash=$2, updated_at=now() WHERE identity_key=$1", [identityKey, tx.hash]);
+  // Finalize off the request path so the response is fast.
+  tx.wait()
+    .then((r) => db.query("UPDATE airdrop_claims SET status=$2, updated_at=now() WHERE identity_key=$1", [identityKey, r && r.status === 1 ? 'confirmed' : 'failed']))
+    .catch(() => { /* /status reconcile via usedNonce is the backstop */ });
+  return { status: 'submitted', walletAddress: v.recipient, txHash: tx.hash };
+}
+
 async function getClaimStatus(identityKey) {
   const r = await db.query('SELECT * FROM airdrop_claims WHERE identity_key=$1', [identityKey]);
   if (r.rowCount === 0) return null;
@@ -323,6 +358,7 @@ module.exports = {
   ensurePendingVoucher,
   boardBus,
   listBusVouchers,
+  sponsoredClaim,
   runAirdrop,
   getClaimStatus,
   allocateNonce,

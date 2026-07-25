@@ -64,6 +64,24 @@
     } catch (e) { el.textContent = '⛽ network fee shown in your wallet at signing'; }
   }
 
+  // Header GAS TANK — the community sponsorship pool: how many free claims the relayer can cover
+  // at current gas. Shown top-right; updates periodically.
+  async function loadGasTank() {
+    const el = document.getElementById('gastank'); const val = document.getElementById('gastankval');
+    if (!el || !val) return;
+    try {
+      const g = await j('/airdrop/gas');
+      if (g.sponsorsLeft == null || !g.relayerAddress) { el.hidden = true; return; }
+      const n = g.sponsorsLeft;
+      val.textContent = n.toLocaleString('en-US') + (n === 1 ? ' claim' : ' claims');
+      el.hidden = false;
+      el.className = 'gastank' + (!g.sponsorActive ? ' off' : (n < 20 ? ' low' : ''));
+      el.title = 'community gas tank: ' + (g.relayerEth ? (+g.relayerEth).toFixed(4) + ' ETH' : '') +
+        ' — sponsors ' + n.toLocaleString('en-US') + ' free claims at ' + g.gwei + ' gwei' +
+        (g.sponsorActive ? '' : ' · PAUSED (gas over ' + g.maxGwei + ' gwei or tank empty → claim yourself)');
+    } catch (e) { el.hidden = true; }
+  }
+
   // ── format 18-decimal base units → "1,000,000,000,000.0" ──
   function fmtLuv(weiStr) {
     if (weiStr === null || weiStr === undefined) return null;
@@ -228,9 +246,13 @@
     const claimable = !delivered && !inFlight;
     // Banner shows until delivered; the claim panel shows while claimable + contract live + wallet.
     for (const id of ['congrats', 'congratssub']) { const el = $(id); if (el) el.hidden = delivered; }
+    // The claim panel shows for ANY claimable user — sponsored (gasless) needs no wallet.
     const er = $('ethclaimrow');
-    if (er) er.hidden = !(claimable && cfg.status === 'live' && cfg.contracts && cfg.contracts.ShambaLuvAirdrop && window.ethereum);
-    if (er && !er.hidden && !gasInfo) showGasEstimate(); // up-front ETH cost, fetched once
+    if (er) er.hidden = !(claimable && cfg.status === 'live' && cfg.contracts && cfg.contracts.ShambaLuvAirdrop);
+    // Self-serve + the gas estimate only apply when an injected wallet is present.
+    const self = $('ethclaim'); if (self) self.hidden = !window.ethereum;
+    const gEl = $('gasest'); if (gEl) gEl.hidden = !window.ethereum;
+    if (er && !er.hidden && window.ethereum && !gasInfo) showGasEstimate();
     const step = delivered ? 'confirmed' : inFlight ? 'submitted' : 'reserved';
     const at = Math.max(0, STEPS.indexOf(step));
     document.querySelectorAll('#timeline .step').forEach((el) => {
@@ -447,6 +469,39 @@
     } catch (e) { /* clipboard blocked */ }
   });
   on('refreshbal', 'click', refreshStatus);
+  // Sponsored (gasless) claim — the relayer pays; the user needs no ETH and no wallet.
+  on('claimsponsored', 'click', async () => {
+    const btn = $('claimsponsored'); const msg = $('ethclaimmsg');
+    const ri = $('recipientinput');
+    const wanted = ri && ri.value ? ri.value.trim() : '';
+    if (wanted && !/^0x[0-9a-fA-F]{40}$/.test(wanted)) {
+      msg.textContent = 'that receive address doesn’t look right — check it, or leave it blank to use your wallet.';
+      return;
+    }
+    btn.disabled = true; msg.textContent = 'delivering your trillion — gas is on us…';
+    try {
+      const r = await fetch('/airdrop/claim-sponsored', {
+        method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(wanted ? { recipient: wanted } : {}),
+      });
+      const body = await r.json().catch(() => ({}));
+      if (r.ok) {
+        msg.textContent = body.status === 'confirmed'
+          ? '❤ delivered — your 1,000,000,000,000 LUV is in your wallet.'
+          : '🎁 on its way — gas covered by us. Your trillion arrives with the next confirmation ❤';
+        setTimeout(() => { pollConfirm(8, 8000); }, 1000);
+      } else if (body.error === 'gas_too_high') {
+        msg.textContent = 'the network is busy (' + body.gwei + ' gwei, over our ' + body.ceiling + ' gwei cap) — try again when it eases, or claim it yourself below.';
+      } else if (body.error === 'relayer_empty' || body.error === 'sponsor_off') {
+        msg.textContent = 'free claims are paused right now — you can claim it yourself below (a little ETH gas).';
+      } else if (body.error === 'already_claimed' || body.status === 'confirmed') {
+        msg.textContent = '❤ already delivered — your trillion is in your wallet.';
+      } else {
+        msg.textContent = 'that didn’t go through — try again, or claim it yourself below.';
+      }
+    } catch (e) { msg.textContent = 'network hiccup — try again, or claim it yourself below.'; }
+    finally { btn.disabled = false; refreshStatus(); }
+  });
   on('ethclaim', 'click', async () => {
     const msg = $('ethclaimmsg');
     const btn = $('ethclaim');
@@ -536,6 +591,8 @@
   loadLive();
   loadHealth();
   loadStats();
+  loadGasTank();
+  setInterval(loadGasTank, 60000);
   loadProviders();
   loadSession();
 })();

@@ -96,6 +96,13 @@ const config = {
     ? opt('RELAYER_PRIVATE_KEY', '')
     : req('RELAYER_PRIVATE_KEY'),
 
+  // ── Sponsored (gasless) claims ──
+  // When ON and gas ≤ ceiling and the relayer holds ETH, the relayer submits claim() for the user
+  // (they pay nothing, need no ETH). Above the ceiling / empty relayer / off → the frontend falls
+  // back to self-serve (user pays their own gas). The relayer holds ONLY gas ETH (no LUV, no roles).
+  sponsorClaims: bool('SPONSOR_CLAIMS', true),
+  sponsorMaxGwei: parseFloat(opt('SPONSOR_MAX_GWEI', '10')),
+
   // Wallet-at-rest encryption master key (hex, 32 bytes). Generate: openssl rand -hex 32
   walletEncryptionKey: req('WALLET_ENCRYPTION_KEY'),
 

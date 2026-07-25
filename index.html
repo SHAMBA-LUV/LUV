@@ -63,6 +63,10 @@ body.authed .ctc{display:none}
 .socials a{width:38px;height:38px;border:1px solid var(--seam);border-radius:50%;display:flex;align-items:center;justify-content:center;
   font-family:var(--mono);font-size:14px;text-decoration:none;color:var(--dim);background:var(--wine)}
 .socials a:hover{border-color:var(--rose);color:var(--rose)}
+.gastank{font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--gold);border:1px solid rgba(227,178,95,.5);border-radius:999px;padding:5px 11px;white-space:nowrap}
+.gastank b{color:var(--cream)}
+.gastank.low{color:var(--rose);border-color:rgba(255,77,109,.6)}
+.gastank.off{color:var(--dim);border-color:var(--seam)}
 .healthdot{width:9px;height:9px;border-radius:50%;background:var(--seam);display:inline-block;flex:none}
 .healthdot.up{background:var(--rose);animation:heartbeat 1.4s ease-in-out infinite}
 .bar small{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--dim)}
@@ -272,6 +276,7 @@ footer .spacer{flex:1}
     <small class="tagline">emotonomics</small>
     <span class="ctc"><button class="wordbtn" id="connectbtn" type="button">CONNECT</button><em>to</em><button class="wordbtn" id="collectword" type="button">COLLECT</button></span>
     <span class="spacer"></span>
+    <span class="gastank" id="gastank" title="community gas tank — free claims we're sponsoring" hidden>⛽ <b id="gastankval">—</b></span>
     <span class="healthdot" id="healthdot" title="gesture desk status"></span>
     <small id="healthtext">checking…</small>
     <nav class="socials" aria-label="SHAMBA LUV socials">
@@ -324,9 +329,10 @@ footer .spacer{flex:1}
         <label style="font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)">receive address <span style="text-transform:none;letter-spacing:0">(optional — defaults to your LUV wallet)</span></label>
         <input id="recipientinput" type="text" placeholder="0x… — leave blank to use your created wallet" spellcheck="false" autocomplete="off"
           style="font-family:var(--mono);font-size:13px;padding:11px 13px;border-radius:8px;border:1px solid var(--seam);background:var(--ink);color:var(--cream)">
-        <button class="claimnow" id="ethclaim" type="button">🎁 Claim my 1,000,000,000,000 LUV 🎁</button>
-        <div class="gasest" id="gasest">⛽ estimating the network fee…</div>
-        <span class="taskmsg" id="ethclaimmsg">you submit the claim from your own wallet &amp; pay the gas — whenever you're ready</span>
+        <button class="claimnow" id="claimsponsored" type="button">🎁 Claim my 1,000,000,000,000 LUV — FREE ❤</button>
+        <span class="taskmsg" id="ethclaimmsg">gas is on us — no ETH needed. One tap and your trillion is delivered.</span>
+        <button class="btn" id="ethclaim" type="button" style="align-self:center" hidden>or claim yourself with your own ETH</button>
+        <div class="gasest" id="gasest" hidden></div>
       </div>
       <div class="timeline" id="timeline">
         <div class="step" data-step="reserved"><div class="t">reserved</div><div class="d">Your trillion is recorded and waiting for you.</div></div>
@@ -495,6 +501,6 @@ footer .spacer{flex:1}
 </footer>
 
 <!-- ?v= busts the immutable .js cache — bump it whenever luv.app.js changes -->
-<script src="luv.app.js?v=14"></script>
+<script src="luv.app.js?v=16"></script>
 </body>
 </html>
