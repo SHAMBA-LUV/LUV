@@ -46,7 +46,25 @@ function handleValidation(req, res, next) {
 // tells the client roughly where it stands.
 router.get('/status', requireAuth, async (req, res) => {
   const { identityKey } = req.identity;
-  const status = await getGestureStatus(identityKey);
+  let status = await getGestureStatus(identityKey);
+  // Reconcile self-serve claims → confirmed once delivered on-chain. We check usedNonce(nonce)
+  // FIRST (recipient-independent) so a claim sent to a CUSTOM receive address still confirms,
+  // then hasClaimed(address) as a fallback.
+  if (status && status.status === 'pending'
+      && config.airdropContractAddress && config.airdropContractAddress !== '0x0000000000000000000000000000000000000000') {
+    try {
+      const cr = await db.query('SELECT nonce, wallet_address FROM airdrop_claims WHERE identity_key=$1', [identityKey]);
+      const claimRow = cr.rows[0] || {};
+      const ad = new ethers.Contract(config.airdropContractAddress,
+        ['function hasClaimed(address) view returns (bool)', 'function usedNonce(uint256) view returns (bool)'], provider());
+      const delivered = (claimRow.nonce && await ad.usedNonce(claimRow.nonce))
+        || (claimRow.wallet_address && await ad.hasClaimed(claimRow.wallet_address));
+      if (delivered) {
+        await db.query("UPDATE airdrop_claims SET status='confirmed', updated_at=now() WHERE identity_key=$1", [identityKey]);
+        status = await getGestureStatus(identityKey);
+      }
+    } catch (e) { /* non-fatal — the on-chain claim() is the real guard */ }
+  }
   const w = await db.query('SELECT address, smart_account FROM wallets WHERE identity_key = $1', [identityKey]);
   const row = w.rows[0] || {};
   // The user-facing wallet (and gesture target): the smart account when the AA rail is on.
@@ -107,8 +125,8 @@ router.post('/actions/submit', requireAuth, async (req, res) => {
 // Public live stats for the landing page (no session; cheap DB counts + one chain read).
 router.get('/stats', async (req, res) => {
   const agg = await db.query(
-    `SELECT COUNT(*) FILTER (WHERE status IN ('submitted','confirmed'))::int AS delivered,
-            COUNT(*) FILTER (WHERE status IN ('queued','batching'))::int    AS aboard
+    `SELECT COUNT(*) FILTER (WHERE status IN ('submitted','confirmed'))::int        AS delivered,
+            COUNT(*) FILTER (WHERE status IN ('queued','batching','pending'))::int  AS aboard
        FROM airdrop_claims`
   );
   const { delivered, aboard } = agg.rows[0];
@@ -162,45 +180,47 @@ router.post('/trigger', requireAuth, handleValidation, async (req, res) => {
 // submits and pays gas; LUV goes to the identity's wallet either way. Taking a voucher
 // steps the rider OFF the luvbus (status 'pending'); an expired unclaimed voucher re-boards
 // via /trigger. On-chain usedNonce+hasClaimed and the UNIQUE identity row prevent doubles.
-const { buildSignedVoucher, AIRDROP_ABI, allocateNonce } = require('../airdrop/voucher');
+const { buildSignedVoucher, AIRDROP_ABI, ensurePendingVoucher } = require('../airdrop/voucher');
 const ZERO = '0x0000000000000000000000000000000000000000';
 
+// The LUVbus: canonical Multicall3 (same address on every chain). Anyone can "drive" — submit
+// ONE tx that runs claim() for every waiting rider, paying the gas FOR ALL of them. claim() is
+// caller-agnostic (the voucher names the recipient), so the driver needs no special role.
+const MULTICALL3 = '0xcA11bde05977b3631167028862bE2a173976CA11';
+const MULTICALL3_ABI = [
+  'function aggregate3((address target, bool allowFailure, bytes callData)[] calls) payable returns ((bool success, bytes returnData)[])',
+];
+
+// Self-serve claim voucher: the user's OWN wallet submits and pays gas — claim WHENEVER you
+// like. Optional `recipient` in the body directs the gesture to ANY address you choose (not
+// just the wallet we created for you). The nonce is stable per identity, so switching the
+// receive address can never double-claim: whichever address claims first wins, the rest revert.
 router.post('/voucher', requireAuth, async (req, res) => {
   if (!config.airdropContractAddress || config.airdropContractAddress === ZERO) {
     return res.status(404).json({ error: 'campaign_not_live' });
   }
   const { identityKey } = req.identity;
-  const r = await db.query('SELECT * FROM airdrop_claims WHERE identity_key=$1', [identityKey]);
-  const row = r.rows[0];
-  if (row && ['batching', 'submitted', 'confirmed'].includes(row.status)) {
-    return res.status(409).json({ error: 'already_on_the_way', status: row.status });
+
+  // Optional custom receive address (validated, checksummed). Falls back to the wallet on file.
+  let recipient = null;
+  const wanted = req.body && req.body.recipient;
+  if (wanted !== undefined && wanted !== null && String(wanted).trim() !== '') {
+    try { recipient = ethers.getAddress(String(wanted).trim()); }
+    catch (e) { return res.status(400).json({ error: 'invalid_recipient' }); }
   }
-  const w = await db.query('SELECT address, smart_account FROM wallets WHERE identity_key=$1', [identityKey]);
-  const recipient = (row && row.wallet_address)
-    || (w.rows[0] && (w.rows[0].smart_account || w.rows[0].address)) || null;
+  if (!recipient) {
+    const w = await db.query('SELECT address, smart_account FROM wallets WHERE identity_key=$1', [identityKey]);
+    const cr = await db.query('SELECT wallet_address FROM airdrop_claims WHERE identity_key=$1', [identityKey]);
+    recipient = (w.rows[0] && (w.rows[0].smart_account || w.rows[0].address))
+      || (req.identity.provider === 'metamask' ? ethers.getAddress(identityKey.split(':')[1]) : null)
+      || (cr.rows[0] && cr.rows[0].wallet_address) || null;
+  }
   if (!recipient) return res.status(400).json({ error: 'no_wallet' });
 
-  const now = Math.floor(Date.now() / 1000);
-  let nonce; let deadline;
-  if (row && row.status === 'pending' && row.nonce && Number(row.deadline) > now + 60) {
-    nonce = BigInt(row.nonce); deadline = BigInt(row.deadline); // re-issue the live voucher
-  } else {
-    nonce = allocateNonce(); deadline = BigInt(now + config.voucherTtlSeconds);
-    if (row) {
-      await db.query(
-        `UPDATE airdrop_claims SET status='pending', nonce=$2, deadline=$3, updated_at=now() WHERE identity_key=$1`,
-        [identityKey, nonce.toString(), Number(deadline)]
-      );
-    } else {
-      await db.query(
-        `INSERT INTO airdrop_claims (identity_key, wallet_address, nonce, amount, deadline, status)
-         VALUES ($1, $2, $3, $4, $5, 'pending')`,
-        [identityKey, recipient, nonce.toString(), config.claimAmount.toString(), Number(deadline)]
-      );
-    }
-  }
+  const v = await ensurePendingVoucher(identityKey, recipient);
+  if (v.alreadyOnWay) return res.status(409).json({ error: 'already_claimed', status: v.status });
 
-  const voucher = await buildSignedVoucher({ recipient, amount: config.claimAmount, nonce, deadline });
+  const voucher = await buildSignedVoucher(v);
   // Pre-encoded calldata so the browser needs no ABI library (CSP: no CDNs).
   const iface = new ethers.Interface(AIRDROP_ABI);
   const data = iface.encodeFunctionData('claim', [
@@ -210,6 +230,7 @@ router.post('/voucher', requireAuth, async (req, res) => {
     to: config.airdropContractAddress,
     data,
     chainId: config.chainId,
+    recipient: voucher.recipient,
     voucher: {
       recipient: voucher.recipient,
       amount: voucher.amount.toString(),
@@ -219,5 +240,13 @@ router.post('/voucher', requireAuth, async (req, res) => {
     },
   });
 });
+
+// ── The LUVbus is PARKED. ──────────────────────────────────────────────────────
+// The "one driver pays for everyone" sweep was too expensive (~riders × ~130k gas). The model
+// is now purely self-serve: each participant's 1T is RECORDED and waits until THEY claim it,
+// whenever it's worth the gas to them (see POST /voucher). This endpoint is intentionally
+// disabled; the Multicall3 driver code is retired. (listBusVouchers remains in voucher.js,
+// dormant, so the bus can be un-parked later if ever wanted.)
+router.get('/bus', (req, res) => res.status(410).json({ error: 'bus_parked', message: 'The LUVbus is parked — claim your gesture yourself, any time.' }));
 
 module.exports = router;

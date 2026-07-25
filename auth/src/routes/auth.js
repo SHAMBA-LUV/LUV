@@ -121,7 +121,10 @@ router.post('/wallet/verify', async (req, res) => {
   if (recovered.toLowerCase() !== checksummed.toLowerCase()) {
     return res.status(401).json({ error: 'signature_mismatch' });
   }
-  // Session identity — no custodial wallet, no automatic gesture (social-only Sybil gate).
+  // Session identity — no custodial wallet, no automatic gesture. The free airdrop is
+  // SOCIAL SIGN-IN ONLY (the Sybil gate): a wallet is free to mint in unlimited numbers, so it
+  // can't be the "one person, one gesture" unit. MetaMask signs in for the dashboard + earning
+  // actions, but does not board the airdrop bus.
   const { identityKey } = await upsertIdentity({
     provider: 'metamask',
     providerUserId: checksummed.toLowerCase(),

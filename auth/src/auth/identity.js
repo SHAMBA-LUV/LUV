@@ -16,6 +16,11 @@ const { provisionWallet } = require('../wallet/provision');
 // gestures — the Ethereum gas saver; each hop is still treasury EOA → signup EOA, 0 fee).
 const { runGesture } = require('../airdrop/gesture');
 const { enqueueGesture } = require('../airdrop/batch');
+// GESTURE_MODE=voucher (self-serve / LUVbus): on login just SIGN + STORE a claim voucher and
+// board the rider onto the bus — NO relay. The rider submits claim() themselves (pays own gas),
+// or anyone sweeps all waiting riders in one Multicall3 tx (GET /airdrop/bus). Source = the
+// funded ShambaLuvAirdrop pool. Nothing is auto-spent by the backend in this mode.
+const { boardBus } = require('../airdrop/voucher');
 
 function makeIdentityKey(provider, providerUserId) {
   return `${provider}:${providerUserId}`;
@@ -50,8 +55,10 @@ async function ensureProvisionedAndAirdropped(identityKey) {
   // account materializes on the user's first UserOperation. Without the AA rail configured,
   // the owner EOA remains the target (legacy behavior).
   const target = smartAccount || address;
-  // Both paths are idempotent (one claim row per identity); safe to call every login.
-  const deliver = config.gestureMode === 'batch' ? enqueueGesture : runGesture;
+  // All paths are idempotent (one claim row per identity); safe to call every login.
+  const deliver = config.gestureMode === 'batch' ? enqueueGesture
+    : config.gestureMode === 'voucher' ? boardBus
+      : runGesture;
   const airdrop = await deliver(identityKey, target).catch((err) => {
     // Never let an airdrop failure block login; surface via /airdrop/status.
     // eslint-disable-next-line no-console
