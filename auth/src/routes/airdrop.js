@@ -241,6 +241,44 @@ router.post('/voucher', requireAuth, async (req, res) => {
   });
 });
 
+// ── Gas price for a claim (so the UI can show the ETH cost up front) ──────────────────────────
+// PUBLIC. Returns the live gas price + a representative claim() gas + the fee in ETH, and ETH/USD
+// read from the Chainlink mainnet feed (CSP-safe: browser → this backend → chain, no external API).
+// The frontend refines the gas with the wallet's own eth_estimateGas at claim time; this is the
+// up-front figure. Cached 15s to spare the RPC.
+const CLAIM_GAS = 130000n; // typical ShambaLuvAirdrop.claim() gas (ecrecover + 2 replay SSTOREs + LUV transfer)
+const CHAINLINK_ETH_USD = '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419'; // mainnet ETH/USD
+let _gasCache = { t: 0, data: null };
+router.get('/gas', async (req, res) => {
+  const now = Date.now();
+  if (_gasCache.data && now - _gasCache.t < 15000) return res.json(_gasCache.data);
+  try {
+    const p = provider();
+    const fee = await p.getFeeData();
+    const gasPrice = fee.maxFeePerGas || fee.gasPrice || 0n;
+    let ethUsd = null;
+    try {
+      const agg = new ethers.Contract(CHAINLINK_ETH_USD,
+        ['function latestRoundData() view returns (uint80,int256,uint256,uint256,uint80)', 'function decimals() view returns (uint8)'], p);
+      const [rd, dec] = await Promise.all([agg.latestRoundData(), agg.decimals()]);
+      ethUsd = Number(rd[1]) / 10 ** Number(dec);
+    } catch (e) { /* feed unreachable — ETH-only estimate */ }
+    const feeWei = gasPrice * CLAIM_GAS;
+    const feeEth = ethers.formatEther(feeWei);
+    const payload = {
+      gasPriceWei: gasPrice.toString(),
+      claimGas: Number(CLAIM_GAS),
+      claimFeeEth: feeEth,
+      ethUsd,
+      claimFeeUsd: ethUsd != null ? Number(feeEth) * ethUsd : null,
+    };
+    _gasCache = { t: now, data: payload };
+    res.json(payload);
+  } catch (e) {
+    res.status(500).json({ error: 'gas_unavailable' });
+  }
+});
+
 // ── The LUVbus is PARKED. ──────────────────────────────────────────────────────
 // The "one driver pays for everyone" sweep was too expensive (~riders × ~130k gas). The model
 // is now purely self-serve: each participant's 1T is RECORDED and waits until THEY claim it,

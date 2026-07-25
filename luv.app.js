@@ -49,6 +49,20 @@
   let luvAddr = '0x2711111111683B8708cb9a48cBf36a51315F8254';
   let myWallet = null;
   let balTimer = null;
+  let gasInfo = null; // { gasPriceWei, claimGas, claimFeeEth, ethUsd, claimFeeUsd } from /airdrop/gas
+
+  // Up-front network-fee estimate for a claim (ETH + USD), so the ETH cost is never a surprise.
+  function fmtEth(n) { return (Math.round(n * 1e6) / 1e6).toString(); }
+  async function showGasEstimate() {
+    const el = document.getElementById('gasest');
+    if (!el) return;
+    try {
+      gasInfo = await j('/airdrop/gas');
+      const eth = fmtEth(Number(gasInfo.claimFeeEth));
+      const usd = gasInfo.claimFeeUsd != null ? ' (~$' + gasInfo.claimFeeUsd.toFixed(2) + ')' : '';
+      el.innerHTML = '⛽ estimated network fee to claim: <b>≈ ' + eth + ' ETH</b>' + usd + ' — paid in ETH, not LUV';
+    } catch (e) { el.textContent = '⛽ network fee shown in your wallet at signing'; }
+  }
 
   // ── format 18-decimal base units → "1,000,000,000,000.0" ──
   function fmtLuv(weiStr) {
@@ -216,6 +230,7 @@
     for (const id of ['congrats', 'congratssub']) { const el = $(id); if (el) el.hidden = delivered; }
     const er = $('ethclaimrow');
     if (er) er.hidden = !(claimable && cfg.status === 'live' && cfg.contracts && cfg.contracts.ShambaLuvAirdrop && window.ethereum);
+    if (er && !er.hidden && !gasInfo) showGasEstimate(); // up-front ETH cost, fetched once
     const step = delivered ? 'confirmed' : inFlight ? 'submitted' : 'reserved';
     const at = Math.max(0, STEPS.indexOf(step));
     document.querySelectorAll('#timeline .step').forEach((el) => {
@@ -456,7 +471,18 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(wanted ? { recipient: wanted } : {}),
       });
-      msg.textContent = 'confirm the claim in your wallet (you pay the gas)…';
+      // Precise fee: the wallet's own gas estimate for THIS tx × the live gas price.
+      let feeNote = '';
+      try {
+        const est = await window.ethereum.request({ method: 'eth_estimateGas', params: [{ from, to: v.to, data: v.data }] });
+        const gp = gasInfo && gasInfo.gasPriceWei ? BigInt(gasInfo.gasPriceWei) : null;
+        if (gp) {
+          const eth = Number(BigInt(est) * gp) / 1e18;
+          const usd = gasInfo.ethUsd ? ' (~$' + (eth * gasInfo.ethUsd).toFixed(2) + ')' : '';
+          feeNote = ' — network fee ≈ ' + fmtEth(eth) + ' ETH' + usd;
+        }
+      } catch (e) { /* estimate best-effort; the wallet shows the exact fee anyway */ }
+      msg.textContent = 'confirm the claim in your wallet' + feeNote + ' (paid in ETH)…';
       const txHash = await window.ethereum.request({
         method: 'eth_sendTransaction',
         params: [{ from, to: v.to, data: v.data }],
