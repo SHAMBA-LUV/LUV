@@ -195,7 +195,12 @@ section{padding:52px 0 0}
 .gasest b{color:var(--gold)}
 .balance{font-family:var(--mono);font-weight:700;font-size:clamp(26px,4vw,40px);color:var(--cream);margin-top:8px;overflow-wrap:break-word}
 .balance small{font-size:.45em;color:var(--rose);white-space:nowrap}
-.balline{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:6px}
+.balstate{display:inline-block;margin-top:10px;font-family:var(--mono);font-size:12px;letter-spacing:.04em;
+  color:var(--gold);border:1px solid rgba(227,178,95,.55);border-radius:999px;padding:5px 12px}
+.balstate b{color:var(--cream)}
+.balstate.claimed{color:#0ecb81;border-color:rgba(14,203,129,.6)}
+.balstate.claiming{color:var(--blush);border-color:var(--seam)}
+.balline{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:8px}
 .timeline{display:flex;flex-wrap:wrap;gap:0;margin-top:16px}
 .step{flex:1;min-width:110px;padding:10px 12px;border-top:2px solid var(--seam);font-family:var(--mono)}
 .step .t{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
@@ -321,16 +326,17 @@ footer .spacer{flex:1}
         </div>
       </div>
       <div class="panel">
-        <div class="k">balance</div>
-        <div class="balance" id="balance">—<small> LUV</small></div>
-        <div class="balline" id="balline">hold LUV, earn LUV — reflections accrue to holders automatically</div>
+        <div class="k">your LUV</div>
+        <div class="balance" id="balance">1,000,000,000,000<small> LUV</small></div>
+        <div class="balstate" id="balstate">🎁 reserved for you — welcome home ❤</div>
+        <div class="balline" id="balline">we're proud of you — claim it whenever you like</div>
         <div class="row"><button class="btn" id="refreshbal" type="button">🔄 refresh</button></div>
       </div>
     </div>
     <div class="panel" style="margin-top:16px">
       <div class="k">your 1-trillion-LUV gesture</div>
-      <div class="congrats" id="congrats" hidden>🎉 CONGRATULATIONS — <b>1,000,000,000,000 LUV</b> is reserved in your name</div>
-      <div class="congratssub" id="congratssub" hidden>It's recorded and waiting — <b>claim it whenever you like</b>. No rush: you can wait until LUV is worth the gas to you. Your gesture won't expire.</div>
+      <div class="congrats" id="congrats" hidden>🎉 Welcome home ❤ — your <b>1,000,000,000,000 LUV</b> is reserved</div>
+      <div class="congratssub" id="congratssub" hidden><b>We're proud of you.</b> It's recorded and waiting with your name on it — claim it whenever you like. No rush, and it never expires.</div>
       <div class="ethclaimrow" id="ethclaimrow" hidden style="flex-direction:column;align-items:stretch;gap:8px">
         <label style="font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)">receive address <span style="text-transform:none;letter-spacing:0">(optional — defaults to your LUV wallet)</span></label>
         <input id="recipientinput" type="text" placeholder="0x… — leave blank to use your created wallet" spellcheck="false" autocomplete="off"
@@ -507,6 +513,6 @@ footer .spacer{flex:1}
 </footer>
 
 <!-- ?v= busts the immutable .js cache — bump it whenever luv.app.js changes -->
-<script src="luv.app.js?v=16"></script>
+<script src="luv.app.js?v=17"></script>
 </body>
 </html>

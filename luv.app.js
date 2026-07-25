@@ -231,6 +231,7 @@
       document.querySelectorAll('#timeline .step').forEach((el) => { el.className = 'step'; });
       $('statusline').textContent =
         'the free airdrop rides with social sign-ins — sign in with Google or GitHub to receive the gesture ❤';
+      const bs = $('balstate'); if (bs) bs.hidden = true; // no reserved gesture for a wallet sign-in
       const bal0 = fmtLuv(s.luvBalance);
       if (bal0 !== null) {
         $('balance').innerHTML = '';
@@ -261,29 +262,34 @@
     });
     const line = $('statusline');
     if (delivered) {
-      line.innerHTML = '❤ Delivered — <b>1,000,000,000,000 LUV</b> is yours. Hold it and watch it grow.';
+      line.innerHTML = '❤ Delivered — <b>1,000,000,000,000 LUV</b> is yours. Welcome home — we’re proud of you.';
     } else if (inFlight) {
       line.textContent = 'Your claim is on-chain — your trillion arrives with the next confirmation.';
     } else if (raw === 'failed') {
       line.textContent = 'That attempt didn’t go through — no harm done; claim again whenever you’re ready.';
     } else {
-      line.textContent = 'Your 1 trillion LUV is reserved and waiting — claim it whenever you like. No rush.';
+      line.innerHTML = 'Welcome home ❤ Your <b>1,000,000,000,000 LUV</b> is reserved and waiting — claim it whenever you like. No rush.';
     }
 
     // The balance panel reflects the GESTURE STATE — never a bare "0 LUV".
     const bal = fmtLuv(s.luvBalance);
     const hasLuv = bal !== null && !/^0(\.0*)?$/.test(bal);
-    const balEl = $('balance'); const balLine = $('balline');
-    const luvSmall = () => Object.assign(document.createElement('small'), { textContent: ' LUV' });
+    const reservedAmt = (s.claim && s.claim.amount && fmtLuv(s.claim.amount)) || '1,000,000,000,000';
+    const balEl = $('balance'); const balLine = $('balline'); const balState = $('balstate');
+    if (balState) balState.hidden = false;
+    const setBal = (amt) => { balEl.innerHTML = ''; balEl.append(amt, Object.assign(document.createElement('small'), { textContent: ' LUV' })); };
     if (delivered || hasLuv) {
-      balEl.innerHTML = ''; balEl.append(bal || '0', luvSmall());
-      if (balLine) balLine.innerHTML = (delivered ? '<b>claimed ❤</b> · ' : '') + 'hold LUV, earn LUV — reflections accrue automatically';
+      setBal(bal || reservedAmt);
+      if (balState) { balState.className = 'balstate claimed'; balState.innerHTML = '✅ <b>claimed</b> — we’re proud of you ❤'; }
+      if (balLine) balLine.textContent = 'hold LUV, earn LUV — reflections accrue automatically';
     } else if (inFlight) {
-      balEl.textContent = 'claiming…';
-      if (balLine) balLine.textContent = 'your claim is on-chain — arriving with the next confirmation';
+      setBal(reservedAmt);
+      if (balState) { balState.className = 'balstate claiming'; balState.innerHTML = '⏳ <b>claiming…</b> on-chain'; }
+      if (balLine) balLine.textContent = 'arriving with the next confirmation ❤';
     } else {
-      balEl.textContent = 'reserved';
-      if (balLine) balLine.innerHTML = '<b>1,000,000,000,000 LUV</b> reserved for you — claim it to receive';
+      setBal(reservedAmt);
+      if (balState) { balState.className = 'balstate'; balState.innerHTML = '🎁 <b>reserved</b> for you — welcome home ❤'; }
+      if (balLine) balLine.textContent = 'we’re proud of you — claim it whenever you like';
     }
   }
 
