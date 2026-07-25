@@ -134,7 +134,9 @@ section{padding:52px 0 0}
 /* ── login modal (the previous connect modal, self-hosted) ── */
 #loginmodal{position:fixed;inset:0;background:rgba(10,4,7,.8);backdrop-filter:blur(3px);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px}
 #loginmodal.open{display:flex}
-.modalcard{background:var(--wine);border:1px solid var(--seam);border-radius:14px;max-width:380px;width:100%;padding:28px}
+.modalcard{background:var(--wine);border:2px solid var(--rose);border-radius:16px;max-width:380px;width:100%;padding:28px;
+  box-shadow:0 0 0 4px rgba(255,77,109,.18), 0 24px 60px -12px rgba(255,0,110,.55);animation:modalpop .22s ease-out}
+@keyframes modalpop{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
 .modalcard h3{font-family:var(--mono);font-size:15px;letter-spacing:.14em;text-align:center}
 .modalcard h3 b{color:var(--rose)}
 .modalcard .sub{text-align:center;color:var(--dim);font-size:13px;margin-top:6px}
@@ -333,8 +335,7 @@ footer .spacer{flex:1}
 
   <div class="landing-only">
     <div class="stats" id="stats">
-      <div class="stat gold"><span class="icon">💧</span><div class="v">100 Quadrillion</div><div class="k">circulating supply</div><div class="sub">paired with ETH liquidity</div></div>
-      <!-- Progress counters: HIDDEN while zero; auto-appear once claims begin (loadStats). -->
+      <!-- Supply details live in the FAQ. Progress counters: HIDDEN while zero; auto-appear once claims begin (loadStats). -->
       <div class="stat" id="card-delivered" hidden><span class="icon">🎁</span><div class="v" id="stat-delivered">—</div><div class="k">airdrops claimed</div><div class="sub">gestures delivered</div></div>
       <div class="stat" id="card-aboard" hidden><span class="icon">⏳</span><div class="v" id="stat-aboard">—</div><div class="k">reserved &amp; waiting</div><div class="sub">not yet claimed</div></div>
     </div>
