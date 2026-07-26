@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Authorize the LUV airdrop — bankon.eth</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+  :root{--ink:#160a0f;--wine:#2b111c;--seam:#4a1f30;--rose:#ff4d6d;--cream:#f6e7eb;--dim:#b98da0;--gold:#e3b25f;--green:#0ecb81;
+    --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;--sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--ink);color:var(--cream);font-family:var(--sans);line-height:1.6;padding:28px 18px}
+  .wrap{max-width:560px;margin:0 auto}
+  h1{font-size:22px;color:var(--gold);margin-bottom:10px}
+  p{color:var(--cream);margin:10px 0}
+  .box{background:var(--wine);border:1px solid var(--seam);border-radius:12px;padding:16px 18px;margin:16px 0;font-family:var(--mono);font-size:13px}
+  .box .row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;flex-wrap:wrap}
+  .box .k{color:var(--dim)} .box code{color:var(--green);word-break:break-all}
+  button{width:100%;font-family:var(--mono);font-weight:800;font-size:16px;letter-spacing:.04em;cursor:pointer;
+    padding:18px;border:0;border-radius:12px;color:#fff;background:linear-gradient(100deg,#ff006e,#8338ec);
+    box-shadow:0 12px 34px -10px rgba(255,0,110,.5)}
+  button:hover{filter:brightness(1.1)} button:disabled{opacity:.6;cursor:wait}
+  #msg{margin-top:16px;font-family:var(--mono);font-size:13px;color:var(--dim);word-break:break-word}
+  #msg.ok{color:var(--green)} #msg.err{color:var(--rose)}
+  .note{color:var(--dim);font-size:13px}
+  b{color:var(--rose)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🔑 Authorize the LUV airdrop</h1>
+  <p>This tells the airdrop contract to <b>accept payout requests signed by the platform key</b>, so
+  claims deliver automatically — the gas tank pays the fees, and you never have to approve individual
+  claims again.</p>
+  <p class="note"><b>Only bankon.eth (the owner) can do this.</b> Anyone else who tries will simply
+  have their transaction rejected by the contract — it's safe.</p>
+  <div class="box">
+    <div class="row"><span class="k">airdrop contract</span><code>0xdf2C1836550c5711EF9c021cB0de86241dc1DEf3</code></div>
+    <div class="row"><span class="k">authorize signer</span><code>0xD7c34d28c748ceF3F83539268C07b417B86543Ff</code></div>
+    <div class="row"><span class="k">action</span><code>setSigner(…)</code></div>
+  </div>
+  <button id="go" type="button">Connect bankon.eth &amp; authorize</button>
+  <div id="msg">connect the wallet that holds bankon.eth to continue.</div>
+</div>
+<script src="authorize.js"></script>
+</body>
+</html>
