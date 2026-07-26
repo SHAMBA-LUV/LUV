@@ -448,7 +448,7 @@
     // brings its own key — nothing to reveal.
     if (myProvider !== 'metamask') { const pk = $('pkrow'); if (pk) pk.hidden = false; }
     await refreshStatus();
-    loadTasks();
+    // loadTasks() disabled — the earn/IncentiveDistributor rail is "coming soon" (Phase 3).
     // the old dashboard refreshed the balance every 30s while visible
     if (!balTimer) balTimer = setInterval(() => { if (!document.hidden) refreshStatus(); }, 30000);
     return true;

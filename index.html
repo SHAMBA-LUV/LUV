@@ -236,6 +236,18 @@ section{padding:52px 0 0}
 .taskform input::placeholder{color:var(--dim)}
 .taskform input:focus{outline:none;border-color:var(--rose)}
 .taskmsg{font-family:var(--mono);font-size:11px;margin-top:8px;color:var(--dim)}
+/* earn rail — coming soon placeholder */
+.comingsoon{margin-top:10px;text-align:center;font-family:var(--mono);font-size:15px;color:var(--gold);
+  border:1px dashed rgba(227,178,95,.5);border-radius:12px;padding:22px 18px;line-height:1.7}
+.comingsoon b{color:var(--cream)}
+.comingsoon span{display:block;margin-top:8px;font-family:var(--sans);font-size:13px;color:var(--dim)}
+/* phase-2 bottom banner */
+.phasebanner{margin:40px 0 0;padding:18px 20px;text-align:center;border-top:1px solid var(--seam);
+  background:linear-gradient(100deg,rgba(255,0,110,.12),rgba(131,56,236,.12));
+  font-family:var(--mono);font-size:14px;color:var(--cream);letter-spacing:.02em}
+.phasebanner b{background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800}
+.phasebanner .soon{display:inline-block;margin-left:6px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(227,178,95,.5);border-radius:999px;padding:3px 10px}
+.phasebanner .sub{display:block;margin-top:6px;font-size:12px;color:var(--dim)}
 .taskmsg.ok{color:var(--rose)}
 .subs .sub{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;border-top:1px solid var(--seam);padding:10px 0;font-family:var(--mono);font-size:12px}
 .subs .sub:first-child{border-top:0}
@@ -354,10 +366,10 @@ footer .spacer{flex:1}
       <div class="statusline" id="statusline">checking your gesture…</div>
     </div>
     <div class="panel" style="margin-top:16px" id="taskspanel">
-      <div class="k">earn more LUV — be an ambassador of LUV</div>
-      <div id="tasklist"><div class="taskmsg">loading actions…</div></div>
-      <div class="k" style="margin-top:24px">my submissions</div>
-      <div class="subs" id="mysubs"><div class="empty">nothing yet — share some LUV above ❤</div></div>
+      <div class="k">earn more LUV</div>
+      <div class="comingsoon">✨ Come back soon to <b>EARN more LUV</b> ✨
+        <span>Phase 3 — <b>Sharing is Caring</b>: tweet, post, and engage with the community to earn LUV rewards. Launching soon ❤</span>
+      </div>
     </div>
     <div class="dashfoot">
       <button class="btn" id="addtoken2" type="button" hidden>add LUV to MetaMask</button>
@@ -486,6 +498,10 @@ footer .spacer{flex:1}
     <div style="text-align:center;margin-top:14px"><a class="btn" href="faq.html#roadmap">read the full roadmap in the FAQ 💬</a></div>
   </section>
 
+  <div class="phasebanner">
+    🚀 <b>Phase 2 — The Value of LUV</b> · buy &amp; sell LUV on Uniswap <span class="soon">coming soon</span>
+    <span class="sub">100 quadrillion LUV paired with ETH — the gesture meets the market ❤</span>
+  </div>
 </main>
 
 <!-- login modal (self-hosted — replaces the old vendor connect modal) -->
@@ -513,6 +529,6 @@ footer .spacer{flex:1}
 </footer>
 
 <!-- ?v= busts the immutable .js cache — bump it whenever luv.app.js changes -->
-<script src="luv.app.js?v=19"></script>
+<script src="luv.app.js?v=20"></script>
 </body>
 </html>
