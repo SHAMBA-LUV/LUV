@@ -35,7 +35,14 @@ function setSessionCookie(res, token) {
 }
 
 function clearSessionCookie(res) {
-  res.clearCookie(COOKIE_NAME, { path: '/' });
+  // MUST mirror setSessionCookie's attributes (secure + sameSite + path) or the browser won't
+  // delete the cookie — the cause of "sign out / refresh doesn't log me out".
+  res.clearCookie(COOKIE_NAME, {
+    httpOnly: true,
+    secure: config.cookieSecure,
+    sameSite: 'lax',
+    path: '/',
+  });
 }
 
 // Express middleware: require a valid JWT session (cookie OR Authorization: Bearer).
