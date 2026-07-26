@@ -18,6 +18,12 @@ const db = require('../db');
 
 const router = express.Router();
 
+// Tight per-client limiter for the sensitive WRITE actions only (claim/voucher/trigger/submit).
+// Reads (status/gas/stats/actions) are NOT throttled here — they're under the app-wide limiter —
+// so a read-heavy dashboard can never rate-limit a user out of claiming.
+const rateLimit = require('express-rate-limit');
+const writeLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30, standardHeaders: true, legacyHeaders: false });
+
 // Read-only chain access for balances/stats (the browser's CSP is connect-src 'self', so
 // the backend proxies all chain reads). Failures degrade to nulls — never block the route.
 const ERC20_READ_ABI = ['function balanceOf(address) view returns (uint256)'];
@@ -113,7 +119,7 @@ router.get('/actions/mine', requireAuth, async (req, res) => {
 });
 
 // Signed in: submit a proof URL for an action. Amounts/limits are the contract's alone.
-router.post('/actions/submit', requireAuth, async (req, res) => {
+router.post('/actions/submit', writeLimiter, requireAuth, async (req, res) => {
   const { identityKey } = req.identity;
   const { action, proofUrl } = req.body || {};
   if (typeof action !== 'string' || action.length > 64) return res.status(400).json({ error: 'invalid_request' });
@@ -146,7 +152,7 @@ router.get('/stats', async (req, res) => {
 // "Claim now": re-boards an expired self-claim voucher onto the luvbus, ensures the claim
 // row, and (batch mode) asks the bus to depart — ONE operator-paid transaction delivers
 // every queued rider at once.
-router.post('/trigger', requireAuth, handleValidation, async (req, res) => {
+router.post('/trigger', writeLimiter, requireAuth, handleValidation, async (req, res) => {
   const { identityKey } = req.identity;
   try {
     // A 'pending' row is a self-claim voucher in flight; if its deadline passed unclaimed,
@@ -195,7 +201,7 @@ const MULTICALL3_ABI = [
 // like. Optional `recipient` in the body directs the gesture to ANY address you choose (not
 // just the wallet we created for you). The nonce is stable per identity, so switching the
 // receive address can never double-claim: whichever address claims first wins, the rest revert.
-router.post('/voucher', requireAuth, async (req, res) => {
+router.post('/voucher', writeLimiter, requireAuth, async (req, res) => {
   if (!config.airdropContractAddress || config.airdropContractAddress === ZERO) {
     return res.status(404).json({ error: 'campaign_not_live' });
   }
@@ -244,7 +250,7 @@ router.post('/voucher', requireAuth, async (req, res) => {
 // ── Sponsored (gasless) claim: the relayer pays the gas, the user pays nothing ────────────────
 // Guardrails: only if sponsorship is ON, gas ≤ ceiling (SPONSOR_MAX_GWEI), and the relayer holds
 // enough ETH. Any guard failing returns 503 with a reason so the frontend falls back to self-serve.
-router.post('/claim-sponsored', requireAuth, async (req, res) => {
+router.post('/claim-sponsored', writeLimiter, requireAuth, async (req, res) => {
   if (!config.airdropContractAddress || config.airdropContractAddress === ZERO) return res.status(404).json({ error: 'campaign_not_live' });
   if (!config.sponsorClaims || !config.relayerPrivateKey) return res.status(503).json({ error: 'sponsor_off' });
   const { identityKey } = req.identity;
