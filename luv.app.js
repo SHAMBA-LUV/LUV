@@ -141,14 +141,11 @@
   async function loadStats() {
     let s;
     try { s = await j('/airdrop/stats'); } catch (e) { return; }
-    const show = (cardId, valId, n) => {
-      if (typeof n === 'number' && n > 0) {
-        const v = $(valId); if (v) v.textContent = n.toLocaleString('en-US');
-        const c = $(cardId); if (c) c.hidden = false;
-      }
-    };
-    show('card-delivered', 'stat-delivered', s.gesturesDelivered);
-    show('card-aboard', 'stat-aboard', s.gesturesAboard);
+    // Airdrops-claimed count at the bottom of the landing — appears once any claim has happened.
+    if (typeof s.gesturesDelivered === 'number' && s.gesturesDelivered > 0) {
+      const n = $('claimed-n'); if (n) n.textContent = s.gesturesDelivered.toLocaleString('en-US');
+      const c = $('claimed-count'); if (c) c.hidden = false;
+    }
   }
 
   // ── login modal ────────────────────────────────────────────────────────────
