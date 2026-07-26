@@ -249,7 +249,9 @@
     for (const id of ['congrats', 'congratssub']) { const el = $(id); if (el) el.hidden = delivered; }
     // The claim panel shows for ANY claimable user — sponsored (gasless) needs no wallet.
     const er = $('ethclaimrow');
-    if (er) er.hidden = !(claimable && cfg.contracts && cfg.contracts.ShambaLuvAirdrop);
+    // Show whenever a gesture is claimable — the FREE claim goes through the backend, so it does
+    // not depend on cfg being loaded (avoids any config-load race hiding the button).
+    if (er) er.hidden = !claimable;
     // Self-serve + the gas estimate only apply when an injected wallet is present.
     const self = $('ethclaim'); if (self) self.hidden = !window.ethereum;
     const gEl = $('gasest'); if (gEl) gEl.hidden = !window.ethereum;
