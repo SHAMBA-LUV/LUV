@@ -249,7 +249,7 @@
     for (const id of ['congrats', 'congratssub']) { const el = $(id); if (el) el.hidden = delivered; }
     // The claim panel shows for ANY claimable user — sponsored (gasless) needs no wallet.
     const er = $('ethclaimrow');
-    if (er) er.hidden = !(claimable && cfg.status === 'live' && cfg.contracts && cfg.contracts.ShambaLuvAirdrop);
+    if (er) er.hidden = !(claimable && cfg.contracts && cfg.contracts.ShambaLuvAirdrop);
     // Self-serve + the gas estimate only apply when an injected wallet is present.
     const self = $('ethclaim'); if (self) self.hidden = !window.ethereum;
     const gEl = $('gasest'); if (gEl) gEl.hidden = !window.ethereum;
@@ -593,12 +593,18 @@
   // user can retry immediately.
   if (new URLSearchParams(location.search).get('error') === 'auth') openModal();
 
+  // ?logout — hard escape hatch to clear the session cookie and return to a fresh landing.
+  if (new URLSearchParams(location.search).get('logout') !== null) {
+    fetch('/auth/logout', { method: 'POST', credentials: 'same-origin' }).finally(() => { location.href = '/'; });
+  }
+
   // ── boot ───────────────────────────────────────────────────────────────────
-  loadLive();
+  // Load the live config FIRST (contract addresses), then render the dashboard — otherwise a fast
+  // /airdrop/status can render before cfg.contracts is set and the claim panel stays hidden.
+  loadLive().then(loadSession).catch(loadSession);
   loadHealth();
   loadStats();
   loadGasTank();
   setInterval(loadGasTank, 60000);
   loadProviders();
-  loadSession();
 })();
