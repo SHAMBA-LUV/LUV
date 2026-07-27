@@ -562,6 +562,63 @@
     location.reload();
   });
 
+  // ── LUV wallet: Send / Receive (MetaMask-style) ─────────────────────────────
+  const openW = (id) => { const m = $(id); if (m) m.classList.add('open'); };
+  const closeW = (id) => { const m = $(id); if (m) m.classList.remove('open'); };
+  ['recvmodal', 'sendmodal'].forEach((id) => on(id, 'click', (e) => { if (e.target === $(id)) closeW(id); }));
+  on('recv-close', 'click', () => closeW('recvmodal'));
+  on('send-close', 'click', () => closeW('sendmodal'));
+  on('recvbtn', 'click', () => {
+    const a = $('recv-addr'); if (a) a.textContent = myWallet || '(no wallet yet)';
+    const ex = $('recv-explorer'); if (ex && myWallet) ex.href = (cfg.explorer || 'https://etherscan.io') + '/address/' + myWallet;
+    openW('recvmodal');
+  });
+  on('recv-copy', 'click', async () => {
+    if (!myWallet) return;
+    try { await navigator.clipboard.writeText(myWallet); $('recv-copy').textContent = 'copied ❤'; setTimeout(() => { $('recv-copy').textContent = 'copy address'; }, 1500); } catch (e) { /* blocked */ }
+  });
+  on('sendbtn', 'click', () => { const m = $('send-msg'); if (m) { m.className = 'taskmsg'; m.textContent = ''; } openW('sendmodal'); });
+  on('send-go', 'click', async () => {
+    const msg = $('send-msg'); const btn = $('send-go');
+    const to = ($('send-to').value || '').trim();
+    const amt = ($('send-amt').value || '').trim();
+    if (!/^0x[0-9a-fA-F]{40}$/.test(to)) { msg.className = 'taskmsg'; msg.textContent = 'enter a valid 0x… address'; return; }
+    if (!/^[0-9][0-9,_\s]*(\.[0-9]+)?$/.test(amt)) { msg.className = 'taskmsg'; msg.textContent = 'enter an amount in LUV'; return; }
+    btn.disabled = true; msg.className = 'taskmsg'; msg.textContent = 'sending…';
+    try {
+      if (myProvider === 'metamask') {
+        // self-custody: send from MetaMask itself
+        if (!window.ethereum) { msg.textContent = 'open MetaMask to send'; btn.disabled = false; return; }
+        await ensureChain();
+        const [from] = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const clean = amt.replace(/[_,\s]/g, '');
+        if (clean.indexOf('.') >= 0) { msg.textContent = 'whole-LUV amounts only from MetaMask'; btn.disabled = false; return; }
+        const wei = (BigInt(clean) * (10n ** 18n)).toString(16);
+        const data = '0xa9059cbb' + to.replace(/^0x/, '').toLowerCase().padStart(64, '0') + wei.padStart(64, '0');
+        const tx = await window.ethereum.request({ method: 'eth_sendTransaction', params: [{ from, to: luvAddr, data }] });
+        msg.className = 'taskmsg ok'; msg.textContent = 'sent — ' + tx.slice(0, 12) + '… ❤';
+      } else {
+        const r = await fetch('/auth/wallet/send', {
+          method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ to: to, amount: amt }),
+        });
+        const body = await r.json().catch(() => ({}));
+        if (r.ok) {
+          msg.className = 'taskmsg ok';
+          msg.textContent = 'sent — ' + String(body.txHash || '').slice(0, 12) + '… ❤ (gas on us)';
+          setTimeout(refreshStatus, 12000);
+        } else {
+          msg.textContent = body.error === 'insufficient_luv' ? 'not enough LUV in your wallet'
+            : body.error === 'sponsor_unavailable' ? 'send is briefly unavailable — try again shortly'
+              : body.error === 'invalid_to' ? 'that address doesn’t look right'
+                : body.error === 'invalid_amount' ? 'check the amount'
+                  : 'that didn’t go through — try again';
+        }
+      }
+    } catch (e) { msg.textContent = String(e && e.code) === '4001' ? 'cancelled.' : 'that didn’t go through — try again'; }
+    finally { btn.disabled = false; }
+  });
+
   // ── private key: revealed ONLY while the button is pressed and held ──────────
   // Fetch on hold, show while held, mask the instant it's released / the tab loses focus.
   // The key is never rendered unless actively held, and never persisted.

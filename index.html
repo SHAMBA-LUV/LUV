@@ -142,8 +142,19 @@ section{padding:52px 0 0}
 .gesture .fineprint{margin-top:16px;font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.04em}
 
 /* ── login modal (the previous connect modal, self-hosted) ── */
-#loginmodal{position:fixed;inset:0;background:rgba(10,4,7,.8);backdrop-filter:blur(3px);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px}
-#loginmodal.open{display:flex}
+/* MetaMask-style wallet actions */
+.wallet-actions{display:flex;gap:12px;margin-top:16px}
+.wact{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--mono);font-weight:800;font-size:14px;
+  padding:14px;min-height:50px;border:0;border-radius:12px;color:#fff;background:linear-gradient(100deg,var(--pink),var(--purple));
+  box-shadow:0 10px 26px -12px rgba(255,0,110,.5)}
+.wact:hover{filter:brightness(1.12)}
+.wact span{font-size:16px}
+.recv-addr{font-family:var(--mono);font-size:13px;word-break:break-all;color:var(--gold);background:var(--ink);
+  border:1px solid var(--seam);border-radius:10px;padding:14px;margin:14px 0;text-align:center}
+.modalcard label{display:block;text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin:12px 0 4px}
+.modalcard input{width:100%;box-sizing:border-box;font-family:var(--mono);font-size:14px;padding:12px;border-radius:10px;border:1px solid var(--seam);background:var(--ink);color:var(--cream)}
+.wmodal,#loginmodal{position:fixed;inset:0;background:rgba(10,4,7,.8);backdrop-filter:blur(3px);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px}
+.wmodal.open,#loginmodal.open{display:flex}
 .modalcard{background:var(--wine);border:2px solid var(--rose);border-radius:16px;max-width:380px;width:100%;padding:28px;
   box-shadow:0 0 0 4px rgba(255,77,109,.18), 0 24px 60px -12px rgba(255,0,110,.55);animation:modalpop .22s ease-out}
 @keyframes modalpop{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
@@ -340,6 +351,10 @@ footer .spacer{flex:1}
         <div class="k">your wallet</div>
         <span class="pubkey-label">🔑 your public address — share this to receive LUV</span>
         <div class="walletaddr pub" id="youwallet">provisioning…</div>
+        <div class="wallet-actions">
+          <button class="wact" id="sendbtn" type="button"><span>↑</span> Send</button>
+          <button class="wact" id="recvbtn" type="button"><span>↓</span> Receive</button>
+        </div>
         <div class="row">
           <button class="btn" id="copywallet" type="button">copy address</button>
           <a class="btn" id="walletexplorer" href="#" rel="noopener">etherscan</a>
@@ -545,7 +560,36 @@ footer .spacer{flex:1}
   </div>
 </footer>
 
+<!-- Receive LUV -->
+<div class="wmodal" id="recvmodal" role="dialog" aria-modal="true">
+  <div class="modalcard">
+    <h3>↓ Receive <b>LUV</b></h3>
+    <div class="sub">Share this address to receive LUV (or ETH) on Ethereum.</div>
+    <div class="recv-addr" id="recv-addr">…</div>
+    <div class="row" style="justify-content:center">
+      <button class="btn" id="recv-copy" type="button">copy address</button>
+      <a class="btn" id="recv-explorer" href="#" target="_blank" rel="noopener">etherscan ↗</a>
+    </div>
+    <button class="close" id="recv-close" type="button">close</button>
+  </div>
+</div>
+
+<!-- Send LUV -->
+<div class="wmodal" id="sendmodal" role="dialog" aria-modal="true">
+  <div class="modalcard">
+    <h3>↑ Send <b>LUV</b></h3>
+    <div class="sub">Send LUV from your wallet to any Ethereum address. Gas is covered for you.</div>
+    <label for="send-to">to address</label>
+    <input id="send-to" type="text" placeholder="0x…" spellcheck="false" autocomplete="off">
+    <label for="send-amt">amount (LUV)</label>
+    <input id="send-amt" type="text" inputmode="decimal" placeholder="e.g. 1000000000" autocomplete="off">
+    <button class="claimnow" id="send-go" type="button" style="margin-top:16px">Send LUV ❤</button>
+    <div class="taskmsg" id="send-msg"></div>
+    <button class="close" id="send-close" type="button">cancel</button>
+  </div>
+</div>
+
 <!-- ?v= busts the immutable .js cache — bump it whenever luv.app.js changes -->
-<script src="luv.app.js?v=21"></script>
+<script src="luv.app.js?v=22"></script>
 </body>
 </html>
