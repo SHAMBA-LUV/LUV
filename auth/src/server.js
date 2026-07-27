@@ -65,7 +65,7 @@ function createApp() {
   // ---- Rate limiters ----
   const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100,
+    max: 300, // the dashboard is read-heavy (status/gas/stats/actions + polling) — must not throttle claims
     standardHeaders: true,
     legacyHeaders: false,
     // keyGenerator uses req.ip (real client IP via trust proxy). No raw IP is logged.
@@ -76,12 +76,8 @@ function createApp() {
     standardHeaders: true,
     legacyHeaders: false,
   });
-  const claimLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 10, // tightest on the airdrop trigger
-    standardHeaders: true,
-    legacyHeaders: false,
-  });
+  // (The tight per-client limiter for the sensitive WRITE endpoints lives in routes/airdrop.js,
+  // applied per-route, so the read-heavy /airdrop mount is not throttled.)
 
   app.use(generalLimiter);
 
@@ -92,7 +88,7 @@ function createApp() {
 
   // ---- Routes ----
   app.use('/auth', authLimiter, authRoutes);
-  app.use('/airdrop', claimLimiter, airdropRoutes);
+  app.use('/airdrop', airdropRoutes); // reads covered by generalLimiter; writes throttled per-route
 
   // 404
   app.use((req, res) => res.status(404).json({ error: 'not_found' }));

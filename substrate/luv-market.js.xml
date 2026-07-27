@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doc for="shambaluv/substrate/luv-market.js">
+  <!-- DeltaVerse migration record. Preference: .js = pure Node prototyping; .ts/.tsx = production
+       (private/financial data). New substrate for luv.pythai.net — existing substrates untouched. -->
+  <lane>prototype</lane>
+  <kind>market-substrate</kind>
+  <migration target="none" status="prototype">
+    <how>Stays JS; promote to .ts only if it begins handling private/financial data (display-only today).</how>
+    <why>In-house d3 market view — duplicates the Dexscreener percent-change-per-interval fields
+      (5M/1H/6H/24H) from the same-origin mirror (market.json + market-history.json written by
+      deploy/web2/luv-market-collector.mjs) and prices 1T LUV in USDC. CSP connect-src 'self' is
+      why the mirror exists.</why>
+  </migration>
+</doc>

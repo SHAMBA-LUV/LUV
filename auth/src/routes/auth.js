@@ -121,7 +121,10 @@ router.post('/wallet/verify', async (req, res) => {
   if (recovered.toLowerCase() !== checksummed.toLowerCase()) {
     return res.status(401).json({ error: 'signature_mismatch' });
   }
-  // Session identity — no custodial wallet, no automatic gesture (social-only Sybil gate).
+  // Session identity — no custodial wallet, no automatic gesture. The free airdrop is
+  // SOCIAL SIGN-IN ONLY (the Sybil gate): a wallet is free to mint in unlimited numbers, so it
+  // can't be the "one person, one gesture" unit. MetaMask signs in for the dashboard + earning
+  // actions, but does not board the airdrop bus.
   const { identityKey } = await upsertIdentity({
     provider: 'metamask',
     providerUserId: checksummed.toLowerCase(),
@@ -161,6 +164,48 @@ router.get('/me', requireAuth, async (req, res) => {
 router.post('/logout', (req, res) => {
   clearSessionCookie(res);
   res.json({ ok: true });
+});
+
+// ── Export the sovereign wallet's private key (self-custody) ──────────────────────────────────
+// Session-gated: only the signed-in identity can export ITS OWN custodial key. MetaMask identities
+// bring their own key (nothing to export). The frontend reveals this only on press-and-hold and
+// never persists it. This is the "take custody" escape hatch for the wallet we created for you.
+router.post('/wallet/export', requireAuth, async (req, res) => {
+  const { identityKey, provider } = req.identity;
+  if (provider === 'metamask') return res.status(400).json({ error: 'external_wallet' });
+  try {
+    const { getUserSigner } = require('../wallet/provision');
+    const w = await getUserSigner(identityKey);
+    res.set('Cache-Control', 'no-store');
+    res.json({ address: w.address, privateKey: w.privateKey });
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('[auth] wallet export failed:', e.message);
+    res.status(500).json({ error: 'export_failed' });
+  }
+});
+
+// ── Send LUV from the custodial wallet (the LUV wallet's Send button) ─────────────────────────
+// Custodial (social) wallets only — MetaMask self-custodies and sends from its own wallet client-side.
+router.post('/wallet/send', requireAuth, async (req, res) => {
+  const { identityKey, provider } = req.identity;
+  if (provider === 'metamask') return res.status(400).json({ error: 'external_wallet' });
+  const { to, amount } = req.body || {};
+  let dest; try { dest = ethers.getAddress(String(to || '').trim()); } catch (e) { return res.status(400).json({ error: 'invalid_to' }); }
+  let amtWei; try { amtWei = ethers.parseUnits(String(amount || '').replace(/[_,\s]/g, ''), 18); } catch (e) { return res.status(400).json({ error: 'invalid_amount' }); }
+  if (amtWei <= 0n) return res.status(400).json({ error: 'invalid_amount' });
+  try {
+    const { sendLuv } = require('../wallet/send');
+    const hash = await sendLuv(identityKey, dest, amtWei);
+    res.json({ ok: true, txHash: hash, to: dest });
+  } catch (e) {
+    const m = String((e && (e.code || e.shortMessage || e.message)) || e);
+    const err = /INSUFFICIENT_LUV/i.test(m) ? 'insufficient_luv'
+      : /NO_RELAYER|NO_FACTORY/i.test(m) ? 'sponsor_unavailable' : 'send_failed';
+    // eslint-disable-next-line no-console
+    if (err === 'send_failed') console.error('[auth] wallet send failed:', m);
+    res.status(400).json({ error: err });
+  }
 });
 
 module.exports = router;

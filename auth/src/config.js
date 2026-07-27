@@ -80,9 +80,34 @@ const config = {
   actionsAutoApprove: bool('ACTIONS_AUTO_APPROVE', false),
   actionsPayoutIntervalMs: parseInt(opt('ACTIONS_PAYOUT_INTERVAL_MS', '60000'), 10),
 
-  // Keys (hex, 0x-prefixed). VOUCHER signer must equal the contract's `signer`.
-  voucherSignerPrivateKey: req('VOUCHER_SIGNER_PRIVATE_KEY'),
-  relayerPrivateKey: req('RELAYER_PRIVATE_KEY'),
+  // ── Voucher signer ── MUST equal ShambaLuvAirdrop.signer (a DEDICATED key, never bankon.eth).
+  // PREFERRED: unlock it from a bankon-vault at runtime (key sealed AES-256-GCM at rest) —
+  //   LUV_SIGNER_VAULT_FILE + LUV_SIGNER_VAULT_PASSPHRASE (or …_PASSPHRASE_FILE).
+  //   Create it with scripts/create-luvdrop-signer.mjs.
+  // FALLBACK (dev only): VOUCHER_SIGNER_PRIVATE_KEY as a raw hex key.
+  signerVaultFile: opt('LUV_SIGNER_VAULT_FILE', ''),
+  signerVaultPassphrase: opt('LUV_SIGNER_VAULT_PASSPHRASE', ''),
+  signerVaultPassphraseFile: opt('LUV_SIGNER_VAULT_PASSPHRASE_FILE', ''),
+  signerVaultEntry: opt('LUV_SIGNER_VAULT_ENTRY', 'luvdrop-signer'),
+  voucherSignerPrivateKey: opt('VOUCHER_SIGNER_PRIVATE_KEY', ''),
+  // In GESTURE_MODE=voucher (self-serve + LUVbus) the backend NEVER relays — riders/drivers pay
+  // their own gas — so no relayer key is needed. It's still required for batch/direct push modes.
+  relayerPrivateKey: process.env.GESTURE_MODE === 'voucher'
+    ? opt('RELAYER_PRIVATE_KEY', '')
+    : req('RELAYER_PRIVATE_KEY'),
+
+  // ── Sponsored (gasless) claims ──
+  // When ON and gas ≤ ceiling and the relayer holds ETH, the relayer submits claim() for the user
+  // (they pay nothing, need no ETH). Above the ceiling / empty relayer / off → the frontend falls
+  // back to self-serve (user pays their own gas). The relayer holds ONLY gas ETH (no LUV, no roles).
+  sponsorClaims: bool('SPONSOR_CLAIMS', true),
+  sponsorMaxGwei: parseFloat(opt('SPONSOR_MAX_GWEI', '10')),
+
+  // ── Airdrop lifecycle ──
+  // The free 1-trillion-LUV airdrop ran for one year. With AIRDROP_CLOSED=true the campaign is OVER:
+  // login still provisions the wallet (send/receive stays working), but no new gestures are delivered
+  // and every claim endpoint returns 410. Already-delivered balances are untouched — redeemed is redeemed.
+  airdropClosed: bool('AIRDROP_CLOSED', false),
 
   // Wallet-at-rest encryption master key (hex, 32 bytes). Generate: openssl rand -hex 32
   walletEncryptionKey: req('WALLET_ENCRYPTION_KEY'),
