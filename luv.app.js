@@ -46,6 +46,7 @@
   const STEPS = ['reserved', 'submitted', 'confirmed'];
 
   let cfg = { status: 'imminent', chainId: 1, explorer: 'https://etherscan.io', contracts: {} };
+  let airdropClosed = false; // set from luv.live.json (airdrop:"closed") — the campaign has concluded
   let luvAddr = '0x2711111111683B8708cb9a48cBf36a51315F8254';
   let myWallet = null;
   let balTimer = null;
@@ -96,6 +97,7 @@
   // ── launch state + contract ledger ─────────────────────────────────────────
   async function loadLive() {
     try { cfg = Object.assign(cfg, await j('luv.live.json', { cache: 'no-cache' })); } catch (e) { /* placeholder stands */ }
+    airdropClosed = cfg.airdrop === 'closed';
 
     const live = cfg.status === 'live';
     const badge = $('statebadge');
@@ -223,6 +225,32 @@
 
   // ── dashboard (signed in) ──────────────────────────────────────────────────
   function renderStatus(s) {
+    // ── Airdrop concluded (Phase 2) ── no more claiming. Show delivered balances (redeemed is
+    // redeemed) and point everyone to live Uniswap trading. No claim button, ever.
+    if (airdropClosed) {
+      const er = $('ethclaimrow'); if (er) er.hidden = true;
+      for (const id of ['congrats', 'congratssub']) { const el = $(id); if (el) el.hidden = true; }
+      document.querySelectorAll('#timeline .step').forEach((el) => { el.className = 'step'; });
+      const bal = fmtLuv(s.luvBalance);
+      const hasLuv = bal !== null && !/^0(\.0*)?$/.test(bal);
+      const delivered = ((s.claim && s.claim.status) === 'confirmed') || s.claimed || hasLuv;
+      const balEl = $('balance'); const balLine = $('balline'); const balState = $('balstate');
+      const line = $('statusline');
+      const setBal = (amt) => { balEl.innerHTML = ''; balEl.append(amt, Object.assign(document.createElement('small'), { textContent: ' LUV' })); };
+      if (balState) balState.hidden = false;
+      if (delivered) {
+        setBal(bal || fmtLuv(s.claim && s.claim.amount) || '1,000,000,000,000');
+        if (balState) { balState.className = 'balstate claimed'; balState.innerHTML = '✅ <b>redeemed</b> — thank you ❤'; }
+        if (balLine) balLine.textContent = 'hold LUV, earn LUV — reflections accrue automatically';
+        if (line) line.innerHTML = '❤ The airdrop has concluded — your LUV is home. <b>Thank you.</b> LUV now trades live on Uniswap.';
+      } else {
+        setBal(bal || '0');
+        if (balState) { balState.className = 'balstate'; balState.innerHTML = '🎉 <b>airdrop concluded</b> — thank you'; }
+        if (balLine) balLine.textContent = 'the free airdrop has ended — LUV is now live on Uniswap';
+        if (line) line.innerHTML = '🎉 The one-year airdrop is <b>sold out</b> — thank you for being part of it. LUV now trades live on Uniswap. ❤';
+      }
+      return;
+    }
     // Wallet sign-ins have no gesture claim — the airdrop's Sybil unit is a social identity.
     if (!s.claim && !s.claimed && myProvider === 'metamask') {
       document.querySelectorAll('#timeline .step').forEach((el) => { el.className = 'step'; });

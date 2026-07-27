@@ -55,6 +55,11 @@ async function ensureProvisionedAndAirdropped(identityKey) {
   // account materializes on the user's first UserOperation. Without the AA rail configured,
   // the owner EOA remains the target (legacy behavior).
   const target = smartAccount || address;
+  // Airdrop concluded (one-year campaign closed): provision the wallet so login/send/receive keep
+  // working, but deliver NOTHING new. Existing balances are already on-chain and untouched.
+  if (config.airdropClosed) {
+    return { walletAddress: target, ownerAddress: address, smartAccount, airdrop: { status: 'closed', walletAddress: target, txHash: null } };
+  }
   // All paths are idempotent (one claim row per identity); safe to call every login.
   const deliver = config.gestureMode === 'batch' ? enqueueGesture
     : config.gestureMode === 'voucher' ? boardBus

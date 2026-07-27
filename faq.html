@@ -44,9 +44,17 @@ details .a .g{color:var(--gold)}
 details .a code{font-family:var(--mono);font-size:12.5px;color:var(--blush);word-break:break-all}
 details .a p+p{margin-top:8px}
 footer{margin-top:64px;border-top:1px solid var(--seam);padding:26px 0 44px}
-footer .wrap{display:flex;flex-wrap:wrap;gap:18px;font-family:var(--mono);font-size:12px;color:var(--dim)}
+footer .wrap{display:flex;flex-wrap:wrap;gap:18px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--dim)}
 footer a{text-decoration:none}
 footer .spacer{flex:1}
+footer .brandmark{display:inline-flex;align-items:center;gap:7px;color:var(--dim)}
+footer .brandmark img{height:14px;width:auto;display:block;opacity:.85;transition:opacity .15s}
+footer .brandmark:hover{color:var(--cream)}
+footer .brandmark:hover img{opacity:1}
+/* official brand marks in-line with explorer/market links */
+a.exlink img,.marketrow img{height:16px;width:auto;vertical-align:-4px}
+.marketrow{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-top:6px}
+.marketrow a{display:inline-flex;align-items:center;gap:7px;color:var(--blush)}
 </style>
 </head>
 <body>
@@ -389,11 +397,34 @@ footer .spacer{flex:1}
     <div class="a"><p>The <b>SHAMBA LUV token</b> — the address for <b>peer review, Etherscan
     verification, importing the token, and adding the LUV/ETH pair on Uniswap</b> — is:</p>
     <p><code>0x2711111111683B8708cb9a48cBf36a51315F8254</code></p>
-    <p><a href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254" rel="noopener">Etherscan ↗</a>
-    · <a href="https://app.uniswap.org/tokens/ethereum/0x2711111111683B8708cb9a48cBf36a51315F8254" rel="noopener">Uniswap ↗</a>.
+    <div class="marketrow">
+      <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img src="gfx/brand/etherscan_wordmark_light.svg" alt="View LUV on Etherscan"> ↗</a>
+      <a href="https://app.uniswap.org/tokens/ethereum/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img src="gfx/brand/uniswap_horizontal_pink.svg" alt="Trade LUV on Uniswap"> ↗</a>
+    </div>
+    <p>
     Always confirm this exact address before you trade — a gesture sent to the wrong contract is not a
     gesture. It's <b>live on Ethereum</b>, deployed deterministically so LUV can open at the same address
     on every chain it grows into.</p></div>
+  </details>
+
+  <details open>
+    <summary>How do I buy or sell LUV? (set slippage to 10%)</summary>
+    <div class="a">
+    <p><b>Set your slippage tolerance to 10%</b> before you swap LUV on Uniswap. This is a requirement, not a
+    suggestion — a lower setting will make the swap fail with <code>INSUFFICIENT_OUTPUT_AMOUNT</code>, or show
+    <i>"no routes available."</i></p>
+    <p>Ten percent covers two things that stack together:</p>
+    <p>• <b>The 5% buy/sell fee.</b> LUV is a reflection token — every buy and sell carries a <b>5% fee</b>, so you
+    receive about 5% fewer tokens than the raw quote. Your slippage has to absorb that.<br>
+    • <b>Price impact in a young pool.</b> Liquidity is still small, so each trade moves the price. Until the pool
+    deepens toward its <b>first million</b>, leave the extra headroom — 10% comfortably covers the fee <i>and</i> the
+    movement. As liquidity grows, price impact shrinks and slippage can come back down toward the 5% fee floor.</p>
+    <p>In Uniswap: open the swap, click the <b>settings gear → Max slippage → Custom → 10%</b>, then trade. LUV carries
+    a transfer fee, so the swap is routed through Uniswap's fee-on-transfer path automatically.</p>
+    <div class="marketrow">
+      <a href="https://app.uniswap.org/swap?chain=ethereum&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img src="gfx/brand/uniswap_horizontal_pink.svg" alt="Trade LUV on Uniswap"> · buy &amp; sell LUV ↗</a>
+    </div>
+    </div>
   </details>
 
   <details open id="contracts">
@@ -451,6 +482,10 @@ footer .spacer{flex:1}
     <span class="spacer"></span>
     <a href="/">the doorway</a>
     <a href="https://github.com/SHAMBA-LUV/LUV" rel="noopener">source &amp; audit</a>
+    <a class="brandmark" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="LUV verified on Etherscan · Powered by Etherscan.io APIs">
+      <img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="14">
+      <span>Powered by Etherscan.io APIs</span>
+    </a>
     <span>SHAMBA © 2026 LUV</span>
   </div>
 </footer>

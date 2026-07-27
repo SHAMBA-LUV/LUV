@@ -83,6 +83,16 @@ body.authed .ctc{display:none}
   box-shadow:0 12px 34px -10px rgba(255,0,110,.55);animation:pulseglow 2.6s ease-in-out infinite}
 .collect:hover{filter:brightness(1.12);transform:translateY(-1px)}
 @keyframes pulseglow{0%,100%{box-shadow:0 12px 34px -10px rgba(255,0,110,.45)}50%{box-shadow:0 14px 40px -8px rgba(131,56,236,.6)}}
+a.collect{display:inline-flex;align-items:center;justify-content:center;gap:9px;text-decoration:none}
+a.collect .uni-logo{height:20px}
+/* the hero TRADE LUV LIVE button — Uniswap logo front and centre, high contrast */
+#tradebtn{gap:14px;padding:18px 40px;background:linear-gradient(100deg,#FF007A,#8338EC 88%);
+  box-shadow:0 16px 46px -6px rgba(255,0,122,.78);border:2px solid rgba(255,255,255,.4)}
+#tradebtn .uni-logo{height:30px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.4))}
+#tradebtn span{color:#fff;font-weight:800;letter-spacing:.09em;text-shadow:0 1px 3px rgba(0,0,0,.35)}
+#tradebtn:hover{filter:brightness(1.1) saturate(1.15)}
+.claimhero.soldout .amt{background:linear-gradient(100deg,var(--gold),var(--rose));-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:.04em}
+.claimhero.soldout .tag{color:var(--rose);border-color:rgba(255,77,109,.55)}
 
 /* ── the claim callout: the 1-trillion gesture, front and centre ── */
 .claimhero{margin-top:22px;display:flex;flex-direction:column;align-items:center;gap:8px}
@@ -308,9 +318,16 @@ section{padding:52px 0 0}
 
 /* ── footer ── */
 footer{margin-top:72px;border-top:1px solid var(--seam);padding:28px 0 44px}
-footer .wrap{display:flex;flex-wrap:wrap;gap:18px;align-items:baseline;font-family:var(--mono);font-size:12px;color:var(--dim)}
+footer .wrap{display:flex;flex-wrap:wrap;gap:18px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--dim)}
 footer a{text-decoration:none}
 footer .spacer{flex:1}
+footer .brandmark{display:inline-flex;align-items:center;gap:7px;color:var(--dim)}
+footer .brandmark img{height:14px;width:auto;display:block;opacity:.85;transition:opacity .15s}
+footer .brandmark:hover{color:var(--cream)}
+footer .brandmark:hover img{opacity:1}
+/* official brand marks */
+.uni-cta .uni-logo{height:18px;width:auto;display:block}
+.phasebanner .uni-ico,.topfest .uni-ico{height:15px;width:auto;vertical-align:-3px;margin:0 2px}
 
 @keyframes heartbeat{0%,100%{transform:scale(1)}12%{transform:scale(1.18)}24%{transform:scale(1)}36%{transform:scale(1.12)}48%{transform:scale(1)}}
 @media(prefers-reduced-motion:reduce){.repunit .heart,.healthdot.up{animation:none}}
@@ -378,7 +395,7 @@ footer .spacer{flex:1}
       </div>
     </div>
     <div class="panel" style="margin-top:16px">
-      <div class="k">your 1-trillion-LUV gesture</div>
+      <div class="k">your LUV</div>
       <div class="congrats" id="congrats" hidden>🎉 Welcome home ❤ — your <b>1,000,000,000,000 LUV</b> is reserved</div>
       <div class="congratssub" id="congratssub" hidden><b>We're proud of you.</b> It's recorded and waiting with your name on it — claim it whenever you like. No rush, and it never expires.</div>
       <div class="ethclaimrow" id="ethclaimrow" hidden style="flex-direction:column;align-items:stretch;gap:8px">
@@ -397,6 +414,16 @@ footer .spacer{flex:1}
       </div>
       <div class="statusline" id="statusline">checking your gesture…</div>
     </div>
+    <div class="panel" style="margin-top:16px" id="tradepanel">
+      <div class="k">Phase 2 — trade LUV</div>
+      <div class="comingsoon" style="border-color:#FF007A">🦄 <b>LUV is live on Uniswap</b> — buy &amp; sell the gesture on the open market ❤
+        <span>Trade the LUV/ETH pair directly. Set slippage to <b>~8–12%</b> — LUV carries a 5% reflection fee, so a lower tolerance will bounce the swap.</span>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <a class="uni-cta" href="https://app.uniswap.org/swap?chain=ethereum&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img class="uni-logo" src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap"> · buy &amp; sell <b>LUV</b> live</a>
+        <a class="btn" href="view.html">📈 live chart</a>
+      </div>
+    </div>
     <div class="panel" style="margin-top:16px" id="taskspanel">
       <div class="k">earn more LUV</div>
       <div class="comingsoon">✨ Come back soon to <b>EARN more LUV</b> ✨
@@ -413,30 +440,31 @@ footer .spacer{flex:1}
   <div class="hero landing-only">
     <img class="logo" src="gfx/heart-512.png" alt="SHAMBA LUV" width="512" height="512">
     <h1>SHAMBA LUV</h1>
-    <div class="phase">✨ Phase 1 LUV is priceless ✨</div>
-    <div class="claimhero">
-      <span class="tag">🎁 free airdrop · one per person</span>
-      <div class="amt">1,000,000,000,000 <span>LUV</span></div>
-      <div class="cap">claim your trillion — <b>0% fee, the full amount is yours</b>. Sign in with Google or GitHub and it's delivered to your wallet.</div>
+    <div class="phase">✨ Phase 2 — The Value of LUV ✨</div>
+    <div class="claimhero soldout">
+      <span class="tag">🎉 airdrop sold out · thank you</span>
+      <div class="amt">SOLD&nbsp;OUT</div>
+      <div class="cap">The one-year free airdrop has <b>concluded</b> — every trillion has found its home. <b>Thank you to everyone</b> who joined the gesture. ❤ LUV is now <b>live on Uniswap</b>.</div>
     </div>
-    <button class="collect" id="collectbtn" type="button">🎁 CLAIM 1,000,000,000,000 LUV ❤</button>
-    <div class="connect" style="margin-top:10px">connect to collect 💰</div>
+    <a class="collect" id="tradebtn" href="https://app.uniswap.org/swap?chain=ethereum&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img class="uni-logo" src="gfx/brand/uniswap_horizontal_white.svg" alt="Uniswap"> <span>Trade LUV LIVE ❤</span></a>
+    <div class="connect" style="margin-top:10px">already claimed? <button class="wordbtn" data-open-login type="button">sign in to your wallet</button> · set slippage ~8–12% (5% reflection fee)</div>
   </div>
 
 
   <!-- The airdrop CTA (the classic card) -->
   <section id="gesture" class="landing-only">
     <div class="gesture">
-      <div class="sechead" style="margin-bottom:10px">🎁 free airdrop available 🎁</div>
-      <h2>create your LUV wallet now — receive <b>1 trillion LUV</b></h2>
-      <p>Sign in once with <b>Google or GitHub</b> — a social identity is the fair-share pass to the
-      gesture (one person, one wallet, one trillion — so the pool reaches real people, not wallet farms).
-      A smart wallet is created for you (no seed phrase), and your trillion boards the LUVbus. Claim it
-      yourself, or ride free the moment anyone drives the bus. <b>0% fee — the full trillion arrives.</b></p>
+      <div class="sechead" style="margin-bottom:10px">🎉 airdrop sold out — thank you 🎉</div>
+      <h2>the free airdrop has <b>concluded</b> — LUV is now live on Uniswap</h2>
+      <p>For one year, anyone could sign in and receive a free <b>1 trillion LUV</b> — one person, one wallet, one
+      trillion, so the gesture reached real people, not wallet farms. That chapter is complete, and <b>every
+      trillion has found its home</b>. Thank you to everyone who joined. ❤ Phase 2 opens the market: <b>buy and
+      sell LUV on Uniswap</b>. Already claimed? Sign in any time to your wallet — send, receive, and hold LUV.</p>
       <div class="gesturebtns" id="providers">
-        <button type="button" data-open-login>Sign in to collect ❤</button>
+        <a class="uni-cta" href="https://app.uniswap.org/swap?chain=ethereum&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img class="uni-logo" src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap"> · buy &amp; sell <b>LUV</b> live</a>
+        <button type="button" data-open-login>sign in to your wallet ❤</button>
       </div>
-      <div class="fineprint">One-time airdrop per identity • No fees • Instant delivery</div>
+      <div class="fineprint">Redeemed is redeemed • trading live on Uniswap • set slippage ~8–12% (5% reflection fee)</div>
     </div>
   </section>
 
@@ -524,15 +552,15 @@ footer .spacer{flex:1}
   </section>
 
   <div class="landing-only" style="text-align:center;margin-top:44px">
-    <div class="claimed-count" id="claimed-count" hidden>🎁 <b id="claimed-n">0</b> airdrops claimed</div>
-    <a class="uni-cta" href="https://app.uniswap.org/tokens/ethereum/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">
-      <span class="uni-mark">🦄 Uniswap</span> · buy &amp; sell <b>LUV</b> <span class="soon">coming soon</span>
+    <div class="claimed-count" id="claimed-count">🎁 <b>MAX</b> LUVdrops received</div>
+    <a class="uni-cta" href="https://app.uniswap.org/swap?chain=ethereum&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">
+      <img class="uni-logo" src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap"> · buy &amp; sell <b>LUV</b> <span class="soon" style="color:#FF007A;border-color:#FF007A">live now</span>
     </a>
   </div>
 
   <div class="phasebanner">
-    🚀 <b>Phase 2 — The Value of LUV</b> · buy &amp; sell LUV on Uniswap <span class="soon">coming soon</span>
-    <span class="sub">100 quadrillion LUV paired with ETH — the gesture meets the market ❤</span>
+    🚀 <b>Phase 2 — The Value of LUV</b> · buy &amp; sell LUV on <img class="uni-ico" src="gfx/brand/uniswap_icon_pink.svg" alt="Uniswap"> Uniswap <span class="soon" style="color:#FF007A;border-color:#FF007A">live now</span>
+    <span class="sub">the gesture meets the market ❤ · LUV/ETH trading is open · <a href="view.html">📈 live view</a></span>
   </div>
 </main>
 
@@ -554,8 +582,13 @@ footer .spacer{flex:1}
     <span>❤ LUV is priceless</span>
     <span class="spacer"></span>
     <a href="faq.html">FAQ</a>
+    <a href="view.html">live view</a>
     <a href="https://github.com/SHAMBA-LUV/LUV" rel="noopener">source &amp; audit</a>
     <a href="https://github.com/SHAMBA-LUV" rel="noopener">SHAMBA-LUV</a>
+    <a class="brandmark" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="LUV verified on Etherscan · Powered by Etherscan.io APIs">
+      <img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="14">
+      <span>Powered by Etherscan.io APIs</span>
+    </a>
     <span>SHAMBA © 2026 LUV · luv@pythai.net</span>
   </div>
 </footer>
@@ -590,6 +623,6 @@ footer .spacer{flex:1}
 </div>
 
 <!-- ?v= busts the immutable .js cache — bump it whenever luv.app.js changes -->
-<script src="luv.app.js?v=22"></script>
+<script src="luv.app.js?v=23"></script>
 </body>
 </html>

@@ -18,6 +18,15 @@ const db = require('../db');
 
 const router = express.Router();
 
+// Airdrop concluded — every mutating claim path returns a friendly 410. Reads (/status, /stats) stay
+// open so past claimers still see their redeemed balance. Redeemed is redeemed; nothing new is minted.
+function closedGuard(req, res, next) {
+  if (config.airdropClosed) {
+    return res.status(410).json({ error: 'airdrop_closed', message: 'The airdrop has concluded — thank you ❤ LUV is now live on Uniswap.' });
+  }
+  next();
+}
+
 // Tight per-client limiter for the sensitive WRITE actions only (claim/voucher/trigger/submit).
 // Reads (status/gas/stats/actions) are NOT throttled here — they're under the app-wide limiter —
 // so a read-heavy dashboard can never rate-limit a user out of claiming.
@@ -152,7 +161,7 @@ router.get('/stats', async (req, res) => {
 // "Claim now": re-boards an expired self-claim voucher onto the luvbus, ensures the claim
 // row, and (batch mode) asks the bus to depart — ONE operator-paid transaction delivers
 // every queued rider at once.
-router.post('/trigger', writeLimiter, requireAuth, handleValidation, async (req, res) => {
+router.post('/trigger', closedGuard, writeLimiter, requireAuth, handleValidation, async (req, res) => {
   const { identityKey } = req.identity;
   try {
     // A 'pending' row is a self-claim voucher in flight; if its deadline passed unclaimed,
@@ -201,7 +210,7 @@ const MULTICALL3_ABI = [
 // like. Optional `recipient` in the body directs the gesture to ANY address you choose (not
 // just the wallet we created for you). The nonce is stable per identity, so switching the
 // receive address can never double-claim: whichever address claims first wins, the rest revert.
-router.post('/voucher', writeLimiter, requireAuth, async (req, res) => {
+router.post('/voucher', closedGuard, writeLimiter, requireAuth, async (req, res) => {
   if (!config.airdropContractAddress || config.airdropContractAddress === ZERO) {
     return res.status(404).json({ error: 'campaign_not_live' });
   }
@@ -250,7 +259,7 @@ router.post('/voucher', writeLimiter, requireAuth, async (req, res) => {
 // ── Sponsored (gasless) claim: the relayer pays the gas, the user pays nothing ────────────────
 // Guardrails: only if sponsorship is ON, gas ≤ ceiling (SPONSOR_MAX_GWEI), and the relayer holds
 // enough ETH. Any guard failing returns 503 with a reason so the frontend falls back to self-serve.
-router.post('/claim-sponsored', writeLimiter, requireAuth, async (req, res) => {
+router.post('/claim-sponsored', closedGuard, writeLimiter, requireAuth, async (req, res) => {
   if (!config.airdropContractAddress || config.airdropContractAddress === ZERO) return res.status(404).json({ error: 'campaign_not_live' });
   if (!config.sponsorClaims || !config.relayerPrivateKey) return res.status(503).json({ error: 'sponsor_off' });
   const { identityKey } = req.identity;

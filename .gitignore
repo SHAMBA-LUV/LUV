@@ -3,3 +3,8 @@ cache/
 node_modules/
 .env
 *.log
+
+# runtime-generated market data + pre-wiring backup (never commit)
+market.json
+market-history.json
+auth/src.bak.prewiring/

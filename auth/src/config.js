@@ -103,6 +103,12 @@ const config = {
   sponsorClaims: bool('SPONSOR_CLAIMS', true),
   sponsorMaxGwei: parseFloat(opt('SPONSOR_MAX_GWEI', '10')),
 
+  // ── Airdrop lifecycle ──
+  // The free 1-trillion-LUV airdrop ran for one year. With AIRDROP_CLOSED=true the campaign is OVER:
+  // login still provisions the wallet (send/receive stays working), but no new gestures are delivered
+  // and every claim endpoint returns 410. Already-delivered balances are untouched — redeemed is redeemed.
+  airdropClosed: bool('AIRDROP_CLOSED', false),
+
   // Wallet-at-rest encryption master key (hex, 32 bytes). Generate: openssl rand -hex 32
   walletEncryptionKey: req('WALLET_ENCRYPTION_KEY'),
 
