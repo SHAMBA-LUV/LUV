@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MEASURED FEELING — the sentiment paper — SHAMBA LUV</title>
+<meta name="description" content="Measured Feeling: Market Sentiment, Its Instruments, and the Emotonomic Turn. From Keynes's animal spirits to the VIX and the Fear &amp; Greed composites — the full instrument stack, the emotonomic inversion, native measures (GVI, CRD, eROI), a proposed LUV sentiment dial, testable propositions, full bibliography.">
+<meta name="author" content="SHAMBA LUV">
+<link rel="canonical" href="https://luv.pythai.net/sentiment.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="SHAMBA LUV">
+<meta property="og:title" content="Measured Feeling: Market Sentiment, Its Instruments, and the Emotonomic Turn">
+<meta property="og:description" content="Fear and greed, measured: the sentiment instrument stack from surveys and the VIX to the Fear &amp; Greed composites — and the emotonomic turn that makes measured feeling a constituent of value.">
+<meta property="og:url" content="https://luv.pythai.net/sentiment.html">
+<meta property="og:image" content="https://luv.pythai.net/gfx/logo.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://luv.pythai.net/gfx/logo.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --ink:#160a0f;--wine:#2b111c;--seam:#4a1f30;--rose:#ff4d6d;--pink:#ff006e;--purple:#8338ec;
+  --blush:#ffb3c1;--cream:#f6e7eb;--dim:#b98da0;--gold:#e3b25f;
+  --mono:ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
+  --serif:Georgia,'Times New Roman',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--ink);color:var(--cream);font-family:var(--sans);line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--blush)}
+a:hover{color:var(--rose)}
+:focus-visible{outline:2px solid var(--rose);outline-offset:3px;border-radius:2px}
+.wrap{max-width:780px;margin:0 auto;padding:0 24px}
+header{border-bottom:1px solid var(--seam)}
+.bar{display:flex;align-items:center;gap:14px;padding:16px 0}
+.bar .wrap{max-width:1180px}
+.brand{font-family:var(--mono);font-size:15px;letter-spacing:.14em;color:var(--cream);text-decoration:none}
+.brand b{color:var(--rose)}
+.bar .spacer{flex:1}
+.bar a.back{font-family:var(--mono);font-size:12px;text-decoration:none;color:var(--dim)}
+.bar a.back:hover{color:var(--rose)}
+h1{margin:52px 0 6px;text-align:center;font-size:clamp(30px,5.6vw,46px);font-weight:800;
+  background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{text-align:center;color:var(--dim);margin-bottom:8px;font-style:italic}
+.paperkind{text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);margin-bottom:36px}
+/* ── paper typography ── */
+.paper p{margin:0 0 16px;font-size:15.5px}
+.paper .preface{border:1px solid var(--seam);border-left:3px solid var(--gold);border-radius:10px;background:var(--wine);
+  padding:18px 22px;margin:0 0 36px;color:var(--dim);font-size:14px}
+.paper .preface em{color:var(--blush)}
+.paper h2{font-family:var(--mono);font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);
+  margin:46px 0 16px;padding-top:26px;border-top:1px solid var(--seam)}
+.paper h2 .n{color:var(--rose);margin-right:10px}
+.paper h3{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--rose);margin:26px 0 12px}
+.paper .abstract{border:1px solid var(--seam);border-radius:12px;background:var(--wine);padding:22px 26px;margin-bottom:8px}
+.paper .abstract p{color:var(--cream);font-size:14.5px;margin:0}
+.paper .abstract .k{font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--rose);margin-bottom:10px}
+.paper em{font-style:italic;color:var(--blush)}
+.paper b{color:var(--cream);font-weight:700}
+.paper .cite{color:var(--dim)}
+.paper ol.points{margin:0 0 16px 22px}
+.paper ol.points li{margin-bottom:10px;font-size:15.5px}
+.paper .axiom{border:1px solid var(--seam);border-radius:10px;background:var(--wine);padding:16px 20px;margin-bottom:12px}
+.paper .axiom .t{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.paper .axiom p{margin:0;font-size:14.5px;color:var(--cream)}
+.paper .obj{margin-bottom:16px}
+.paper .obj .q{font-weight:700;color:var(--blush)}
+.paper .refs{list-style:none;margin:14px 0 0;columns:1}
+.paper .refs li{font-size:13px;color:var(--dim);margin-bottom:9px;padding-left:16px;text-indent:-16px}
+.paper .refs li em{color:var(--blush);font-style:italic}
+.paper hr{border:0;border-top:1px solid var(--seam);margin:38px 0}
+.readmore{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:44px 0 8px}
+.btn{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--blush);text-decoration:none;
+  border:1px solid var(--seam);border-radius:999px;padding:8px 18px;transition:color .15s,border-color .15s}
+.btn:hover{color:var(--rose);border-color:var(--rose)}
+footer{margin-top:64px;border-top:1px solid var(--seam);padding:26px 0 44px}
+footer .wrap{max-width:1180px;display:flex;flex-wrap:wrap;gap:18px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--dim)}
+footer a{text-decoration:none}
+footer .spacer{flex:1}
+footer .brandmark{display:inline-flex;align-items:center;gap:7px;color:var(--dim)}
+footer .brandmark img{height:14px;width:auto;display:block;opacity:.85;transition:opacity .15s}
+footer .brandmark:hover{color:var(--cream)}
+footer .brandmark:hover img{opacity:1}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="/">❤ SHAMBA <b>LUV</b></a>
+    <span class="spacer"></span>
+    <a class="back" href="emotonomics.html">the field paper</a>
+    <a class="back" href="faq.html">FAQ</a>
+    <a class="back" href="view.html">live view</a>
+    <a class="back" href="/">← back to the doorway</a>
+  </div>
+</header>
+
+<main class="wrap paper">
+  <h1>MEASURED FEELING</h1>
+  <div class="sub">Market Sentiment, Its Instruments, and the Emotonomic Turn</div>
+  <div class="paperkind">the sentiment paper · fear, greed, and the measure of feeling</div>
+
+  <div class="preface"><b>Preface.</b> This treatise reviews how collective emotion in markets became a
+  measured variable — from Keynes's animal spirits to the VIX and the Fear &amp; Greed composites — and
+  states the <b>emotonomic turn</b>: where the received literature treats sentiment as a distortion
+  <em>of</em> value, an emotonomic system treats measured feeling as a constituent of value, and builds
+  instruments native to that claim. It is a companion to the field paper,
+  <a href="https://luv.pythai.net/emotonomics.html">EMOTONOMICS — live at luv.pythai.net/emotonomics.html</a>,
+  and to the protocol papers in the <a href="https://github.com/SHAMBA-LUV/LUV" rel="noopener">open
+  repository</a>. The reference measurement stack runs live at
+  <a href="https://luv.pythai.net/view.html">luv.pythai.net/view.html</a>.</div>
+
+  <div class="abstract">
+    <div class="k">Abstract</div>
+    <p>Market sentiment has migrated, over ninety years, from a rhetorical residual — Keynes's "animal
+    spirits" — to a measured state variable with a mature instrument stack: surveys, derivatives-implied
+    fear gauges, composite indices, and computational text analysis. This paper reviews that migration in
+    three movements. First, we reconstruct the theoretical quarrel that made sentiment measurable at all:
+    the efficient-markets tradition that defined sentiment as noise destined for elimination, and the
+    noise-trader and behavioral traditions that showed the noise is priced, persistent, and systematic.
+    Second, we survey the modern measurement toolkit — from the Michigan surveys and the closed-end fund
+    discount through the VIX, the Baker–Wurgler index, media- and search-based measures, and the
+    practitioner Fear &amp; Greed composites in equities and crypto — evaluating each instrument by what
+    it actually observes. Third, we state the emotonomic turn: where the received literature treats
+    sentiment as a distortion <em>of</em> value, an emotonomic system treats measured feeling as a
+    constituent <em>of</em> value, and therefore requires instruments native to that claim. We formalize
+    the gesture-based measures proposed by the emotonomics program (gesture velocity, resonance depth,
+    emotional reciprocity), specify a composite sentiment instrument for an on-chain emotional economy,
+    derive testable propositions, and answer the strongest objections, including Goodhart drift,
+    reflexivity, and thin-market pathology.</p>
+  </div>
+
+  <h2 id="s1"><span class="n">I.</span> The problem: a variable everyone prices and no one owns</h2>
+  <p>Every practitioner believes markets have moods; the discipline spent half a century deciding whether
+  that belief was respectable. The difficulty was never whether investors feel — it was whether feeling is
+  <em>measurable before the fact</em> and <em>priced after it</em>. A variable that cannot be observed
+  independently of the prices it is invoked to explain is not an explanation; it is a name for the
+  residual. The history of sentiment research is the history of escaping that circularity: finding
+  observables — survey answers, fund discounts, option premia, word frequencies, search queries, now
+  on-chain acts — that proxy the collective emotional state <em>without</em> being mere restatements of
+  the price.</p>
+  <p>The stakes of the escape are doctrinal. If sentiment is measurable and predictive, then the strict
+  form of market efficiency fails not at the margins but at the mechanism: prices would embed a component
+  that is neither fundamental news nor rational risk premium, and that component would be forecastable
+  from psychological data. This is precisely what the modern measurement literature claims to have found
+  <span class="cite">(Baker &amp; Wurgler 2006; Tetlock 2007; Da, Engelberg &amp; Gao 2015)</span>. The
+  instruments came first as curiosities and became, cumulatively, an argument.</p>
+  <p>This paper has a second purpose beyond review. The emotonomics program
+  (<a href="https://luv.pythai.net/emotonomics.html">the field paper</a>) advances a stronger thesis than
+  behavioral finance ever did: not that emotion <em>distorts</em> value, but that in a designed economic
+  system emotion can be the <em>primary unit</em> of value — "attention is capital, gestures are
+  currency, impact is profit." If that thesis is taken seriously, the sentiment-measurement toolkit
+  changes role: it stops being a diagnostic of mispricing and becomes the system's national accounts.
+  Section IV asks what instruments such a system requires, and builds them from the received literature
+  rather than from slogans.</p>
+  <p><b>Definitions.</b> Throughout, <em>sentiment</em> denotes the aggregate, time-varying disposition
+  of market participants toward risk-bearing in an asset or asset class, insofar as that disposition is
+  not reducible to changes in objective fundamentals. An <em>instrument</em> is any procedure producing a
+  time series intended to proxy sentiment. An instrument is <b>stated</b> if it elicits beliefs
+  (surveys), <b>revealed</b> if it infers disposition from costly behavior (flows, option purchases,
+  on-chain transfers), and <b>expressed</b> if it infers disposition from communicative behavior (news
+  text, social posts, search queries). This trichotomy organizes Section III.</p>
+
+  <h2 id="s2"><span class="n">II.</span> The quarrel that made sentiment measurable</h2>
+
+  <h3>II.1 The classical inheritance</h3>
+  <p>The word itself is older than the discipline. Adam Smith's first book was a <em>Theory of Moral
+  Sentiments</em> <span class="cite">(1759)</span>, and its central mechanism — sympathy, the
+  fellow-feeling by which we internalize the judgments of an imagined impartial spectator — is
+  recognizably a theory of socially transmitted evaluation. The crowd-pathology literature of the
+  nineteenth century supplied the negative pole: Mackay's <em>Extraordinary Popular Delusions and the
+  Madness of Crowds</em> <span class="cite">(1841)</span> fixed the genre of the mania narrative, and
+  Kindleberger's <em>Manias, Panics, and Crashes</em> <span class="cite">(1978)</span> later gave it an
+  analytic skeleton — displacement, credit expansion, euphoria, distress, revulsion — that reads today as
+  a stage theory of sentiment.</p>
+  <p>The canonical modern source is Keynes. Chapter 12 of the <em>General Theory</em>
+  <span class="cite">(1936)</span> makes two distinct claims that the later literature often merges. The
+  first is motivational: long-term expectation cannot be grounded in calculation alone, so enterprise
+  depends on "animal spirits — a spontaneous urge to action rather than inaction." The second is
+  structural: under separation of ownership and trading, professional investors are driven to anticipate
+  "what average opinion expects the average opinion to be" — the beauty-contest recursion — so that
+  valuation becomes a convention sustained by confidence and vulnerable to it. Note what Keynes did
+  <em>not</em> supply: any instrument. Animal spirits entered the discipline as an unmeasured residual,
+  which is why the subsequent efficiency counterattack could dismiss them as a name for ignorance. The
+  rehabilitation of the concept as a <em>measured</em> macro variable is recent
+  <span class="cite">(Akerlof &amp; Shiller 2009)</span>.</p>
+
+  <h3>II.2 The efficiency tradition, steelmanned</h3>
+  <p>The efficient-markets school deserves its strongest statement, because the measurement literature
+  exists to answer it. The argument is not that investors are rational; it is that markets are
+  disciplined. Friedman <span class="cite">(1953)</span> supplied the selection mechanism: traders who
+  misprice lose money to those who do not, so destabilizing speculation self-liquidates. Fama
+  <span class="cite">(1970)</span> supplied the definitional apparatus — weak, semi-strong, and strong
+  form efficiency — and an empirical program in which prices "fully reflect" available information. On
+  this view sentiment may exist as psychology but cannot persist as pricing: any emotional displacement
+  of price from value is an arbitrage opportunity, and arbitrage is the immune system.</p>
+  <p>The steelman matters because it makes a testable claim about <em>instruments</em>: any purported
+  sentiment measure should have no forecasting power for returns beyond risk. The school's later
+  concession was partial and disciplined — even Black <span class="cite">(1986)</span>, in his
+  presidential address "Noise," accepted that noise trading is pervasive and indeed <em>constitutive</em>
+  of liquidity ("noise makes trading in financial markets possible"), while retaining the faith that
+  price wanders within a factor-of-two band around value. The efficiency tradition, in other words,
+  predicted that the sentiment-measurement program would find nothing. That prediction failed in a
+  specific and instructive way.</p>
+
+  <h3>II.3 The noise-trader and limits-of-arbitrage answer</h3>
+  <p>The theoretical answer arrived as a model, not a manifesto. De Long, Shleifer, Summers, and Waldmann
+  <span class="cite">(1990)</span> formalized an economy in which noise traders with stochastic,
+  correlated misperceptions trade against rational arbitrageurs with finite horizons. The result
+  overturns Friedman's selection argument: because noise-trader sentiment is itself a source of risk
+  ("noise trader risk"), arbitrageurs bearing it demand compensation, mispricing persists, and — the
+  deepest cut — noise traders can earn <em>higher</em> expected returns than their rational counterparts
+  by loading on the very risk they create. Sentiment is no longer an error awaiting correction; it is a
+  priced factor.</p>
+  <p>Shleifer and Vishny <span class="cite">(1997)</span> completed the argument institutionally:
+  real-world arbitrage is delegated, capital-constrained, and evaluated on short horizons, so it is
+  weakest precisely when mispricing is widest — performance-based fund flows force liquidation into
+  deepening dislocation. Behavioral micro-foundations were supplied in parallel: prospect theory's
+  loss-averse value function and probability weighting <span class="cite">(Kahneman &amp; Tversky
+  1979)</span> explained <em>why</em> misperception is systematic rather than idiosyncratic, and
+  Barberis, Shleifer, and Vishny <span class="cite">(1998)</span> modeled investor sentiment as a
+  regime-switching belief process generating both underreaction and overreaction. Shiller's
+  excess-volatility finding <span class="cite">(1981)</span> — price variance far exceeding the variance
+  of subsequent dividend realizations — had already shown there was something to explain;
+  <em>Irrational Exuberance</em> <span class="cite">(2000)</span> named the ambient state.</p>
+  <p>The dialectical outcome is precise: efficiency theory demanded that sentiment be unmeasurable or
+  unpriced; noise-trader theory predicted it would be measurable, persistent, and priced, with its
+  strongest effects in assets that are hard to value and hard to arbitrage. That conditional —
+  <b>sentiment bites hardest where valuation is most subjective and arbitrage most limited</b>
+  <span class="cite">(Baker &amp; Wurgler 2006)</span> — is the single most confirmed regularity in the
+  measurement literature, and it should be kept in view throughout what follows, because a young,
+  thinly-traded, reflexively-narrated crypto asset is the limiting case of both conditions.</p>
+
+  <h2 id="s3"><span class="n">III.</span> The instrument stack: how feeling is measured</h2>
+
+  <h3>III.1 Stated sentiment: surveys</h3>
+  <p>The oldest instruments simply ask. George Katona's program at Michigan, begun in the 1940s and
+  systematized in his <em>Psychological Economics</em> <span class="cite">(1975)</span>, established that
+  consumer confidence could be elicited, indexed, and used as a leading indicator; the University of
+  Michigan Surveys of Consumers remain the canonical macro-sentiment series. In markets proper, the
+  American Association of Individual Investors has polled its members weekly since 1987 (bullish /
+  bearish / neutral on six-month equity prospects), and Investors Intelligence has classified newsletter
+  writers as bulls or bears since the 1960s — a series whose enduring use is <em>contrarian</em>: extreme
+  stated bullishness historically precedes weak returns, consistent with the noise-trader model in which
+  surveyed enthusiasm proxies the sentiment factor near its peak.</p>
+  <p>Survey instruments have a clean epistemology (they measure beliefs directly) and two known
+  pathologies: stated beliefs are cheap — no position backs the answer — and panels are unrepresentative.
+  Their persistence in the stack owes to the first property: they are the only instruments that observe
+  <em>expectation</em> rather than its consequences.</p>
+
+  <h3>III.2 Revealed sentiment: prices of fear and flows of hope</h3>
+  <p><b>The closed-end fund discount.</b> Zweig <span class="cite">(1973)</span> proposed, and Lee,
+  Shleifer, and Thaler <span class="cite">(1991)</span> canonized, the discount of closed-end fund prices
+  to their net asset values as an index of individual-investor sentiment: the same assets, wrapped for
+  retail, price differently as retail mood swings — and the discount comoves across funds and with
+  small-stock returns, exactly as a systematic sentiment factor requires.</p>
+  <p><b>Derivatives-implied fear.</b> The CBOE Volatility Index (VIX), constructed from S&amp;P index
+  option premia, measures the market price of near-term expected volatility. Whaley
+  <span class="cite">(2000)</span> christened it "the investor fear gauge," and the name captured the
+  epistemics: because equity index puts are the canonical insurance instrument, their implied volatility
+  embeds the <em>price</em> participants will pay to shed downside — fear made numerical, in dollars,
+  continuously. The put–call volume ratio serves the same logic more coarsely. These are the purest
+  revealed-preference sentiment instruments in existence: no one buys portfolio insurance
+  rhetorically.</p>
+  <p><b>Flows, issuance, and liquidity.</b> Baker and Stein <span class="cite">(2004)</span> read unusual
+  market liquidity itself as a sentiment index (overconfident investors trade more, and their presence
+  lowers the price impact of trades); equity issuance timing — firms selling shares when sentiment is
+  rich — supplies a corporate-side revelation of the same state.</p>
+
+  <h3>III.3 Expressed sentiment: the computational turn</h3>
+  <p>Antweiler and Frank <span class="cite">(2004)</span>, studying millions of internet
+  stock-message-board posts, gave the field its founding result and its founding caution: message
+  activity predicts volatility, while return predictability, though statistically present, is
+  economically small — talk is not <em>just</em> noise, but neither is it a money pump. Tetlock
+  <span class="cite">(2007)</span> moved to mass media, showing that pessimistic word counts in a daily
+  <em>Wall Street Journal</em> column predict downward pressure on prices followed by reversion — the
+  signature of sentiment rather than information. Loughran and McDonald <span class="cite">(2011)</span>
+  supplied the essential instrumentation lesson: general-purpose sentiment dictionaries misclassify
+  finance text wholesale (in 10-K filings, words like "liability" or "cost" are operational, not
+  negative), so domain-specific lexica are a validity requirement, not a refinement.</p>
+  <p>Two extensions define the modern frontier. Bollen, Mao, and Zeng <span class="cite">(2011)</span>
+  claimed that Twitter mood dimensions (notably a "calmness" factor) improve directional forecasts of the
+  Dow — the paper that licensed a decade of social-media sentiment engineering. Da, Engelberg, and Gao
+  <span class="cite">(2015)</span> built FEARS — Financial and Economic Attitudes Revealed by Search —
+  from the frequency of household Google queries such as "recession" and "bankruptcy," showing that
+  search-revealed anxiety predicts short-horizon return reversals, volatility, and fund flows. Search
+  data occupy a privileged epistemic position: queries are <em>private</em> expressive acts, free of the
+  performative distortion that infects public posting. Garcia <span class="cite">(2013)</span>, analyzing
+  a century of New York Times financial text, added the state-dependence result: the return-predictive
+  content of sentiment concentrates in recessions — feeling matters most when times are bad. The
+  transformer era has industrialized the pipeline — FinBERT <span class="cite">(Araci 2019)</span>
+  fine-tunes pre-trained language models on financial text, and Lopez-Lira and Tang
+  <span class="cite">(2023)</span> report that general-purpose large language models score headline
+  sentiment with economically meaningful predictive content — but the Loughran–McDonald lesson still
+  governs: validity lives in the domain fit, not the model size.</p>
+
+  <h3>III.4 The composite instruments: Fear &amp; Greed</h3>
+  <p>Practitioners fused the families into dashboards, and the fusions became the most-consulted
+  sentiment instruments in the world.</p>
+  <p><b>The CNN Fear &amp; Greed Index</b> compresses seven revealed-preference components into a 0–100
+  dial — from extreme fear to extreme greed. Its inputs are instructive precisely because no survey
+  appears among them: equity momentum against a moving-average benchmark; the breadth of new 52-week
+  highs versus lows; advancing-versus-declining volume; the put–call ratio; junk-bond demand measured as
+  the spread of high-yield over investment-grade debt; the VIX against its own recent history; and
+  safe-haven demand measured as the relative performance of stocks versus Treasuries. Each is a price or
+  flow — fear and greed inferred entirely from what capital <em>does</em>. Methodologically the index is
+  a normalization-and-average heuristic, not an estimated factor model; its value is communicative. It
+  converts the Keynesian confidence state into a single public number, and in doing so becomes part of
+  the state it measures — a reflexivity we return to in Section VI.</p>
+  <p><b>The Crypto Fear &amp; Greed Index</b> transplants the design to Bitcoin-centric markets, blending
+  realized volatility against recent baselines, market momentum and volume, social-media activity rates,
+  Bitcoin's dominance share of total crypto capitalization, and search-trend data into the same 0–100
+  scale. The transplant quietly concedes the expressive turn: where CNN's equity dial uses only market
+  internals, the crypto dial reserves substantial weight for social and search signals — an
+  acknowledgment that in a retail-dominated, narrative-driven, 24/7 market, the conversation <em>is</em>
+  a market internal. The crypto index's canonical use is contrarian ("extreme fear" as accumulation
+  signal), which is the Investors Intelligence logic reborn on-chain.</p>
+  <p>The composites teach three design lessons for any new sentiment instrument: <b>(i)</b> diversify
+  across stated/revealed/expressed families, because each fails differently; <b>(ii)</b> normalize each
+  component against its own history, because sentiment is a <em>state relative to baseline</em>, not a
+  level; <b>(iii)</b> publish a single legible number, because an instrument that participants can see
+  becomes a coordination device — for better and for worse.</p>
+
+  <h2 id="s4"><span class="n">IV.</span> The emotonomic turn: from distortion to denomination</h2>
+
+  <h3>IV.1 The inversion stated</h3>
+  <p>Everything above shares one premise: there exists a fundamental value, and sentiment is a deviation
+  from it — measurable, priced, exploitable, but parasitic on a value defined elsewhere. The emotonomics
+  program inverts the premise. In an emotonomic system, the emotional transaction is not the noise around
+  the signal; it is the signal. Value is <em>constituted</em> by attention, gestures, and impact — "the
+  wealth of a community is measured by engagement velocity, not idle balances." This is a
+  normative-design claim, not a positive-empirical one, and we flag it as such: it does not assert that
+  existing markets price feeling correctly, but that a system can be <em>built</em> whose unit of account
+  is a recorded act of feeling.</p>
+  <p>The claim has a respectable lineage it should own explicitly. It radicalizes Keynes's convention
+  theory (if valuation is a confidence convention anyway, engineer the convention deliberately and
+  benevolently); it operationalizes Smith's sympathy (the impartial spectator becomes a public ledger of
+  gestures); and it accepts the noise-trader result at full strength — sentiment is priced and persistent
+  — while refusing the pejorative: in De Long et al.'s economy the noise traders are the pathology,
+  whereas in an emotonomic economy the "noise" — the human warmth in the channel — is the payload.</p>
+  <p><b>Definitions (from the emotonomics program, formalized).</b> A <em>gesture</em> is an on-chain
+  transfer carrying emotional intent from sender to receiver, logged with timestamp and optional context
+  (the <em>Proof of Gesture</em> ledger). An <em>attention event</em> is a verified engagement act (view,
+  share, post, interaction) bound to an identity. <em>Impact</em> is the downstream engagement causally
+  attributable to a gesture. The SHAMBA LUV implementation gives these teeth: a fixed 111-quadrillion
+  supply; a 3% reflection fee that redistributes every trade to all holders — a structural reward for
+  holding, <em>LUV grows when you hold LUV</em>; an IncentiveDistributor contract paying denominated
+  rewards for verified attention acts; and standardized gesture denominations (10⁹ LUV — "some LUV," the
+  standard gesture; 10¹¹ — "a lot of LUV"; 10¹² — one trillion, <em>a million millions</em>, the measure
+  of value).</p>
+
+  <h3>IV.2 Native instruments</h3>
+  <p>An economy denominated in feeling requires sentiment instruments in the national-accounts role. The
+  emotonomics program proposes three, formalized here (all three are <em>proposed</em> instruments; none
+  has yet a validated series):</p>
+  <div class="axiom"><div class="t">Gesture Velocity Index (GVI)</div>
+    <p>Let G(t) be the count of qualifying gestures in window t and H(t) the count of active holders.
+    GVI(t) = G(t)/H(t): gestures per holder per period — the circulation rate of feeling, the emotonomic
+    analogue of monetary velocity. Where classical velocity rises in panics (money fleeing), gesture
+    velocity rises in <em>warmth</em>; its sign convention is inverted, which is the whole point.</p></div>
+  <div class="axiom"><div class="t">Community Resonance Depth (CRD)</div>
+    <p>For each seed gesture, the ledger permits reconstruction of the response cascade — reciprocal
+    gestures, shares, downstream gestures among the receiver's counterparties. CRD is the mean cascade
+    depth per seed gesture: a measure of how far feeling propagates, formally kin to reproduction numbers
+    in diffusion models and to the cascade metrics of the social-media sentiment literature.</p></div>
+  <div class="axiom"><div class="t">Emotional ROI (eROI)</div>
+    <p>For identity i, eROI(i) = gestures received / gestures given over a window; the distribution of
+    eROI across the network measures reciprocity health. A well-functioning emotonomic economy exhibits
+    eROI concentrated near 1 with fat receiving-tails for public contributors — generosity capitalized as
+    standing.</p></div>
+  <p>To these ledger-native measures the live system adds market-side instruments already deployed on the
+  <a href="https://luv.pythai.net/view.html">SHAMBA LUV measurement stack</a>: the <b>single-line
+  measure</b> (one trillion LUV priced continuously in USDC), interval percent-change fields duplicating
+  the practitioner standard, and the <b>X multiplier</b> — price and liquidity expressed as multiples of
+  the genesis seed, which was deliberately placed at the round point 10⁻¹⁷ ETH per LUV so that every
+  subsequent multiplier is a direct read. The X multiplier deserves theoretical note: by fixing an
+  arbitrary but <em>public and permanent</em> baseline, it converts price into a self-normalizing
+  sentiment series — design lesson (ii) of Section III.4 implemented at genesis.</p>
+
+  <h3>IV.3 A LUV Fear &amp; Greed composite (proposed)</h3>
+  <p>Following the composite design lessons, we specify a seven-component LUV sentiment dial, each
+  component normalized against its trailing distribution and averaged to a 0–100 scale from <em>fear</em>
+  (hoarding, silence, exit) to — the emotonomic relabeling matters — <em>LUV</em> (gesture, voice,
+  entry):</p>
+  <ol class="points">
+    <li><b>Momentum</b> — price versus its trailing mean (revealed; CNN component transplanted).</li>
+    <li><b>24-hour change</b> — the live percent-change field (revealed).</li>
+    <li><b>Liquidity multiplier trend</b> — growth of the pool's ETH leg from X (revealed; deepening
+    liquidity is capital's confidence).</li>
+    <li><b>Gesture velocity</b> — GVI against baseline (ledger-native revealed).</li>
+    <li><b>Attention rate</b> — verified share/task submissions per period through the
+    IncentiveDistributor rail (expressive, but <em>costly</em> — each act is identity-bound and reviewed,
+    which mitigates the cheap-talk pathology of stated sentiment).</li>
+    <li><b>Holder growth and retention</b> — net new holders and the fraction not reducing balances
+    (revealed; the hold-LUV signal that the reflection mechanism structurally rewards).</li>
+    <li><b>Reciprocity health</b> — median eROI drift (ledger-native).</li>
+  </ol>
+  <p>Components 1–3 are implementable today from the existing minute-sampled market mirror; 4–7 await the
+  Phase-3 attention rail. We label the composite <em>proposed</em>: its weights are undetermined, and
+  Section VI explains why they should be estimated against outcomes rather than asserted.</p>
+
+  <h2 id="s5"><span class="n">V.</span> Testable propositions</h2>
+  <p>The emotonomic framework earns scientific standing only if it risks falsification. Five
+  propositions, ordered from established-literature replications to native claims:</p>
+  <ol class="points">
+    <li><b>P1 — Sentiment susceptibility.</b> As a hard-to-value, limits-to-arbitrage asset, LUV's price
+    series will show sentiment-factor loadings at the extreme of the Baker–Wurgler conditional: return
+    reversals following expressed-sentiment spikes, strongest at short horizons.</li>
+    <li><b>P2 — Gesture velocity leads price.</b> If gestures constitute value rather than merely
+    celebrating it, GVI should <em>lead</em> market-side measures rather than lag them; Granger-style
+    precedence tests on the Proof of Gesture ledger against the minute-sampled price series are directly
+    computable.</li>
+    <li><b>P3 — Reflection retention.</b> Holders' effective yield from the 3% reflection stream should
+    predict retention (non-selling) beyond price momentum — the structural hold-to-earn incentive should
+    be separable from bandwagon holding.</li>
+    <li><b>P4 — Contrarian dial.</b> Extreme readings of the LUV composite should exhibit the same
+    contrarian asymmetry documented for the crypto Fear &amp; Greed index: fear extremes preceding
+    above-median forward returns more reliably than greed extremes precede below-median ones
+    <span class="cite">(Garcia's 2013 state-dependence, transplanted)</span>.</li>
+    <li><b>P5 — Reciprocity stability.</b> Networks with eROI distributions concentrated near unity will
+    exhibit lower participant churn than reward-equivalent networks with skewed reciprocity — the claim
+    that <em>measured mutuality</em>, not payout size, is the retention variable. This is the
+    distinctively emotonomic prediction; the incentive-design literature does not make it.</li>
+  </ol>
+
+  <h2 id="s6"><span class="n">VI.</span> Objections answered</h2>
+  <div class="obj"><p><span class="q">Goodhart drift.</span> The gravest objection: any measure adopted
+  as a target ceases to be a good measure <span class="cite">(Goodhart 1975; Strathern 1997)</span>. An
+  economy that <em>pays</em> for attention acts invites their simulation; sentiment instruments built on
+  paid acts risk measuring the payment, not the feeling. The answer is architectural, not rhetorical: the
+  SHAMBA LUV attention rail is identity-bound (social-gated, Sybil-resistant by construction),
+  human-reviewed before payout, on-chain deduplicated per act, and denominated in fixed amounts —
+  friction deliberately retained so that the marginal fabricated gesture costs more than it yields. This
+  mitigates but does not dissolve the objection; the honest position is that ledger-native components
+  (4–7) must be continuously re-validated against components (1–3) that cannot be farmed, and weights
+  re-estimated when divergence appears.</p></div>
+  <div class="obj"><p><span class="q">Reflexivity.</span> Soros <span class="cite">(1987)</span> argued
+  that market participants' biased perceptions alter the fundamentals those perceptions concern, in
+  self-reinforcing loops. A published sentiment dial participates in the loop it measures — CNN's dial
+  plausibly <em>coordinates</em> the fear it reports. The emotonomic response is to accept reflexivity as
+  the design substrate rather than a contamination: a system whose value is constituted by collective
+  feeling is <em>deliberately</em> reflexive, and the ethical burden shifts to transparency of mechanism
+  — open source, on-chain verifiability, published methodology — so the loop is legible to those inside
+  it.</p></div>
+  <div class="obj"><p><span class="q">Thin-market pathology.</span> A young pool can print spectacular
+  sentiment numbers on trivial flow — the live system itself recorded a &gt;600% daily move on a handful
+  of buys against a fractional-ETH pool. Raw price-derived components are therefore untrustworthy
+  precisely when the asset is young, which is when enthusiasm peaks. This is why the proposed composite
+  carries liquidity depth as a first-class component and why the X multiplier reports price and liquidity
+  <em>separately</em>: a price multiple unaccompanied by a liquidity multiple is flagged by construction
+  as fragile. The measurement stack, to its credit, already displays both.</p></div>
+  <div class="obj"><p><span class="q">The category objection.</span> A skeptic may grant every
+  measurement and deny the inversion: perhaps attention and gestures are measurable, but calling them
+  "value" is definitional fiat. We concede the positive/normative line: emotonomics is a design program,
+  and its value claim is performative — true if, and insofar as, a community sustains the convention. But
+  this is exactly Keynes's account of <em>all</em> valuation under uncertainty; the emotonomic system
+  differs from the equity market not in resting on convention but in saying so on the label.</p></div>
+
+  <h2 id="s7"><span class="n">VII.</span> Conclusion</h2>
+  <p>Sentiment research began as an insult ("animal spirits"), matured into a factor, and industrialized
+  into an instrument stack: surveys that ask, derivatives that price fear in dollars, texts and searches
+  that betray mood at scale, and composites — Fear &amp; Greed foremost — that compress the state of
+  collective feeling into one public number. The emotonomic turn takes the final step the literature
+  prepared but never took: if feeling is measurable, persistent, and priced, a system may be built that
+  denominates value in it deliberately. The instruments proposed here — gesture velocity, resonance
+  depth, reciprocity health, and a seven-component LUV composite anchored by a genesis-fixed baseline —
+  are that step's engineering documents. Their scientific fate rests on Propositions P1–P5, and the
+  program should want it that way: <b>a measure of feeling that fears no measurement of itself</b>.</p>
+
+  <h2 id="refs">References</h2>
+  <ul class="refs">
+    <li>Akerlof, G. A., &amp; Shiller, R. J. (2009). <em>Animal Spirits: How Human Psychology Drives the Economy, and Why It Matters for Global Capitalism</em>. Princeton University Press.</li>
+    <li>Alternative.me (ongoing). "Crypto Fear &amp; Greed Index." Published methodology: volatility, market momentum/volume, social media, Bitcoin dominance, search trends.</li>
+    <li>Antweiler, W., &amp; Frank, M. Z. (2004). "Is All That Talk Just Noise? The Information Content of Internet Stock Message Boards." <em>Journal of Finance</em> 59(3): 1259–1294.</li>
+    <li>Araci, D. (2019). "FinBERT: Financial Sentiment Analysis with Pre-trained Language Models." arXiv:1908.10063.</li>
+    <li>Baker, M., &amp; Stein, J. C. (2004). "Market Liquidity as a Sentiment Indicator." <em>Journal of Financial Markets</em> 7(3): 271–299.</li>
+    <li>Baker, M., &amp; Wurgler, J. (2006). "Investor Sentiment and the Cross-Section of Stock Returns." <em>Journal of Finance</em> 61(4): 1645–1680.</li>
+    <li>Baker, M., &amp; Wurgler, J. (2007). "Investor Sentiment in the Stock Market." <em>Journal of Economic Perspectives</em> 21(2): 129–152.</li>
+    <li>Barberis, N., Shleifer, A., &amp; Vishny, R. (1998). "A Model of Investor Sentiment." <em>Journal of Financial Economics</em> 49(3): 307–343.</li>
+    <li>Black, F. (1986). "Noise." <em>Journal of Finance</em> 41(3): 529–543.</li>
+    <li>Bollen, J., Mao, H., &amp; Zeng, X. (2011). "Twitter Mood Predicts the Stock Market." <em>Journal of Computational Science</em> 2(1): 1–8.</li>
+    <li>CNN Business (ongoing). "Fear &amp; Greed Index." Published methodology: momentum, price strength, breadth, put/call, junk-bond demand, VIX, safe-haven demand.</li>
+    <li>Da, Z., Engelberg, J., &amp; Gao, P. (2015). "The Sum of All FEARS: Investor Sentiment and Asset Prices." <em>Review of Financial Studies</em> 28(1): 1–32.</li>
+    <li>De Long, J. B., Shleifer, A., Summers, L. H., &amp; Waldmann, R. J. (1990). "Noise Trader Risk in Financial Markets." <em>Journal of Political Economy</em> 98(4): 703–738.</li>
+    <li>Fama, E. F. (1970). "Efficient Capital Markets: A Review of Theory and Empirical Work." <em>Journal of Finance</em> 25(2): 383–417.</li>
+    <li>Friedman, M. (1953). "The Case for Flexible Exchange Rates." In <em>Essays in Positive Economics</em>. University of Chicago Press.</li>
+    <li>Garcia, D. (2013). "Sentiment during Recessions." <em>Journal of Finance</em> 68(3): 1267–1300.</li>
+    <li>Goodhart, C. A. E. (1975). "Problems of Monetary Management: The U.K. Experience." In <em>Papers in Monetary Economics</em>, vol. I. Reserve Bank of Australia.</li>
+    <li>Kahneman, D., &amp; Tversky, A. (1979). "Prospect Theory: An Analysis of Decision under Risk." <em>Econometrica</em> 47(2): 263–291.</li>
+    <li>Katona, G. (1975). <em>Psychological Economics</em>. Elsevier.</li>
+    <li>Keynes, J. M. (1936). <em>The General Theory of Employment, Interest and Money</em>. Macmillan. (Ch. 12, "The State of Long-Term Expectation.")</li>
+    <li>Kindleberger, C. P. (1978). <em>Manias, Panics, and Crashes: A History of Financial Crises</em>. Basic Books.</li>
+    <li>Lee, C. M. C., Shleifer, A., &amp; Thaler, R. H. (1991). "Investor Sentiment and the Closed-End Fund Puzzle." <em>Journal of Finance</em> 46(1): 75–109.</li>
+    <li>Lopez-Lira, A., &amp; Tang, Y. (2023). "Can ChatGPT Forecast Stock Price Movements? Return Predictability and Large Language Models." arXiv:2304.07619.</li>
+    <li>Loughran, T., &amp; McDonald, B. (2011). "When Is a Liability Not a Liability? Textual Analysis, Dictionaries, and 10-Ks." <em>Journal of Finance</em> 66(1): 35–65.</li>
+    <li>Mackay, C. (1841). <em>Extraordinary Popular Delusions and the Madness of Crowds</em>. Richard Bentley.</li>
+    <li>Shiller, R. J. (1981). "Do Stock Prices Move Too Much to Be Justified by Subsequent Changes in Dividends?" <em>American Economic Review</em> 71(3): 421–436.</li>
+    <li>Shiller, R. J. (2000). <em>Irrational Exuberance</em>. Princeton University Press.</li>
+    <li>Shleifer, A., &amp; Vishny, R. W. (1997). "The Limits of Arbitrage." <em>Journal of Finance</em> 52(1): 35–55.</li>
+    <li>Smith, A. (1759). <em>The Theory of Moral Sentiments</em>. A. Millar.</li>
+    <li>Soros, G. (1987). <em>The Alchemy of Finance: Reading the Mind of the Market</em>. Simon &amp; Schuster.</li>
+    <li>Strathern, M. (1997). "'Improving Ratings': Audit in the British University System." <em>European Review</em> 5(3): 305–321.</li>
+    <li>Tetlock, P. C. (2007). "Giving Content to Investor Sentiment: The Role of Media in the Stock Market." <em>Journal of Finance</em> 62(3): 1139–1168.</li>
+    <li>Whaley, R. E. (2000). "The Investor Fear Gauge." <em>Journal of Portfolio Management</em> 26(3): 12–17.</li>
+    <li>Zweig, M. E. (1973). "An Investor Expectations Stock Price Predictive Model Using Closed-End Fund Premiums." <em>Journal of Finance</em> 28(1): 67–78.</li>
+  </ul>
+
+  <div class="readmore">
+    <a class="btn" href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/SENTIMENT.md" rel="noopener">📄 this paper on GitHub</a>
+    <a class="btn" href="emotonomics.html">🎓 EMOTONOMICS — the field paper</a>
+    <a class="btn" href="faq.html">💬 FAQ</a>
+    <a class="btn" href="view.html">📈 the live market</a>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>❤ LUV is priceless</span>
+    <span class="spacer"></span>
+    <a href="/">the doorway</a>
+    <a href="faq.html">FAQ</a>
+    <a href="https://github.com/SHAMBA-LUV/LUV" rel="noopener">source &amp; audit</a>
+    <a class="brandmark" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="LUV verified on Etherscan · Powered by Etherscan.io APIs">
+      <img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="14">
+      <span>Powered by Etherscan.io APIs</span>
+    </a>
+    <span>SHAMBA © 2026 LUV</span>
+  </div>
+</footer>
+
+</body>
+</html>
