@@ -362,10 +362,14 @@ a.exlink img,.marketrow img{height:16px;width:auto;vertical-align:-4px}
     fee-free wallet-to-wallet, and a free <b>1-trillion-LUV</b> airdrop to everyone who arrives. This is
     abundance over scarcity — LUV enters the world priceless, in as many hands as will hold it.</p>
 
-    <p><b class="g">Phase 2 — The Value of LUV.</b> Connection earns a price. <b>100 quadrillion LUV is
-    paired with ETH as liquidity</b>, opening the LUV/ETH market on Uniswap. The gesture now meets the
-    market: LUV becomes tradable, discoverable, and real — and every trade feeds the 3% reflections that
-    reward holding.</p>
+    <p><b class="g">Phase 2 — The Value of LUV.</b> Connection earns a price. The LUV/ETH market opened on
+    Uniswap seeded at <b>the absolute maximum a V2 pair can hold: 2¹¹²−1 wei ≈ 5.19 quadrillion LUV</b> —
+    Uniswap V2 stores pair reserves as <b>uint112</b> and reverts anything above it
+    (<a href="https://github.com/Uniswap/v2-core/blob/master/contracts/UniswapV2Pair.sol" rel="noopener">'UniswapV2: OVERFLOW', UniswapV2Pair.sol ↗</a>), so the
+    roadmap's full 100 quadrillion cannot sit in one pair by protocol design. The gesture now meets the
+    market: LUV is tradable, discoverable, and real; every trade feeds the 3% reflections; the treasury's
+    remaining circulating supply backs the market as depth grows — and <b>locking the liquidity (the LP
+    position into LUVLocker) is the standing priority</b>.</p>
 
     <p><b class="g">Phase 3 — Sharing is Caring.</b> Attention becomes capital. Through the
     <b>IncentiveDistributor</b>, participants <b>earn LUV for gestures</b> — welcoming, posting,
@@ -472,6 +476,7 @@ a.exlink img,.marketrow img{height:16px;width:auto;vertical-align:-4px}
     <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/EMOTONOMICS.md" rel="noopener">EMOTONOMICS</a> — the emotional-economy whitepaper ·
     <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/LUVPAPER.md" rel="noopener">LUVPAPER</a> — the token paper ·
     <a href="sentiment.html">SENTIMENT — the measurement paper</a> — measured feeling: fear, greed, and the emotonomic turn ·
+    <a href="wei.html">the WEI of LUV</a> — the arithmetic paper: born at ten wei, the uint112 seed, sources of ETH liquidity ·
     <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/WHITEPAPER.md" rel="noopener">WHITEPAPER</a> ·
     <a href="https://github.com/SHAMBA-LUV" rel="noopener">github.com/SHAMBA-LUV</a> ·
     <b>luv@pythai.net</b></p></div>

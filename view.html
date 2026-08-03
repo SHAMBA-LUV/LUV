@@ -163,11 +163,13 @@ footer .brandmark:hover img{opacity:1}
   <div class="phaseband narrow">
     <span class="stamp"><span class="tick">✓</span> phase two — complete</span>
     <div class="line"><b>The Value of LUV</b> — delivered.</div>
-    <div class="note">100 quadrillion LUV stands paired with ETH on
+    <div class="note">The LUV/ETH pool stands seeded at <b>the Uniswap V2 maximum — 2¹¹²−1 wei
+    ≈ 5.19 quadrillion LUV</b> (<a href="https://github.com/Uniswap/v2-core/blob/master/contracts/UniswapV2Pair.sol" target="_blank" rel="noopener">uint112 reserves ↗</a>) on
     <a href="https://app.uniswap.org/swap?chain=ethereum&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">Uniswap ↗</a>.
     The market is open, the pair is live, the contract is
     <a href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254#code" target="_blank" rel="noopener"><b>verified</b> ↗</a>
-    — the gesture has met the market, exactly as the roadmap promised.
+    — the gesture has met the market at the protocol's own ceiling, and <b>locking the liquidity
+    into LUVLocker</b> is the standing priority.
     Next: <a href="#luvshare" class="g"><b class="g">Phase 3 — Sharing is Caring</b></a>.</div>
     <div class="phasetrack">
       <span class="done">Phase 1 · LUV is Priceless</span>
@@ -231,9 +233,11 @@ footer .brandmark:hover img{opacity:1}
 
     <div class="panel">
       <div class="k">LUV / WETH — the market pair</div>
-      <p>The open market itself: the Uniswap V2 pool holding the <b class="g">100-quadrillion circulating
-      supply</b> paired with ETH — permissionless depth anyone can trade against, and the source of the
-      3% reflections every holder earns.</p>
+      <p>The open market itself: the Uniswap V2 pool seeded at <b class="g">the V2 maximum —
+      ≈ 5.19 quadrillion LUV (2¹¹²−1 wei)</b> paired with ETH. Reserves are uint112 by protocol design
+      ('UniswapV2: OVERFLOW' guards the cap), so this single pair carries the most LUV any V2 pool can —
+      permissionless depth anyone can trade against, and the source of the 3% reflections every holder
+      earns.</p>
       <div class="addrline">
         <code>0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31</code>
         <span class="vbadge">● pair live</span>
@@ -245,6 +249,33 @@ footer .brandmark:hover img{opacity:1}
       <p style="margin-top:12px">Every contract in the suite — token, launcher, airdrop, distributor, locker,
       and the ERC-4337 wallet stack — is deployed, open, and verifiable:
       <a href="faq.html#contracts">the full ledger lives in the FAQ →</a></p>
+    </div>
+
+    <div class="panel">
+      <div class="k gold">the holders — while the list is short</div>
+      <p>Every LUV balance on mainnet, read live from <code style="font-size:12px">balanceOf</code>
+      (reflections included), as of 2026-08-03. Some LUV was <b>sent to
+      <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0x000000000000000000000000000000000000dEaD" target="_blank" rel="noopener">0x…dEaD</a></b> —
+      burned forever, <b>reflection-excluded</b>, and out of circulation: the reported market cap fell by
+      exactly that share, and every remaining holder's slice of the reflections grew.</p>
+      <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px">
+        <tr style="color:var(--rose);text-transform:uppercase;letter-spacing:.14em;font-size:10px;text-align:left">
+          <th style="padding:6px 10px 6px 0">holder</th><th style="padding:6px 10px">address</th>
+          <th style="padding:6px 10px;text-align:right">LUV</th><th style="padding:6px 0;text-align:right">% supply</th></tr>
+        <tr><td style="padding:5px 10px 5px 0;color:var(--gold)">treasury (bankon.eth)</td><td style="padding:5px 10px"><a href="https://etherscan.io/address/0x10f7Ee226B16bea7f365Dc1eDEF159Fc1957D169" target="_blank" rel="noopener">0x10f7…D169</a></td><td style="padding:5px 10px;text-align:right">100,000,000,000,000,000</td><td style="padding:5px 0;text-align:right">90.000%</td></tr>
+        <tr><td style="padding:5px 10px 5px 0;color:var(--rose)">🔥 dEaD — burned</td><td style="padding:5px 10px"><a href="https://etherscan.io/address/0x000000000000000000000000000000000000dEaD" target="_blank" rel="noopener">0x…dEaD</a></td><td style="padding:5px 10px;text-align:right">4,980,559,643,425,538</td><td style="padding:5px 0;text-align:right">4.483%</td></tr>
+        <tr><td style="padding:5px 10px 5px 0">LUV/WETH pair (the market)</td><td style="padding:5px 10px"><a href="https://etherscan.io/address/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31" target="_blank" rel="noopener">0x57D2…8a31</a></td><td style="padding:5px 10px;text-align:right">1,974,737,045,122,436</td><td style="padding:5px 0;text-align:right">1.777%</td></tr>
+        <tr><td style="padding:5px 10px 5px 0">community holder</td><td style="padding:5px 10px"><a href="https://etherscan.io/address/0x9aac6e9097f15c943d284d25075b6e598476c540" target="_blank" rel="noopener">0x9aac…c540</a></td><td style="padding:5px 10px;text-align:right">1,071,282,719,522,310</td><td style="padding:5px 0;text-align:right">0.964%</td></tr>
+        <tr><td style="padding:5px 10px 5px 0">ShambaLuvAirdrop (gesture pool)</td><td style="padding:5px 10px"><a href="https://etherscan.io/address/0xdf2C1836550c5711EF9c021cB0de86241dc1DEf3" target="_blank" rel="noopener">0xdf2C…DEf3</a></td><td style="padding:5px 10px;text-align:right">1,020,788,498,466,107</td><td style="padding:5px 0;text-align:right">0.919%</td></tr>
+        <tr><td style="padding:5px 10px 5px 0">community holder</td><td style="padding:5px 10px"><a href="https://etherscan.io/address/0xf13176ece4ed8d9aa4c335cd4f247458d4863fe4" target="_blank" rel="noopener">0xf131…3fe4</a></td><td style="padding:5px 10px;text-align:right">794,169,668,155,235</td><td style="padding:5px 0;text-align:right">0.715%</td></tr>
+        <tr><td style="padding:5px 10px 5px 0">community holder</td><td style="padding:5px 10px"><a href="https://etherscan.io/address/0xd6476470ca99daf7e57b776f2a218db4345886ba" target="_blank" rel="noopener">0xd647…86ba</a></td><td style="padding:5px 10px;text-align:right">686,875,758,317,072</td><td style="padding:5px 0;text-align:right">0.618%</td></tr>
+        <tr><td style="padding:5px 10px 5px 0">community holder</td><td style="padding:5px 10px"><a href="https://etherscan.io/address/0xb51ff2f65b935142aab32abefa1c0e29a4161d31" target="_blank" rel="noopener">0xb51f…1d31</a></td><td style="padding:5px 10px;text-align:right">420,881,068,506,067</td><td style="padding:5px 0;text-align:right">0.379%</td></tr>
+        <tr><td style="padding:5px 10px 5px 0">community holder</td><td style="padding:5px 10px"><a href="https://etherscan.io/address/0x16666644043aecb616a061f0af42745d0d7390c4" target="_blank" rel="noopener">0x1666…90c4</a></td><td style="padding:5px 10px;text-align:right">131,173,106,036,387</td><td style="padding:5px 0;text-align:right">0.118%</td></tr>
+        <tr><td style="padding:5px 10px 5px 0">token contract (fees awaiting processFees)</td><td style="padding:5px 10px"><a href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">0x2711…8254</a></td><td style="padding:5px 10px;text-align:right">6,018,917,587,889</td><td style="padding:5px 0;text-align:right">0.005%</td></tr>
+      </table></div>
+      <p style="margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--dim)">
+      + airdrop-claim wallets holding ~1.02T each and dust — 99.997% of the 111-quadrillion repunit accounted ·
+      full live list on <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254#balances" target="_blank" rel="noopener">Etherscan ↗</a></p>
     </div>
 
     <div class="slipnote" style="margin-top:26px">LUV grows when you hold LUV — 3% of every trade reflects to every
