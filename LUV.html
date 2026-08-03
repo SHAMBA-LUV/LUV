@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LUV — the price, both ways — SHAMBA LUV</title>
+<meta name="description" content="The price of LUV expressed both ways: how much ETH buys 1,000,000,000,000.000000000000000000 LUV, and how many WEI one LUV costs — read live from the pair reserves on-chain. The seed priced LUV at exactly 10 WEI.">
+<meta name="author" content="SHAMBA LUV">
+<link rel="canonical" href="https://luv.pythai.net/LUV.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SHAMBA LUV">
+<meta property="og:title" content="LUV — the price, both ways">
+<meta property="og:description" content="ETH → one trillion LUV, and WEI per LUV — live from the liquidity pair itself. Seeded at exactly 10 WEI.">
+<meta property="og:url" content="https://luv.pythai.net/LUV.html">
+<meta property="og:image" content="https://luv.pythai.net/gfx/logo.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://luv.pythai.net/gfx/logo.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --ink:#160a0f;--wine:#2b111c;--seam:#4a1f30;--rose:#ff4d6d;--pink:#ff006e;--purple:#8338ec;
+  --blush:#ffb3c1;--cream:#f6e7eb;--dim:#b98da0;--gold:#e3b25f;
+  --mono:ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--ink);color:var(--cream);font-family:var(--sans);line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:var(--blush)}
+a:hover{color:var(--rose)}
+:focus-visible{outline:2px solid var(--rose);outline-offset:3px;border-radius:2px}
+.wrap{max-width:920px;margin:0 auto;padding:0 24px}
+header{border-bottom:1px solid var(--seam)}
+.bar{display:flex;align-items:center;gap:14px;padding:16px 0}
+.brand{font-family:var(--mono);font-size:15px;letter-spacing:.14em;color:var(--cream);text-decoration:none}
+.brand b{color:var(--rose)}
+.bar .spacer{flex:1}
+.bar a.back{font-family:var(--mono);font-size:12px;text-decoration:none;color:var(--dim)}
+.bar a.back:hover{color:var(--rose)}
+h1{margin:52px 0 6px;text-align:center;font-size:clamp(32px,6vw,52px);font-weight:800;
+  background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{text-align:center;color:var(--dim);margin-bottom:40px}
+@keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.08)}28%{transform:scale(1)}42%{transform:scale(1.06)}56%{transform:scale(1)}}
+.beat{display:inline-block;animation:heartbeat 1.4s ease-in-out infinite;color:var(--rose)}
+@media(prefers-reduced-motion:reduce){.beat{animation:none}}
+/* ── the two expressions ── */
+.expr{border:1px solid var(--seam);border-radius:16px;background:var(--wine);padding:34px 30px;margin-bottom:18px;text-align:center}
+.expr .k{font-family:var(--mono);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--rose);margin-bottom:16px}
+.expr .k.gold{color:var(--gold)}
+.expr .big{font-family:var(--mono);font-weight:800;font-size:clamp(17px,3.4vw,30px);line-height:1.35;word-break:break-all;
+  background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+.expr .eq{display:block;font-family:var(--mono);font-size:clamp(15px,2.6vw,22px);color:var(--dim);margin:8px 0}
+.expr .luvamt{font-family:var(--mono);font-weight:800;font-size:clamp(14px,2.6vw,24px);line-height:1.35;word-break:break-all;color:var(--cream)}
+.expr .luvamt b{color:var(--rose)}
+.expr .note{margin-top:14px;font-size:13.5px;color:var(--dim)}
+.expr .note b{color:var(--gold)}
+.expr .wei{font-family:var(--mono);font-weight:800;font-size:clamp(24px,5vw,44px);color:var(--gold)}
+.usdline{text-align:center;font-family:var(--mono);font-size:14px;color:var(--dim);margin:6px 0 26px}
+.usdline b{color:var(--blush)}
+.fineline{text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--dim);margin-top:6px}
+.ctarow{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;margin:30px 0 8px}
+.btn{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--blush);text-decoration:none;
+  border:1px solid var(--seam);border-radius:999px;padding:8px 18px;transition:color .15s,border-color .15s}
+.btn:hover{color:var(--rose);border-color:var(--rose)}
+.uni-cta{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:15px;color:var(--cream);text-decoration:none;
+  border:1px solid #FF007A;border-radius:999px;padding:12px 24px;transition:background .15s}
+.uni-cta:hover{background:rgba(255,0,122,.12);color:var(--cream)}
+.uni-cta img{height:18px;width:auto}
+.slipnote{text-align:center;font-size:13px;color:var(--dim)}
+.slipnote b{color:var(--gold)}
+footer{margin-top:64px;border-top:1px solid var(--seam);padding:26px 0 44px}
+footer .wrap{max-width:1180px;display:flex;flex-wrap:wrap;gap:18px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--dim)}
+footer a{text-decoration:none}
+footer .spacer{flex:1}
+footer .brandmark{display:inline-flex;align-items:center;gap:7px;color:var(--dim)}
+footer .brandmark img{height:14px;width:auto;display:block;opacity:.85}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="/">❤ SHAMBA <b>LUV</b></a>
+    <span class="spacer"></span>
+    <a class="back" href="view.html">live view</a>
+    <a class="back" href="faq.html">FAQ</a>
+    <a class="back" href="/">← back to the doorway</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1>the price of LUV</h1>
+  <div class="sub">✨ both ways — read live from the liquidity pair itself ✨</div>
+
+  <!-- expression 1: ETH → one trillion LUV -->
+  <div class="expr">
+    <div class="k">ETH → one trillion LUV</div>
+    <div class="big" id="lp-eth">…</div>
+    <span class="eq">=</span>
+    <div class="luvamt"><span class="beat">❤</span> <span id="lp-luv">1,000,000,000,000.000000000000000000 LUV</span></div>
+    <div class="note">one trillion LUV — a million millions, to the last of its eighteen decimals.
+    That is what the pool asks for it, right now.</div>
+  </div>
+
+  <div class="usdline">≈ <b id="lp-usd">…</b> · the same trillion, in USDC</div>
+
+  <!-- expression 2: WEI / LUV -->
+  <div class="expr">
+    <div class="k gold">WEI / LUV</div>
+    <div class="wei" id="lp-wei">…</div>
+    <div class="note" id="lp-wei-note">the seed priced LUV at exactly <b>10 WEI</b></div>
+    <div class="note">wei — the smallest unit of ETH, 10<sup>−18</sup>. LUV entered the world at
+    ten of them. Every wei above that is the market speaking.</div>
+  </div>
+
+  <div class="fineline" id="lp-depth">…</div>
+  <div class="fineline" id="lp-at"></div>
+
+  <div class="ctarow">
+    <a class="uni-cta" href="https://app.uniswap.org/swap?chain=ethereum&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254&amp;exactField=output&amp;exactAmount=1000000000000" target="_blank" rel="noopener">
+      <img src="gfx/brand/uniswap_horizontal_white.svg" alt="Uniswap"> <span>Buy the trillion ❤</span>
+    </a>
+    <a class="btn" href="view.html">📈 live view — candles, RSI, MACD</a>
+    <a class="btn" href="emotonomics.html">🎓 the field paper</a>
+  </div>
+  <div class="slipnote">set slippage to <b>~10%</b> — LUV carries a 5% reflection fee</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>❤ LUV is priceless</span>
+    <span class="spacer"></span>
+    <a href="/">the doorway</a>
+    <a href="view.html">live view</a>
+    <a href="faq.html">FAQ</a>
+    <a class="brandmark" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="LUV verified on Etherscan · Powered by Etherscan.io APIs">
+      <img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="14">
+      <span>Powered by Etherscan.io APIs</span>
+    </a>
+    <span>SHAMBA © 2026 LUV</span>
+  </div>
+</footer>
+
+<script src="substrate/luv-price.js?v=1"></script>
+</body>
+</html>

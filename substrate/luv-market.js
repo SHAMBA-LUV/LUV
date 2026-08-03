@@ -42,6 +42,41 @@
     return '$' + Number(v).toFixed(4) + ' USDC';
   }
 
+  // ── indicator math (plain arrays, index-aligned to their inputs) ──
+  function emaSeries(vals, period) {
+    var k = 2 / (period + 1), out = [], prev;
+    vals.forEach(function (v, i) { prev = i ? v * k + prev * (1 - k) : v; out.push(prev); });
+    return out;
+  }
+  function rsiSeries(vals, period) {
+    var out = new Array(vals.length).fill(null), g = 0, l = 0;
+    for (var i = 1; i < vals.length; i++) {
+      var d = vals[i] - vals[i - 1], up = d > 0 ? d : 0, dn = d < 0 ? -d : 0;
+      if (i <= period) {
+        g += up; l += dn;
+        if (i === period) { g /= period; l /= period; out[i] = l === 0 ? 100 : 100 - 100 / (1 + g / l); }
+      } else {
+        g = (g * (period - 1) + up) / period; l = (l * (period - 1) + dn) / period;
+        out[i] = l === 0 ? 100 : 100 - 100 / (1 + g / l);
+      }
+    }
+    return out;
+  }
+  function macdSeries(vals) {
+    var e12 = emaSeries(vals, 12), e26 = emaSeries(vals, 26);
+    var macd = vals.map(function (_, i) { return i >= 25 ? e12[i] - e26[i] : null; });
+    var valid = macd.filter(function (v) { return v !== null; });
+    var sigValid = emaSeries(valid, 9);
+    var signal = new Array(vals.length).fill(null);
+    for (var i = 0, j = 0; i < vals.length; i++) if (macd[i] !== null) { signal[i] = j >= 8 ? sigValid[j] : null; j++; }
+    return { macd: macd, signal: signal };
+  }
+  var RIBBON = [
+    { p: 8,  col: '#ffb3c1' }, { p: 13, col: '#ff4d6d' }, { p: 21, col: '#ff006e' },
+    { p: 34, col: '#b23bd6' }, { p: 55, col: '#8338ec' }
+  ];
+  var FIBS = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
+
   function Market(mount) {
     this.root = typeof mount === 'string' ? document.querySelector(mount) : mount;
     this.market = null;
@@ -63,8 +98,8 @@
       '<div class="mkt-chart"><svg role="img" aria-label="LUV price in USD over the last 24 hours"></svg>' +
       '<div class="mkt-tip" hidden></div></div>' +
       '<div class="mkt-fine"><span class="mkt-delta"></span><span class="mkt-x" title="the X multiplier — measured from the liquidity seed (price X = 1.00e-17 ETH per LUV)"></span><span class="mkt-spacer"></span>' +
-      '<span class="mkt-src">updates every 15 min · pair mirrored server-side · ' +
-      'correlate against the DEX Screener embed below</span></div>';
+      '<span class="mkt-src">updates every 15 min · price read from the pair reserves on-chain · ' +
+      'EMA ribbon 8·13·21·34·55 · fib retracement · RSI 14 · MACD 12·26·9</span></div>';
   };
 
   Market.prototype._fetch = function () {
@@ -111,18 +146,18 @@
   Market.prototype._renderChart = function () {
     var d3 = global.d3; if (!d3) return;
     var box = this.root.querySelector('.mkt-chart'), svg = d3.select(box).select('svg');
-    var W = box.clientWidth || 600, H = Math.max(180, Math.min(260, W * 0.32));
-    svg.attr('viewBox', '0 0 ' + W + ' ' + H).attr('width', '100%').attr('height', H);
+    var W = box.clientWidth || 600, HM = Math.max(180, Math.min(260, W * 0.32));
     svg.selectAll('*').remove();
 
     var now = Date.now();
     var svgEl = this.root.querySelector('.mkt-chart svg');
-    if (svgEl) svgEl.setAttribute('aria-label', 'LUV price in USD — the 4-hour view in 5-minute candles; flat stretches between trades stay level');
+    if (svgEl) svgEl.setAttribute('aria-label', 'LUV price in USD — 4-hour view in 5-minute candles with EMA ribbon, Fibonacci retracement, RSI and MACD panes; flat stretches between trades stay level');
     var pts = this.points.filter(function (p) { return p[0] >= now - WINDOW_MS; });
     if (pts.length < 2) pts = this.points.slice();
     var deltaEl = this.root.querySelector('.mkt-delta');
     if (pts.length < 2) {
-      svg.append('text').attr('x', W / 2).attr('y', H / 2).attr('text-anchor', 'middle')
+      svg.attr('viewBox', '0 0 ' + W + ' ' + HM).attr('width', '100%').attr('height', HM);
+      svg.append('text').attr('x', W / 2).attr('y', HM / 2).attr('text-anchor', 'middle')
         .attr('fill', FLAT).attr('font-size', 13)
         .text('collecting samples — the line grows from here ❤');
       deltaEl.textContent = '';
@@ -154,8 +189,15 @@
       x = d3.scaleUtc().domain(d3.extent(pts, function (p) { return p[0]; })).range([m.left, W - m.right]);
       ext = d3.extent(pts, function (p) { return p[1]; });
     }
+    // sub-panes (RSI + MACD) render once there are enough 5m closes to mean anything
+    var closes = candles.map(function (c) { return c.c; });
+    var showPanes = candleMode && closes.length >= 16;
+    var PANE_GAP = 10, RSI_H = 54, MACD_H = 66;
+    var H = HM + (showPanes ? PANE_GAP + RSI_H + PANE_GAP + MACD_H : 0);
+    svg.attr('viewBox', '0 0 ' + W + ' ' + H).attr('width', '100%').attr('height', H);
+
     var pad = (ext[1] - ext[0]) * 0.15 || ext[1] * 0.05 || 1e-15;
-    var y = d3.scaleLinear().domain([ext[0] - pad, ext[1] + pad]).range([H - m.bottom, m.top]);
+    var y = d3.scaleLinear().domain([ext[0] - pad, ext[1] + pad]).range([HM - m.bottom, m.top]);
 
     svg.append('g').call(function (g) {
       y.ticks(4).forEach(function (t) {
@@ -163,7 +205,7 @@
           .attr('stroke', 'rgba(246,231,235,.07)');
       });
     });
-    var ax = svg.append('g').attr('transform', 'translate(0,' + (H - m.bottom) + ')')
+    var ax = svg.append('g').attr('transform', 'translate(0,' + (HM - m.bottom) + ')')
       .call(d3.axisBottom(x).ticks(5).tickSize(0).tickPadding(8));
     var ay = svg.append('g').attr('transform', 'translate(' + m.left + ',0)')
       .call(d3.axisLeft(y).ticks(4).tickSize(0).tickPadding(6).tickFormat(function (v) { return '$' + (Number(v) * 1e12).toFixed(4); }));
@@ -171,6 +213,33 @@
       g.select('.domain').remove();
       g.selectAll('text').attr('fill', '#b98da0').attr('font-size', 10)
         .attr('font-family', "ui-monospace,'SF Mono',Menlo,monospace");
+    });
+
+    // ── Fibonacci retracement — levels of the window's high→low, under everything ──
+    var fibSpan = ext[1] - ext[0];
+    if (fibSpan > 0) {
+      FIBS.forEach(function (f) {
+        var lvl = ext[0] + fibSpan * f, yy = y(lvl);   // 0 = window low, 1 = window high
+        var edge = f === 0 || f === 1;
+        svg.append('line').attr('x1', m.left).attr('x2', W - m.right).attr('y1', yy).attr('y2', yy)
+          .attr('stroke', '#e3b25f').attr('stroke-opacity', edge ? 0.35 : 0.22)
+          .attr('stroke-dasharray', edge ? null : '3,4').attr('stroke-width', 1);
+        svg.append('text').attr('x', W - m.right - 2).attr('y', yy - 3).attr('text-anchor', 'end')
+          .attr('fill', '#e3b25f').attr('fill-opacity', 0.6).attr('font-size', 8.5)
+          .attr('font-family', "ui-monospace,'SF Mono',Menlo,monospace")
+          .text('fib ' + f.toFixed(3).replace(/0+$/, '').replace(/\.$/, '.0'));
+      });
+    }
+
+    // ── EMA ribbon — Fibonacci periods 8·13·21·34·55 (5m-equivalent) on minute closes ──
+    var ribbonLine = d3.line()
+      .x(function (d) { return x(d[0]); }).y(function (d) { return y(d[1]); })
+      .defined(function (d) { return d[0] >= x.domain()[0] && d[0] <= x.domain()[1]; });
+    RIBBON.forEach(function (r) {
+      var e = emaSeries(pts.map(function (p) { return p[1]; }), r.p * 5); // minute samples → ×5
+      var series = pts.map(function (p, i) { return [p[0], e[i]]; });
+      svg.append('path').datum(series).attr('d', ribbonLine).attr('fill', 'none')
+        .attr('stroke', r.col).attr('stroke-opacity', 0.5).attr('stroke-width', 1.3);
     });
 
     if (candleMode) {
@@ -192,7 +261,7 @@
       });
     } else {
       // too young for two candles — fall back to the growing line
-      var area = d3.area().x(function (p) { return x(p[0]); }).y0(H - m.bottom).y1(function (p) { return y(p[1]); });
+      var area = d3.area().x(function (p) { return x(p[0]); }).y0(HM - m.bottom).y1(function (p) { return y(p[1]); });
       var line = d3.line().x(function (p) { return x(p[0]); }).y(function (p) { return y(p[1]); });
       var grad = svg.append('defs').append('linearGradient').attr('id', 'luvfill')
         .attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 1);
@@ -207,14 +276,83 @@
     deltaEl.innerHTML = 'Δ across our samples: <b style="color:' + pctColor(chg) + '">' +
       pctArrow(chg) + ' ' + fmtPct(chg) + '</b>';
 
+    // ── RSI(14) + MACD(12,26,9) sub-panes on the 5-minute closes ──
+    if (showPanes) {
+      var cxOf = function (i) { return x(candles[i].t + BUCKET / 2); };
+      var paneLabel = function (top, txt) {
+        svg.append('text').attr('x', m.left + 2).attr('y', top + 9).attr('fill', '#b98da0')
+          .attr('font-size', 8.5).attr('font-family', "ui-monospace,'SF Mono',Menlo,monospace").text(txt);
+      };
+      var paneBox = function (top, h) {
+        svg.append('rect').attr('x', m.left).attr('y', top).attr('width', plotW).attr('height', h)
+          .attr('fill', 'rgba(43,17,28,.45)').attr('stroke', 'rgba(74,31,48,.8)').attr('rx', 3);
+      };
+
+      // RSI
+      var rsiTop = HM + PANE_GAP;
+      paneBox(rsiTop, RSI_H);
+      var rsi = rsiSeries(closes, 14);
+      var ry = d3.scaleLinear().domain([0, 100]).range([rsiTop + RSI_H - 4, rsiTop + 4]);
+      [30, 50, 70].forEach(function (g) {
+        svg.append('line').attr('x1', m.left).attr('x2', W - m.right).attr('y1', ry(g)).attr('y2', ry(g))
+          .attr('stroke', g === 50 ? 'rgba(246,231,235,.10)' : 'rgba(227,178,95,.28)')
+          .attr('stroke-dasharray', '3,4').attr('stroke-width', 1);
+        svg.append('text').attr('x', W - m.right - 2).attr('y', ry(g) - 2).attr('text-anchor', 'end')
+          .attr('fill', '#b98da0').attr('fill-opacity', 0.7).attr('font-size', 8).text(g);
+      });
+      var rsiPts = [];
+      rsi.forEach(function (v, i) { if (v !== null) rsiPts.push([cxOf(i), ry(v)]); });
+      if (rsiPts.length > 1) {
+        svg.append('path').datum(rsiPts)
+          .attr('d', d3.line().x(function (d) { return d[0]; }).y(function (d) { return d[1]; }))
+          .attr('fill', 'none').attr('stroke', '#e3b25f').attr('stroke-width', 1.6);
+      }
+      var rsiNow = rsi[rsi.length - 1];
+      paneLabel(rsiTop, 'RSI 14 · 5m' + (rsiNow !== null ? ' · ' + rsiNow.toFixed(1) : ''));
+
+      // MACD
+      var mcTop = rsiTop + RSI_H + PANE_GAP;
+      paneBox(mcTop, MACD_H);
+      var mc = macdSeries(closes);
+      var mvals = [];
+      mc.macd.forEach(function (v, i) {
+        if (v !== null) { mvals.push(Math.abs(v)); if (mc.signal[i] !== null) mvals.push(Math.abs(v - mc.signal[i])); }
+      });
+      var mmax = d3.max(mvals) || 1e-18;
+      var my = d3.scaleLinear().domain([-mmax, mmax]).range([mcTop + MACD_H - 4, mcTop + 4]);
+      svg.append('line').attr('x1', m.left).attr('x2', W - m.right).attr('y1', my(0)).attr('y2', my(0))
+        .attr('stroke', 'rgba(246,231,235,.12)');
+      var slotW = plotW / Math.max(candles.length, 1), histW = Math.max(2, Math.min(10, slotW * 0.5));
+      mc.macd.forEach(function (v, i) {
+        if (v === null || mc.signal[i] === null) return;
+        var h = v - mc.signal[i];
+        svg.append('rect').attr('x', cxOf(i) - histW / 2)
+          .attr('y', h >= 0 ? my(h) : my(0)).attr('width', histW)
+          .attr('height', Math.max(1, Math.abs(my(h) - my(0))))
+          .attr('fill', h >= 0 ? UP : DOWN).attr('fill-opacity', 0.55);
+      });
+      [['macd', '#ff006e'], ['signal', '#ffb3c1']].forEach(function (s) {
+        var line = [];
+        mc[s[0]].forEach(function (v, i) { if (v !== null) line.push([cxOf(i), my(v)]); });
+        if (line.length > 1) {
+          svg.append('path').datum(line)
+            .attr('d', d3.line().x(function (d) { return d[0]; }).y(function (d) { return d[1]; }))
+            .attr('fill', 'none').attr('stroke', s[1]).attr('stroke-width', 1.5);
+        }
+      });
+      var mNow = mc.macd[mc.macd.length - 1], sNow = mc.signal[mc.signal.length - 1];
+      paneLabel(mcTop, 'MACD 12·26·9 · 5m' +
+        (mNow !== null && sNow !== null ? (mNow >= sNow ? ' · bullish cross' : ' · bearish cross') : ' · warming up'));
+    }
+
     var tip = this.root.querySelector('.mkt-tip');
-    var xhair = svg.append('line').attr('y1', m.top).attr('y2', H - m.bottom)
+    var xhair = svg.append('line').attr('y1', m.top).attr('y2', HM - m.bottom)
       .attr('stroke', 'rgba(246,231,235,.35)').attr('stroke-dasharray', '2,3').attr('display', 'none');
     var dot = svg.append('circle').attr('r', 4).attr('fill', LINE)
       .attr('stroke', '#2b111c').attr('stroke-width', 2).attr('display', 'none');
     var bis = d3.bisector(function (p) { return p[0]; }).center;
     svg.append('rect').attr('x', m.left).attr('y', m.top)
-      .attr('width', W - m.left - m.right).attr('height', H - m.top - m.bottom)
+      .attr('width', W - m.left - m.right).attr('height', HM - m.top - m.bottom)
       .attr('fill', 'transparent')
       .on('pointermove', function (ev) {
         var px = d3.pointer(ev, this)[0], t = x.invert(px), cx, cy;
@@ -289,7 +427,7 @@
   };
   Market.prototype.stop = function () { clearTimeout(this._timer); this._timer = 0; return this; };
 
-  var DVLuvMarket = { Market: Market, PAIR: PAIR, REFRESH_MS: REFRESH_MS, version: '2.2.0' };
+  var DVLuvMarket = { Market: Market, PAIR: PAIR, REFRESH_MS: REFRESH_MS, version: '2.3.0' };
   // DVLuvMarket.diag() — diagnostics of the auto-booted instance, for widgets and internals
   DVLuvMarket.diag = function () { return DVLuvMarket._booted ? DVLuvMarket._booted.diag() : null; };
   if (typeof module !== 'undefined' && module.exports) module.exports = DVLuvMarket;
