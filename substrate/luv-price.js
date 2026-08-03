@@ -46,6 +46,25 @@
     }
     var tEl = el('lp-at');
     if (tEl && mkt.t) tEl.textContent = 'measured ' + new Date(mkt.t).toLocaleString();
+
+    // ── the actuals — diagnostics straight from the pair ──
+    if (mkt.reserves) {
+      set('lp-r', Number(mkt.reserves.luv).toLocaleString('en-US', { maximumFractionDigits: 0 }) +
+        ' LUV ↔ ' + Number(mkt.reserves.weth).toFixed(6) + ' WETH');
+    }
+    if (mkt.ethUsd) {
+      var names = mkt.ethUsdInputs ? Object.keys(mkt.ethUsdInputs) : [];
+      set('lp-ethusd', '$' + Number(mkt.ethUsd).toFixed(2) +
+        (names.length ? ' — median of ' + names.length + ' inputs: ' + names.join(', ') : ''));
+    }
+    set('lp-src', (mkt.source === 'reserves'
+      ? 'getReserves() on the pair — the price is created by the liquidity pair, expressed on Uniswap'
+      : String(mkt.source || '—')) + (mkt.rails && mkt.rails.reserves ? ' · rpc ' + mkt.rails.reserves.replace('https://', '') : ''));
+    var liqX = (mkt.reserves && mkt.reserves.weth) ? Number(mkt.reserves.weth) / 0.051922968585348276 : null;
+    set('lp-x', 'price ' + priceX.toFixed(2) + '× from X' + (liqX ? ' · liquidity ' + liqX.toFixed(2) + '×' : ''));
+    var h24 = mkt.priceChange && mkt.priceChange.h24;
+    set('lp-h24', h24 === undefined || h24 === null ? '—'
+      : (Number(h24) > 0 ? '▲ +' : Number(h24) < 0 ? '▼ ' : '· ') + Number(h24).toFixed(2) + '%');
   }
 
   function tick() {

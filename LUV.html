@@ -56,6 +56,12 @@ h1{margin:52px 0 6px;text-align:center;font-size:clamp(32px,6vw,52px);font-weigh
 .expr .wei{font-family:var(--mono);font-weight:800;font-size:clamp(24px,5vw,44px);color:var(--gold)}
 .usdline{text-align:center;font-family:var(--mono);font-size:14px;color:var(--dim);margin:6px 0 26px}
 .usdline b{color:var(--blush)}
+.diag{font-family:var(--mono);font-size:13px}
+.drow{display:flex;gap:14px;padding:7px 0;border-top:1px solid rgba(74,31,48,.6);align-items:baseline}
+.drow:first-child{border-top:0}
+.dk{flex:none;width:9.5em;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.dv{color:var(--cream);word-break:break-word}
+.dv b{color:var(--gold)}
 .fineline{text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--dim);margin-top:6px}
 .ctarow{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;margin:30px 0 8px}
 .btn{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--blush);text-decoration:none;
@@ -89,7 +95,7 @@ footer .brandmark img{height:14px;width:auto;display:block;opacity:.85}
 
 <main class="wrap">
   <h1>the price of LUV</h1>
-  <div class="sub">✨ both ways — read live from the liquidity pair itself ✨</div>
+  <div class="sub">✨ the price is created by the liquidity pair — and expressed on Uniswap ✨</div>
 
   <!-- expression 1: ETH → one trillion LUV -->
   <div class="expr">
@@ -112,17 +118,30 @@ footer .brandmark img{height:14px;width:auto;display:block;opacity:.85}
     ten of them. Every wei above that is the market speaking.</div>
   </div>
 
+  <!-- the actuals — diagnostics read live from the pair -->
+  <div class="expr" style="text-align:left">
+    <div class="k">the actuals — read from the pair</div>
+    <div class="diag">
+      <div class="drow"><span class="dk">pool reserves</span><span class="dv" id="lp-r">…</span></div>
+      <div class="drow"><span class="dk">ETH / USD</span><span class="dv" id="lp-ethusd">…</span></div>
+      <div class="drow"><span class="dk">price source</span><span class="dv" id="lp-src">…</span></div>
+      <div class="drow"><span class="dk">growth from seed</span><span class="dv" id="lp-x">…</span></div>
+      <div class="drow"><span class="dk">24H change</span><span class="dv" id="lp-h24">…</span></div>
+    </div>
+  </div>
+
   <div class="fineline" id="lp-depth">…</div>
   <div class="fineline" id="lp-at"></div>
 
   <div class="ctarow">
-    <a class="uni-cta" href="https://app.uniswap.org/swap?chain=ethereum&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254&amp;exactField=output&amp;exactAmount=1000000000000" target="_blank" rel="noopener">
-      <img src="gfx/brand/uniswap_horizontal_white.svg" alt="Uniswap"> <span>Buy the trillion ❤</span>
+    <a class="uni-cta" href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254&amp;exactField=output&amp;exactAmount=1000000000000" target="_blank" rel="noopener">
+      <img src="gfx/brand/uniswap_horizontal_white.svg" alt="Uniswap"> <span>Buy 1,000,000,000,000 LUV with USDC ❤</span>
     </a>
+    <a class="btn" href="https://app.uniswap.org/swap?chain=ethereum&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254&amp;exactField=output&amp;exactAmount=1000000000000" target="_blank" rel="noopener">Ξ or buy the trillion with ETH</a>
     <a class="btn" href="view.html">📈 live view — candles, RSI, MACD</a>
     <a class="btn" href="emotonomics.html">🎓 the field paper</a>
   </div>
-  <div class="slipnote">set slippage to <b>~10%</b> — LUV carries a 5% reflection fee</div>
+  <div class="slipnote">set slippage to <b>~10%</b> — LUV carries a 5% reflection fee · LUV arrives preloaded, one trillion preset as the output</div>
 </main>
 
 <footer>
@@ -140,6 +159,6 @@ footer .brandmark img{height:14px;width:auto;display:block;opacity:.85}
   </div>
 </footer>
 
-<script src="substrate/luv-price.js?v=1"></script>
+<script src="substrate/luv-price.js?v=2"></script>
 </body>
 </html>
