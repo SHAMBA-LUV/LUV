@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EMOTONOMICS — the field paper — SHAMBA LUV</title>
+<meta name="description" content="Emotonomics: An Extension of Economics for the Knowledge Economy. Attention as the source of value — the field definition: classical foundations, beyond the information age, the techno-Marxist horizon, five axioms, testable propositions, full bibliography.">
+<meta name="author" content="SHAMBA LUV">
+<link rel="canonical" href="https://luv.pythai.net/emotonomics.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="SHAMBA LUV">
+<meta property="og:title" content="Emotonomics: An Extension of Economics for the Knowledge Economy">
+<meta property="og:description" content="Attention as the source of value, emotion as its measure, protocols as its distribution mechanism — the field paper, fully referenced.">
+<meta property="og:url" content="https://luv.pythai.net/emotonomics.html">
+<meta property="og:image" content="https://luv.pythai.net/gfx/logo.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://luv.pythai.net/gfx/logo.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --ink:#160a0f;--wine:#2b111c;--seam:#4a1f30;--rose:#ff4d6d;--pink:#ff006e;--purple:#8338ec;
+  --blush:#ffb3c1;--cream:#f6e7eb;--dim:#b98da0;--gold:#e3b25f;
+  --mono:ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
+  --serif:Georgia,'Times New Roman',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--ink);color:var(--cream);font-family:var(--sans);line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--blush)}
+a:hover{color:var(--rose)}
+:focus-visible{outline:2px solid var(--rose);outline-offset:3px;border-radius:2px}
+.wrap{max-width:780px;margin:0 auto;padding:0 24px}
+header{border-bottom:1px solid var(--seam)}
+.bar{display:flex;align-items:center;gap:14px;padding:16px 0}
+.bar .wrap{max-width:1180px}
+.brand{font-family:var(--mono);font-size:15px;letter-spacing:.14em;color:var(--cream);text-decoration:none}
+.brand b{color:var(--rose)}
+.bar .spacer{flex:1}
+.bar a.back{font-family:var(--mono);font-size:12px;text-decoration:none;color:var(--dim)}
+.bar a.back:hover{color:var(--rose)}
+h1{margin:52px 0 6px;text-align:center;font-size:clamp(30px,5.6vw,46px);font-weight:800;
+  background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{text-align:center;color:var(--dim);margin-bottom:8px;font-style:italic}
+.paperkind{text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);margin-bottom:36px}
+/* ── paper typography ── */
+.paper p{margin:0 0 16px;font-size:15.5px}
+.paper .preface{border:1px solid var(--seam);border-left:3px solid var(--gold);border-radius:10px;background:var(--wine);
+  padding:18px 22px;margin:0 0 36px;color:var(--dim);font-size:14px}
+.paper .preface em{color:var(--blush)}
+.paper h2{font-family:var(--mono);font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);
+  margin:46px 0 16px;padding-top:26px;border-top:1px solid var(--seam)}
+.paper h2 .n{color:var(--rose);margin-right:10px}
+.paper .abstract{border:1px solid var(--seam);border-radius:12px;background:var(--wine);padding:22px 26px;margin-bottom:8px}
+.paper .abstract p{color:var(--cream);font-size:14.5px;margin:0}
+.paper .abstract .k{font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--rose);margin-bottom:10px}
+.paper em{font-style:italic;color:var(--blush)}
+.paper b{color:var(--cream);font-weight:700}
+.paper .cite{color:var(--dim)}
+.paper ol.points{margin:0 0 16px 22px}
+.paper ol.points li{margin-bottom:10px;font-size:15.5px}
+.paper .axiom{border:1px solid var(--seam);border-radius:10px;background:var(--wine);padding:16px 20px;margin-bottom:12px}
+.paper .axiom .t{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.paper .axiom p{margin:0;font-size:14.5px;color:var(--cream)}
+.paper .obj{margin-bottom:16px}
+.paper .obj .q{font-weight:700;color:var(--blush)}
+.paper .refs{list-style:none;margin:14px 0 0;columns:1}
+.paper .refs li{font-size:13px;color:var(--dim);margin-bottom:9px;padding-left:16px;text-indent:-16px}
+.paper .refs li em{color:var(--blush);font-style:italic}
+.paper hr{border:0;border-top:1px solid var(--seam);margin:38px 0}
+.readmore{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:44px 0 8px}
+.btn{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--blush);text-decoration:none;
+  border:1px solid var(--seam);border-radius:999px;padding:8px 18px;transition:color .15s,border-color .15s}
+.btn:hover{color:var(--rose);border-color:var(--rose)}
+footer{margin-top:64px;border-top:1px solid var(--seam);padding:26px 0 44px}
+footer .wrap{max-width:1180px;display:flex;flex-wrap:wrap;gap:18px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--dim)}
+footer a{text-decoration:none}
+footer .spacer{flex:1}
+footer .brandmark{display:inline-flex;align-items:center;gap:7px;color:var(--dim)}
+footer .brandmark img{height:14px;width:auto;display:block;opacity:.85;transition:opacity .15s}
+footer .brandmark:hover{color:var(--cream)}
+footer .brandmark:hover img{opacity:1}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="/">❤ SHAMBA <b>LUV</b></a>
+    <span class="spacer"></span>
+    <a class="back" href="faq.html">FAQ</a>
+    <a class="back" href="view.html">live view</a>
+    <a class="back" href="/">← back to the doorway</a>
+  </div>
+</header>
+
+<main class="wrap paper">
+  <h1>EMOTONOMICS</h1>
+  <div class="sub">An Extension of Economics for the Knowledge Economy</div>
+  <div class="paperkind">the field paper · attention as the source of value</div>
+
+  <div class="preface"><b>Preface.</b> This document defines <b>emotonomics</b> as a field: its lineage in
+  classical political economy, its departure point at the exhaustion of the information age, and its
+  contribution — a theory of value grounded in attention and measured in emotion, with a distribution
+  mechanism implementable in open protocol code. The analytic register here is deliberately academic;
+  the protocol implementing it speaks elsewhere in its own voice (<em>sharing is caring</em>). The
+  reference implementation is the <a href="/">LUV protocol</a> and the IncentiveDistributor in the
+  <a href="https://github.com/SHAMBA-LUV/LUV" rel="noopener">open repository</a>.</div>
+
+  <div class="abstract">
+    <div class="k">Abstract</div>
+    <p>Economics defined itself as the science of allocating scarce means among competing ends
+    <span class="cite">(Robbins 1932)</span>. The knowledge economy strained that definition — knowledge is
+    nonrival and accumulates by sharing <span class="cite">(Romer 1990)</span> — and the information age broke
+    it in practice: when information became abundant, the binding scarcity moved to what information
+    consumes, namely attention <span class="cite">(Simon 1971)</span>. Existing attention economics treats
+    attention as a scarce <em>cost</em> to be economized or harvested. Emotonomics makes the stronger claim:
+    <b>attention is the source of value</b>, emotion is its natural price signal, and an economy can be
+    built that measures, prices, and distributes attention-value directly. The field extends classical
+    economics rather than replacing it: the free market survives as the discovery procedure
+    <span class="cite">(Hayek 1945; 1978)</span>, while the techno-Marxist tradition contributes the goal it
+    could never mechanize — distribution of the surplus of the general intellect
+    <span class="cite">(Marx 1857–58)</span> — here implemented not by plan but by protocol. We state the
+    field's axioms, derive testable propositions, and answer the principal objections.</p>
+  </div>
+
+  <h2 id="s1"><span class="n">I.</span> The problem: value theory after scarcity</h2>
+  <p>Every school of economics is, at bottom, a theory of value with a theory of measurement attached.
+  Classical political economy measured value in labor time <span class="cite">(Smith 1776; Ricardo 1817;
+  Marx 1867)</span>. The marginalist revolution relocated value into subjective preference at the margin
+  <span class="cite">(Menger 1871; Jevons 1871; Walras 1874)</span>, and Robbins (1932) generalized the
+  result: economics is the logic of scarcity itself.</p>
+  <p>The knowledge economy undermined the premise. Knowledge is nonrival — its use by one does not
+  diminish its use by another — and is therefore accumulated rather than allocated
+  <span class="cite">(Machlup 1962; Drucker 1969; Bell 1973; Romer 1990)</span>. The information age
+  completed the demonstration: the marginal cost of reproducing and distributing information fell toward
+  zero <span class="cite">(Shapiro &amp; Varian 1999)</span>, and the network society made distribution
+  itself ambient <span class="cite">(Castells 1996)</span>. An economics of scarcity confronts an economy
+  whose principal good is not scarce.</p>
+  <p>Simon (1971) named the resolution long before the web existed: "a wealth of information creates a
+  poverty of attention." What is scarce in an information-rich world is the human capacity to attend. But
+  the literature that grew from this insight — the attention economy of Goldhaber (1997), Franck (1998),
+  and Davenport &amp; Beck (2001), through Wu's (2016) history of the attention merchants — treats
+  attention as a scarce <em>input</em> to be captured, economized, and sold. The capture model culminates
+  in surveillance capitalism <span class="cite">(Zuboff 2019)</span>: attention is indeed the scarce
+  factor, and it is harvested from the very people who supply it, who are paid nothing
+  <span class="cite">(Smythe 1977; Terranova 2000)</span>.</p>
+  <p>The problem, then, is not that economics lacks a theory of attention scarcity. It is that economics
+  lacks a theory in which attention is the <b>source</b> of value — owned, priced, and yielded back to
+  those who give it. That theory is emotonomics.</p>
+
+  <h2 id="s2"><span class="n">II.</span> Classical foundations: reading Smith whole</h2>
+  <p>Emotonomics claims descent from classical economics — but from the whole of it. The discipline
+  canonized <em>The Wealth of Nations</em> (Smith 1776) and treated <em>The Theory of Moral Sentiments</em>
+  (Smith 1759) as juvenilia. Smith himself made no such division. The <em>Moral Sentiments</em> grounds
+  social order in <b>sympathy</b> — the capacity to attend to another's state and feel with it — and
+  locates the deepest human motive for economic striving not in consumption but in regard: to be
+  "observed," "attended to," "taken notice of with sympathy." In Smith's own system, the pursuit of
+  wealth is already a pursuit of attention and affective approbation. Emotonomics is, in this precise
+  sense, a return to Smith: it takes the sympathy of 1759 as the demand side of the market of 1776.</p>
+  <p>From the rest of the classical inheritance the field keeps three commitments:</p>
+  <ol class="points">
+    <li><b>The free market as coordination without command</b> <span class="cite">(Smith 1776)</span>.
+    No central valuer; the invisible hand is retained as the aggregation mechanism for dispersed
+    valuations.</li>
+    <li><b>The price system as knowledge aggregation</b> <span class="cite">(Hayek 1945)</span>. Prices
+    condense dispersed, tacit, local knowledge that no planner can collect; competition is a
+    <em>discovery procedure</em> <span class="cite">(Hayek 1978)</span>. Emotonomics does not soften this
+    claim — it extends its domain: what the market is asked to discover is sentiment.</li>
+    <li><b>Subjective value at the margin</b> <span class="cite">(Menger 1871; Jevons 1871; Walras
+    1874)</span>. Value is not intrinsic to objects; it is conferred by valuing minds. Emotonomics
+    radicalizes marginalism: the act of valuation — attention itself — is promoted from the shadow price
+    behind every preference to the explicit, measurable primary factor.</li>
+  </ol>
+  <p>What the field drops from the classical canon is the labor theory of value in both its Ricardian and
+  Marxian forms — not by refutation but by succession: where machines absorb labor, labor time loses its
+  claim to be the measure, a conclusion Marx himself reached first (see §IV).</p>
+
+  <h2 id="s3"><span class="n">III.</span> The knowledge economy — and what lies beyond the information age</h2>
+  <p>The knowledge-economy literature documented a phase change in what economies produce: knowledge
+  production as a measurable sector <span class="cite">(Machlup 1962; Porat 1977)</span>, the knowledge
+  worker as the representative agent <span class="cite">(Drucker 1969)</span>, theoretical knowledge as
+  the "axial principle" of post-industrial society <span class="cite">(Bell 1973)</span>, and ideas as
+  the engine of endogenous growth <span class="cite">(Romer 1990)</span>. Benkler (2006) showed the
+  productive form this takes at the network scale: commons-based peer production, wealth created by
+  uncompensated contribution.</p>
+  <p>The information age is the distribution phase of that economy: the cost of moving information to
+  anyone approaches zero. Its exhaustion is now visible in its own success. When every good whose cost is
+  information-bound deflates toward free, the residual — the thing that cannot be copied, cached, or
+  compressed — is the finite attending time of human beings, and the affective quality of that attending.
+  <b>Beyond the information age lies the economy of what information was always <em>for</em>: being
+  attended to, and mattering.</b></p>
+  <p>The platform era is the transitional, contradictory form of that economy. Platforms already run on
+  attention-value — they sell it <span class="cite">(Wu 2016)</span> — but they price it privately, own
+  the measurement apparatus, and return none of the yield to its source
+  <span class="cite">(Zuboff 2019)</span>. In the language of the audience-commodity debate: the audience
+  still works unpaid <span class="cite">(Smythe 1977; Terranova 2000)</span>. The transitional form
+  proves the value theory while violating the distribution it implies. A field is needed precisely
+  because the practice has outrun the economics.</p>
+
+  <h2 id="s4"><span class="n">IV.</span> The techno-Marxist horizon: the utopia that lacked a mechanism</h2>
+  <p>Marx's <em>Grundrisse</em> — in the passage known as the "Fragment on Machines"
+  <span class="cite">(Marx 1857–58)</span> — contains the tradition's most prescient argument: as
+  large-scale industry develops, the creation of real wealth comes to depend "on the general state of
+  science and on the progress of technology," the <b>general intellect</b>, rather than on direct labor
+  time; whereupon labor time ceases to be the measure of value, and production founded on exchange value
+  begins to break down. The post-operaist school made this the center of its analysis of the present:
+  immaterial labor <span class="cite">(Lazzarato 1996)</span>, the multitude whose whole social life
+  becomes productive <span class="cite">(Hardt &amp; Negri 2000; Virno 2004)</span>. The contemporary
+  techno-utopian synthesis draws the political conclusion: information technology points past capitalism
+  toward post-scarcity abundance <span class="cite">(Mason 2015; Srnicek &amp; Williams 2015; Bastani
+  2019)</span> — a future that capitalist realism renders difficult even to imagine
+  <span class="cite">(Fisher 2009)</span>.</p>
+  <p>Emotonomics accepts a substantial part of this diagnosis. The general intellect is real: the commons
+  of shared knowledge, culture, and affect <em>is</em> the modern force of production, and the value it
+  throws off is today captured privately by platform enclosure. The techno-Marxist <em>utopia</em> —
+  abundance shared by the many who produce it socially — is retained as a normative horizon, and this
+  document labels it as exactly that: a normative commitment, not a theorem.</p>
+  <p>What the tradition never solved is the mechanism. The socialist calculation debate
+  <span class="cite">(Mises 1920; Lange 1936; Hayek 1945)</span> established that a planner cannot gather
+  the dispersed knowledge that prices condense; every planned implementation of the utopia founders on
+  measurement. The techno-Marxist literature answers with automation and politics but not with a
+  valuation mechanism — it inherits Marx's critique of measure without replacing the measure.</p>
+  <p>Here the two traditions are made to complete each other. <b>The Hayekian market is the only known
+  instrument that can measure the general intellect's output; the Marxian commons is the only honest
+  account of who produces it.</b> Emotonomics binds them: markets discover the value; the protocol —
+  open, neutral, and automatic — distributes it to the commons that produced it. What the plan could not
+  compute and the platform would not share, the protocol can do both: distribution without a distributor.
+  The blockchain matters to this argument for Coasean reasons: it collapses the transaction and
+  verification costs <span class="cite">(Coase 1937)</span> that previously made firm- or state-mediated
+  capture the only feasible organization of attention-value <span class="cite">(Nakamoto 2008; Buterin
+  2014)</span>.</p>
+
+  <h2 id="s5"><span class="n">V.</span> The contribution: emotonomics defined</h2>
+  <p><b>Emotonomics is the branch of economics that studies attention as the source of value, emotion as
+  its measure, and protocols as its distribution mechanism.</b> Its axioms:</p>
+  <div class="axiom"><div class="t">Axiom 1 — attention is the primary scarce factor</div>
+    <p>Each person's attending time is finite, non-storable, and non-transferable in stock; it can only
+    be <em>spent</em>, and it is spent on something in every waking moment. In an economy where
+    information goods are abundant, all downstream value chains bottleneck through attention
+    <span class="cite">(Simon 1971)</span>.</p></div>
+  <div class="axiom"><div class="t">Axiom 2 — emotion is the price signal of attention</div>
+    <p>Attention is not homogeneous; its economic weight is set by the affect that accompanies it. What
+    is loved is what attention returns to. Sentiment is therefore the quality-weighting of attention —
+    the signal that turns raw attending into valuation, as sympathy turns observation into approbation
+    in Smith (1759).</p></div>
+  <div class="axiom"><div class="t">Axiom 3 — the gesture is the unit transaction</div>
+    <p>A gesture is attention made costly and therefore credible — the emotonomic analogue of a signal in
+    Spence (1973): an act (a transfer, a post, a welcome, an interaction) that verifiably commits scarce
+    attention toward another. Gestures are to emotonomics what transactions are to monetary economics.
+    Where Veblen (1899) described conspicuous consumption — spending wealth to command attention — the
+    gesture inverts it: spending attention to confer worth.</p></div>
+  <div class="axiom"><div class="t">Axiom 4 — value scales with engagement velocity</div>
+    <p>By analogy with the equation of exchange <span class="cite">(Fisher 1911)</span>, the emotonomic
+    value of a network varies with the volume of gestures and the velocity of their circulation, not with
+    idle balances. Wealth in an attention economy is measured in circulation of regard — connection, not
+    hoarding — and network value grows nonlinearly in connected participants
+    <span class="cite">(Metcalfe 2013)</span>.</p></div>
+  <div class="axiom"><div class="t">Axiom 5 — yield follows attention to its source</div>
+    <p>The surplus generated by collective attention belongs, pro rata and automatically, to those who
+    give and hold it. This is the axiom the platform economy violates and the planned economy cannot
+    compute. Its implementable form is the <em>reflection</em>: a protocol-level dividend in which every
+    trade distributes a fixed share to all holders without claim, custodian, or discretion — a
+    market-mediated commons dividend.</p></div>
+  <p>On these axioms the reference implementation is readable as an experimental apparatus: a
+  fixed-supply token whose transfers are gestures (fee-free wallet-to-wallet, priced only at the market
+  interface); reflections distributing trade surplus to all holders (Axiom 5); an on-chain registry
+  pricing named gestures — welcome, post, interaction — with public amounts, limits, and cooldowns
+  (Axioms 2–3); and open market pairing for price discovery (the Hayekian instrument, §II). Attention
+  enters as gestures; emotion enters as sentiment-weighted engagement; the market prints the measurement;
+  the protocol distributes the yield. LUV is thereby proposed as one <b>global sentiment indicator</b>:
+  an on-chain, manipulation-resistant index of what is loved, standing to affective value roughly as a
+  price index stands to purchasing power.</p>
+
+  <h2 id="s6"><span class="n">VI.</span> Testable propositions</h2>
+  <p>Stated as positive claims, falsifiable against on-chain and market data:</p>
+  <ol class="points">
+    <li><b>Velocity dominance.</b> Engagement velocity (gesture volume × circulation) predicts network
+    value better than holder count or idle balance concentration.</li>
+    <li><b>Distribution breadth.</b> Reflection-bearing assets exhibit measurably wider and more stable
+    holder distributions than mechanically comparable non-reflective assets.</li>
+    <li><b>Sybil repricing.</b> Pricing rewards in verified social gestures rather than wallet addresses
+    shifts rent from Sybil farmers to genuine participants (one person, one gesture), observable in
+    claim-distribution entropy.</li>
+    <li><b>Sentiment indication.</b> Aggregated gesture flow correlates with independent sentiment
+    measures at the community scale, qualifying protocol-level gesture indices as leading indicators.</li>
+  </ol>
+  <p>The normative program — that attention-value <em>ought</em> to yield to its source, and that
+  protocol distribution <em>ought</em> to displace platform capture — is a commitment of the field,
+  argued in §IV but not provable by data. Speculative extensions (economy-wide sentiment targeting;
+  gesture-based public statistics) are so labeled.</p>
+
+  <h2 id="s7"><span class="n">VII.</span> Objections answered</h2>
+  <div class="obj"><p><span class="q">"Attention economics already exists."</span> As a theory of
+  attention as scarce <em>cost</em> — allocation <span class="cite">(Simon 1971)</span>, capture
+  <span class="cite">(Wu 2016)</span>, monetization <span class="cite">(Franck 1998)</span>. Emotonomics
+  differs in both halves of its value claim: attention as the <em>source</em> of value (not merely a
+  constraint on consuming it), and a distribution mechanism returning the yield to the attender. No
+  prior attention literature contains Axiom 5.</p></div>
+  <div class="obj"><p><span class="q">"This is the labor theory of value in new clothes."</span> No.
+  Attention is not labor time: it is not homogeneous (Axiom 2 weights it by affect), not additive across
+  persons, and confers value at the margin subjectively, in full continuity with Menger (1871). What is
+  kept from the Marxian line is the <em>sociology</em> of production (the general intellect), not the
+  classical measure Marx himself declared obsolescent <span class="cite">(Marx 1857–58)</span>.</p></div>
+  <div class="obj"><p><span class="q">"Tokenized attention is surveillance capitalism with extra
+  steps."</span> The comparison inverts at the property relation. Surveillance capitalism's defining
+  feature is not measurement but <em>unilateral appropriation</em> of the measured
+  <span class="cite">(Zuboff 2019)</span>. Here measurement is public protocol, participation is
+  voluntary, the measuring apparatus is unowned, and the yield accrues to the attender — the exact
+  negation of the appropriation.</p></div>
+  <div class="obj"><p><span class="q">"A free-market Marxism is incoherent."</span> Only if the market
+  must also be the owner of the surplus and the plan must also be the measurer. The calculation debate
+  settled which instrument can measure <span class="cite">(Mises 1920; Hayek 1945)</span>; it never
+  settled who must receive. Markets discover; protocols distribute; the commons receives. The synthesis
+  assigns each tradition the task it demonstrably performs and relieves each of the task at which it
+  demonstrably fails.</p></div>
+  <div class="obj"><p><span class="q">"Emotion is unmeasurable."</span> So was temperature before
+  thermometry. Emotonomics does not claim to read hearts; it claims that costly gestures are
+  <em>revealed sentiment</em> in exactly the sense that purchases are revealed preference — imperfect,
+  gameable at the margin, and still the best aggregate instrument available once verification is cheap
+  <span class="cite">(Nakamoto 2008)</span>.</p></div>
+
+  <h2 id="refs">References</h2>
+  <ul class="refs">
+    <li>Bastani, A. (2019). <em>Fully Automated Luxury Communism: A Manifesto</em>. Verso.</li>
+    <li>Bell, D. (1973). <em>The Coming of Post-Industrial Society</em>. Basic Books.</li>
+    <li>Benkler, Y. (2006). <em>The Wealth of Networks: How Social Production Transforms Markets and Freedom</em>. Yale University Press.</li>
+    <li>Buterin, V. (2014). "Ethereum: A Next-Generation Smart Contract and Decentralized Application Platform." Whitepaper.</li>
+    <li>Castells, M. (1996). <em>The Rise of the Network Society</em>. Blackwell.</li>
+    <li>Coase, R. H. (1937). "The Nature of the Firm." <em>Economica</em> 4(16): 386–405.</li>
+    <li>Davenport, T. H., &amp; Beck, J. C. (2001). <em>The Attention Economy: Understanding the New Currency of Business</em>. Harvard Business School Press.</li>
+    <li>Drucker, P. F. (1969). <em>The Age of Discontinuity: Guidelines to Our Changing Society</em>. Harper &amp; Row.</li>
+    <li>Fisher, I. (1911). <em>The Purchasing Power of Money</em>. Macmillan.</li>
+    <li>Fisher, M. (2009). <em>Capitalist Realism: Is There No Alternative?</em> Zero Books.</li>
+    <li>Franck, G. (1998). <em>Ökonomie der Aufmerksamkeit</em> [The Economy of Attention]. Hanser.</li>
+    <li>Goldhaber, M. H. (1997). "The Attention Economy and the Net." <em>First Monday</em> 2(4).</li>
+    <li>Hardt, M., &amp; Negri, A. (2000). <em>Empire</em>. Harvard University Press.</li>
+    <li>Hayek, F. A. (1945). "The Use of Knowledge in Society." <em>American Economic Review</em> 35(4): 519–530.</li>
+    <li>Hayek, F. A. (1978). "Competition as a Discovery Procedure." In <em>New Studies in Philosophy, Politics, Economics and the History of Ideas</em>. University of Chicago Press.</li>
+    <li>Jevons, W. S. (1871). <em>The Theory of Political Economy</em>. Macmillan.</li>
+    <li>Lange, O. (1936). "On the Economic Theory of Socialism." <em>Review of Economic Studies</em> 4(1): 53–71.</li>
+    <li>Lazzarato, M. (1996). "Immaterial Labor." In P. Virno &amp; M. Hardt (eds.), <em>Radical Thought in Italy</em>. University of Minnesota Press.</li>
+    <li>Machlup, F. (1962). <em>The Production and Distribution of Knowledge in the United States</em>. Princeton University Press.</li>
+    <li>Marx, K. (1857–58). <em>Grundrisse</em> (the "Fragment on Machines"). Trans. M. Nicolaus, Penguin, 1973.</li>
+    <li>Marx, K. (1867). <em>Capital: A Critique of Political Economy</em>, Vol. I.</li>
+    <li>Mason, P. (2015). <em>PostCapitalism: A Guide to Our Future</em>. Allen Lane.</li>
+    <li>Menger, C. (1871). <em>Grundsätze der Volkswirtschaftslehre</em> [Principles of Economics]. Braumüller.</li>
+    <li>Metcalfe, B. (2013). "Metcalfe's Law after 40 Years of Ethernet." <em>IEEE Computer</em> 46(12): 26–31.</li>
+    <li>Mises, L. von (1920). "Economic Calculation in the Socialist Commonwealth." Trans. in F. A. Hayek (ed.), <em>Collectivist Economic Planning</em>, 1935.</li>
+    <li>Nakamoto, S. (2008). "Bitcoin: A Peer-to-Peer Electronic Cash System." Whitepaper.</li>
+    <li>Porat, M. U. (1977). <em>The Information Economy: Definition and Measurement</em>. U.S. Department of Commerce.</li>
+    <li>Ricardo, D. (1817). <em>On the Principles of Political Economy and Taxation</em>. John Murray.</li>
+    <li>Robbins, L. (1932). <em>An Essay on the Nature and Significance of Economic Science</em>. Macmillan.</li>
+    <li>Romer, P. M. (1990). "Endogenous Technological Change." <em>Journal of Political Economy</em> 98(5): S71–S102.</li>
+    <li>Shapiro, C., &amp; Varian, H. R. (1999). <em>Information Rules: A Strategic Guide to the Network Economy</em>. Harvard Business School Press.</li>
+    <li>Simon, H. A. (1971). "Designing Organizations for an Information-Rich World." In M. Greenberger (ed.), <em>Computers, Communications, and the Public Interest</em>. Johns Hopkins Press.</li>
+    <li>Smith, A. (1759). <em>The Theory of Moral Sentiments</em>. A. Millar.</li>
+    <li>Smith, A. (1776). <em>An Inquiry into the Nature and Causes of the Wealth of Nations</em>. W. Strahan &amp; T. Cadell.</li>
+    <li>Smythe, D. W. (1977). "Communications: Blindspot of Western Marxism." <em>Canadian Journal of Political and Social Theory</em> 1(3): 1–27.</li>
+    <li>Spence, M. (1973). "Job Market Signaling." <em>Quarterly Journal of Economics</em> 87(3): 355–374.</li>
+    <li>Srnicek, N., &amp; Williams, A. (2015). <em>Inventing the Future: Postcapitalism and a World Without Work</em>. Verso.</li>
+    <li>Terranova, T. (2000). "Free Labor: Producing Culture for the Digital Economy." <em>Social Text</em> 18(2): 33–58.</li>
+    <li>Veblen, T. (1899). <em>The Theory of the Leisure Class</em>. Macmillan.</li>
+    <li>Virno, P. (2004). <em>A Grammar of the Multitude</em>. Semiotext(e).</li>
+    <li>Walras, L. (1874). <em>Éléments d'économie politique pure</em> [Elements of Pure Economics]. Corbaz.</li>
+    <li>Wu, T. (2016). <em>The Attention Merchants: The Epic Scramble to Get Inside Our Heads</em>. Knopf.</li>
+    <li>Zuboff, S. (2019). <em>The Age of Surveillance Capitalism</em>. PublicAffairs.</li>
+  </ul>
+
+  <div class="readmore">
+    <a class="btn" href="https://github.com/Professor-Codephreak/emotonomics/blob/master/docs/EMOTONOMICS_FIELD.md" rel="noopener">📄 this paper on GitHub</a>
+    <a class="btn" href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/EMOTONOMICS.md" rel="noopener">📜 the protocol whitepaper</a>
+    <a class="btn" href="faq.html">💬 FAQ</a>
+    <a class="btn" href="view.html">📈 the live market</a>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>❤ LUV is priceless</span>
+    <span class="spacer"></span>
+    <a href="/">the doorway</a>
+    <a href="faq.html">FAQ</a>
+    <a href="https://github.com/SHAMBA-LUV/LUV" rel="noopener">source &amp; audit</a>
+    <a class="brandmark" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="LUV verified on Etherscan · Powered by Etherscan.io APIs">
+      <img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="14">
+      <span>Powered by Etherscan.io APIs</span>
+    </a>
+    <span>SHAMBA © 2026 LUV</span>
+  </div>
+</footer>
+
+</body>
+</html>
