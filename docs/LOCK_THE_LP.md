@@ -130,6 +130,56 @@ operation belongs to the OVERSEER — process, not keys:
 
 ---
 
+## 6. The second lock — the non-circulating supply, earning while it waits
+
+The LP lock (§2) removes the rug vector and clears the scanners' honeypot/liquidity flags. The
+**second lock** puts the treasury's non-circulating LUV to work: LUVLocker's `deposit()` rail locks
+LUV principal under an **extend-only** timer (`extendLock` can lengthen, never shorten) — and the
+vault is **reflection-included**, so locked principal earns the 3% reflection flow pro-rata the
+whole time it is locked. Locked supply is not idle supply; it is the largest holder being paid to
+hold, publicly.
+
+Pre-flight, verified on-chain 2026-08-04:
+
+```
+treasury LUV               = 100,000,000,000,000,000 LUV  (100Q — the non-circulating supply)
+LUVLocker LUV              = 0        ← the FAQ already claims marketing+community are locked;
+                                        this deposit MAKES that claim true
+lockDuration (deposit rail)= 7,776,000 s = 90 days (owner may setLockDuration(31536000) for 365d first)
+locker reflection-excluded = false  ✓ (earns — operational invariant: keep it included)
+locker fee-excluded        = true   ✓ (deposits arrive whole)
+treasury / locker maxTx    = exempt ✓ (single-tx deposits of any size)
+```
+
+The transactions (treasury signer only; amounts in raw 18-dec units):
+
+```bash
+LUV=0x2711111111683B8708cb9a48cBf36a51315F8254
+LOCKER=0xe07ACAde4bE2bbc264EA702880ed988EBae9B898
+DIST=0x607E477AB12406A3294A7Ba63817103f92D8f806
+
+# 0 (optional, recommended): a 1-year deposit horizon before funding
+cast send $LOCKER "setLockDuration(uint256)" 31536000 --from 0x10f7…D169
+
+# 1. the published minimum — marketing (2.777Q) + community (2.778Q) = 5.555Q LUV
+AMOUNT=5555000000000000000000000000000000
+cast send $LUV    "approve(address,uint256)" $LOCKER $AMOUNT --from 0x10f7…D169
+cast send $LOCKER "deposit(uint256)" $AMOUNT              --from 0x10f7…D169
+
+# 2. the reward loop — reflections earned by the locked principal auto-fund the earn rail:
+#    payout = the IncentiveDistributor, so the vault's interest pays the community's rewards
+cast send $LOCKER "setAutoPayout(uint256,address)" 50000000000000000000000000000 $DIST --from 0x10f7…D169
+#    (threshold = 50B LUV — each time accrued interest reaches one tweet-reward, it ships)
+#    Alternative: setInterestMode(true) locks the interest with the principal (compounds instead).
+```
+
+Scaling up is the same `approve` + `deposit` with a larger amount — the extend-only timer and the
+funder-only withdrawal (§4 cautions) apply identically. The loop this closes is emotonomic: the
+locked non-circulating supply attends the market, the market pays it reflections, and the
+reflections pay the gestures — yield follows attention to its source, automatically.
+
+---
+
 **Signed with LUV ❤**
 *the treasury signer · `0x10f7Ee226B16bea7f365Dc1eDEF159Fc1957D169` · per the full security audit
 `docs/AUDIT_LUVLOCKER.md` · SHAMBA LUV, 2026*
