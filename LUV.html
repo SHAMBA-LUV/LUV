@@ -141,6 +141,26 @@ footer .brandmark img{height:14px;width:auto;display:block;opacity:.85}
     </div>
   </div>
 
+  <!-- the maximum print: 2^112 − 1 — protocol law -->
+  <div class="expr" style="text-align:left">
+    <div class="k gold">the maximum print — 2¹¹² − 1</div>
+    <div class="diag">
+      <div class="drow"><span class="dk">protocol law</span><span class="dv">Uniswap V2 reserves are <b>uint112</b> — a pair can never hold more than
+        <b>2¹¹² − 1</b> = 5,192,296,858,534,827.628530496329220095 tokens (18 decimals)
+        <a href="https://github.com/Uniswap/v2-core/blob/master/contracts/UniswapV2Pair.sol" rel="noopener">UniswapV2Pair.sol ↗</a></span></div>
+      <div class="drow"><span class="dk">the LUV print</span><span class="dv">the genesis seeded the pair at <b>the absolute maximum</b>: exactly 2¹¹²−1 raw units
+        ≈ <b>5.19 quadrillion LUV</b> — 4.673% of the 111-quadrillion supply. The roadmap's full 100Q
+        <em>cannot fit one pair</em>; the verse necessarily becomes many pools.</span></div>
+      <div class="drow"><span class="dk">the ETH print</span><span class="dv">the ETH leg is the same number, scaled: ⌊(2¹¹²−1) / 10¹⁷⌋ =
+        <b>51,922,968,585,348,276 wei</b> = 0.051922968585348276 ETH — which makes the seed price
+        <b>exactly 10 WEI per LUV</b>. ETH itself can never hit the ceiling (5.19×10¹⁵ ETH max vs ~1.2×10⁸ existing).</span></div>
+      <div class="drow"><span class="dk">verify</span><span class="dv"><a href="https://etherscan.io/tx/0x9f8e0bf6e566e809ca78eb18730b8f4305534e755a98a78f7924794757d4ff13" rel="noopener">the seed tx (addLiquidityETH, block 25620950) ↗</a> ·
+        <a href="https://etherscan.io/address/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31#readContract" rel="noopener">getReserves() on the pair ↗</a> ·
+        <a href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254#code" rel="noopener">the verified LUV contract ↗</a> ·
+        <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254#balances" rel="noopener">the holders, on the actual contract ↗</a></span></div>
+    </div>
+  </div>
+
   <div class="fineline" id="lp-depth">…</div>
   <div class="fineline" id="lp-at"></div>
 
@@ -171,7 +191,6 @@ footer .brandmark img{height:14px;width:auto;display:block;opacity:.85}
 </footer>
 
 <script src="substrate/luv-price.js?v=5"></script>
-<script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
 </body>
 </html>
