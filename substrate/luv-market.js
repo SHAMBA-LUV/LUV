@@ -154,6 +154,9 @@
       xEl.textContent = 'price ' + priceX.toFixed(2) + '× from X' +
         (liqX ? ' · liquidity ' + liqX.toFixed(2) + '×' : '');
       xEl.style.color = '#e3b25f';
+      // the page-level statement: how many times the price has X'd from the seed
+      var xLine = document.getElementById('luv-xcount');
+      if (xLine) xLine.textContent = priceX.toFixed(2) + '×';
     }
   };
 

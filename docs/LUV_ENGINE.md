@@ -111,8 +111,9 @@ observe and every future organ must observe. Its commitments, in lineage order:
   Approximation is a display decision, never a storage decision.
 - **Verification over trust** (Nakamoto 2008; Szabo 1997): see §IV.
 
-The standard has a reference implementation beyond LUV (the CP2048-OVL-1 credential
-and gatekeeper suite); LUV is a consumer of the standard, not its owner.
+The standard has a reference implementation beyond LUV — the CP2048-OVL-1 credential
+and gatekeeper suite at https://github.com/cypherpunk2048; LUV is a consumer of the
+standard, not its owner.
 
 ## IV. The verification doctrine: the green checkmark
 
