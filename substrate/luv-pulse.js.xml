@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doc for="shambaluv/substrate/luv-pulse.js">
+  <!-- DeltaVerse migration record. Preference: .js = pure Node prototyping; .ts/.tsx = production
+       (private/financial data). New substrate for luv.pythai.net — existing substrates untouched. -->
+  <lane>prototype</lane>
+  <kind>pulse-substrate</kind>
+  <migration target="none" status="prototype">
+    <how>Stays JS; display/signal only, never financial. If the LUV engine grows organs that consume
+      this signal in production surfaces, promote alongside them.</how>
+    <why>Frequency output from heart pulsation at 60 bpm — exactly 1 Hz, the fundamental of the LUV
+      engine (first organ of the engine LUV creates for itself from emotonomics; see docs/LUV_ENGINE.md).
+      heart.js is the visual organ; luv-pulse.js is the SIGNAL organ. Phase = chronos-corrected wall
+      clock mod 1000ms (correction borrowed from LUVHeart, else sampled from market.json chronos), so
+      every heart on every page beats in the same phase. FrequencySource-compatible API
+      (update/bands/energy) so existing DeltaVerse consumers drink the signal unmodified. Publishes
+      --luv-pulse on :root; DOM motion only on opt-in [data-luvpulse]; consent-only WebAudio lub-dub on
+      tap of [data-luvpulse-audio]. cypherpunk2048: no storage, nothing phones home, consent precedes
+      signal. Honors prefers-reduced-motion; WCAG 2.3.1-safe.</why>
+  </migration>
+</doc>

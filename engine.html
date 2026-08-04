@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>THE LUV ENGINE — an engine from emotonomics — SHAMBA LUV</title>
+<meta name="description" content="The LUV Engine: An Engine from Emotonomics. LUV creates its own engine from the field — first organ: frequency output from heart pulsation at 60 bpm, exactly 1 Hz, phase-locked for every visitor on earth. The derivation rule, the cypherpunk2048 standard, the green-checkmark verification doctrine.">
+<meta name="author" content="SHAMBA LUV">
+<link rel="canonical" href="https://luv.pythai.net/engine.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="SHAMBA LUV">
+<meta property="og:title" content="The LUV Engine: An Engine from Emotonomics">
+<meta property="og:description" content="Phase three begins with the engine's first organ: the pulse at 60 bpm — exactly 1 Hz — one rhythm held in common by every heart on every page, owned by no one.">
+<meta property="og:url" content="https://luv.pythai.net/engine.html">
+<meta property="og:image" content="https://luv.pythai.net/gfx/logo.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://luv.pythai.net/gfx/logo.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --ink:#160a0f;--wine:#2b111c;--seam:#4a1f30;--rose:#ff4d6d;--pink:#ff006e;--purple:#8338ec;
+  --blush:#ffb3c1;--cream:#f6e7eb;--dim:#b98da0;--gold:#e3b25f;
+  --mono:ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
+  --serif:Georgia,'Times New Roman',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--ink);color:var(--cream);font-family:var(--sans);line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--blush)}
+a:hover{color:var(--rose)}
+:focus-visible{outline:2px solid var(--rose);outline-offset:3px;border-radius:2px}
+.wrap{max-width:780px;margin:0 auto;padding:0 24px}
+header{border-bottom:1px solid var(--seam)}
+.bar{display:flex;align-items:center;gap:14px;padding:16px 0}
+.bar .wrap{max-width:1180px}
+.brand{font-family:var(--mono);font-size:15px;letter-spacing:.14em;color:var(--cream);text-decoration:none}
+.brand b{color:var(--rose)}
+.bar .spacer{flex:1}
+.bar a.back{font-family:var(--mono);font-size:12px;text-decoration:none;color:var(--dim)}
+.bar a.back:hover{color:var(--rose)}
+h1{margin:52px 0 6px;text-align:center;font-size:clamp(30px,5.6vw,46px);font-weight:800;
+  background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{text-align:center;color:var(--dim);margin-bottom:8px;font-style:italic}
+.paperkind{text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);margin-bottom:36px}
+/* ── paper typography ── */
+.paper p{margin:0 0 16px;font-size:15.5px}
+.paper .preface{border:1px solid var(--seam);border-left:3px solid var(--gold);border-radius:10px;background:var(--wine);
+  padding:18px 22px;margin:0 0 36px;color:var(--dim);font-size:14px}
+.paper .preface em{color:var(--blush)}
+.paper h2{font-family:var(--mono);font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);
+  margin:46px 0 16px;padding-top:26px;border-top:1px solid var(--seam)}
+.paper h2 .n{color:var(--rose);margin-right:10px}
+.paper .abstract{border:1px solid var(--seam);border-radius:12px;background:var(--wine);padding:22px 26px;margin-bottom:8px}
+.paper .abstract p{color:var(--cream);font-size:14.5px;margin:0}
+.paper .abstract .k{font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--rose);margin-bottom:10px}
+.paper em{font-style:italic;color:var(--blush)}
+.paper b{color:var(--cream);font-weight:700}
+.paper .cite{color:var(--dim)}
+.paper ol.points{margin:0 0 16px 22px}
+.paper ol.points li{margin-bottom:10px;font-size:15.5px}
+.paper ul.points{margin:0 0 16px 22px}
+.paper ul.points li{margin-bottom:10px;font-size:15.5px}
+.paper .axiom{border:1px solid var(--seam);border-radius:10px;background:var(--wine);padding:16px 20px;margin-bottom:12px}
+.paper .axiom .t{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.paper .axiom p{margin:0;font-size:14.5px;color:var(--cream)}
+.paper .obj{margin-bottom:16px}
+.paper .obj .q{font-weight:700;color:var(--blush)}
+.paper .refs{list-style:none;margin:14px 0 0;columns:1}
+.paper .refs li{font-size:13px;color:var(--dim);margin-bottom:9px;padding-left:16px;text-indent:-16px}
+.paper .refs li em{color:var(--blush);font-style:italic}
+.paper hr{border:0;border-top:1px solid var(--seam);margin:38px 0}
+/* the beating heart of the paper — driven by luv-pulse (--luv-pulse), CSS fallback */
+.pulseheart{display:inline-block;color:var(--rose)}
+.readmore{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:44px 0 8px}
+.btn{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--blush);text-decoration:none;
+  border:1px solid var(--seam);border-radius:999px;padding:8px 18px;transition:color .15s,border-color .15s}
+.btn:hover{color:var(--rose);border-color:var(--rose)}
+footer{margin-top:64px;border-top:1px solid var(--seam);padding:26px 0 44px}
+footer .wrap{max-width:1180px;display:flex;flex-wrap:wrap;gap:18px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--dim)}
+footer a{text-decoration:none}
+footer .spacer{flex:1}
+footer .brandmark{display:inline-flex;align-items:center;gap:7px;color:var(--dim)}
+footer .brandmark img{height:14px;width:auto;display:block;opacity:.85;transition:opacity .15s}
+footer .brandmark:hover{color:var(--cream)}
+footer .brandmark:hover img{opacity:1}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="/">❤ SHAMBA <b>LUV</b></a>
+    <span class="spacer"></span>
+    <a class="back" href="emotonomics.html">the field paper</a>
+    <a class="back" href="view.html">live view</a>
+    <a class="back" href="/">← back to the doorway</a>
+  </div>
+</header>
+
+<main class="wrap paper">
+  <h1>THE LUV ENGINE</h1>
+  <div class="sub">An Engine from Emotonomics</div>
+  <div class="paperkind">the engine paper · phase three · the pulse at 60 bpm <span class="pulseheart" data-luvpulse data-luvpulse-audio title="tap to hear the heartbeat — consent-only, tap again to stop">❤</span></div>
+
+  <div class="preface"><b>Preface.</b> Emotonomics defined the field
+  (<a href="emotonomics.html">the field paper</a>). This document states what LUV builds
+  <b>with</b> the field: an engine — not adopted from game middleware, not borrowed from a
+  rendering tradition, but derived organ by organ from emotonomic axioms. Phase three of the
+  protocol begins with the engine's first organ: the pulse. The analytic register here is
+  academic; the protocol speaks elsewhere in its own voice (<em>sharing is caring</em>).</div>
+
+  <div class="abstract">
+    <div class="k">Abstract</div>
+    <p>Software engines inherit their architecture from what they were built to move: physics engines
+    from mechanics, game engines from the render loop, financial engines from the order book. This paper
+    argues that an economy whose theory of value is grounded in attention
+    <span class="cite">(Simon 1971; Goldhaber 1997)</span> and priced in emotion requires an engine
+    derived from that theory rather than adapted from any of these traditions — and that LUV is building
+    one. We state the derivation rule (each engine organ implements exactly one emotonomic commitment),
+    present the first organ — a cardiac oscillator emitting a frequency signal at 60 beats per minute,
+    exactly <b>1&nbsp;Hz</b>, phase-locked across every participant by chronos-corrected time — and
+    position the design in three lineages: Smith's sympathy as the ground of economic order
+    <span class="cite">(Smith 1759)</span>, entrainment and collective rhythm as the physical form of
+    social solidarity <span class="cite">(Huygens 1665; Durkheim 1912; McNeill 1995)</span>, and the
+    cypherpunk discipline of consent, custody, and verification
+    <span class="cite">(Hughes 1993; Nakamoto 2008)</span>. We define the engine's verification
+    doctrine — a claim is <em>verified</em> if and only if it carries the green checkmark of on-chain
+    source verification — and state testable propositions.</p>
+  </div>
+
+  <h2 id="s1"><span class="n">I.</span> Why an economy needs an engine of its own</h2>
+  <p>Every prior engine encodes the ontology of its source domain. The game engine's frame loop encodes
+  the primacy of the image; the matching engine's book encodes the primacy of the order. An emotonomic
+  economy has a different primitive: the <b>gesture</b> — attention given, registered, and returned as
+  value. No existing engine has a native type for it.</p>
+  <p>The DeltaVerse substrate tradition supplies the <em>form</em> LUV inherits: small, zero-dependency
+  substrates, each doing one thing, each documented, composing through shared signals rather than shared
+  state. What emotonomics supplies is the <em>derivation rule</em>:</p>
+  <div class="axiom"><div class="t">Derivation rule</div>
+    <p>An organ enters the LUV engine only as the implementation of a stated emotonomic commitment.
+    Form follows field.</p></div>
+  <p>The engine therefore grows the way the field grew — axiom by axiom — and the engine's documentation
+  is a continuation of the field's literature, not a departure from it. LUV does not license an engine;
+  LUV creates its own engine <b>from</b> emotonomics, and improves emotonomics from what the engine
+  measures: the field feeds the engine, the engine's measurements feed the field. This reflexive loop —
+  theory generating instrument, instrument refining theory — is the ordinary epistemology of the
+  sciences, here applied to political economy in code.</p>
+
+  <h2 id="s2"><span class="n">II.</span> The first organ: the pulse at 60 beats per minute</h2>
+  <p>The engine's first organ is a clock that is also a heart. Sixty beats per minute is exactly one
+  beat per second — a fundamental frequency of <b>1&nbsp;Hz</b> — and one beat per chronos second, sixty
+  to the chronos minute. Implementation is two substrates:</p>
+  <ul class="points">
+    <li><b>heart.js</b> — the <em>visual</em> organ: a consent-gated, client-cached pulsating heart
+    (favicon and page), phase = chronos-corrected wall clock modulo 1000&nbsp;ms, the first beat of each
+    minute accented — the measure.</li>
+    <li><b>luv-pulse.js</b> — the <em>signal</em> organ: the same beat emitted as a measurable
+    frequency output any consumer can drink — phase, lub-dub envelope (S1 at phase .14, S2 at .42),
+    four spectral bands, an energy scalar, and, on explicit tap only, an audible lub-dub synthesized in
+    WebAudio. The heart at the top of this page is live: tap it to hear the beat; tap again to stop.</li>
+  </ul>
+  <p>Three properties carry the doctrine:</p>
+  <ol class="points">
+    <li><b>Attention has a clock.</b> Emotonomics holds attention to be the source of value; a source
+    must be measurable, and measurement requires a time base. The pulse is that base: one second, one
+    beat, humanly perceivable, machine-precise. Time itself is taken as a service (chronos attestation
+    via the same-origin market contract), so the beat is <em>measured</em>, not merely displayed.</li>
+    <li><b>Synchrony is sympathy made physical.</b> Phase is derived from corrected wall-clock time,
+    never from timer accumulation — so every heart on every page, for every visitor on earth, beats in
+    the same phase. Smith grounded economic order in sympathy, the capacity to feel with another
+    <span class="cite">(Smith 1759)</span>; the literature on entrainment shows shared rhythm to be the
+    body's oldest mechanism of solidarity — Huygens observed coupled pendulum clocks falling into an
+    "odd sympathy" in 1665, Durkheim (1912) located collective effervescence in shared rhythm, and
+    McNeill (1995) traced community-making through keeping together in time. The synchronized pulse is
+    this inheritance implemented: one rhythm, held in common, owned by no one.</li>
+    <li><b>Consent precedes signal.</b> Nothing is stored and nothing sounds without an explicit act:
+    the favicon asks once ("your folder belongs to you"), the audible heartbeat starts only on a tap
+    and stops on the next. The beat never phones home.</li>
+  </ol>
+
+  <h2 id="s3"><span class="n">III.</span> The standard: cypherpunk2048</h2>
+  <p>The engine is built to the <b>cypherpunk2048</b> standard, which the LUV surfaces already observe
+  and every future organ must observe. Its commitments, in lineage order:</p>
+  <ul class="points">
+    <li><b>Write code</b> <span class="cite">(Hughes 1993)</span>: doctrine ships as running, readable,
+    self-hosted source — small substrates, no dependencies, no external calls beyond the same-origin
+    contracts the page already trusts.</li>
+    <li><b>Sovereignty over custody; consent over default</b>: what lives on the client belongs to the
+    client (the heart's frame cache is created only on OK, deletable by its owner, never transmitted);
+    what moves value lives behind keys the user holds — your keys, your LUV; your browser, your
+    folder.</li>
+    <li><b>Power-of-two discipline (the 2048)</b>: quantities that can be exact are exact — 2048 = 2¹¹
+    as the graphic standard, 2ⁿ ladders for shading and scale, decimal precision carried at full width
+    (18 decimals; one trillion LUV named exactly). Approximation is a display decision, never a storage
+    decision.</li>
+    <li><b>Verification over trust</b> <span class="cite">(Szabo 1997; Nakamoto 2008)</span>: §IV.</li>
+  </ul>
+  <p>The standard has a reference implementation beyond LUV (the CP2048-OVL-1 credential and gatekeeper
+  suite); LUV is a consumer of the standard, not its owner.</p>
+
+  <h2 id="s4"><span class="n">IV.</span> The verification doctrine: the green checkmark</h2>
+  <p>In every LUV surface the word <b>verified</b> is reserved. A claim is <em>verified</em> if and only
+  if it traces to the <b>green checkmark</b> — source-code verification on the public explorer, where
+  the published source is compiled and matched against the bytecode deployed on chain.
+  <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" rel="noopener">ShambaLuv
+  (0x2711…8254) carries that checkmark</a>; the footer of every page routes "verified" to it. What this
+  doctrine excludes is self-attestation: an audit we paid for, a claim we typed, a screenshot — none of
+  these may be called <em>verified</em>. They may be called what they are. The rule is the cypherpunk
+  inheritance in one sentence: don't trust — verify, and let the verification be public, mechanical, and
+  repeatable by anyone <span class="cite">(Nakamoto 2008)</span>.</p>
+
+  <h2 id="s5"><span class="n">V.</span> Testable propositions</h2>
+  <ol class="points">
+    <li><b>Phase coherence.</b> Any two clients rendering the pulse simultaneously will differ in phase
+    by less than the sum of their chronos-correction errors — measurably, by comparing
+    <em>--luv-pulse</em> traces; the beat does not drift under timer throttling.</li>
+    <li><b>Frequency exactness.</b> The emitted fundamental is 1.000&nbsp;Hz by construction
+    (phase = corrected clock mod 1000&nbsp;ms), auditable from the signal API without reference to the
+    implementation.</li>
+    <li><b>Engine growth tracks the field.</b> Every future organ admitted to the engine will cite the
+    emotonomic commitment it implements. The derivation rule is falsifiable: an organ without one is a
+    defect, and its presence refutes the claim that the engine derives from the field.</li>
+    <li><b>Attention responds to rhythm.</b> If the synchrony thesis is right, surfaces carrying the
+    common pulse should show measurably different attention profiles (dwell, return-from-ping latency in
+    blocktime) than the same surfaces with the pulse removed — a falsifiable A/B claim, to be run when
+    traffic warrants.</li>
+  </ol>
+
+  <h2 id="s6"><span class="n">VI.</span> Objections answered</h2>
+  <div class="obj"><p><span class="q">"An engine from doctrine is just branding."</span> The derivation
+  rule is doing real architectural work: it excludes organs (there is no autoplay sound organ, because
+  consent precedes signal; there is no third-party analytics organ, because attention is owned by the
+  one who gives it) and it fixes interfaces (the pulse had to be a signal any DeltaVerse consumer
+  drinks, because the field claims attention-value is <em>general</em>, not app-local).</p></div>
+  <div class="obj"><p><span class="q">"60 bpm is arbitrary."</span> It is chosen, not arbitrary:
+  1&nbsp;Hz is the unique rate that is simultaneously a resting human heart rate, one beat per SI
+  second (making the chronos attestation legible), and safely below flash-frequency accessibility
+  limits (WCAG 2.3.1). A doctrine that prices attention must never assault it.</p></div>
+  <div class="obj"><p><span class="q">"Synchrony claims overreach."</span> The strong sociological
+  claims <span class="cite">(Durkheim 1912; McNeill 1995)</span> concern co-present bodies; a favicon
+  is weaker medicine, and we label proposition V.4 speculative until measured. What is <em>not</em>
+  speculative is the engineering: the phase lock is real, global, and verifiable today.</p></div>
+
+  <h2 id="refs">References</h2>
+  <ul class="refs">
+    <li>Durkheim, É. (1912). <em>Les formes élémentaires de la vie religieuse</em>. Alcan.</li>
+    <li>Goldhaber, M. H. (1997). "The Attention Economy and the Net." <em>First Monday</em> 2(4).</li>
+    <li>Hayek, F. A. (1945). "The Use of Knowledge in Society." <em>American Economic Review</em> 35(4): 519–530.</li>
+    <li>Hughes, E. (1993). "A Cypherpunk's Manifesto." March 9, 1993.</li>
+    <li>Huygens, C. (1665). Letters to R. Moray, February 1665, on the "odd sympathy" of coupled pendulum clocks. In <em>Œuvres complètes de Christiaan Huygens</em>, vol. 5. Martinus Nijhoff, 1893.</li>
+    <li>May, T. C. (1988). "The Crypto Anarchist Manifesto."</li>
+    <li>McNeill, W. H. (1995). <em>Keeping Together in Time: Dance and Drill in Human History</em>. Harvard University Press.</li>
+    <li>Nakamoto, S. (2008). "Bitcoin: A Peer-to-Peer Electronic Cash System." Whitepaper.</li>
+    <li>Simon, H. A. (1971). "Designing Organizations for an Information-Rich World." In M. Greenberger (ed.), <em>Computers, Communications, and the Public Interest</em>. Johns Hopkins Press.</li>
+    <li>Smith, A. (1759). <em>The Theory of Moral Sentiments</em>. A. Millar.</li>
+    <li>Smith, A. (1776). <em>An Inquiry into the Nature and Causes of the Wealth of Nations</em>. W. Strahan &amp; T. Cadell.</li>
+    <li>Szabo, N. (1997). "Formalizing and Securing Relationships on Public Networks." <em>First Monday</em> 2(9).</li>
+  </ul>
+
+  <div class="readmore">
+    <a class="btn" href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/LUV_ENGINE.md" rel="noopener">📄 this paper on GitHub</a>
+    <a class="btn" href="emotonomics.html">📚 EMOTONOMICS — the field paper</a>
+    <a class="btn" href="sentiment.html">🎭 SENTIMENT — the measurement paper</a>
+    <a class="btn" href="wei.html">🔢 WEI — the arithmetic paper</a>
+    <a class="btn" href="view.html">📈 the live market</a>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>❤ LUV is priceless</span>
+    <span class="spacer"></span>
+    <a href="/">the doorway</a>
+    <a href="faq.html">FAQ</a>
+    <a href="docs.html">docs</a>
+    <a href="https://github.com/SHAMBA-LUV/LUV" rel="noopener">source &amp; audit</a>
+    <a class="brandmark" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="verified means the green checkmark: source code verified on Etherscan · Powered by Etherscan.io APIs">
+      <img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="14">
+      <span>Powered by Etherscan.io APIs</span>
+    </a>
+    <span>SHAMBA © 2026 LUV · luv@pythai.net</span>
+  </div>
+</footer>
+
+<script src="substrate/heart.js?v=2"></script>
+<script src="substrate/luv-pulse.js?v=1"></script>
+</body>
+</html>
