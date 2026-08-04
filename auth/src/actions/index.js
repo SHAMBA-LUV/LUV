@@ -30,11 +30,15 @@ const DIST_ABI = [
   'function claimWithSignature(address user, string actionType, string actionId, uint256 deadline, bytes signature)',
 ];
 
-// Landing fallback while the distributor isn't deployed/configured — mirrors the
-// constructor-seeded registry (contracts/IncentiveDistributor.sol).
+// Landing fallback while the distributor isn't deployed/configured. Phase-3 policy
+// (operator, 2026-08-03): tweet = 50 billion LUV, limit 3/day, 1h cooldown timer —
+// the rail supports both the trigger (proof submission → review → relay) and the
+// timer (canPerform cooldown clock in the widget). NOTE: when the on-chain registry
+// is live it ALWAYS wins; retune it with setAction("tweet", LUV, 5e28, 3, 3600,
+// false, true) from the owner so chain and policy agree.
 const SEED_ACTIONS = [
   { name: 'welcome', reward: (10n ** 30n).toString(), dailyLimit: 0, cooldown: 0, oneTime: true, active: true, completions: 0 },
-  { name: 'tweet', reward: (5n * 10n ** 29n).toString(), dailyLimit: 10, cooldown: 300, oneTime: false, active: true, completions: 0 },
+  { name: 'tweet', reward: (5n * 10n ** 28n).toString(), dailyLimit: 3, cooldown: 3600, oneTime: false, active: true, completions: 0 },
   { name: 'post', reward: (5n * 10n ** 29n).toString(), dailyLimit: 10, cooldown: 300, oneTime: false, active: true, completions: 0 },
   { name: 'interaction', reward: (5n * 10n ** 28n).toString(), dailyLimit: 20, cooldown: 60, oneTime: false, active: true, completions: 0 },
 ];

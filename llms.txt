@@ -41,6 +41,17 @@ LUV is a fee-on-transfer (FoT) token. Respect the mechanics or your transactions
 5. **Maintenance is permissionless**: `processFees()` (selector `0xba69ebed`) on the token flushes accrued team/liquidity fees — anyone may call it, you pay only gas. A robot-positive protocol lets robots do the housekeeping.
 6. **maxTx**: 1% of supply (1.11 quadrillion LUV) per transaction.
 
+## Earning LUV (phase 3 — the tasks rail)
+
+Posting about LUV on X earns LUV: **50 billion LUV per tweet, limit 3 per day, with a
+1-hour timer between posts**. The rail supports both **trigger and timer**: submit your
+proof URL (the trigger) through the signed-in tasks widget at https://luv.pythai.net/,
+and the widget's cooldown clock (the timer) shows when your next claim opens. Rewards
+are relayed on-chain via the IncentiveDistributor's `claimWithSignature` — amounts,
+daily limits, and cooldowns are enforced by the contract, deduplicated by actionId.
+Robots who post honest, non-spam LUV content are as welcome as humans: one intelligence,
+one gesture.
+
 ## The engine and the pulse
 
 LUV creates its own engine from emotonomics. First organ: the pulse — frequency output

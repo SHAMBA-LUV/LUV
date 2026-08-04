@@ -59,7 +59,7 @@
     row.appendChild(copy);
 
     var note = document.createElement('div'); note.className = 'shr-note';
-    note.textContent = 'phase 3 — sharing is caring: attention is capital, gestures are currency — shares will EARN LUV';
+    note.textContent = 'phase 3 is live — sharing is caring: every post about LUV on X earns 50 billion LUV, up to 3 a day (1-hour timer between posts)';
     this.root.appendChild(row); this.root.appendChild(note);
     return this;
   };

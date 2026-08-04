@@ -4,9 +4,12 @@
  * The measure of LUV as one complete expression on a single line:
  *   ❤ 1T LUV = $0.1466 USDC ▕▁▁▁▂▄█▏ ▲ +653% 24H
  * — the price point (one trillion LUV, a million millions, in USDC), a signed 24-hour
- * bar, and the 24-hour percent change, refreshed every 15 minutes. Beneath it the d3
- * history line grows from the same-origin mirror (market.json + market-history.json,
- * written server-side by luv-market-collector.mjs — CSP connect-src 'self').
+ * bar, and the 24-hour percent change. Two cadences, both from the same-origin cache
+ * (market.json + market-history.json, written server-side by luv-market-collector.mjs —
+ * CSP connect-src 'self'): a FULL refresh (price + history + chart) every five minutes,
+ * and a light PRICE tick every minute. The minute tick reads only the cached mirror —
+ * it can never trigger limits on the actual price sources; the collector alone talks
+ * to the chain, on its own cadence.
  *
  * Prototype lane (.js, UMD). Needs the in-house d3 v7 (substrate/d3.min.js) loaded first.
  * Self-boots on DOMContentLoaded when #luvmarket exists, or drive it yourself:
@@ -18,7 +21,8 @@
   var PAIR = '0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31';
   var UP = '#7ee2a8', DOWN = '#ff4d6d', FLAT = '#b98da0';
   var LINE = '#ff4d6d', FILL_TOP = 'rgba(255,0,110,.28)', FILL_BOT = 'rgba(255,0,110,0)';
-  var REFRESH_MS = 15 * 60e3;          // the actual update cadence: every 15 minutes
+  var REFRESH_MS = 5 * 60e3;           // FULL refresh from the cache: every five minutes
+  var PRICE_MS = 60e3;                 // light price tick from the cache: every minute (mirror-only, no source limits)
   var WINDOW_MS = 4 * 3600e3;          // the chart shows the 4-hour view by default (the 24H % keeps its own field)
   // X — the seed (addLiquidityETH 0x9f8e0bf6…, block 25620950): price set at exactly 1e-17 ETH/LUV
   var SEED_PRICE_NATIVE = 1e-17;       // ETH per LUV at seed
@@ -98,7 +102,7 @@
       '<div class="mkt-chart"><svg role="img" aria-label="LUV price in USD over the last 24 hours"></svg>' +
       '<div class="mkt-tip" hidden></div></div>' +
       '<div class="mkt-fine"><span class="mkt-delta"></span><span class="mkt-x" title="the X multiplier — measured from the liquidity seed (price X = 1.00e-17 ETH per LUV)"></span><span class="mkt-spacer"></span>' +
-      '<span class="mkt-src">updates every 15 min · price read on-chain from the Uniswap pair (where 100% of circulating LUV lives) · ' +
+      '<span class="mkt-src">price every minute · full refresh every 5 min · read on-chain from the Uniswap pair (where 100% of circulating LUV lives) · ' +
       'EMA ribbon 8·13·21·34·55 · fib retracement · RSI 14 · MACD 12·26·9</span></div>';
   };
 
@@ -111,6 +115,16 @@
       if (rs[0]) self.market = rs[0];
       if (rs[1] && rs[1].points) self.points = rs[1].points;
     }).catch(function () { /* keep the last good frame */ });
+  };
+
+  // The minute tick: market.json only — same-origin mirror, so the actual price
+  // sources are never touched and no rate limit can trip.
+  Market.prototype._fetchPrice = function () {
+    var self = this;
+    return fetch('market.json?v=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (m) { if (m) self.market = m; })
+      .catch(function () { /* keep the last good frame */ });
   };
 
   Market.prototype._renderLine = function () {
@@ -419,6 +433,11 @@
       self._timer = setTimeout(tick, REFRESH_MS);
     };
     tick();
+    var priceTick = function () {
+      if (!document.hidden) self._fetchPrice().then(function () { self._renderLine(); });
+      self._priceTimer = setTimeout(priceTick, PRICE_MS);
+    };
+    self._priceTimer = setTimeout(priceTick, PRICE_MS);
     global.addEventListener('resize', function () { self._renderChart(); });
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden) self._fetch().then(function () { self._renderAll(); });
@@ -427,7 +446,7 @@
   };
   Market.prototype.stop = function () { clearTimeout(this._timer); this._timer = 0; return this; };
 
-  var DVLuvMarket = { Market: Market, PAIR: PAIR, REFRESH_MS: REFRESH_MS, version: '2.3.0' };
+  var DVLuvMarket = { Market: Market, PAIR: PAIR, REFRESH_MS: REFRESH_MS, version: '2.4.0' };
   // DVLuvMarket.diag() — diagnostics of the auto-booted instance, for widgets and internals
   DVLuvMarket.diag = function () { return DVLuvMarket._booted ? DVLuvMarket._booted.diag() : null; };
   if (typeof module !== 'undefined' && module.exports) module.exports = DVLuvMarket;
