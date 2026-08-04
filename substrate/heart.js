@@ -41,7 +41,7 @@
   var GFX = 'gfx/heart-beat/';          // server-side graphic substrate
   var RESYNC_MS = 15 * 60e3;
   var LS_OK = 'luv-heart-ok';
-  var LS_GFX = 'luv-heart-gfx-v1';      // the client-side gfx folder
+  var LS_GFX = 'luv-heart-gfx-v2';      // the client-side gfx folder (v2: 2^3-level shading)
 
   var reduced = false;
   try { reduced = global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { /* old UA */ }
