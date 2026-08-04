@@ -98,7 +98,7 @@
       '<div class="mkt-chart"><svg role="img" aria-label="LUV price in USD over the last 24 hours"></svg>' +
       '<div class="mkt-tip" hidden></div></div>' +
       '<div class="mkt-fine"><span class="mkt-delta"></span><span class="mkt-x" title="the X multiplier — measured from the liquidity seed (price X = 1.00e-17 ETH per LUV)"></span><span class="mkt-spacer"></span>' +
-      '<span class="mkt-src">updates every 15 min · price read from the pair reserves on-chain · ' +
+      '<span class="mkt-src">updates every 15 min · price read on-chain from the Uniswap pair (where 100% of circulating LUV lives) · ' +
       'EMA ribbon 8·13·21·34·55 · fib retracement · RSI 14 · MACD 12·26·9</span></div>';
   };
 

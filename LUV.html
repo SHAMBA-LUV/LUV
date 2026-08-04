@@ -56,6 +56,11 @@ h1{margin:52px 0 6px;text-align:center;font-size:clamp(32px,6vw,52px);font-weigh
 .expr .wei{font-family:var(--mono);font-weight:800;font-size:clamp(24px,5vw,44px);color:var(--gold)}
 .usdline{text-align:center;font-family:var(--mono);font-size:14px;color:var(--dim);margin:6px 0 26px}
 .usdline b{color:var(--blush)}
+.togglerow{display:flex;justify-content:center;gap:10px;margin-bottom:20px}
+.tbtn{font-family:var(--mono);font-size:13px;letter-spacing:.08em;color:var(--dim);background:var(--wine);
+  border:1px solid var(--seam);border-radius:999px;padding:9px 22px;cursor:pointer;transition:color .15s,border-color .15s}
+.tbtn:hover{color:var(--blush);border-color:var(--rose)}
+.tbtn.active{color:#fff;background:linear-gradient(100deg,var(--pink),var(--purple));border-color:transparent;font-weight:700}
 .diag{font-family:var(--mono);font-size:13px}
 .drow{display:flex;gap:14px;padding:7px 0;border-top:1px solid rgba(74,31,48,.6);align-items:baseline}
 .drow:first-child{border-top:0}
@@ -97,9 +102,15 @@ footer .brandmark img{height:14px;width:auto;display:block;opacity:.85}
   <h1>the price of LUV</h1>
   <div class="sub">✨ the price is created by the liquidity pair — and expressed on Uniswap ✨</div>
 
-  <!-- expression 1: ETH → one trillion LUV -->
+  <!-- denomination toggle: ETH/LUV is measured, ETH/USD is measured → USDC/LUV follows -->
+  <div class="togglerow" role="tablist" aria-label="price denomination">
+    <button type="button" class="tbtn active" id="lp-mode-eth" role="tab" aria-selected="true">Ξ in ETH</button>
+    <button type="button" class="tbtn" id="lp-mode-usdc" role="tab" aria-selected="false">$ in USDC</button>
+  </div>
+
+  <!-- expression 1: <denom> → one trillion LUV -->
   <div class="expr">
-    <div class="k">ETH → one trillion LUV</div>
+    <div class="k" id="lp-k1">ETH → one trillion LUV</div>
     <div class="big" id="lp-eth">…</div>
     <span class="eq">=</span>
     <div class="luvamt"><span class="beat">❤</span> <span id="lp-luv">1,000,000,000,000.000000000000000000 LUV</span></div>
@@ -107,14 +118,14 @@ footer .brandmark img{height:14px;width:auto;display:block;opacity:.85}
     That is what the pool asks for it, right now.</div>
   </div>
 
-  <div class="usdline">≈ <b id="lp-usd">…</b> · the same trillion, in USDC</div>
+  <div class="usdline" id="lp-usdline">≈ <b id="lp-usd">…</b> · the same trillion, in USDC</div>
 
-  <!-- expression 2: WEI / LUV -->
+  <!-- expression 2: the smallest-unit inverse — WEI/LUV, or LUV/USDC -->
   <div class="expr">
-    <div class="k gold">WEI / LUV</div>
+    <div class="k gold" id="lp-k2">WEI / LUV</div>
     <div class="wei" id="lp-wei">…</div>
     <div class="note" id="lp-wei-note">the seed priced LUV at exactly <b>10 WEI</b></div>
-    <div class="note">wei — the smallest unit of ETH, 10<sup>−18</sup>. LUV entered the world at
+    <div class="note" id="lp-wei-note2">wei — the smallest unit of ETH, 10<sup>−18</sup>. LUV entered the world at
     ten of them. Every wei above that is the market speaking.</div>
   </div>
 
@@ -155,10 +166,10 @@ footer .brandmark img{height:14px;width:auto;display:block;opacity:.85}
       <img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="14">
       <span>Powered by Etherscan.io APIs</span>
     </a>
-    <span>SHAMBA © 2026 LUV</span>
+    <span>SHAMBA © 2026 LUV · luv@pythai.net</span>
   </div>
 </footer>
 
-<script src="substrate/luv-price.js?v=2"></script>
+<script src="substrate/luv-price.js?v=5"></script>
 </body>
 </html>
