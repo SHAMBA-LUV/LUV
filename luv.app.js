@@ -515,7 +515,7 @@
         accEl.textContent = 'worth it ✓ — value ' + fmtUsd(accUsd) + ' ≥ redeem gas ~' + fmtUsd(gasUsd) + ' (' + Number(gas.redeemFeeEth).toFixed(6) + ' ETH)';
       } else {
         const pct = Math.max(0.1, Math.round(accUsd / gasUsd * 1000) / 10);
-        accEl.textContent = 'redeeming now costs ~' + fmtUsd(gasUsd) + ' in gas — your pile covers ' + pct + '% of that. keep stacking ❤';
+        accEl.textContent = 'redeeming now costs ~' + fmtUsd(gasUsd) + ' in gas — your pile covers ' + pct + '% of that. check back to stack more LUV ❤';
       }
     } else if (gasUsd != null) {
       accEl.textContent = 'redeem gas right now: ~' + fmtUsd(gasUsd) + ' (' + Number(gas.redeemFeeEth).toFixed(6) + ' ETH)';
@@ -540,7 +540,7 @@
     } else if (st === 'paid') {
       msg.textContent = 'delivered on-chain ❤ come back tomorrow';
     } else {
-      msg.textContent = 'come back tomorrow — your next billion is already counting down';
+      msg.textContent = 'check back to stack more LUV — your next billion is already counting down';
     }
     if (!dropTick) {
       dropTick = setInterval(() => {
