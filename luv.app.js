@@ -352,6 +352,7 @@
     failed: 'failed', rejected: 'rejected',
   };
   const SUBMIT_ERR = {
+    login_required_today: 'sign in again today to start your timer — the day begins when you do ❤',
     already_submitted: 'that proof is already in — each link counts once',
     bad_proof_url: 'paste the full https:// link to your post',
     inactive_action: 'this action is paused right now',

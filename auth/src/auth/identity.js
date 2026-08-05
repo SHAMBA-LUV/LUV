@@ -33,10 +33,13 @@ function makeIdentityKey(provider, providerUserId) {
  */
 async function upsertIdentity(profile) {
   const identityKey = makeIdentityKey(profile.provider, profile.providerUserId);
+  // last_login_at stamps every REAL sign-in (consent click / wallet signature) — the
+  // daily-login timer gate reads it; a lingering session cookie never updates it.
   const res = await db.query(
-    `INSERT INTO identities (provider, provider_user_id, identity_key, email)
-     VALUES ($1, $2, $3, $4)
-     ON CONFLICT (identity_key) DO UPDATE SET email = COALESCE(EXCLUDED.email, identities.email)
+    `INSERT INTO identities (provider, provider_user_id, identity_key, email, last_login_at)
+     VALUES ($1, $2, $3, $4, now())
+     ON CONFLICT (identity_key) DO UPDATE
+        SET email = COALESCE(EXCLUDED.email, identities.email), last_login_at = now()
      RETURNING (xmax = 0) AS inserted`,
     [profile.provider, profile.providerUserId, identityKey, profile.email || null]
   );

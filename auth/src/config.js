@@ -82,6 +82,10 @@ const config = {
   incentiveDistributorAddress: opt('INCENTIVE_DISTRIBUTOR_ADDRESS', ''),
   actionsAutoApprove: bool('ACTIONS_AUTO_APPROVE', false),
   actionsPayoutIntervalMs: parseInt(opt('ACTIONS_PAYOUT_INTERVAL_MS', '60000'), 10),
+  // The daily-login timer (operator, 2026-08-05): earn actions (tweet/post/…) only count
+  // on days the participant actually SIGNED IN — a lingering session cookie doesn't start
+  // the day's timer. Toggle with ACTIONS_DAILY_LOGIN_GATE=false.
+  dailyLoginGate: bool('ACTIONS_DAILY_LOGIN_GATE', true),
 
   // ── Voucher signer ── MUST equal ShambaLuvAirdrop.signer (a DEDICATED key, never bankon.eth).
   // PREFERRED: unlock it from a bankon-vault at runtime (key sealed AES-256-GCM at rest) —

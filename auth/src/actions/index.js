@@ -44,7 +44,11 @@ const SEED_ACTIONS = [
   // setAction("welcome", LUV, 1e27, 0, 0, true, true) + setAction("return", LUV, 1e27, 1, 86400, false, true).
   { name: 'welcome', reward: (10n ** 27n).toString(), dailyLimit: 0, cooldown: 0, oneTime: true, active: true, completions: 0 },
   { name: 'return', reward: (10n ** 27n).toString(), dailyLimit: 1, cooldown: 86400, oneTime: false, active: true, completions: 0 },
-  { name: 'tweet', reward: (5n * 10n ** 28n).toString(), dailyLimit: 3, cooldown: 3600, oneTime: false, active: true, completions: 0 },
+  // Sliding-scale tweet incentive (operator, 2026-08-05): 3,333,333,333 LUV per tweet
+  // (~$0.0006 at the $0.001≈5.7B mark), 8h between tweets (3 fit a UTC day). The scale
+  // slides with price — the owner retunes the registry as LUV appreciates:
+  // setAction("tweet", LUV, 3333333333e18, 3, 28800, false, true).
+  { name: 'tweet', reward: (3333333333n * 10n ** 18n).toString(), dailyLimit: 3, cooldown: 28800, oneTime: false, active: true, completions: 0 },
   { name: 'post', reward: (5n * 10n ** 29n).toString(), dailyLimit: 10, cooldown: 300, oneTime: false, active: true, completions: 0 },
   { name: 'interaction', reward: (5n * 10n ** 28n).toString(), dailyLimit: 20, cooldown: 60, oneTime: false, active: true, completions: 0 },
 ];
@@ -129,6 +133,17 @@ async function submitAction(identityKey, action, proofUrl) {
   const a = actions.find((x) => x.name === action);
   if (!a) return { error: 'unknown_action' };
   if (!a.active) return { error: 'inactive_action' };
+  // The daily-login timer (optional, ACTIONS_DAILY_LOGIN_GATE): earning starts with a
+  // fresh sign-in each UTC day — a lingering session cookie is presence, not a return.
+  // The consent click / wallet signature stamps identities.last_login_at.
+  if (config.dailyLoginGate) {
+    const lr = await db.query(
+      `SELECT (last_login_at AT TIME ZONE 'UTC')::date = (now() AT TIME ZONE 'UTC')::date AS today
+         FROM identities WHERE identity_key = $1`,
+      [identityKey]
+    );
+    if (!lr.rows[0] || lr.rows[0].today !== true) return { error: 'login_required_today' };
+  }
   if (a.oneTime) return { error: 'not_submittable' }; // 'welcome' is the gesture, not a task
   if (a.name === 'return') return { error: 'not_submittable' }; // presence claim — automatic, no proof
   if (typeof proofUrl !== 'string' || proofUrl.length > 500 || !/^https?:\/\//i.test(proofUrl)) {

@@ -9,6 +9,9 @@ CREATE TABLE IF NOT EXISTS identities (
     identity_key    TEXT        NOT NULL UNIQUE,
     email           TEXT,                            -- may be null (not all providers share it)
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    -- Stamped on every REAL sign-in (consent click / wallet signature) — the daily-login
+    -- timer gate reads it; a lingering session cookie never refreshes it.
+    last_login_at   TIMESTAMPTZ,
     UNIQUE (provider, provider_user_id)
 );
 
@@ -79,6 +82,7 @@ CREATE INDEX IF NOT EXISTS idx_action_submissions_identity ON action_submissions
 
 -- Idempotent upgrade for databases created before batch mode existed.
 ALTER TABLE airdrop_claims ADD COLUMN IF NOT EXISTS attempts INT NOT NULL DEFAULT 0;
+ALTER TABLE identities ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ;
 
 CREATE INDEX IF NOT EXISTS idx_airdrop_claims_status ON airdrop_claims (status);
 CREATE INDEX IF NOT EXISTS idx_wallets_address ON wallets (address);
