@@ -282,6 +282,16 @@ async function payoutOne(row) {
   const digest = await d.claimDigest(user, row.action, row.action_id, deadline);
   // Raw-digest ECDSA with the voucher signer (must equal the contract's `signer`).
   const sig = new ethers.SigningKey(config.voucherSignerPrivateKey).sign(digest).serialized;
+  // Preflight: if the claim would revert (signer not yet rotated, distributor unfunded,
+  // action not registered on-chain…), leave the row APPROVED and retry on a later sweep —
+  // a config-stage revert must never brand the submission 'failed' forever (or burn gas).
+  try {
+    await d.claimWithSignature.staticCall(user, row.action, row.action_id, deadline, sig);
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn(`[actions] payout #${row.id} not clearable yet (${e.shortMessage || e.message}) — will retry`);
+    return;
+  }
   const tx = await d.claimWithSignature(user, row.action, row.action_id, deadline, sig);
   const rc = await tx.wait();
   await db.query(
