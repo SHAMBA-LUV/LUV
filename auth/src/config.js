@@ -52,6 +52,9 @@ const config = {
   // Where to send the browser after a successful login (the dapp/app frontend).
   frontendSuccessUrl: opt('FRONTEND_SUCCESS_URL', 'http://localhost:5173/welcome'),
   frontendFailureUrl: opt('FRONTEND_FAILURE_URL', 'http://localhost:5173/login?error=auth'),
+  // The consent gate a social callback parks on (cypherpunk2048: consent over default).
+  // Empty ⇒ `${publicBaseUrl}/consent.html`.
+  frontendConsentUrl: opt('FRONTEND_CONSENT_URL', ''),
 
   // CORS
   corsAllowlist: parseOrigins(opt('CORS_ALLOWLIST', '')),

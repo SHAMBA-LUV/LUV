@@ -9,6 +9,8 @@
 
 const express = require('express');
 const passport = require('passport');
+const crypto = require('crypto');
+const jsonwebtoken = require('jsonwebtoken');
 const { enabledProviders } = require('../config');
 const { config } = require('../config');
 const db = require('../db');
@@ -18,38 +20,166 @@ const { issueToken, setSessionCookie, clearSessionCookie, requireAuth } = requir
 const router = express.Router();
 const ENABLED = enabledProviders();
 
+/*
+ * cypherpunk2048 entry handling.
+ *
+ * 1) VERIFICATION OVER TRUST — every OAuth round-trip is bound by a `state` nonce
+ *    carried in a short-lived signed cookie (stateless, same pattern as the wallet
+ *    challenge). A callback whose state doesn't match its cookie is discarded, which
+ *    closes the login-CSRF hole of an unbound authorize redirect.
+ * 2) CONSENT OVER DEFAULT — the callback does NOT mint a session. A provider with a
+ *    live browser session (GitHub especially: no prompt-forcing param exists) redirects
+ *    straight back without showing the user anything, so the verified identity is
+ *    parked in a 5-minute pending token and the browser lands on /enter.html. Nothing
+ *    is provisioned and no session exists until the user explicitly clicks enter.
+ */
+const STATE_COOKIE = 'shambaluv_oauth_state';
+const PENDING_COOKIE = 'shambaluv_oauth_pending';
+const OAUTH_TTL_S = 300;
+
+function setShortCookie(res, name, value) {
+  res.cookie(name, value, {
+    httpOnly: true,
+    secure: config.cookieSecure,
+    sameSite: 'lax',
+    maxAge: OAUTH_TTL_S * 1000,
+    path: '/auth',
+  });
+}
+
+function dropShortCookie(res, name) {
+  // Attributes MUST mirror setShortCookie or the browser keeps the cookie.
+  res.clearCookie(name, {
+    httpOnly: true,
+    secure: config.cookieSecure,
+    sameSite: 'lax',
+    path: '/auth',
+  });
+}
+
+function consentUrl() {
+  return config.frontendConsentUrl || `${config.publicBaseUrl}/consent.html`;
+}
+
+function readPending(req) {
+  const raw = req.cookies && req.cookies[PENDING_COOKIE];
+  if (!raw) return null;
+  try {
+    const claim = jsonwebtoken.verify(raw, config.jwtSecret, { issuer: 'shambaluv-auth' });
+    return claim.sub === 'oauth-pending' ? claim : null;
+  } catch (_) {
+    return null;
+  }
+}
+
 // Build a login + callback pair for each enabled provider.
 function wireProvider(provider, scope) {
-  // Kick off the OAuth dance.
-  router.get(`/${provider}`, passport.authenticate(provider, { session: false, scope }));
+  // Kick off the OAuth dance — with a state nonce bound to this browser.
+  router.get(`/${provider}`, (req, res, next) => {
+    const nonce = crypto.randomBytes(16).toString('hex');
+    setShortCookie(
+      res,
+      STATE_COOKIE,
+      jsonwebtoken.sign(
+        { sub: 'oauth-state', provider, nonce },
+        config.jwtSecret,
+        { expiresIn: OAUTH_TTL_S, issuer: 'shambaluv-auth' }
+      )
+    );
+    const opts = { session: false, scope, state: nonce };
+    // Google honors an account chooser; GitHub has no equivalent — /enter.html is the gate.
+    if (provider === 'google') opts.prompt = 'select_account';
+    passport.authenticate(provider, opts)(req, res, next);
+  });
 
-  // Provider redirects back here.
+  // Provider redirects back here. State check FIRST, then the code exchange, then PARK —
+  // the session is only minted by POST /auth/enter (the explicit consent click).
   router.get(
     `/${provider}/callback`,
+    (req, res, next) => {
+      const raw = req.cookies && req.cookies[STATE_COOKIE];
+      dropShortCookie(res, STATE_COOKIE); // single-use either way
+      let claim = null;
+      try {
+        claim = raw ? jsonwebtoken.verify(raw, config.jwtSecret, { issuer: 'shambaluv-auth' }) : null;
+      } catch (_) {
+        claim = null;
+      }
+      if (
+        !claim ||
+        claim.sub !== 'oauth-state' ||
+        claim.provider !== provider ||
+        !req.query.state ||
+        claim.nonce !== req.query.state
+      ) {
+        return res.redirect(config.frontendFailureUrl);
+      }
+      return next();
+    },
     passport.authenticate(provider, {
       session: false,
       failureRedirect: config.frontendFailureUrl,
     }),
-    async (req, res) => {
-      try {
-        // req.user is the normalized profile from the strategy verify callback.
-        const profile = req.user;
-        const { identityKey, provider: prov } = await upsertIdentity(profile);
-
-        // First-login (idempotent) provisioning + airdrop.
-        await ensureProvisionedAndAirdropped(identityKey);
-
-        const token = issueToken({ identityKey, provider: prov });
-        setSessionCookie(res, token);
-        return res.redirect(config.frontendSuccessUrl);
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error('[auth] callback error:', err.message);
-        return res.redirect(config.frontendFailureUrl);
-      }
+    (req, res) => {
+      // req.user is the normalized profile from the strategy verify callback.
+      const profile = req.user;
+      setShortCookie(
+        res,
+        PENDING_COOKIE,
+        jsonwebtoken.sign(
+          {
+            sub: 'oauth-pending',
+            provider: profile.provider,
+            providerUserId: profile.providerUserId,
+            email: profile.email || null,
+          },
+          config.jwtSecret,
+          { expiresIn: OAUTH_TTL_S, issuer: 'shambaluv-auth' }
+        )
+      );
+      return res.redirect(consentUrl());
     }
   );
 }
+
+// What is waiting for consent (drives /enter.html).
+router.get('/pending', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const pending = readPending(req);
+  if (!pending) return res.status(401).json({ error: 'no_pending_entry' });
+  res.json({ provider: pending.provider, email: pending.email || null });
+});
+
+// The consent click — the ONLY place a social login becomes a session.
+router.post('/enter', async (req, res) => {
+  const pending = readPending(req);
+  dropShortCookie(res, PENDING_COOKIE);
+  if (!pending) return res.status(401).json({ error: 'no_pending_entry' });
+  try {
+    const { identityKey, provider } = await upsertIdentity({
+      provider: pending.provider,
+      providerUserId: pending.providerUserId,
+      email: pending.email || null,
+    });
+
+    // First-login (idempotent) provisioning + airdrop — consent-gated.
+    await ensureProvisionedAndAirdropped(identityKey);
+
+    const token = issueToken({ identityKey, provider });
+    setSessionCookie(res, token);
+    return res.json({ ok: true });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[auth] enter error:', err.message);
+    return res.status(500).json({ error: 'enter_failed' });
+  }
+});
+
+// Walk away — drop the pending identity without entering.
+router.post('/cancel', (req, res) => {
+  dropShortCookie(res, PENDING_COOKIE);
+  res.json({ ok: true });
+});
 
 if (ENABLED.includes('google')) wireProvider('google', ['profile', 'email']);
 if (ENABLED.includes('discord')) wireProvider('discord', ['identify', 'email']);
