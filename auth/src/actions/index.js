@@ -28,6 +28,8 @@ const DIST_ABI = [
   'function isActionClaimed(string actionId) view returns (bool)',
   'function claimDigest(address user, string actionType, string actionId, uint256 deadline) view returns (bytes32)',
   'function claimWithSignature(address user, string actionType, string actionId, uint256 deadline, bytes signature)',
+  'function distributeReward(address user, uint256 amount) returns (bool)',
+  'function maxRewardPerTx() view returns (uint256)',
 ];
 
 // Landing fallback while the distributor isn't deployed/configured. Phase-3 policy
@@ -219,9 +221,13 @@ async function claimPresence(identityKey, provider, action) {
   const actionId = presenceActionId(identityKey, action, dayBucket);
   const proofUrl = action === 'welcome' ? 'presence://welcome' : `presence://return/${dayBucket}`;
   try {
+    // Presence rewards ACCRUE — no per-drop transaction (a 1B drop is worth far less than
+    // its gas). The participant REDEEMs the accumulated total in ONE distributeReward tx
+    // when they judge it worth the fee; the dashboard shows value vs gas so the judgment
+    // is informed. 'accrued' rows are invisible to the payout sweep ('approved' only).
     const r = await db.query(
       `INSERT INTO action_submissions (identity_key, action, action_id, proof_url, platform, amount, status)
-       VALUES ($1, $2, $3, $4, 'luv', $5, 'approved')
+       VALUES ($1, $2, $3, $4, 'luv', $5, 'accrued')
        RETURNING id, action, status, created_at`,
       [identityKey, action, actionId, proofUrl, a.reward]
     );
@@ -249,6 +255,13 @@ async function dropStatus(identityKey, provider) {
   );
   const lastReturn = r.rows.find((x) => x.action === 'return') || null;
   const welcomeRow = r.rows.find((x) => x.action === 'welcome') || null;
+  // The accumulated (not-yet-redeemed) presence LUV — what REDEEM would deliver.
+  const acc = await db.query(
+    `SELECT COALESCE(SUM(amount), 0)::text AS total, COUNT(*)::int AS drops
+       FROM action_submissions
+      WHERE identity_key = $1 AND action IN ('welcome','return') AND status = 'accrued'`,
+    [identityKey]
+  );
   return {
     eligible: !!ret.active,
     reward: ret.reward,
@@ -256,9 +269,85 @@ async function dropStatus(identityKey, provider) {
     nextAt,
     claimable: now >= nextAt,
     serverNow: now, // client clocks drift; count down against ours
+    accrued: acc.rows[0].total,
+    accruedDrops: acc.rows[0].drops,
     lastDrop: lastReturn ? { status: lastReturn.status, txHash: lastReturn.tx_hash || null } : null,
     welcome: welcomeRow ? { status: welcomeRow.status, txHash: welcomeRow.tx_hash || null } : null,
   };
+}
+
+// ── REDEEM: deliver the accumulated presence LUV in ONE transaction ────────────
+// The relayer (a contract `distributor`) calls distributeReward(user, total) — arbitrary
+// amount, one tx, capped by the contract's maxRewardPerTx (1T = 1000 drops; the oldest
+// rows redeem first and any overflow stays accrued for the next redeem). Guardrails
+// mirror the sponsored-claim path: gas ceiling + relayer balance + static preflight.
+const MIN_REDEEM_WEI = 10n ** 27n; // one drop — never spend a tx on less
+
+async function redeemAccrued(identityKey) {
+  if (!config.incentiveDistributorAddress) return { error: 'redeem_not_open' };
+  if (!config.relayerPrivateKey) return { error: 'redeem_not_open' };
+
+  // Resolve the wallet exactly like payoutOne does.
+  const w = await db.query('SELECT address, smart_account FROM wallets WHERE identity_key = $1', [identityKey]);
+  let user = (w.rows[0] && (w.rows[0].smart_account || w.rows[0].address)) || null;
+  if (!user && identityKey.startsWith('metamask:')) user = ethers.getAddress(identityKey.split(':')[1]);
+  if (!user) return { error: 'no_wallet' };
+
+  // Pick the oldest accrued rows whose sum fits under maxRewardPerTx.
+  const rowsQ = await db.query(
+    `SELECT id, amount FROM action_submissions
+      WHERE identity_key = $1 AND action IN ('welcome','return') AND status = 'accrued'
+      ORDER BY id`,
+    [identityKey]
+  );
+  const relayer = new ethers.Wallet(config.relayerPrivateKey, provider());
+  const d = distributor(relayer);
+  let cap = 0n;
+  try { cap = BigInt(await d.getFunction('maxRewardPerTx')()); } catch (e) { cap = 0n; }
+  const ids = []; let total = 0n;
+  for (const row of rowsQ.rows) {
+    const amt = BigInt(row.amount);
+    if (cap !== 0n && total + amt > cap) break;
+    ids.push(row.id); total += amt;
+  }
+  if (total < MIN_REDEEM_WEI) return { error: 'nothing_to_redeem' };
+
+  // Gas guardrails (same shape as sponsored claims): ceiling + tank.
+  const fee = await provider().getFeeData();
+  const gp = fee.maxFeePerGas || fee.gasPrice || 0n;
+  const gwei = Number(gp) / 1e9;
+  if (gwei > config.sponsorMaxGwei) return { error: 'gas_too_high', gwei: Math.round(gwei * 1000) / 1000 };
+  const bal = await provider().getBalance(relayer.address);
+  if (bal < gp * 150000n) return { error: 'relayer_empty' };
+
+  // Claim the rows atomically, preflight, send. Any failure returns them to 'accrued'.
+  const claimed = await db.query(
+    `UPDATE action_submissions SET status='redeeming', updated_at=now()
+      WHERE id = ANY($1) AND status='accrued' RETURNING id`,
+    [ids]
+  );
+  if (claimed.rows.length !== ids.length) {
+    // a concurrent redeem raced us — put ours back and bail quietly
+    await db.query("UPDATE action_submissions SET status='accrued', updated_at=now() WHERE id = ANY($1) AND status='redeeming'", [ids]);
+    return { error: 'redeem_in_flight' };
+  }
+  try {
+    await d.getFunction('distributeReward').staticCall(user, total);
+    const tx = await d.getFunction('distributeReward')(user, total);
+    const rc = await tx.wait();
+    await db.query(
+      "UPDATE action_submissions SET status='paid', tx_hash=$2, updated_at=now() WHERE id = ANY($1)",
+      [ids, rc.hash || tx.hash]
+    );
+    return { ok: true, txHash: rc.hash || tx.hash, redeemed: total.toString(), drops: ids.length };
+  } catch (err) {
+    await db.query("UPDATE action_submissions SET status='accrued', updated_at=now() WHERE id = ANY($1)", [ids]);
+    const m = String((err && (err.shortMessage || err.message)) || err);
+    // eslint-disable-next-line no-console
+    console.warn(`[actions] redeem for ${identityKey} not clearable (${m})`);
+    // Role/config-stage reverts read as "not open yet"; anything else is a transient failure.
+    return { error: /NotDistributor|UnknownAction|InactiveAction|transfer|Paused/i.test(m) ? 'redeem_not_open' : 'redeem_failed' };
+  }
 }
 
 // ── payout worker: approved → claimWithSignature (voucher signed in-house) ──
@@ -328,4 +417,4 @@ function startPayoutWorker() {
 }
 function stopPayoutWorker() { if (_timer) { clearInterval(_timer); _timer = null; } }
 
-module.exports = { registry, userStats, submitAction, mySubmissions, claimPresence, dropStatus, payoutSweep, startPayoutWorker, stopPayoutWorker, detectPlatform };
+module.exports = { registry, userStats, submitAction, mySubmissions, claimPresence, dropStatus, redeemAccrued, payoutSweep, startPayoutWorker, stopPayoutWorker, detectPlatform };

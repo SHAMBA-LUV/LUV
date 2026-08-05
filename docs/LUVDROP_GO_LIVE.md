@@ -43,12 +43,25 @@ should come last** (nothing pays until then, which is the safe direction).
    ```
    0x6c19e783000000000000000000000000d7c34d28c748cef3f83539268c07b417b86543ff
    ```
-4. **(Standing item) retune `tweet` to the published 50B / 3-per-day / 1h terms:**
+4. **Grant the relayer the `distributor` role — the REDEEM rail runs on it.** Drops
+   ACCRUE off-chain (a 1B drop is worth far less than its gas); the participant redeems
+   the accumulated total in ONE `distributeReward(user, total)` tx, and only the
+   `distributor` role may call it. Relayer: `0xe7a4c0BC457e0D722595Da55E86724B81B20D685`:
+   `setDistributor(0xe7a4c0BC457e0D722595Da55E86724B81B20D685, true)`
+   ```
+   0xd59ba0df000000000000000000000000e7a4c0bc457e0d722595da55e86724b81b20d6850000000000000000000000000000000000000000000000000000000000000001
+   ```
+   Note: `distributeReward` records under the `interaction` action (legacy backend ABI) and
+   is capped by `maxRewardPerTx` = 1T LUV per tx (= 1000 accumulated drops; overflow simply
+   stays accrued for the next redeem). The dashboard shows the participant the USD value of
+   their accumulated LUV next to the estimated redeem gas, so redeeming is an informed,
+   participant-timed choice — never an automatic gas burn.
+5. **(Standing item) retune `tweet` to the published 50B / 3-per-day / 1h terms:**
    `setAction("tweet", 0x2711…8254, 50000000000000000000000000000, 3, 3600, false, true)`
    ```
    0xfabea92e00000000000000000000000000000000000000000000000000000000000000e00000000000000000000000002711111111683b8708cb9a48cbf36a51315f82540000000000000000000000000000000000000000a18f07d736b90be55000000000000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000e100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000057477656574000000000000000000000000000000000000000000000000000000
    ```
-5. **Fund the distributor — it holds 0 LUV today.** ERC-20 transfer **to the LUV token**
+6. **Fund the distributor — it holds 0 LUV today.** ERC-20 transfer **to the LUV token**
    `0x2711111111683B8708cb9a48cBf36a51315F8254` from the treasury. A 10-trillion start
    covers 10,000 drops (wallet→contract transfer, 0 fee; top up any time; `withdraw`
    recovers unspent LUV):

@@ -425,6 +425,14 @@ footer .brandmark:hover img{opacity:1}
         next LUVdrop in <b id="dropcount" style="color:var(--gold);font-size:18px;letter-spacing:.08em">--:--:--</b>
       </div>
       <div class="taskmsg" id="dropmsg">checking your LUVdrop…</div>
+      <div id="dropacc" style="margin-top:12px;border-top:1px dashed var(--seam);padding-top:12px" hidden>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)">accumulated — yours to redeem</div>
+        <div style="font-size:17px;margin:6px 0"><b id="accluv" style="color:var(--rose)">—</b> LUV <span id="accusd" style="color:var(--gold);font-family:var(--mono);font-size:14px"></span></div>
+        <div style="color:var(--dim);font-size:13px">your drops pile up here gas-free — one transaction delivers them all, whenever <b style="color:var(--cream)">you</b> say it's worth it.</div>
+        <div style="color:var(--dim);font-size:13px;margin-top:6px;font-family:var(--mono)" id="accgas">estimating the redeem gas…</div>
+        <div class="row" style="margin-top:10px"><button class="btn" id="redeembtn" type="button" disabled>💎 REDEEM — deliver my LUV on-chain</button></div>
+        <div class="taskmsg" id="redeemmsg"></div>
+      </div>
     </div>
     <div class="panel" style="margin-top:16px" id="tradepanel">
       <div class="k">Phase 2 — trade LUV</div>
@@ -665,7 +673,7 @@ footer .brandmark:hover img{opacity:1}
 </div>
 
 <!-- ?v= busts the immutable .js cache — bump it whenever luv.app.js changes -->
-<script src="luv.app.js?v=24"></script>
+<script src="luv.app.js?v=25"></script>
 <script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
 </body>

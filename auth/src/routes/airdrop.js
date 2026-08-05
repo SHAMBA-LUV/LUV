@@ -151,6 +151,25 @@ router.get('/drop', requireAuth, async (req, res) => {
   }
 });
 
+// Signed in: REDEEM — deliver ALL accumulated presence LUV in one distributeReward tx.
+// The participant decides when the accumulated value is worth a transaction; the frontend
+// shows value vs estimated gas so the decision is informed.
+router.post('/redeem', writeLimiter, requireAuth, async (req, res) => {
+  try {
+    const result = await actions.redeemAccrued(req.identity.identityKey);
+    if (result.error) {
+      const code = result.error === 'gas_too_high' || result.error === 'relayer_empty' ? 503
+        : result.error === 'redeem_failed' ? 500 : 400;
+      return res.status(code).json(result);
+    }
+    res.json(result);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[airdrop] redeem error:', err.message);
+    res.status(500).json({ error: 'redeem_failed' });
+  }
+});
+
 // Signed in: collect today's return drop. Idempotent: dedup rows, on-chain actionId dedup,
 // and the contract's 24h cooldown all point the same way. Social identities only.
 router.post('/return', writeLimiter, requireAuth, async (req, res) => {
@@ -335,6 +354,7 @@ router.post('/claim-sponsored', closedGuard, writeLimiter, requireAuth, async (r
 // The frontend refines the gas with the wallet's own eth_estimateGas at claim time; this is the
 // up-front figure. Cached 15s to spare the RPC.
 const CLAIM_GAS = 130000n; // typical ShambaLuvAirdrop.claim() gas (ecrecover + 2 replay SSTOREs + LUV transfer)
+const REDEEM_GAS = 100000n; // typical IncentiveDistributor.distributeReward() gas (stat SSTOREs + LUV transfer)
 const CHAINLINK_ETH_USD = '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419'; // mainnet ETH/USD
 let _gasCache = { t: 0, data: null };
 router.get('/gas', async (req, res) => {
@@ -353,6 +373,7 @@ router.get('/gas', async (req, res) => {
     } catch (e) { /* feed unreachable — ETH-only estimate */ }
     const feeWei = gasPrice * CLAIM_GAS;
     const feeEth = ethers.formatEther(feeWei);
+    const redeemFeeEth = ethers.formatEther(gasPrice * REDEEM_GAS);
     // Gas tank: the relayer's ETH + how many claims it can sponsor at the current fee.
     let relayerAddress = null; let relayerEth = null; let sponsorsLeft = null;
     if (config.relayerPrivateKey) {
@@ -372,6 +393,10 @@ router.get('/gas', async (req, res) => {
       claimFeeEth: feeEth,
       ethUsd,
       claimFeeUsd: ethUsd != null ? Number(feeEth) * ethUsd : null,
+      // REDEEM (distributeReward — accumulated presence LUV in one tx)
+      redeemGas: Number(REDEEM_GAS),
+      redeemFeeEth,
+      redeemFeeUsd: ethUsd != null ? Number(redeemFeeEth) * ethUsd : null,
       // gas tank
       relayerAddress,
       relayerEth,

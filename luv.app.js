@@ -348,6 +348,7 @@
   }
   const SUB_CHIP = {
     queued: 'under review', approved: 'approved', paid: 'paid ❤',
+    accrued: 'accumulating ❤', redeeming: 'redeeming…',
     failed: 'failed', rejected: 'rejected',
   };
   const SUBMIT_ERR = {
@@ -470,12 +471,58 @@
     dropClaiming = false;
     loadDrop();
   }
+  // Express LUV amounts in USD via the oracle (market.json, same-origin): the participant
+  // must SEE what the accumulated LUV is worth next to what the redeem transaction costs.
+  function fmtUsd(v) {
+    if (v == null || !isFinite(v)) return '';
+    if (v >= 1) return '$' + v.toFixed(2);
+    if (v < 1e-6) return '<$0.000001';
+    return '$' + v.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
+  }
+  function luvWeiToUsd(weiStr, mkt) {
+    if (!mkt || mkt.oneTrillionUsd == null) return null;
+    try { return Number(BigInt(weiStr) / 10n ** 18n) / 1e12 * mkt.oneTrillionUsd; } catch (e) { return null; }
+  }
+  const REDEEM_ERR = {
+    nothing_to_redeem: 'nothing accumulated yet — come back tomorrow ❤',
+    gas_too_high: 'gas is spiking right now — try again when it settles',
+    relayer_empty: 'the gas tank is refueling — try again soon',
+    redeem_not_open: 'the redeem desk opens shortly — your LUV keeps accumulating ❤',
+    redeem_in_flight: 'a redeem is already on its way',
+    redeem_failed: 'that didn’t go through — your LUV is safe, try again',
+  };
   async function loadDrop() {
     const panel = $('droppanel'); if (!panel) return;
     let d; try { d = await j('/airdrop/drop'); } catch (e) { return; }
     if (!d || d.eligible === false) { panel.hidden = true; return; }
     panel.hidden = false;
-    $('dropreward').textContent = fmtReward(d.reward);
+    // Value + gas expression (both best-effort; the clock never waits on them).
+    let mkt = null; let gas = null;
+    try { mkt = await (await fetch('/market.json', { cache: 'no-store' })).json(); } catch (e) { /* oracle offline */ }
+    try { gas = await j('/airdrop/gas'); } catch (e) { /* estimate unavailable */ }
+    const rewardUsd = luvWeiToUsd(d.reward, mkt);
+    $('dropreward').textContent = fmtReward(d.reward) + (rewardUsd != null ? ' (≈ ' + fmtUsd(rewardUsd) + ')' : '');
+    // ── accumulated + REDEEM ──
+    const accWei = d.accrued || '0';
+    const accUsd = luvWeiToUsd(accWei, mkt);
+    $('dropacc').hidden = false;
+    $('accluv').textContent = fmtReward(accWei);
+    $('accusd').textContent = accUsd != null ? '≈ ' + fmtUsd(accUsd) : '';
+    const gasUsd = gas && gas.redeemFeeUsd != null ? gas.redeemFeeUsd : null;
+    const accEl = $('accgas');
+    if (gasUsd != null && accUsd != null) {
+      if (accUsd >= gasUsd) {
+        accEl.textContent = 'worth it ✓ — value ' + fmtUsd(accUsd) + ' ≥ redeem gas ~' + fmtUsd(gasUsd) + ' (' + Number(gas.redeemFeeEth).toFixed(6) + ' ETH)';
+      } else {
+        const pct = Math.max(0.1, Math.round(accUsd / gasUsd * 1000) / 10);
+        accEl.textContent = 'redeeming now costs ~' + fmtUsd(gasUsd) + ' in gas — your pile covers ' + pct + '% of that. keep stacking ❤';
+      }
+    } else if (gasUsd != null) {
+      accEl.textContent = 'redeem gas right now: ~' + fmtUsd(gasUsd) + ' (' + Number(gas.redeemFeeEth).toFixed(6) + ' ETH)';
+    } else {
+      accEl.textContent = 'gas estimate unavailable — the chain still awaits your call';
+    }
+    $('redeembtn').disabled = !(BigInt(accWei) >= 10n ** 27n);
     const nowS = Math.floor(Date.now() / 1000);
     dropSkew = nowS - (d.serverNow || nowS);
     dropNextAt = d.nextAt || 0;
@@ -486,10 +533,12 @@
       // don't hammer the desk — a reload or the next visit tries again.
       if (dropTriedAt !== dropNextAt) { dropTriedAt = dropNextAt; collectDrop(); return; }
       msg.textContent = 'your LUVdrop is ready — it will be collected on your next visit ❤';
+    } else if (st === 'accrued') {
+      msg.textContent = 'today’s LUVdrop landed in your pile ❤ come back tomorrow';
+    } else if (st === 'redeeming') {
+      msg.textContent = 'your redeem is on its way to the chain…';
     } else if (st === 'paid') {
-      msg.textContent = 'today’s LUVdrop is delivered ❤ come back tomorrow';
-    } else if (st === 'approved' || st === 'queued') {
-      msg.textContent = 'today’s LUVdrop is on its way ❤';
+      msg.textContent = 'delivered on-chain ❤ come back tomorrow';
     } else {
       msg.textContent = 'come back tomorrow — your next billion is already counting down';
     }
@@ -502,6 +551,27 @@
       }, 1000);
     }
   }
+
+  on('redeembtn', 'click', async () => {
+    const btn = $('redeembtn'); const msg = $('redeemmsg');
+    btn.disabled = true;
+    msg.className = 'taskmsg'; msg.textContent = 'redeeming — one transaction, all of it…';
+    try {
+      const r = await fetch('/airdrop/redeem', { method: 'POST', credentials: 'same-origin' });
+      const body = await r.json().catch(() => ({}));
+      if (r.ok) {
+        msg.className = 'taskmsg ok';
+        msg.replaceChildren(
+          document.createTextNode('delivered ❤ ' + fmtReward(body.redeemed || '0') + ' LUV on-chain — '),
+          Object.assign(document.createElement('a'), { href: cfg.explorer + '/tx/' + body.txHash, rel: 'noopener', textContent: 'view the tx ↗' })
+        );
+        refreshStatus();
+      } else {
+        msg.textContent = REDEEM_ERR[body.error] || REDEEM_ERR.redeem_failed;
+      }
+    } catch (e) { msg.textContent = REDEEM_ERR.redeem_failed; }
+    loadDrop();
+  });
 
   async function loadSession() {
     let me;
