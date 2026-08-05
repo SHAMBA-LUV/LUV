@@ -417,6 +417,15 @@ footer .brandmark:hover img{opacity:1}
       </div>
       <div class="statusline" id="statusline">checking your gesture…</div>
     </div>
+    <div class="panel" style="margin-top:16px" id="droppanel" hidden>
+      <div class="k">daily LUVdrop</div>
+      <div style="font-size:17px;margin:4px 0 2px">💧 <b id="dropreward" style="color:var(--rose)">1 Billion</b> LUV — every day you return ❤</div>
+      <div style="color:var(--dim);font-size:13px">no proof, no task — coming back IS the action. One drop per day, on your own 24-hour clock.</div>
+      <div id="dropclockrow" style="font-family:var(--mono);font-size:13px;color:var(--dim);margin-top:10px" hidden>
+        next LUVdrop in <b id="dropcount" style="color:var(--gold);font-size:18px;letter-spacing:.08em">--:--:--</b>
+      </div>
+      <div class="taskmsg" id="dropmsg">checking your LUVdrop…</div>
+    </div>
     <div class="panel" style="margin-top:16px" id="tradepanel">
       <div class="k">Phase 2 — trade LUV</div>
       <div class="comingsoon" style="border-color:#FF007A">🦄 <b>LUV is live on Uniswap</b> — buy &amp; sell the gesture on the open market ❤
@@ -656,7 +665,7 @@ footer .brandmark:hover img{opacity:1}
 </div>
 
 <!-- ?v= busts the immutable .js cache — bump it whenever luv.app.js changes -->
-<script src="luv.app.js?v=23"></script>
+<script src="luv.app.js?v=24"></script>
 <script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
 </body>

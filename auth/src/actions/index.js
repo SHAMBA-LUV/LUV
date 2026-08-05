@@ -37,7 +37,11 @@ const DIST_ABI = [
 // is live it ALWAYS wins; retune it with setAction("tweet", LUV, 5e28, 3, 3600,
 // false, true) from the owner so chain and policy agree.
 const SEED_ACTIONS = [
-  { name: 'welcome', reward: (10n ** 30n).toString(), dailyLimit: 0, cooldown: 0, oneTime: true, active: true, completions: 0 },
+  // welcome = the 1-billion signup bonus; return = the daily LUVdrop: 1 billion LUV every
+  // day you come back (operator, 2026-08-05). Owner retunes for chain/policy agreement:
+  // setAction("welcome", LUV, 1e27, 0, 0, true, true) + setAction("return", LUV, 1e27, 1, 86400, false, true).
+  { name: 'welcome', reward: (10n ** 27n).toString(), dailyLimit: 0, cooldown: 0, oneTime: true, active: true, completions: 0 },
+  { name: 'return', reward: (10n ** 27n).toString(), dailyLimit: 1, cooldown: 86400, oneTime: false, active: true, completions: 0 },
   { name: 'tweet', reward: (5n * 10n ** 28n).toString(), dailyLimit: 3, cooldown: 3600, oneTime: false, active: true, completions: 0 },
   { name: 'post', reward: (5n * 10n ** 29n).toString(), dailyLimit: 10, cooldown: 300, oneTime: false, active: true, completions: 0 },
   { name: 'interaction', reward: (5n * 10n ** 28n).toString(), dailyLimit: 20, cooldown: 60, oneTime: false, active: true, completions: 0 },
@@ -124,6 +128,7 @@ async function submitAction(identityKey, action, proofUrl) {
   if (!a) return { error: 'unknown_action' };
   if (!a.active) return { error: 'inactive_action' };
   if (a.oneTime) return { error: 'not_submittable' }; // 'welcome' is the gesture, not a task
+  if (a.name === 'return') return { error: 'not_submittable' }; // presence claim — automatic, no proof
   if (typeof proofUrl !== 'string' || proofUrl.length > 500 || !/^https?:\/\//i.test(proofUrl)) {
     return { error: 'bad_proof_url' };
   }
@@ -156,6 +161,104 @@ async function mySubmissions(identityKey) {
     [identityKey]
   );
   return r.rows;
+}
+
+// ── presence claims: the signup bonus + the daily LUVdrop ──────────────────────
+// 'welcome' (once ever) and 'return' (1 billion LUV every day you come back) need no
+// proof URL — being here IS the action. SOCIAL identities only (the Sybil unit: a wallet
+// is free to mint endlessly, a social account is not). Rows enter 'approved' directly —
+// presence needs no review — and the payout worker relays them; the on-chain registry
+// still has the final word on amounts, cooldowns, and dedup.
+const RETURN_SPACING_S = 86400; // the 24h drop clock; mirrors the on-chain 'return' cooldown
+
+function presenceActionId(identityKey, action, dayBucket) {
+  const digest = crypto.createHash('sha256')
+    .update(`${identityKey}\n${action}\n${dayBucket || 'once'}`).digest('hex').slice(0, 32);
+  return `luv:${action}:${digest}`;
+}
+
+// When is this identity's next return drop? max(signup + 24h, last drop + 24h), epoch seconds.
+async function nextReturnAt(identityKey) {
+  const r = await db.query(
+    `SELECT EXTRACT(EPOCH FROM i.created_at)::bigint AS signup_at,
+            (SELECT EXTRACT(EPOCH FROM MAX(s.created_at))::bigint
+               FROM action_submissions s
+              WHERE s.identity_key = i.identity_key AND s.action = 'return'
+                AND s.status IN ('queued','approved','paid')) AS last_drop_at
+       FROM identities i WHERE i.identity_key = $1`,
+    [identityKey]
+  );
+  if (!r.rows[0]) return null;
+  const signupAt = Number(r.rows[0].signup_at);
+  const lastDropAt = r.rows[0].last_drop_at == null ? null : Number(r.rows[0].last_drop_at);
+  return Math.max(signupAt + RETURN_SPACING_S, lastDropAt ? lastDropAt + RETURN_SPACING_S : 0);
+}
+
+/**
+ * Record a presence claim ('welcome' | 'return') for a SOCIAL identity. Idempotent:
+ * a duplicate resolves to { ok, dedup } — never a double payment (DB unique + on-chain
+ * actionId dedup + the contract cooldown all agree).
+ */
+async function claimPresence(identityKey, provider, action) {
+  if (provider === 'metamask') return { error: 'social_only' };
+  if (action !== 'welcome' && action !== 'return') return { error: 'unknown_action' };
+  const { actions: list } = await registry();
+  const a = list.find((x) => x.name === action);
+  if (!a) return { error: 'unknown_action' };
+  if (!a.active) return { error: 'inactive_action' };
+
+  let dayBucket = null;
+  if (action === 'return') {
+    const nextAt = await nextReturnAt(identityKey);
+    if (nextAt == null) return { error: 'unknown_identity' };
+    const now = Math.floor(Date.now() / 1000);
+    if (now < nextAt) return { error: 'come_back_soon', nextAt };
+    dayBucket = new Date().toISOString().slice(0, 10); // UTC day — one drop row per day
+  }
+
+  const actionId = presenceActionId(identityKey, action, dayBucket);
+  const proofUrl = action === 'welcome' ? 'presence://welcome' : `presence://return/${dayBucket}`;
+  try {
+    const r = await db.query(
+      `INSERT INTO action_submissions (identity_key, action, action_id, proof_url, platform, amount, status)
+       VALUES ($1, $2, $3, $4, 'luv', $5, 'approved')
+       RETURNING id, action, status, created_at`,
+      [identityKey, action, actionId, proofUrl, a.reward]
+    );
+    return { ok: true, submission: r.rows[0] };
+  } catch (err) {
+    if (err && err.code === '23505') return { ok: true, dedup: true };
+    throw err;
+  }
+}
+
+// The dashboard's drop panel: reward, per-participant 24h clock, today's delivery state.
+async function dropStatus(identityKey, provider) {
+  if (provider === 'metamask') return { eligible: false };
+  const { actions: list } = await registry();
+  const ret = list.find((x) => x.name === 'return') || { reward: (10n ** 27n).toString(), active: true };
+  const welcome = list.find((x) => x.name === 'welcome') || { reward: (10n ** 27n).toString() };
+  const nextAt = await nextReturnAt(identityKey);
+  if (nextAt == null) return { eligible: false };
+  const now = Math.floor(Date.now() / 1000);
+  const r = await db.query(
+    `SELECT action, status, tx_hash, created_at FROM action_submissions
+      WHERE identity_key = $1 AND action IN ('welcome','return')
+      ORDER BY id DESC LIMIT 10`,
+    [identityKey]
+  );
+  const lastReturn = r.rows.find((x) => x.action === 'return') || null;
+  const welcomeRow = r.rows.find((x) => x.action === 'welcome') || null;
+  return {
+    eligible: !!ret.active,
+    reward: ret.reward,
+    welcomeReward: welcome.reward,
+    nextAt,
+    claimable: now >= nextAt,
+    serverNow: now, // client clocks drift; count down against ours
+    lastDrop: lastReturn ? { status: lastReturn.status, txHash: lastReturn.tx_hash || null } : null,
+    welcome: welcomeRow ? { status: welcomeRow.status, txHash: welcomeRow.tx_hash || null } : null,
+  };
 }
 
 // ── payout worker: approved → claimWithSignature (voucher signed in-house) ──
@@ -215,4 +318,4 @@ function startPayoutWorker() {
 }
 function stopPayoutWorker() { if (_timer) { clearInterval(_timer); _timer = null; } }
 
-module.exports = { registry, userStats, submitAction, mySubmissions, payoutSweep, startPayoutWorker, stopPayoutWorker, detectPlatform };
+module.exports = { registry, userStats, submitAction, mySubmissions, claimPresence, dropStatus, payoutSweep, startPayoutWorker, stopPayoutWorker, detectPlatform };

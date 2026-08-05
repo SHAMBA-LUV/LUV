@@ -165,6 +165,17 @@ router.post('/enter', async (req, res) => {
     // First-login (idempotent) provisioning + airdrop — consent-gated.
     await ensureProvisionedAndAirdropped(identityKey);
 
+    // Presence claims: the 1B welcome bonus (once ever) + today's return drop if the
+    // 24h clock is open. Both idempotent; failures never block the login.
+    try {
+      const act = require('../actions');
+      await act.claimPresence(identityKey, provider, 'welcome');
+      await act.claimPresence(identityKey, provider, 'return');
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('[auth] presence claim error (non-fatal):', e.message);
+    }
+
     const token = issueToken({ identityKey, provider });
     setSessionCookie(res, token);
     return res.json({ ok: true });

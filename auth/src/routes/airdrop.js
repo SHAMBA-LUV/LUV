@@ -137,6 +137,37 @@ router.post('/actions/submit', writeLimiter, requireAuth, async (req, res) => {
   res.json(result);
 });
 
+// ── The daily LUVdrop (presence claims — NOT part of the closed airdrop) ───────────────
+// Signed in: my drop clock — reward, nextAt (epoch s), claimable, today's delivery state.
+// The frontend counts down against serverNow and calls POST /return when the clock hits zero.
+router.get('/drop', requireAuth, async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  try {
+    res.json(await actions.dropStatus(req.identity.identityKey, req.identity.provider));
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[airdrop] drop status error:', err.message);
+    res.status(500).json({ error: 'drop_unavailable' });
+  }
+});
+
+// Signed in: collect today's return drop. Idempotent: dedup rows, on-chain actionId dedup,
+// and the contract's 24h cooldown all point the same way. Social identities only.
+router.post('/return', writeLimiter, requireAuth, async (req, res) => {
+  try {
+    const result = await actions.claimPresence(req.identity.identityKey, req.identity.provider, 'return');
+    if (result.error) {
+      const code = result.error === 'come_back_soon' ? 425 : 400;
+      return res.status(code).json(result);
+    }
+    res.json(result);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[airdrop] return claim error:', err.message);
+    res.status(500).json({ error: 'return_failed' });
+  }
+});
+
 // Public live stats for the landing page (no session; cheap DB counts + one chain read).
 router.get('/stats', async (req, res) => {
   const agg = await db.query(

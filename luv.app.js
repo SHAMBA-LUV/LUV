@@ -453,6 +453,56 @@
     }));
   }
 
+  // ── the daily LUVdrop (presence claims — 1B every day you return) ──────────
+  // GET /airdrop/drop gives nextAt + serverNow; we count down against the SERVER clock
+  // (client clocks drift) and collect automatically the moment the 24h window opens.
+  let dropTick = null; let dropNextAt = 0; let dropSkew = 0; let dropClaiming = false; let dropTriedAt = -1;
+  function fmtClock(s) {
+    s = Math.max(0, Math.floor(s));
+    const p = (n) => String(n).padStart(2, '0');
+    return p(Math.floor(s / 3600)) + ':' + p(Math.floor((s % 3600) / 60)) + ':' + p(s % 60);
+  }
+  async function collectDrop() {
+    if (dropClaiming) return; dropClaiming = true;
+    const msg = $('dropmsg');
+    if (msg) msg.textContent = 'your LUVdrop is ready — collecting… ❤';
+    try { await j('/airdrop/return', { method: 'POST' }); } catch (e) { /* clock not open / offline — loadDrop resyncs */ }
+    dropClaiming = false;
+    loadDrop();
+  }
+  async function loadDrop() {
+    const panel = $('droppanel'); if (!panel) return;
+    let d; try { d = await j('/airdrop/drop'); } catch (e) { return; }
+    if (!d || d.eligible === false) { panel.hidden = true; return; }
+    panel.hidden = false;
+    $('dropreward').textContent = fmtReward(d.reward);
+    const nowS = Math.floor(Date.now() / 1000);
+    dropSkew = nowS - (d.serverNow || nowS);
+    dropNextAt = d.nextAt || 0;
+    const msg = $('dropmsg');
+    const st = d.lastDrop && d.lastDrop.status;
+    if (d.claimable) {
+      // Auto-collect ONCE per window: a failed collect leaves nextAt unchanged, so we
+      // don't hammer the desk — a reload or the next visit tries again.
+      if (dropTriedAt !== dropNextAt) { dropTriedAt = dropNextAt; collectDrop(); return; }
+      msg.textContent = 'your LUVdrop is ready — it will be collected on your next visit ❤';
+    } else if (st === 'paid') {
+      msg.textContent = 'today’s LUVdrop is delivered ❤ come back tomorrow';
+    } else if (st === 'approved' || st === 'queued') {
+      msg.textContent = 'today’s LUVdrop is on its way ❤';
+    } else {
+      msg.textContent = 'come back tomorrow — your next billion is already counting down';
+    }
+    if (!dropTick) {
+      dropTick = setInterval(() => {
+        const remain = dropNextAt - (Math.floor(Date.now() / 1000) - dropSkew);
+        $('dropclockrow').hidden = remain <= 0;
+        $('dropcount').textContent = fmtClock(remain);
+        if (remain <= 0) { clearInterval(dropTick); dropTick = null; if (dropTriedAt !== dropNextAt) { dropTriedAt = dropNextAt; collectDrop(); } }
+      }, 1000);
+    }
+  }
+
   async function loadSession() {
     let me;
     try { me = await j('/auth/me'); } catch (e) { return false; } // not signed in
@@ -473,6 +523,7 @@
     // brings its own key — nothing to reveal.
     if (myProvider !== 'metamask') { const pk = $('pkrow'); if (pk) pk.hidden = false; }
     await refreshStatus();
+    loadDrop(); // the daily LUVdrop clock (presence claims)
     // loadTasks() disabled — the earn/IncentiveDistributor rail is "coming soon" (Phase 3).
     // the old dashboard refreshed the balance every 30s while visible
     if (!balTimer) balTimer = setInterval(() => { if (!document.hidden) refreshStatus(); }, 30000);
