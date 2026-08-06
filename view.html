@@ -67,11 +67,78 @@ h2.gold{color:var(--gold)}
 .chartcard .head .spacer{flex:1}
 .chartcard .head .livepill{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
   color:#7ee2a8;border:1px solid rgba(126,226,168,.45);border-radius:999px;padding:3px 11px;white-space:nowrap}
-#dexscreener-embed{position:relative;width:100%;padding-bottom:125%;}
-@media(min-width:1400px){#dexscreener-embed{padding-bottom:65%;}}
-#dexscreener-embed iframe{position:absolute;width:100%;height:100%;top:0;left:0;border:0;}
 .chartfine{padding:12px 8px 4px;font-family:var(--mono);font-size:11px;color:var(--dim);display:flex;flex-wrap:wrap;gap:14px;align-items:center}
 .chartfine .spacer{flex:1}
+
+/* ── the in-house screener — every element, pool truth, no warning chips ── */
+#luvscreener{padding:6px 8px 10px;font-family:var(--mono)}
+#luvscreener .dim{color:var(--dim)}
+.scr-head{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start;justify-content:space-between;padding:4px 0 14px}
+.scr-pairname{font-family:var(--sans);font-weight:800;font-size:22px}
+.scr-pairname b{color:var(--rose)}
+.scr-badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:7px}
+.scr-badge{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--blush);border:1px solid var(--seam);border-radius:999px;padding:3px 11px}
+.scr-badge.dim{color:var(--dim)}
+.scr-prices{text-align:right}
+.scr-price-main{font-weight:800;font-size:clamp(19px,3vw,26px);color:var(--cream)}
+.scr-price-alt{font-size:13px;color:var(--blush);margin-top:3px}
+.scr-price-alt.gold{color:var(--gold)}
+.scr-price-lbl{font-size:10px;letter-spacing:.16em;color:var(--dim);margin-left:5px}
+.scr-zeros{font-size:.62em;padding:0 1px}
+.scr-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:2px 0 12px}
+.scr-tab{font-family:var(--mono);background:var(--ink);border:1px solid var(--seam);border-radius:10px;padding:8px 6px;cursor:pointer;
+  display:flex;flex-direction:column;gap:2px;align-items:center;color:var(--dim);transition:border-color .15s}
+.scr-tab:hover{border-color:var(--rose)}
+.scr-tab.on{border-color:var(--rose);color:var(--cream);box-shadow:0 0 0 1px rgba(255,0,110,.25) inset}
+.scr-tab-l{font-size:10px;letter-spacing:.2em}
+.scr-pct{font-size:13px;font-weight:700}
+.scr-pct.up{color:#7ee2a0}.scr-pct.down{color:var(--rose)}.scr-pct.flat{color:var(--dim)}
+.scr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-bottom:8px}
+.scr-stat{background:var(--ink);border:1px solid var(--seam);border-radius:10px;padding:10px 14px}
+.scr-k{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);margin-bottom:4px}
+.scr-v{font-size:16px;font-weight:800;color:var(--cream)}
+.scr-sub{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:6px;font-size:11px}
+.scr-buy{color:#7ee2a0}.scr-sell{color:var(--rose)}
+.scr-bar{flex-basis:100%;display:flex;height:5px;border-radius:999px;overflow:hidden;background:var(--seam)}
+.scr-bar-a.buy{background:#21a45d}.scr-bar-b.sell{background:#c8324f}
+.scr-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px}
+.scr-metric{background:var(--ink);border:1px solid var(--seam);border-radius:10px;padding:9px 13px}
+.scr-metric .scr-v{font-size:14px}
+.scr-trade{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+.scr-cta{flex:1;min-width:140px;text-align:center;font-weight:800;font-size:14px;letter-spacing:.08em;text-decoration:none;
+  border-radius:10px;padding:12px 18px;transition:filter .15s}
+.scr-cta:hover{filter:brightness(1.15)}
+.scr-cta.buy{background:#21a45d;color:#fff;border:1px solid #21a45d}
+.scr-cta.sell{background:#c8324f;color:#fff;border:1px solid #c8324f}
+.scr-slip{flex-basis:100%;font-size:11px;color:var(--dim);text-align:center}
+.scr-info{border:1px solid var(--seam);border-radius:10px;background:var(--ink);padding:12px 14px;margin-bottom:14px}
+.scr-inforow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:3px 0;font-size:12px}
+.scr-inforow .scr-k{margin:0;min-width:44px}
+.scr-addr{color:var(--blush);text-decoration:none;word-break:break-all}
+.scr-addr:hover{color:var(--rose)}
+.scr-copy{font-family:var(--mono);font-size:10px;color:var(--dim);background:none;border:1px solid var(--seam);border-radius:6px;padding:2px 9px;cursor:pointer}
+.scr-copy:hover{color:var(--rose);border-color:var(--rose)}
+.scr-links{display:flex;flex-wrap:wrap;gap:14px;margin-top:9px;font-size:12px}
+.scr-links a{color:var(--blush);text-decoration:none}
+.scr-links a:hover{color:var(--rose)}
+.scr-loghead{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--rose);margin:4px 0 8px}
+.scr-tablewrap{overflow-x:auto;border:1px solid var(--seam);border-radius:10px;background:var(--ink)}
+.scr-table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:640px}
+.scr-table th{color:var(--dim);text-transform:uppercase;letter-spacing:.14em;font-size:9.5px;text-align:left;padding:8px 12px;border-bottom:1px solid var(--seam)}
+.scr-table td{padding:6px 12px;border-bottom:1px solid rgba(74,31,48,.5);color:var(--cream);white-space:nowrap}
+.scr-table tr:last-child td{border-bottom:0}
+.scr-table tr.buyrow td:first-child{box-shadow:inset 2px 0 0 #21a45d}
+.scr-table tr.sellrow td:first-child{box-shadow:inset 2px 0 0 #c8324f}
+.scr-table a{color:var(--blush);text-decoration:none}
+.scr-table a:hover{color:var(--rose)}
+.scr-foot{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;padding:10px 2px 0;font-size:11px;color:var(--dim)}
+.scr-foot a{color:var(--blush);text-decoration:none}
+.scr-foot a:hover{color:var(--rose)}
+.scr-gold{color:var(--gold)}
+.scr-num{text-align:right;font-variant-numeric:tabular-nums}
+#luvholders{font-family:var(--mono)}
+#luvholders .scr-table{min-width:520px}
+#luvholders .scr-table td:nth-child(3),#luvholders .scr-table td:nth-child(4){text-align:right}
 
 /* ── verified contract / ledger ── */
 .panel{border:1px solid var(--seam);border-radius:14px;background:var(--wine);padding:24px 26px;margin-bottom:14px}
@@ -197,17 +264,17 @@ footer .brandmark:hover img{opacity:1}
     million millions — is the measure of value</b>, priced live in USDC above. ❤ thanks a million millions</div>
   </div>
 
-  <!-- ═══ the live chart ═══ -->
+  <!-- ═══ the screener — every element in-house, pool truth, zero warning chips ═══ -->
   <div class="chartcard" style="margin-top:14px">
     <div class="head">
-      <span class="t">❤ <b>LUV</b> / WETH</span>
-      <span class="pair">Uniswap V2 · Ethereum</span>
+      <span class="t">❤ <b>LUV</b> / WETH · the screener</span>
+      <span class="pair">reserves + on-chain swap log · nothing third-party between you and the pool</span>
       <span class="spacer"></span>
-      <span class="livepill">● live market data</span>
+      <span class="livepill">● same-origin data</span>
     </div>
-    <div id="dexscreener-embed"><iframe src="https://dexscreener.com/ethereum/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31?embed=1&loadChartSettings=0&chartLeftToolbar=0&chartTheme=dark&theme=dark&chartStyle=0&chartType=usd&interval=60" title="LUV/WETH live chart — Dexscreener"></iframe></div>
+    <div id="luvscreener"><div style="padding:20px 8px;font-family:var(--mono);font-size:12px;color:var(--dim)">loading the screener…</div></div>
     <div class="chartfine">
-      <span>chart &amp; market data by <a href="https://dexscreener.com/ethereum/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31" target="_blank" rel="noopener">DEX Screener ↗</a></span>
+      <span>price, windows, buys &amp; sells, makers, liquidity, fdv, and the transaction log — all read from the pair itself</span>
       <span class="spacer"></span>
       <span>pair <a href="https://etherscan.io/address/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31" target="_blank" rel="noopener">0x57D2…8a31 ↗</a></span>
     </div>
@@ -261,29 +328,14 @@ footer .brandmark:hover img{opacity:1}
 
     <div class="panel">
       <div class="k gold">the holders — while the list is short</div>
-      <p>Every LUV balance on mainnet, read live from <code style="font-size:12px">balanceOf</code>
-      (reflections included), as of 2026-08-03. Some LUV was <b>sent to
+      <p>Every LUV balance on mainnet, read <b>live</b> from <code style="font-size:12px">balanceOf</code>
+      (reflections included) — the same truth the
+      <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254#balances" target="_blank" rel="noopener">Etherscan holders tab</a>
+      expresses, refreshed same-origin every minute. Some LUV was <b>sent to
       <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0x000000000000000000000000000000000000dEaD" target="_blank" rel="noopener">0x…dEaD</a></b> —
       burned forever, <b>reflection-excluded</b>, and out of circulation: the reported market cap fell by
       exactly that share, and every remaining holder's slice of the reflections grew.</p>
-      <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px">
-        <tr style="color:var(--rose);text-transform:uppercase;letter-spacing:.14em;font-size:10px;text-align:left">
-          <th style="padding:6px 10px 6px 0">holder</th><th style="padding:6px 10px">address</th>
-          <th style="padding:6px 10px;text-align:right">LUV</th><th style="padding:6px 0;text-align:right">% supply</th></tr>
-        <tr><td style="padding:5px 10px 5px 0;color:var(--gold)">treasury — the LUV signer</td><td style="padding:5px 10px"><a href="https://etherscan.io/address/0x10f7Ee226B16bea7f365Dc1eDEF159Fc1957D169" target="_blank" rel="noopener">0x10f7…D169</a></td><td style="padding:5px 10px;text-align:right">100,000,000,000,000,000</td><td style="padding:5px 0;text-align:right">90.000%</td></tr>
-        <tr><td style="padding:5px 10px 5px 0;color:var(--rose)">🔥 dEaD — burned</td><td style="padding:5px 10px"><a href="https://etherscan.io/address/0x000000000000000000000000000000000000dEaD" target="_blank" rel="noopener">0x…dEaD</a></td><td style="padding:5px 10px;text-align:right">4,980,559,643,425,538</td><td style="padding:5px 0;text-align:right">4.483%</td></tr>
-        <tr><td style="padding:5px 10px 5px 0">LUV/WETH pair (the market)</td><td style="padding:5px 10px"><a href="https://etherscan.io/address/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31" target="_blank" rel="noopener">0x57D2…8a31</a></td><td style="padding:5px 10px;text-align:right">1,974,737,045,122,436</td><td style="padding:5px 0;text-align:right">1.777%</td></tr>
-        <tr><td style="padding:5px 10px 5px 0">community holder</td><td style="padding:5px 10px"><a href="https://etherscan.io/address/0x9aac6e9097f15c943d284d25075b6e598476c540" target="_blank" rel="noopener">0x9aac…c540</a></td><td style="padding:5px 10px;text-align:right">1,071,282,719,522,310</td><td style="padding:5px 0;text-align:right">0.964%</td></tr>
-        <tr><td style="padding:5px 10px 5px 0">ShambaLuvAirdrop (gesture pool)</td><td style="padding:5px 10px"><a href="https://etherscan.io/address/0xdf2C1836550c5711EF9c021cB0de86241dc1DEf3" target="_blank" rel="noopener">0xdf2C…DEf3</a></td><td style="padding:5px 10px;text-align:right">1,020,788,498,466,107</td><td style="padding:5px 0;text-align:right">0.919%</td></tr>
-        <tr><td style="padding:5px 10px 5px 0">community holder</td><td style="padding:5px 10px"><a href="https://etherscan.io/address/0xf13176ece4ed8d9aa4c335cd4f247458d4863fe4" target="_blank" rel="noopener">0xf131…3fe4</a></td><td style="padding:5px 10px;text-align:right">794,169,668,155,235</td><td style="padding:5px 0;text-align:right">0.715%</td></tr>
-        <tr><td style="padding:5px 10px 5px 0">community holder</td><td style="padding:5px 10px"><a href="https://etherscan.io/address/0xd6476470ca99daf7e57b776f2a218db4345886ba" target="_blank" rel="noopener">0xd647…86ba</a></td><td style="padding:5px 10px;text-align:right">686,875,758,317,072</td><td style="padding:5px 0;text-align:right">0.618%</td></tr>
-        <tr><td style="padding:5px 10px 5px 0">community holder</td><td style="padding:5px 10px"><a href="https://etherscan.io/address/0xb51ff2f65b935142aab32abefa1c0e29a4161d31" target="_blank" rel="noopener">0xb51f…1d31</a></td><td style="padding:5px 10px;text-align:right">420,881,068,506,067</td><td style="padding:5px 0;text-align:right">0.379%</td></tr>
-        <tr><td style="padding:5px 10px 5px 0">community holder</td><td style="padding:5px 10px"><a href="https://etherscan.io/address/0x16666644043aecb616a061f0af42745d0d7390c4" target="_blank" rel="noopener">0x1666…90c4</a></td><td style="padding:5px 10px;text-align:right">131,173,106,036,387</td><td style="padding:5px 0;text-align:right">0.118%</td></tr>
-        <tr><td style="padding:5px 10px 5px 0">token contract (fees awaiting processFees)</td><td style="padding:5px 10px"><a href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">0x2711…8254</a></td><td style="padding:5px 10px;text-align:right">6,018,917,587,889</td><td style="padding:5px 0;text-align:right">0.005%</td></tr>
-      </table></div>
-      <p style="margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--dim)">
-      + airdrop-claim wallets holding ~1.02T each and dust — 99.997% of the 111-quadrillion repunit accounted ·
-      full live list on <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254#balances" target="_blank" rel="noopener">Etherscan ↗</a></p>
+      <div id="luvholders"><div style="font-family:var(--mono);font-size:12px;color:var(--dim);padding:8px 0">reading the holders from the chain…</div></div>
     </div>
 
     <div class="slipnote" style="margin-top:26px">LUV grows when you hold LUV — 3% of every trade reflects to every
@@ -315,6 +367,7 @@ footer .brandmark:hover img{opacity:1}
 <!-- ?v= busts the immutable .js cache — bump on every change -->
 <script src="substrate/d3.min.js?v=1"></script>
 <script src="substrate/luv-market.js?v=14"></script>
+<script src="substrate/luv-screener.js?v=1"></script>
 <script src="substrate/luv-share.js?v=3"></script>
 <script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
