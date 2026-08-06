@@ -609,6 +609,61 @@ footer .brandmark:hover img{opacity:1}
     🚀 <b>Phase 2 — The Value of LUV</b> · buy &amp; sell LUV on <img class="uni-ico" src="gfx/brand/uniswap_icon_pink.svg" alt="Uniswap"> Uniswap <span class="soon" style="color:#FF007A;border-color:#FF007A">live now</span>
     <span class="sub">the gesture meets the market ❤ · LUV/ETH trading is open · <a href="view.html">📈 live view</a></span>
   </div>
+
+  <!-- ═══ the standard — cypherpunk2048 → cypherpunk4096 ═══ -->
+  <style>
+  .cp-std{border:1px solid var(--seam);border-radius:16px;background:
+    radial-gradient(120% 140% at 0% 0%,rgba(131,56,236,.10),transparent 60%),var(--wine);
+    padding:34px clamp(20px,4vw,44px);margin-top:44px;overflow:hidden}
+  .cp-std .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--dim)}
+  .cp-std h2{font-size:clamp(23px,3.6vw,34px);font-weight:800;line-height:1.15;margin:12px 0 0;letter-spacing:-.01em}
+  .cp-std h2 b{background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .cp-std .ladder{display:flex;align-items:center;gap:16px;margin:26px 0 4px;font-family:var(--mono);flex-wrap:wrap}
+  .cp-std .tier{display:flex;flex-direction:column;gap:3px;border:1px solid var(--seam);border-radius:12px;padding:12px 18px;min-width:118px}
+  .cp-std .tier .exp{font-size:clamp(26px,4vw,40px);font-weight:800;line-height:1;letter-spacing:-.02em}
+  .cp-std .tier .nm{font-size:11px;letter-spacing:.14em;color:var(--dim)}
+  .cp-std .tier .st{font-size:10px;letter-spacing:.16em;text-transform:uppercase;margin-top:4px}
+  .cp-std .tier.met{color:var(--blush)} .cp-std .tier.met .st{color:var(--gold)}
+  .cp-std .tier.now{border-color:rgba(255,0,110,.55);color:var(--cream);
+    box-shadow:0 0 0 1px rgba(255,0,110,.25) inset}
+  .cp-std .tier.now .exp{background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .cp-std .tier.now .st{color:var(--rose)}
+  .cp-std .arrow{font-family:var(--mono);font-size:22px;color:var(--dim)}
+  .cp-std .creed{list-style:none;margin:22px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px 26px}
+  .cp-std .creed li{font-size:14px;color:var(--dim);padding-left:20px;position:relative}
+  .cp-std .creed li::before{content:"⟁";position:absolute;left:0;color:var(--gold);font-size:12px;top:2px}
+  .cp-std .creed b{color:var(--cream)}
+  .cp-std .foot{margin-top:24px;font-size:13.5px;color:var(--dim)}
+  .cp-std .foot b{color:var(--blush)}
+  .cp-std .links{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px}
+  .cp-std .links a{font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--blush);text-decoration:none;
+    border:1px solid var(--seam);border-radius:999px;padding:8px 16px;transition:color .15s,border-color .15s}
+  .cp-std .links a:hover{color:var(--rose);border-color:var(--rose)}
+  @media (prefers-reduced-motion:no-preference){.cp-std .tier.now{transition:box-shadow .3s}}
+  </style>
+  <section class="cp-std" aria-labelledby="cp-std-h">
+    <div class="eyebrow">engineered to a standard</div>
+    <h2 id="cp-std-h">Built to <b>cypherpunk2048</b>.<br>Now building to <b>cypherpunk4096</b>.</h2>
+    <div class="ladder" role="img" aria-label="cypherpunk2048 met, cypherpunk4096 in progress">
+      <div class="tier met"><span class="exp">2¹¹</span><span class="nm">cypherpunk2048</span><span class="st">✓ met</span></div>
+      <span class="arrow">→</span>
+      <div class="tier now"><span class="exp">2¹²</span><span class="nm">cypherpunk4096</span><span class="st">building</span></div>
+    </div>
+    <ul class="creed">
+      <li><b>Determinism as identity</b> — one address on every chain; the code is the name.</li>
+      <li><b>Zero dependencies</b> — a unit built to outlast frameworks inherits no supply chain.</li>
+      <li><b>Verification over trust</b> — every claim resolves to a green checkmark anyone can reproduce.</li>
+      <li><b>Precision without approximation</b> — full-width decimals; rounding is display, never storage.</li>
+    </ul>
+    <div class="foot">The next power of two doesn't replace the last — it doubles the bar. Production
+      deployments publish to the <b>cypherpunk4096</b> commons as they go live; the first is
+      <b>SCIEN·TIFIC</b>, deterministic at one address across every chain.</div>
+    <div class="links">
+      <a href="engine.html#s3">⚙️ the standard, in the engine paper</a>
+      <a href="https://github.com/cypherpunk4096" rel="noopener">cypherpunk4096 ↗</a>
+      <a href="https://github.com/cypherpunk4096/scientific" rel="noopener">SCIEN·TIFIC ↗</a>
+    </div>
+  </section>
 </main>
 
 <!-- login modal (self-hosted — replaces the old vendor connect modal) -->
