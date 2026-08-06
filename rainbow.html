@@ -82,6 +82,28 @@ h1{margin:52px 0 6px;text-align:center;font-size:clamp(30px,5.6vw,46px);font-wei
 .btn:hover{color:var(--cream);transform:translateY(-2px);
   box-shadow:0 0 26px -4px rgba(255,0,110,.8),0 0 54px -12px rgba(131,56,236,.85)}
 .btn:hover::after{inset:-10px;border-color:rgba(227,178,95,.5)}
+/* ── the cypherpunk4096 button: mouseover crosses into POST-2048 TECHNOLOGY ──
+   the wine-and-rose present gives way to the 2¹² interface — terminal green on
+   near-black, electric sweep border, scanlines, the label itself upgrades.
+   exceptional, loud, proud; pure CSS, and still only ever a link. */
+.btn.cp4096 .post{display:none}
+.btn.cp4096:hover{color:#0aff9d;
+  background:linear-gradient(#02120b,#02120b) padding-box,
+             linear-gradient(120deg,#0aff9d,#00e5ff,#8338ec,#0aff9d) border-box;
+  background-size:100% 100%,300% 100%;
+  animation:cp4096sweep 2.2s linear infinite;
+  box-shadow:0 0 34px -4px rgba(10,255,157,.95),0 0 90px -10px rgba(0,229,255,.85);
+  text-shadow:0 0 9px rgba(10,255,157,.85);
+  letter-spacing:.16em;text-transform:uppercase;font-weight:800;
+  transform:translateY(-3px) scale(1.06)}
+.btn.cp4096:hover .now{display:none}
+.btn.cp4096:hover .post{display:inline}
+.btn.cp4096:hover::after{inset:-12px;border:1px dashed rgba(0,229,255,.65)}
+.btn.cp4096:hover::before{content:'';position:absolute;inset:0;border-radius:999px;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(10,255,157,.09) 0 1px,transparent 1px 3px)}
+@keyframes cp4096sweep{to{background-position:0 0,-300% 0}}
+@media (prefers-reduced-motion:reduce){.btn.cp4096:hover{animation:none}}
+
 /* the offering — the Uniswap button leads the row, unmistakably */
 .uni-cta{position:relative;display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:16px;color:#fff;
   text-decoration:none;border-radius:999px;padding:15px 30px;flex-basis:100%;justify-content:center;max-width:520px;margin:0 auto;
@@ -528,7 +550,10 @@ python3 -c "print((1050000-961239)*600/86400)"                     # next halvin
 
   <div class="readmore">
     <a class="btn" href="sentiment.html">🎭 SENTIMENT — the measurement paper</a>
-    <a class="btn" href="https://github.com/cypherpunk4096/sentiment" rel="noopener">⟁ published to cypherpunk4096</a>
+    <a class="btn cp4096" href="https://github.com/cypherpunk4096/sentiment" rel="noopener"
+       title="cypherpunk4096 — the 2¹² standard: determinism as identity · zero dependencies · the green checkmark · precision without approximation · quantum compliance">
+      <span class="now">⟁ published to cypherpunk4096</span>
+      <span class="post">⟁ 2¹² POST-2048 TECH ▸ QUANTUM-READY · ZERO-DEP · DETERMINISTIC</span></a>
     <a class="btn" href="wei.html">⚖️ the WEI of LUV</a>
     <a class="btn" href="exabyte.html">💾 THE EXABYTE — the identity paper</a>
     <a class="btn" href="view.html">📈 the live LUV market</a>
