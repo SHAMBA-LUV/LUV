@@ -15,10 +15,16 @@
  *             last collection, whether or not you were watching; you return and collect the
  *             pile. Presence is not required, only coming back to collect.
  *
- * DELIVERY. This substrate is the METER, not the mint. It computes and displays what is owed
- * and persists it per identity; on-chain delivery is one batched `distributeReward(user,total)`
- * through the IncentiveDistributor REDEEM rail when the participant collects — a per-second
- * on-chain mint is neither gas-sane nor necessary. Client-side, the counter flows continuously.
+ * TWO ACTIONS — COLLECT then REDEEM (deliberately separate):
+ *   COLLECT — the logged-in address banks the live flow. It moves the drip that has accrued this
+ *             session into a `collected` balance keyed to that address, and resets the live meter.
+ *             Off-chain, free, instant — the participant gathering their own flow. COLLECT is only
+ *             available FROM THE LOGGED-IN ADDRESS (the meter is keyed to it).
+ *   REDEEM  — the banked `collected` balance is delivered ON-CHAIN in one batched
+ *             `distributeReward(user, collected)` through the IncentiveDistributor REDEEM rail
+ *             (gas), then reset. A per-second on-chain mint is neither gas-sane nor necessary.
+ * The flow drips → you COLLECT it to your address (free) → you REDEEM the pile to the chain (one tx).
+ * `collected` persists across days until redeemed; only the live drip is daily-capped.
  *
  * cypherpunk2048 / CSP-safe: external file, no inline JS, no network fetch. State lives in the
  * participant's own localStorage — your folder belongs to you. Honors prefers-reduced-motion.
@@ -30,6 +36,10 @@
   var DEFAULT_DAILY = 1000000;                 // one million LUV per day
   var RATE = DEFAULT_DAILY / DAY_SEC;          // 11.574074… LUV/s
   var MS_PER_LUV = (DAY_SEC * 1000) / DEFAULT_DAILY; // 86.4 ms — one LUV at a time
+  // the Uniswap USDC → LUV preset — the drip is free, buying is always one tap away
+  var UNISWAP_USDC_LUV = 'https://app.uniswap.org/swap?chain=ethereum' +
+    '&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' +
+    '&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254';
 
   function now() { return Date.now(); }
   function clampCap(v, cap) { return v < 0 ? 0 : v > cap ? cap : v; }
@@ -53,13 +63,14 @@
     this._load();
   }
 
-  // Persisted state: { accrued, dayStart, lastTick }
+  // Persisted state: { accrued (live drip), collected (banked to the address), dayStart, lastTick }
   Drip.prototype._load = function () {
     var s = null;
     try { s = JSON.parse(global.localStorage.getItem(this.key)); } catch (e) {}
     var t = now();
-    if (!s || typeof s.dayStart !== 'number') s = { accrued: 0, dayStart: t, lastTick: t };
-    // daily roll: a fresh day resets the allotment
+    if (!s || typeof s.dayStart !== 'number') s = { accrued: 0, collected: 0, dayStart: t, lastTick: t };
+    if (typeof s.collected !== 'number') s.collected = 0; // banked balance persists across days
+    // daily roll: a fresh day resets only the live drip allotment — never the collected balance
     if (t - s.dayStart >= DAY_SEC * 1000) { s.accrued = 0; s.dayStart = t; s.lastTick = t; }
     // accrual mode credits the offline gap; login mode does not (presence required)
     if (this.mode === 'accrual') {
@@ -86,14 +97,28 @@
     return s.accrued;
   };
 
-  Drip.prototype.accrued = function () { return this.state.accrued; };
+  Drip.prototype.accrued = function () { return this.state.accrued; };   // the live-flowing drip
+  Drip.prototype.collected = function () { return this.state.collected; }; // banked to the address, awaiting REDEEM
   Drip.prototype.full = function () { return this.state.accrued >= this.dailyLuv; };
   Drip.prototype.setSignedIn = function (v) { this._signedIn = !!v; this.state.lastTick = now(); this._save(); };
 
-  // collect: hand the accrued pile to a callback (the on-chain REDEEM), then reset the meter
+  // COLLECT — the logged-in address banks the live flow. Off-chain, free, instant: moves the
+  // accrued drip into `collected` and resets the live meter. Returns the amount just collected.
   Drip.prototype.collect = function () {
-    var owed = this.state.accrued;
+    this.tick();
+    var banked = this.state.accrued;
+    this.state.collected += banked;
     this.state.accrued = 0; this.state.lastTick = now(); this._save();
+    if (typeof this.onCollect === 'function') try { this.onCollect(banked, this.state.collected); } catch (e) {}
+    return banked;
+  };
+
+  // REDEEM — deliver the banked `collected` balance ON-CHAIN (one distributeReward tx), then reset.
+  // Returns the amount to redeem; the caller drives the backend /airdrop/redeem → distributeReward.
+  Drip.prototype.redeem = function () {
+    var owed = this.state.collected;
+    this.state.collected = 0; this._save();
+    if (typeof this.onRedeem === 'function') try { this.onRedeem(owed); } catch (e) {}
     return owed;
   };
 
@@ -101,15 +126,38 @@
     if (!this.mount) return;
     var luv = this.accrued(), pct = (luv / this.dailyLuv) * 100;
     var flowing = this.mode === 'accrual' || (this._signedIn && (global.document ? !document.hidden : true));
+    // the felt experience: LUV flowing IN to the participant — a live figure, a filling channel,
+    // and the drop-cadence made visible. The arrow points inward (▾ into your balance).
     this.mount.innerHTML =
-      '<div class="drip-amt">' + fmt(luv) + ' <span class="drip-unit">LUV</span></div>' +
-      '<div class="drip-bar"><span style="width:' + pct.toFixed(3) + '%"></span></div>' +
-      '<div class="drip-meta">' +
-        (flowing ? '▾ +' + this.rate.toFixed(3) + ' LUV/s · one every ' + MS_PER_LUV.toFixed(1) + ' ms'
-                 : '⏸ paused — sign in to resume the flow') +
-        ' · ' + Math.floor(pct) + '% of today’s million' +
-        ' · <span class="drip-mode">' + (this.mode === 'login' ? 'reward from login' : 'reward from accrual') + '</span>' +
-      '</div>';
+      '<div class="drip-flow' + (flowing ? ' on' : '') + '">' +
+        '<div class="drip-label">flowing to you</div>' +
+        '<div class="drip-amt">' + fmt(luv) + ' <span class="drip-unit">LUV</span></div>' +
+        '<div class="drip-bar"><span style="width:' + pct.toFixed(3) + '%"></span></div>' +
+        '<div class="drip-meta">' +
+          (flowing ? '▾ +' + this.rate.toFixed(3) + ' LUV/s · a LUV every ' + MS_PER_LUV.toFixed(1) + ' ms · '
+                     + Math.floor(pct) + '% of today’s million'
+                   : '⏸ paused — sign in to resume the flow') +
+          ' · <span class="drip-mode">' + (this.mode === 'login' ? 'reward from login' : 'reward from accrual') + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="drip-actions">' +
+        '<button type="button" class="drip-collect" data-drip-collect' + (luv < 1 ? ' disabled' : '') + '>COLLECT ' + fmt(luv) + ' →</button>' +
+        '<div class="drip-collected">collected: <b>' + fmt(this.collected()) + ' LUV</b>' +
+          '<button type="button" class="drip-redeem" data-drip-redeem' + (this.collected() < 1 ? ' disabled' : '') + '>REDEEM on-chain →</button>' +
+        '</div>' +
+      '</div>' +
+      // the flow is free; buying is always one tap away — the Uniswap USDC → LUV preset, front and centre
+      '<a class="drip-buy" href="' + UNISWAP_USDC_LUV + '" target="_blank" rel="noopener">🦄 buy LUV now · USDC → LUV ❤</a>';
+    var self = this;
+    var cb = this.mount.querySelector('[data-drip-collect]');
+    if (cb) cb.addEventListener('click', function () { self.collect(); self.render(); });
+    var rb = this.mount.querySelector('[data-drip-redeem]');
+    if (rb) rb.addEventListener('click', function () {
+      var owed = self.collected();
+      // hand the banked balance to the REDEEM rail; the page wires onRedeem to POST /airdrop/redeem
+      if (typeof self.onRedeem !== 'function') { /* no rail wired — leave banked, do not reset */ return; }
+      self.redeem(); self.render();
+    });
     this.mount.dataset.dripFull = this.full() ? '1' : '';
   };
 

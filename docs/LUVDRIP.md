@@ -28,17 +28,33 @@ Operator-settable per mount (`data-mode`) or per instance (`opts.mode`):
   last collection**, whether or not the participant was watching. They return and collect the pile.
   Presence is not required; coming back to collect is.
 
-## Delivery — meter, not per-second mint
+## COLLECT, then REDEEM — two separate actions
 
-`luv-drip.js` is the **meter**: it computes, displays, and persists (in the participant's own
-`localStorage`, keyed per identity) what is owed. On-chain delivery is **one batched
-`distributeReward(user, total)`** through the IncentiveDistributor **REDEEM** rail when the
-participant collects — a per-second on-chain mint would be neither gas-sane nor necessary. Client-side
-the counter flows continuously; on-chain it settles in one transaction at the moment of collection.
+The flow is designed to be *felt*: LUV arrives, a LUV at a time, into the logged-in participant's own
+meter — the experience of value flowing to you from being here. Two distinct actions turn that flow
+into on-chain balance:
+
+1. **COLLECT** — the **logged-in address banks the live flow**. `collect()` moves the accrued drip into
+   a `collected` balance keyed to that address and resets the live meter. **Off-chain, free, instant** —
+   the participant gathering their own flow. Available only from the logged-in address (the meter is
+   keyed to it). `collected` persists across days.
+2. **REDEEM** — the banked `collected` balance is **delivered on-chain**. `redeem()` hands it to the
+   backend, which mints it in **one batched `distributeReward(user, collected)`** through the
+   IncentiveDistributor REDEEM rail (gas), then resets. A per-second on-chain mint is neither gas-sane
+   nor necessary.
 
 ```
-drip.collect()  →  owed LUV (meter resets)  →  backend POST /airdrop/redeem  →  distributeReward(user, owed)
+drip flows  →  COLLECT (free, to your address)  →  collected balance  →  REDEEM (one tx)  →  distributeReward(user, collected)
 ```
+
+`luv-drip.js` is the **meter**, persisting state in the participant's own `localStorage` (per identity,
+CSP-safe, nothing phones home). The chain is the source of truth at REDEEM.
+
+## The flow is free — buying is always one tap away
+
+The drip costs nothing; for anyone who wants more now, the meter renders an always-visible
+**Uniswap USDC → LUV preset** link (`.drip-buy`) right beside COLLECT/REDEEM, so the emphasized buy
+path is never more than one tap from the flow.
 
 ## Integration
 
@@ -51,14 +67,24 @@ drip.collect()  →  owed LUV (meter resets)  →  backend POST /airdrop/redeem 
 or drive it directly:
 
 ```js
-var drip = new DVLuvDrip.Drip({ mount:'#drip', mode:'login', identity: user, signedIn:true }).start();
-drip.setSignedIn(false);   // pause the flow on logout (login mode)
-var owed = drip.collect(); // hand the pile to the REDEEM rail, reset the meter
+var drip = new DVLuvDrip.Drip({ mount:'#drip', mode:'login', identity: user, signedIn:true });
+drip.onRedeem = function (owed) {           // wire REDEEM to the on-chain rail
+  fetch('/airdrop/redeem', { method:'POST' });   // → distributeReward(user, owed)
+};
+drip.start();
+drip.setSignedIn(false);      // pause the flow on logout (login mode)
+drip.collect();               // COLLECT: bank the live flow to the address (free), reset the meter
+drip.accrued();               // live drip, still flowing
+drip.collected();             // banked balance, awaiting REDEEM
+drip.redeem();                // REDEEM: reset collected + fire onRedeem(owed)
 ```
 
-Minimal styling hooks the module renders: `.drip-amt` / `.drip-unit` (the live figure),
-`.drip-bar > span` (fill to today's million), `.drip-meta` / `.drip-mode` (rate + mode line). The
-mount gets `data-drip-full="1"` when the day's million is reached.
+The COLLECT and REDEEM buttons are rendered by the module (`[data-drip-collect]` / `[data-drip-redeem]`)
+and wired automatically; COLLECT works standalone, REDEEM resets the banked balance only when an
+`onRedeem` rail is wired. Styling hooks: `.drip-flow(.on)` (the live channel), `.drip-amt`/`.drip-unit`
+(the figure), `.drip-bar > span` (fill to today's million), `.drip-meta`/`.drip-mode`,
+`.drip-collect` / `.drip-collected` / `.drip-redeem` (the two actions), `.drip-buy` (the Uniswap
+USDC → LUV preset). The mount gets `data-drip-full="1"` when the day's million is reached.
 
 ## Properties
 
