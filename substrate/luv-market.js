@@ -399,21 +399,65 @@
     });
 
     if (candleMode) {
+      // ── streaks: consecutive candles in one direction deepen the hue ──
+      // green grows brighter as the run extends; red pools toward blood, and a
+      // sustained bleed drips from the bottom of the bodies.
+      var run = 0, prevUp = null;
+      candles.forEach(function (c) {
+        var up = c.c >= c.o;
+        run = (prevUp === up) ? run + 1 : 1;
+        c.up = up; c.streak = run; prevUp = up;
+      });
+      var GREENS = ['#7ee2a8', '#5fe598', '#41e787', '#22ea75', '#0bf268', '#00ff66'];
+      var BLOODS = ['#ff4d6d', '#ef3350', '#d92338', '#c01426', '#a30916', '#8a0303'];
+      var lvl = function (k) { return Math.min(k, 6) - 1; };
+      var defs = svg.append('defs');
+      for (var gi = 0; gi < 6; gi++) {
+        var gg = defs.append('linearGradient').attr('id', 'luvup' + gi)
+          .attr('x1', 0).attr('y1', 1).attr('x2', 0).attr('y2', 0);
+        gg.append('stop').attr('offset', '0%').attr('stop-color', GREENS[0]);
+        gg.append('stop').attr('offset', '100%').attr('stop-color', GREENS[gi]);
+        var rg = defs.append('linearGradient').attr('id', 'luvdn' + gi)
+          .attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 1);
+        rg.append('stop').attr('offset', '0%').attr('stop-color', BLOODS[0]);
+        rg.append('stop').attr('offset', '100%').attr('stop-color', BLOODS[gi]);
+      }
       var slot = plotW / Math.max(candles.length, 1);
       var bodyW = Math.max(5, Math.min(22, slot * 0.7));
+      var floorY = HM - m.bottom;
       candles.forEach(function (c) {
         var cx = x(c.t + BUCKET / 2);
-        var col = c.c >= c.o ? UP : DOWN;
-        // wick — full high→low, same hue as the body
+        var g = lvl(c.streak);
+        var col = c.up ? GREENS[g] : BLOODS[g];
+        // wick — full high→low, streak hue
         svg.append('line').attr('x1', cx).attr('x2', cx)
           .attr('y1', y(c.h)).attr('y2', y(c.l))
           .attr('stroke', col).attr('stroke-width', 2);
-        // body — thick, ringed with the surface for definition, dojis kept visible
+        // body — streak gradient (green reaches up; blood pools down), dojis kept visible
         var yTop = y(Math.max(c.o, c.c)), yBot = y(Math.min(c.o, c.c));
         var hgt = Math.max(3, yBot - yTop);
         svg.append('rect').attr('x', cx - bodyW / 2).attr('y', yTop)
           .attr('width', bodyW).attr('height', hgt).attr('rx', 1.5)
-          .attr('fill', col).attr('stroke', '#2b111c').attr('stroke-width', 1);
+          .attr('fill', 'url(#' + (c.up ? 'luvup' : 'luvdn') + g + ')')
+          .attr('stroke', '#2b111c').attr('stroke-width', 1);
+        // the bleed: a sustained red run drips from the bottom of the body
+        if (!c.up && c.streak >= 2) {
+          var bodyBottom = yTop + hgt;
+          var nDrips = Math.min(c.streak - 1, 3);
+          var alpha = Math.min(0.55 + 0.06 * c.streak, 0.85);
+          for (var j = 0; j < nDrips; j++) {
+            var dx = cx + (j - (nDrips - 1) / 2) * (bodyW / 3);
+            var len = 5 + c.streak * 3 + ((j * 13 + c.streak * 7) % 6);
+            len = Math.min(len, floorY - bodyBottom - 4);
+            if (len < 4) continue;
+            svg.append('line').attr('x1', dx).attr('x2', dx)
+              .attr('y1', bodyBottom + 1).attr('y2', bodyBottom + len)
+              .attr('stroke', BLOODS[5]).attr('stroke-width', 2)
+              .attr('stroke-linecap', 'round').attr('stroke-opacity', alpha);
+            svg.append('circle').attr('cx', dx).attr('cy', bodyBottom + len)
+              .attr('r', 2.2).attr('fill', BLOODS[5]).attr('fill-opacity', alpha);
+          }
+        }
       });
     } else {
       // too young for two candles — fall back to the growing line
@@ -589,7 +633,7 @@
   };
   Market.prototype.stop = function () { clearTimeout(this._timer); this._timer = 0; return this; };
 
-  var DVLuvMarket = { Market: Market, PAIR: PAIR, REFRESH_MS: REFRESH_MS, version: '2.5.2' };
+  var DVLuvMarket = { Market: Market, PAIR: PAIR, REFRESH_MS: REFRESH_MS, version: '2.6.0' };
   // DVLuvMarket.diag() — diagnostics of the auto-booted instance, for widgets and internals
   DVLuvMarket.diag = function () { return DVLuvMarket._booted ? DVLuvMarket._booted.diag() : null; };
   if (typeof module !== 'undefined' && module.exports) module.exports = DVLuvMarket;
