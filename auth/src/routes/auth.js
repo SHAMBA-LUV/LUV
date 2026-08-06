@@ -349,4 +349,18 @@ router.post('/wallet/send', requireAuth, async (req, res) => {
   }
 });
 
+
+/*
+ * The rainbow is delivered to wallets. GET /auth/rainbow returns the in-house Bitcoin
+ * rainbow chart (static SVG) only to a live session — OAuth or MetaMask wallet signature.
+ * The gate is a handshake, not a secret: the chart source is open in the repository;
+ * gated delivery is the consent rail, same doctrine as the gesture.
+ */
+const path = require('path');
+const RAINBOW_SVG = path.join(__dirname, '..', 'rainbow.svg');
+router.get('/rainbow', requireAuth, (_req, res) => {
+  res.type('image/svg+xml');
+  res.sendFile(RAINBOW_SVG);
+});
+
 module.exports = router;
