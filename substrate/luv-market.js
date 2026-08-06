@@ -163,8 +163,10 @@
       '<span class="mkt-bar" role="img" aria-label="24 hour change bar"><span class="mkt-bar-zero"></span><span class="mkt-bar-fill"></span></span>' +
       '<span class="mkt-pct">…</span>' +
       '<span class="mkt-win">24H</span>' +
-      '<span class="mkt-units" role="group" aria-label="unit toggle — USDC, wei per LUV, LUV per ETH"></span>' +
       '</div>' +
+      '<div class="mkt-conv"><span class="mkt-conv-text"></span>' +
+      '<span class="mkt-conv-label">chart scale</span>' +
+      '<span class="mkt-units" role="group" aria-label="chart scale — USDC, wei per LUV, LUV per ETH"></span></div>' +
       '<div class="mkt-chart"><svg role="img" aria-label="LUV price in USD over the last 24 hours"></svg>' +
       '<div class="mkt-tip" hidden></div></div>' +
       '<div class="mkt-fine"><span class="mkt-delta"></span><span class="mkt-x" title="the X multiplier — measured from the liquidity seed (price X = 1.00e-17 ETH per LUV)"></span><span class="mkt-spacer"></span>' +
@@ -174,9 +176,16 @@
 
   Market.prototype._buildToggle = function () {
     var self = this;
+    var row = this.root.querySelector('.mkt-conv');
+    if (row) row.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;gap:8px;' +
+      'font:11.5px ui-monospace,Menlo,monospace;color:#b98da0;margin:6px 0 2px';
+    var convEl = this.root.querySelector('.mkt-conv-text');
+    if (convEl) { convEl.style.color = '#e3b25f'; convEl.style.overflowWrap = 'anywhere'; convEl.style.flex = '1 1 auto'; }
+    var lbl = this.root.querySelector('.mkt-conv-label');
+    if (lbl) lbl.style.cssText = 'letter-spacing:.12em;text-transform:uppercase;font-size:10px';
     var wrap = this.root.querySelector('.mkt-units');
     if (!wrap) return;
-    wrap.style.cssText = 'display:inline-flex;gap:4px;margin-left:10px;vertical-align:middle';
+    wrap.style.cssText = 'display:inline-flex;gap:4px;vertical-align:middle';
     UNIT_ORDER.forEach(function (key) {
       var u = UNITS[key];
       var b = document.createElement('button');
@@ -232,10 +241,16 @@
     if (!this.market) return;
     var pc = this.market.priceChange || {};
     var h24 = pc.h24 === undefined ? null : Number(pc.h24);
-    var U = UNITS[this.mode] || UNITS.usdc;
-    var amtEl = this.root.querySelector('.mkt-amt');
-    if (amtEl) amtEl.textContent = U.amt;
-    this.root.querySelector('.mkt-usdc').textContent = U.line(this.market);
+    // the measure of value is KEPT: ❤ 1T LUV = $… USDC — the unit toggle scales the chart
+    this.root.querySelector('.mkt-usdc').textContent = fmtUsdc(this.market.oneTrillionUsd);
+    // the conversion line beneath it carries both identities, always
+    var conv = this.root.querySelector('.mkt-conv-text');
+    if (conv) {
+      var pn0 = Number(this.market.priceNative);
+      conv.textContent = pn0 > 0
+        ? '⚖ 1 LUV = ' + fmtNum(pn0 * 1e18, 6) + ' WEI · 1 ETH = ' + fmtNum(1 / pn0 / 1e12, 4) + 'T LUV'
+        : '';
+    }
     var pctEl = this.root.querySelector('.mkt-pct');
     pctEl.textContent = pctArrow(h24) + ' ' + fmtPct(h24);
     pctEl.style.color = pctColor(h24);
@@ -558,7 +573,7 @@
   };
   Market.prototype.stop = function () { clearTimeout(this._timer); this._timer = 0; return this; };
 
-  var DVLuvMarket = { Market: Market, PAIR: PAIR, REFRESH_MS: REFRESH_MS, version: '2.5.0' };
+  var DVLuvMarket = { Market: Market, PAIR: PAIR, REFRESH_MS: REFRESH_MS, version: '2.5.1' };
   // DVLuvMarket.diag() — diagnostics of the auto-booted instance, for widgets and internals
   DVLuvMarket.diag = function () { return DVLuvMarket._booted ? DVLuvMarket._booted.diag() : null; };
   if (typeof module !== 'undefined' && module.exports) module.exports = DVLuvMarket;
