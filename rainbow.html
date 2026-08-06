@@ -181,7 +181,14 @@ footer .brandmark:hover img{opacity:1}
   every 210,000 blocks, so the total that can ever exist is a finite geometric sum —</p>
   <pre>total supply = 210,000 × Σ floor(5,000,000,000 / 2ⁱ) sat   for i = 0 … 32
              = 2,099,999,997,690,000 sat
-             = <b>20,999,999.9769 BTC</b>  — forever less than 21 million, forever approaching it</pre>
+             = <b>20,999,999.97690000 BTC</b>   (full satoshi precision — 8 decimals)
+
+21,000,000.00000000 − 20,999,999.97690000 = 0.02310000 BTC
+                                          = exactly <b>2,310,000 satoshi</b> short of 21 million</pre>
+  <p>"21 million" is a ceiling the supply approaches forever and touches never — short by exactly
+  2,310,000 satoshi, an amount fixed by the same integer arithmetic that fixes everything else here.
+  Stated to full precision because the atomic unit deserves it: eight decimals is to Bitcoin what
+  eighteen is to LUV — exactness ends at the atom, approximation is display.</p>
   <p>The subsidy reaches zero at block <b>6,930,000</b> (the last satoshi of subsidy is paid one
   block earlier, at 6,929,999). Anchored to the live chain — height <b>961,239</b> on 2026-08-05,
   mempool.space and blockchain.info agreeing — the remaining 5,968,761 blocks at the ten-minute
