@@ -4,7 +4,7 @@
 
 *SHAMBA LUV research series — companion to WEI_OF_LUV.md, SENTIMENT.md, and EMOTONOMICS.md*
 
-**Live web publication:** https://luv.pythai.net/exabyte.html · the arithmetic paper: https://luv.pythai.net/wei.html
+**Live web publication:** https://luv.pythai.net/exabyte.html · the arithmetic paper: https://luv.pythai.net/wei.html · standard publication: https://github.com/cypherpunk4096/exabyte
 
 Every figure below is exact — computed, not quoted — and reproducible from the appendix. Approximation is a display decision, never a storage decision.
 
