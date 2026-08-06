@@ -61,6 +61,7 @@ h1{margin:52px 0 6px;text-align:center;font-size:clamp(32px,6vw,52px);font-weigh
   border:1px solid var(--seam);border-radius:999px;padding:9px 22px;cursor:pointer;transition:color .15s,border-color .15s}
 .tbtn:hover{color:var(--blush);border-color:var(--rose)}
 .tbtn.active{color:#fff;background:linear-gradient(100deg,var(--pink),var(--purple));border-color:transparent;font-weight:700}
+.convline{font-family:var(--mono);font-size:12px;color:var(--gold);text-align:center;margin:-6px 0 20px;overflow-wrap:anywhere}
 .diag{font-family:var(--mono);font-size:13px}
 .drow{display:flex;gap:14px;padding:7px 0;border-top:1px solid rgba(74,31,48,.6);align-items:baseline}
 .drow:first-child{border-top:0}
@@ -106,7 +107,12 @@ footer .brandmark img{height:14px;width:auto;display:block;opacity:.85}
   <div class="togglerow" role="tablist" aria-label="price denomination">
     <button type="button" class="tbtn active" id="lp-mode-eth" role="tab" aria-selected="true">Ξ in ETH</button>
     <button type="button" class="tbtn" id="lp-mode-usdc" role="tab" aria-selected="false">$ in USDC</button>
+    <button type="button" class="tbtn" id="lp-mode-wei" role="tab" aria-selected="false">WEI / LUV</button>
+    <button type="button" class="tbtn" id="lp-mode-luveth" role="tab" aria-selected="false">LUV / ETH</button>
   </div>
+
+  <!-- the identities, always in view — the toggle re-expresses the blocks below -->
+  <div class="convline" id="lp-conv"></div>
 
   <!-- expression 1: <denom> → one trillion LUV -->
   <div class="expr">
@@ -114,7 +120,7 @@ footer .brandmark img{height:14px;width:auto;display:block;opacity:.85}
     <div class="big" id="lp-eth">…</div>
     <span class="eq">=</span>
     <div class="luvamt"><span class="beat">❤</span> <span id="lp-luv">1,000,000,000,000.000000000000000000 LUV</span></div>
-    <div class="note">one trillion LUV — a million millions, to the last of its eighteen decimals.
+    <div class="note" id="lp-amt-note">one trillion LUV — a million millions, to the last of its eighteen decimals.
     That is what the pool asks for it, right now.</div>
   </div>
 
@@ -192,7 +198,7 @@ footer .brandmark img{height:14px;width:auto;display:block;opacity:.85}
   </div>
 </footer>
 
-<script src="substrate/luv-price.js?v=5"></script>
+<script src="substrate/luv-price.js?v=6"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
 <script src="substrate/luv-frame.js?v=1"></script>
 </body>

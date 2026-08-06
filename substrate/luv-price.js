@@ -38,8 +38,17 @@
   }
   function fmtWei(v) {
     if (!(v > 0)) return '—';
-    return v >= 100 ? v.toFixed(1) : v.toFixed(2);
+    // accuracy: six decimals, grouped — approximation is display-only
+    var parts = v.toFixed(6).split('.');
+    return Number(parts[0]).toLocaleString('en-US') + '.' + parts[1];
   }
+  function fmtGrp(v, dec) {
+    if (!(v > 0)) return '—';
+    var parts = v.toFixed(dec).split('.');
+    return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (parts[1] ? '.' + parts[1] : '');
+  }
+  var AMT_NOTE_DEFAULT = 'one trillion LUV — a million millions, to the last of its eighteen decimals. ' +
+    'That is what the pool asks for it, right now.';
 
   function render() {
     var mkt = lastMarket;
@@ -51,9 +60,44 @@
     var usdcPerTrillion = pu > 0 ? pu * 1e12 : null;
     var weiPerLuv = pn * 1e18;
     var luvPerUsdc = pu > 0 ? 1 / pu : null;     // how much LUV one USDC gathers
+    var luvPerEth = 1 / pn;                      // the inverse measure
+    var luvPerWei = luvPerEth / 1e18;            // what a single wei gathers
     var priceX = pn / SEED_PRICE_NATIVE;
 
-    if (mode === 'usdc') {
+    // the identities line — every expression at once, whatever the toggle says
+    set('lp-conv', '⚖ 1 LUV = ' + fmtWei(weiPerLuv) + ' WEI = ' + pn.toExponential(4) +
+      ' ETH · 1 ETH = ' + fmtGrp(luvPerEth / 1e12, 4) + 'T LUV');
+
+    var amtNote = el('lp-amt-note');
+    if (mode === 'wei') {
+      set('lp-k1', 'WEI → one LUV');
+      set('lp-eth', fmtWei(weiPerLuv) + ' WEI');
+      set('lp-luv', '1.000000000000000000 LUV');
+      if (amtNote) amtNote.textContent = 'one LUV exact — 1 LUV === 1 LUV, to the last of its eighteen ' +
+        'decimals. This is its price in the atoms of ETH, right now.';
+      set('lp-usd', fmt18(pn) + ' ETH');
+      var ulw = el('lp-usdline'); if (ulw) ulw.lastChild.textContent = ' · the same LUV, in whole ETH (18dp)';
+      set('lp-k2', 'ETH / LUV');
+      set('lp-wei', pn.toExponential(6) + ' ETH / LUV');
+      set('lp-wei-note', 'the native price at full precision · the seed was exactly 1.0000e-17 · now ' +
+        pn.toExponential(4) + ' — price ' + priceX.toFixed(4) + '× from X');
+      set('lp-wei-note2', 'one number, three units: 1 EB = 1 ETH = 1 LUV at 10¹⁸ — the byte ladder and the ' +
+        'value ladder share one atomic geometry (the identity paper: exabyte.html).');
+    } else if (mode === 'luveth') {
+      set('lp-k1', 'one ETH → LUV');
+      set('lp-eth', fmtGrp(luvPerEth, 0) + ' LUV');
+      set('lp-luv', '1.000000000000000000 ETH');
+      if (amtNote) amtNote.textContent = 'what one whole ETH gathers from the pool — the inverse measure, ' +
+        'grouped to the last whole LUV.';
+      set('lp-usd', fmtGrp(luvPerEth / 1e12, 4) + 'T LUV');
+      var ull = el('lp-usdline'); if (ull) ull.lastChild.textContent = ' · the same, in trillions — millions of millions';
+      set('lp-k2', 'LUV / WEI');
+      set('lp-wei', fmt18(luvPerWei) + ' LUV');
+      set('lp-wei-note', 'what a single wei gathers · at the seed one wei gathered exactly 0.1 LUV · ' +
+        'price ' + priceX.toFixed(4) + '× from X');
+      set('lp-wei-note2', 'the seed priced LUV at 10 wei, so one wei gathered a tenth of a LUV; every ' +
+        'LUV-per-wei below that is the market speaking.');
+    } else if (mode === 'usdc') {
       set('lp-k1', 'USDC → one trillion LUV');
       set('lp-eth', usdcPerTrillion ? fmt6(usdcPerTrillion) + ' USDC' : '—');
       set('lp-usd', ethPerTrillion ? fmt18(ethPerTrillion) + ' ETH' : '—');
@@ -77,6 +121,11 @@
         ' WEI — price ' + priceX.toFixed(2) + '× from X');
       set('lp-wei-note2', 'wei — the smallest unit of ETH, 10⁻¹⁸. LUV entered the world at ' +
         'ten of them. Every wei above that is the market speaking.');
+    }
+
+    if (mode === 'usdc' || mode === 'eth') {
+      set('lp-luv', ONE_TRILLION_LUV + ' LUV');
+      if (amtNote) amtNote.textContent = AMT_NOTE_DEFAULT;
     }
 
     if (mkt.reserves && mkt.reserves.weth) {
@@ -109,12 +158,15 @@
       : (Number(h24) > 0 ? '▲ +' : Number(h24) < 0 ? '▼ ' : '· ') + Number(h24).toFixed(2) + '%');
   }
 
+  var MODE_BTNS = [['lp-mode-eth', 'eth'], ['lp-mode-usdc', 'usdc'], ['lp-mode-wei', 'wei'], ['lp-mode-luveth', 'luveth']];
   function setMode(m) {
     mode = m;
     try { global.localStorage.setItem('luv-price-mode', m); } catch (e) { /* private mode */ }
-    var be = el('lp-mode-eth'), bu = el('lp-mode-usdc');
-    if (be) { be.classList.toggle('active', m === 'eth'); be.setAttribute('aria-selected', m === 'eth'); }
-    if (bu) { bu.classList.toggle('active', m === 'usdc'); bu.setAttribute('aria-selected', m === 'usdc'); }
+    MODE_BTNS.forEach(function (bm) {
+      var b = el(bm[0]); if (!b) return;
+      b.classList.toggle('active', m === bm[1]);
+      b.setAttribute('aria-selected', String(m === bm[1]));
+    });
     render();
   }
 
@@ -128,9 +180,11 @@
   function boot() {
     if (!el('lp-eth')) return;
     set('lp-luv', ONE_TRILLION_LUV + ' LUV');
-    var be = el('lp-mode-eth'), bu = el('lp-mode-usdc');
-    if (be) be.addEventListener('click', function () { setMode('eth'); });
-    if (bu) bu.addEventListener('click', function () { setMode('usdc'); });
+    MODE_BTNS.forEach(function (bm) {
+      var b = el(bm[0]);
+      if (b) b.addEventListener('click', function () { setMode(bm[1]); });
+    });
+    if (!MODE_BTNS.some(function (bm) { return bm[1] === mode; })) mode = 'eth';
     setMode(mode);
     tick();
     setInterval(function () { if (!document.hidden) tick(); }, REFRESH_MS);
