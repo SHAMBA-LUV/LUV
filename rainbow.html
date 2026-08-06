@@ -58,8 +58,17 @@ h1{margin:52px 0 6px;text-align:center;font-size:clamp(30px,5.6vw,46px);font-wei
 .paper .hi{border:1px solid rgba(227,178,95,.5);border-radius:10px;background:var(--wine);padding:16px 20px;margin-bottom:16px}
 .paper .hi .t{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
 .paper .hi p{margin:0;font-size:14.5px}
-.chartbox{border:1px solid var(--seam);border-radius:12px;background:var(--wine);padding:10px;margin:0 0 16px;overflow-x:auto}
-.chartbox svg{display:block;width:100%;height:auto;min-width:640px}
+/* the rainbow deserves the whole sky: the chart breaks out of the reading column */
+.chartbox{border:1px solid var(--seam);border-radius:12px;background:var(--wine);padding:10px;margin:0 0 16px;overflow-x:auto;
+  width:min(1360px,calc(100vw - 32px));position:relative;left:50%;transform:translateX(-50%)}
+.chartbox svg{display:block;width:100%;height:auto;min-width:760px}
+/* +/− zoom (rainbow.js drives it; the svg widens inside the scrolling box) */
+.zoomrow{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin:0 0 8px;font-family:var(--mono)}
+.zoomrow button{font-family:var(--mono);font-size:15px;font-weight:700;line-height:1;color:var(--blush);background:var(--ink);
+  border:1px solid var(--seam);border-radius:8px;padding:6px 13px;cursor:pointer;transition:color .15s,border-color .15s}
+.zoomrow button:hover{color:var(--rose);border-color:var(--rose)}
+.zoomrow button:disabled{opacity:.4;cursor:default}
+.zoomrow .zoomlvl{font-size:11px;color:var(--dim);min-width:44px;text-align:center}
 .readmore{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:44px 0 8px}
 .btn{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--blush);text-decoration:none;
   border:1px solid var(--seam);border-radius:999px;padding:8px 18px;transition:color .15s,border-color .15s}
@@ -517,6 +526,6 @@ python3 -c "print((1050000-961239)*600/86400)"                     # next halvin
   </div>
 </footer>
 
-<script src="rainbow.js?v=1" defer></script>
+<script src="rainbow.js?v=2" defer></script>
 </body>
 </html>
