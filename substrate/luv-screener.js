@@ -275,7 +275,7 @@
     var tbody = el('tbody');
     (h.top || []).forEach(function (row) {
       var addr = row[0], bal = row[1];
-      var meta = LABELS[addr.toLowerCase()] || ['community holder', null];
+      var meta = LABELS[addr.toLowerCase()] || ['recognized participant member', null];
       var tr = el('tr');
       tr.appendChild(el('td', meta[1] === 'gold' ? 'scr-gold' : (meta[1] === 'rose' ? 'scr-sell' : null), meta[0]));
       var tdA = el('td'); tdA.appendChild(link('https://etherscan.io/address/' + addr, shortAddr(addr))); tr.appendChild(tdA);
@@ -294,11 +294,15 @@
     HOLDERS_MOUNT.appendChild(out);
   }
 
+  // Reasonable for lingering clients: no-cache revalidates against the server ETag
+  // (unchanged data = a 304), the vhost's 30s max-age absorbs same-window refetches,
+  // and a hidden tab doesn't poll at all — it catches up the moment it's seen again.
   function refresh() {
+    if (document.hidden) return;
     Promise.all([
-      fetch('market.json', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
-      fetch('market-trades.json', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
-      fetch('market-holders.json', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+      fetch('market.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+      fetch('market-trades.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+      fetch('market-holders.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
     ]).then(function (res) {
       if (res[0]) state.market = res[0];
       if (res[1]) state.trades = res[1];
@@ -309,6 +313,7 @@
   }
   refresh();
   setInterval(refresh, 60000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) refresh(); });
 
-  window.DVLuvScreener = { version: '1.1.0', refresh: refresh };
+  window.DVLuvScreener = { version: '1.2.0', refresh: refresh };
 })();

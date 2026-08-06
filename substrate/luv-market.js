@@ -232,11 +232,14 @@
     });
   };
 
+  // no-cache (NOT no-store, NOT ?bust): lingering clients revalidate against the
+  // server's ETag — unchanged data costs a 304, and the vhost's 30s max-age on
+  // market*.json absorbs same-window refetches entirely.
   Market.prototype._fetch = function () {
-    var self = this, bust = 'v=' + Date.now();
+    var self = this;
     return Promise.all([
-      fetch('market.json?' + bust, { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }),
-      fetch('market-history.json?' + bust, { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; })
+      fetch('market.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }),
+      fetch('market-history.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; })
     ]).then(function (rs) {
       if (rs[0]) self.market = rs[0];
       if (rs[1] && rs[1].points) self.points = rs[1].points;
@@ -247,7 +250,7 @@
   // sources are never touched and no rate limit can trip.
   Market.prototype._fetchPrice = function () {
     var self = this;
-    return fetch('market.json?v=' + Date.now(), { cache: 'no-store' })
+    return fetch('market.json', { cache: 'no-cache' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (m) { if (m) self.market = m; })
       .catch(function () { /* keep the last good frame */ });
@@ -651,7 +654,7 @@
   };
   Market.prototype.stop = function () { clearTimeout(this._timer); this._timer = 0; return this; };
 
-  var DVLuvMarket = { Market: Market, PAIR: PAIR, REFRESH_MS: REFRESH_MS, version: '2.6.1' };
+  var DVLuvMarket = { Market: Market, PAIR: PAIR, REFRESH_MS: REFRESH_MS, version: '2.6.2' };
   // DVLuvMarket.diag() — diagnostics of the auto-booted instance, for widgets and internals
   DVLuvMarket.diag = function () { return DVLuvMarket._booted ? DVLuvMarket._booted.diag() : null; };
   if (typeof module !== 'undefined' && module.exports) module.exports = DVLuvMarket;
