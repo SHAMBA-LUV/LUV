@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LUVbus — the batch rail console — SHAMBA LUV</title>
+<meta name="description" content="LUVbus operator console: diagnostics and ABI interaction for the Ethereum batch multisend — uniform, default, equal-split and variable batches for LUV and native ETH, with the full read/write surface on Etherscan.">
+<meta name="author" content="SHAMBA LUV">
+<link rel="canonical" href="https://luv.pythai.net/luvbus.html">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%F0%9F%9A%8C%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --ink:#160a0f;--wine:#2b111c;--seam:#4a1f30;--rose:#ff4d6d;--pink:#ff006e;--purple:#8338ec;
+  --blush:#ffb3c1;--cream:#f6e7eb;--dim:#b98da0;--gold:#e3b25f;--ok:#7ee2a8;
+  --mono:ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--ink);color:var(--cream);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--blush)} a:hover{color:var(--rose)}
+:focus-visible{outline:2px solid var(--rose);outline-offset:3px;border-radius:2px}
+.wrap{max-width:880px;margin:0 auto;padding:0 24px}
+header{border-bottom:1px solid var(--seam)}
+.bar{display:flex;align-items:center;gap:14px;padding:16px 0}
+.bar .wrap{max-width:1180px}
+.brand{font-family:var(--mono);font-size:15px;letter-spacing:.14em;color:var(--cream);text-decoration:none}
+.brand b{color:var(--rose)}
+.bar .spacer{flex:1}
+.bar a.back{font-family:var(--mono);font-size:12px;text-decoration:none;color:var(--dim)}
+.bar a.back:hover{color:var(--rose)}
+h1{margin:42px 0 6px;text-align:center;font-size:clamp(28px,5vw,40px);font-weight:800;
+  background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{text-align:center;color:var(--dim);margin-bottom:30px;font-style:italic}
+.panel{border:1px solid var(--seam);border-radius:14px;background:var(--wine);padding:20px 22px;margin:0 0 22px}
+.panel .t{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:12px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+label.f{display:flex;flex-direction:column;gap:4px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--gold);flex:1;min-width:220px}
+input,textarea,select{background:var(--ink);border:1px solid var(--seam);border-radius:8px;color:var(--cream);
+  font-family:var(--mono);font-size:12.5px;padding:9px 12px;width:100%}
+input:focus,textarea:focus,select:focus{border-color:var(--rose);outline:none}
+textarea{min-height:110px;resize:vertical}
+button{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--cream);background:transparent;
+  border:1px solid var(--gold);border-radius:999px;padding:9px 20px;cursor:pointer;transition:.15s}
+button:hover{border-color:var(--rose);color:var(--rose)}
+button:disabled{opacity:.35;cursor:not-allowed}
+button.primary{background:var(--gold);color:var(--ink);font-weight:700}
+button.danger{border-color:var(--rose);color:var(--rose)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-family:var(--mono);font-size:12.5px}
+.kv .k{color:var(--dim)} .kv .v{color:var(--cream);overflow-wrap:anywhere}
+.kv .v.ok{color:var(--ok)} .kv .v.warn{color:var(--rose)}
+.status{font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:10px;overflow-wrap:anywhere}
+.status.ok{color:var(--ok)} .status.err{color:var(--rose)}
+.links{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:6px}
+.links a{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11.5px;color:var(--blush);
+  text-decoration:none;border:1px solid var(--seam);border-radius:999px;padding:7px 16px;transition:.15s}
+.links a:hover{color:var(--rose);border-color:var(--rose)}
+.links img{height:15px;width:auto;display:block}
+.note{font-size:13px;color:var(--dim);margin:8px 0 0}
+footer{margin-top:56px;border-top:1px solid var(--seam);padding:26px 0 44px}
+footer .wrap{max-width:1180px;display:flex;flex-wrap:wrap;gap:18px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--dim)}
+footer a{text-decoration:none}
+footer .spacer{flex:1}
+footer .brandmark{display:inline-flex;align-items:center;gap:7px;color:var(--dim)}
+footer .brandmark img{height:14px;width:auto;display:block;opacity:.85}
+footer .brandmark:hover{color:var(--cream)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="/">❤ SHAMBA <b>LUV</b></a>
+    <span class="spacer"></span>
+    <a class="back" href="exabyte.html">the identity paper</a>
+    <a class="back" href="view.html">live view</a>
+    <a class="back" href="/">← back to the doorway</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1>🚌 LUVbus</h1>
+  <div class="sub">the Ethereum batch rail — every seat receives, one transaction drives</div>
+
+  <section class="panel">
+    <div class="t">the bus · address &amp; connection</div>
+    <div class="row">
+      <label class="f">LUVbus contract address (set after deployment)
+        <input id="bus-addr" placeholder="0x… (deploy contracts/LUVbus.sol, paste the address)" spellcheck="false" autocomplete="off"></label>
+      <button id="btn-connect" class="primary">CONNECT</button>
+      <button id="btn-refresh">REFRESH DIAGNOSTICS</button>
+    </div>
+    <div class="kv" id="diag">
+      <span class="k">connected</span><span class="v" id="d-acct">—</span>
+      <span class="k">owner</span><span class="v" id="d-owner">—</span>
+      <span class="k">pending owner</span><span class="v" id="d-pending">—</span>
+      <span class="k">operator gate</span><span class="v" id="d-gate">—</span>
+      <span class="k">paused</span><span class="v" id="d-paused">—</span>
+      <span class="k">retired (one-way)</span><span class="v" id="d-retired">—</span>
+      <span class="k">maxBatchSize</span><span class="v" id="d-max">—</span>
+      <span class="k">LUV default / seat</span><span class="v" id="d-default">—</span>
+      <span class="k">bus LUV balance</span><span class="v" id="d-luv">—</span>
+      <span class="k">bus ETH balance</span><span class="v" id="d-eth">—</span>
+    </div>
+    <div class="links" id="scan-links">
+      <a id="l-code" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="diagnostics &amp; full ABI on Etherscan · Powered by Etherscan.io APIs">
+        <img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan"> diagnostics &amp; ABI ✓</a>
+      <a id="l-read" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">read contract</a>
+      <a id="l-write" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">write contract</a>
+      <a href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=ETH&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="preset ETH → LUV · set slippage ~10%">
+        <img src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap"> ETH / LUV</a>
+    </div>
+    <p class="note">Reads use your wallet's provider (no third-party RPC leaves this page). The full
+    read/write ABI surface lives on Etherscan — this console carries the batch and admin controls.
+    Remember: the token owner should <b>setFeeExemption(bus, true)</b> so every seat receives the full
+    amount — 1 LUV === 1 LUV.</p>
+  </section>
+
+  <section class="panel">
+    <div class="t">board the bus · ERC20 batch (LUV preset)</div>
+    <div class="row">
+      <label class="f">token address
+        <input id="b-token" value="0x2711111111683B8708cb9a48cBf36a51315F8254" spellcheck="false"></label>
+      <label class="f">mode
+        <select id="b-mode">
+          <option value="default">using stored default (cheapest calldata)</option>
+          <option value="uniform" selected>uniform — same amount per seat</option>
+          <option value="split">equal split of a total</option>
+          <option value="variable">variable — amount per line (addr,amount)</option>
+        </select></label>
+      <label class="f">amount (LUV, 18dp · uniform=per seat, split=total; ignored for default/variable)
+        <input id="b-amount" placeholder="1,000,000" spellcheck="false"></label>
+    </div>
+    <label class="f">recipients — one per line (variable mode: <span>address,amount</span>)
+      <textarea id="b-recipients" placeholder="0xabc…&#10;0xdef…" spellcheck="false"></textarea></label>
+    <div class="row" style="margin-top:10px">
+      <button id="btn-send-erc20" class="primary">SEND THE BUS 🚌</button>
+      <span class="status" id="s-erc20"></span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="t">native ETH batch</div>
+    <div class="row">
+      <label class="f">mode
+        <select id="n-mode">
+          <option value="uniform" selected>uniform — same ETH per seat</option>
+          <option value="split">equal split of a total</option>
+          <option value="variable">variable — amount per line (addr,amount)</option>
+        </select></label>
+      <label class="f">amount (ETH, 18dp)
+        <input id="n-amount" placeholder="0.01" spellcheck="false"></label>
+      <label class="f">fund with tx value (ETH; sent along, optional)
+        <input id="n-value" placeholder="0" spellcheck="false"></label>
+    </div>
+    <label class="f">recipients — one per line
+      <textarea id="n-recipients" spellcheck="false"></textarea></label>
+    <div class="row" style="margin-top:10px">
+      <button id="btn-send-native" class="primary">SEND NATIVE 🚌</button>
+      <span class="status" id="s-native"></span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="t">admin · owner only</div>
+    <div class="row">
+      <label class="f">maxBatchSize
+        <input id="a-max" placeholder="500"></label>
+      <button id="btn-max">SET</button>
+      <label class="f">default LUV / seat (18dp)
+        <input id="a-default" placeholder="1,000,000"></label>
+      <button id="btn-default">SET DEFAULT</button>
+    </div>
+    <div class="row">
+      <button id="btn-pause">PAUSE</button>
+      <button id="btn-unpause">UNPAUSE</button>
+      <label class="f">transfer ownership to (two-step; receiver must accept)
+        <input id="a-newowner" placeholder="0x…" spellcheck="false"></label>
+      <button id="btn-transfer">TRANSFER (2-STEP)</button>
+      <button id="btn-transfer-direct">DIRECT</button>
+    </div>
+    <div class="row">
+      <label class="f">withdraw LUV — to, amount (18dp)
+        <input id="a-wto" placeholder="0x…" spellcheck="false"></label>
+      <input id="a-wamt" placeholder="amount" style="max-width:180px">
+      <button id="btn-withdraw">WITHDRAW LUV</button>
+      <button id="btn-sweep">SWEEP ALL LUV → owner</button>
+    </div>
+    <div class="row">
+      <label class="f">one-way switches — type RETIRE or RENOUNCE to arm
+        <input id="a-danger" placeholder="type the word to arm" spellcheck="false" autocomplete="off"></label>
+      <button id="btn-retire" class="danger" disabled>RETIRE — pause ON forever</button>
+      <button id="btn-renounce" class="danger" disabled>RENOUNCE OWNERSHIP</button>
+    </div>
+    <p class="note">RETIRE flips the one-way binary switch: pause goes ON permanently, no unpause
+    exists, withdraw/recover stay live. RENOUNCE kills every owner function <b>including withdrawals</b>
+    — sweep the bus first.</p>
+    <div class="status" id="s-admin"></div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>❤ LUV is priceless</span>
+    <span class="spacer"></span>
+    <a href="/">the doorway</a>
+    <a href="docs.html">docs</a>
+    <a href="https://github.com/SHAMBA-LUV/LUV/blob/main/contracts/LUVbus.sol" rel="noopener">LUVbus.sol source</a>
+    <a href="https://github.com/cypherpunk4096" target="_blank" rel="noopener" title="the cypherpunk4096 organization — the standard (2¹²)">⟁ cypherpunk4096</a>
+    <a class="brandmark" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="LUV verified on Etherscan · Powered by Etherscan.io APIs">
+      <img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="14">
+      <span>Powered by Etherscan.io APIs</span>
+    </a>
+    <span>SHAMBA © 2026 LUV</span>
+  </div>
+</footer>
+
+<script src="luvbus.js?v=1" defer></script>
+</body>
+</html>

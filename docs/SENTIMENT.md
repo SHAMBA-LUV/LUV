@@ -10,7 +10,7 @@
 
 ## Abstract
 
-Market sentiment has migrated, over ninety years, from a rhetorical residual — Keynes's "animal spirits" — to a measured state variable with a mature instrument stack: surveys, derivatives-implied fear gauges, composite indices, and computational text analysis. This paper reviews that migration in three movements. First, we reconstruct the theoretical quarrel that made sentiment measurable at all: the efficient-markets tradition that defined sentiment as noise destined for elimination, and the noise-trader and behavioral traditions that showed the noise is priced, persistent, and systematic. Second, we survey the modern measurement toolkit — from the Michigan surveys and the closed-end fund discount through the VIX, the Baker–Wurgler index, media- and search-based measures, and the practitioner Fear & Greed composites in equities and crypto — evaluating each instrument by what it actually observes. Third, we state the emotonomic turn: where the received literature treats sentiment as a distortion *of* value, an emotonomic system treats measured feeling as a constituent *of* value, and therefore requires instruments native to that claim. We formalize the gesture-based measures proposed by the emotonomics program (gesture velocity, resonance depth, emotional reciprocity), specify a composite sentiment instrument for an on-chain emotional economy, derive testable propositions, and answer the strongest objections, including Goodhart drift, reflexivity, and thin-market pathology.
+Market sentiment has migrated, over ninety years, from a rhetorical residual — Keynes's "animal spirits" — to a measured state variable with a mature instrument stack: surveys, derivatives-implied fear gauges, composite indices, and computational text analysis. This paper reviews that migration in three movements and extends it in a fourth. First, we reconstruct the theoretical quarrel that made sentiment measurable at all: the efficient-markets tradition that defined sentiment as noise destined for elimination, and the noise-trader and behavioral traditions that showed the noise is priced, persistent, and systematic. Second, we survey the modern measurement toolkit — from the Michigan surveys and the closed-end fund discount through the VIX, the Baker–Wurgler index, media- and search-based measures, and the practitioner Fear & Greed composites in equities and crypto — evaluating each instrument by what it actually observes. Third, we state the emotonomic turn: where the received literature treats sentiment as a distortion *of* value, an emotonomic system treats measured feeling as a constituent *of* value, and therefore requires instruments native to that claim. We formalize the gesture-based measures proposed by the emotonomics program (gesture velocity, resonance depth, emotional reciprocity), specify a composite sentiment instrument for an on-chain emotional economy, derive testable propositions, and answer the strongest objections, including Goodhart drift, reflexivity, and thin-market pathology. Fourth, we read the program against the long human record — the anthropology of the gift, the sociology of collective emotion, and the psychology of the bond, across cultures and timelines — showing that communities have always kept emotional ledgers, and we close on a horizon: the knowledge economy, where the ledger of feeling meets the ledger of understanding.
 
 ---
 
@@ -82,7 +82,7 @@ Two extensions define the modern frontier. Bollen, Mao, and Zeng (2011) claimed 
 
 Practitioners fused the families into dashboards, and the fusions became the most-consulted sentiment instruments in the world.
 
-**The CNN Fear & Greed Index** (CNN Business, ongoing) compresses seven revealed-preference components into a 0–100 dial — from extreme fear to extreme greed. Its inputs are instructive precisely because no survey appears among them: equity momentum against a moving-average benchmark; the breadth of new 52-week highs versus lows; advancing-versus-declining volume; the put–call ratio; junk-bond demand measured as the spread of high-yield over investment-grade debt; the VIX against its own recent history; and safe-haven demand measured as the relative performance of stocks versus Treasuries. Each is a price or flow — fear and greed inferred entirely from what capital *does*. Methodologically the index is a normalization-and-average heuristic, not an estimated factor model; its value is communicative. It converts the Keynesian confidence state into a single public number, and in doing so becomes part of the state it measures — a reflexivity we return to in Section VI.
+**The CNN Fear & Greed Index** (CNN Business, ongoing) compresses seven revealed-preference components into a 0–100 dial — from extreme fear to extreme greed. Its inputs are instructive precisely because no survey appears among them: equity momentum against a moving-average benchmark; the breadth of new 52-week highs versus lows; advancing-versus-declining volume; the put–call ratio; junk-bond demand measured as the spread of high-yield over investment-grade debt; the VIX against its own recent history; and safe-haven demand measured as the relative performance of stocks versus Treasuries. Each is a price or flow — fear and greed inferred entirely from what capital *does*. Methodologically the index is a normalization-and-average heuristic, not an estimated factor model; its value is communicative. It converts the Keynesian confidence state into a single public number, and in doing so becomes part of the state it measures — a reflexivity we return to in Section VII.
 
 **The Crypto Fear & Greed Index** (Alternative.me, ongoing) transplants the design to Bitcoin-centric markets, blending realized volatility against recent baselines, market momentum and volume, social-media activity rates, Bitcoin's dominance share of total crypto capitalization, and search-trend data into the same 0–100 scale. The transplant quietly concedes the expressive turn: where CNN's equity dial uses only market internals, the crypto dial reserves substantial weight for social and search signals — an acknowledgment that in a retail-dominated, narrative-driven, 24/7 market, the conversation *is* a market internal. The crypto index's canonical use is contrarian ("extreme fear" as accumulation signal), which is the Investors Intelligence logic reborn on-chain.
 
@@ -128,11 +128,45 @@ Following the composite design lessons, we specify a seven-component LUV sentime
 6. **Holder growth and retention** — net new holders and the fraction not reducing balances (revealed; the "hold LUV" signal that the reflection mechanism structurally rewards).
 7. **Reciprocity health** — median eROI drift (ledger-native).
 
-Components 1–3 are implementable today from the existing minute-sampled market mirror; 4–7 await the Phase-3 attention rail. We label the composite *proposed*: its weights are undetermined, and Section VI explains why they should be estimated against outcomes rather than asserted.
+Components 1–3 are implementable today from the existing minute-sampled market mirror; 4–7 await the Phase-3 attention rail. We label the composite *proposed*: its weights are undetermined, and Section VII explains why they should be estimated against outcomes rather than asserted.
 
 ---
 
-## V. Testable Propositions
+## V. The Expressions of LUV: The Gift, the Ritual, and the Bond Across Cultures
+
+The instruments of Section IV measure feeling in one ledger; this section asks what, in the long human record, they are instruments *of*. If emotonomics claims that recorded feeling constitutes value, the claim should be recognizable to the disciplines that have studied denominated feeling longest — anthropology (the gift), sociology (the ritual), psychology (the bond). We take each at its strongest, across cultures and timelines, and find the same result three times: **communities have always kept emotional ledgers; what is new is only the substrate.**
+
+### V.1 The anthropological ledger: the gift as total social fact
+
+Mauss's *Essai sur le don* (Mauss 1925) established that the gift is never free: it binds giver and receiver in a triple obligation — to give, to receive, to reciprocate — and the Maori *hau*, the spirit of the thing given, names the force that compels the return. A gift, in Mauss's reading, is an *entry in a social ledger*: the community remembers what was given, by whom, and what is owed. Malinowski's Trobriand ethnography (Malinowski 1922) supplied the canonical case: in the kula ring, armshells and necklaces circulate in opposite directions around an archipelago, and a valuable's worth *is* its circulation history — the named partners it has passed between, the renown it has gathered. Value as recorded provenance of relation, not use: the kula is a proof-of-gesture chain executed in canoes. The potlatch of the Pacific Northwest, which Mauss set beside it, denominates status by the magnitude of giving — wealth demonstrated, and rank settled, by expenditure toward the community. Gesture velocity is a potlatch statistic.
+
+The later synthesis sharpened the accounting. Sahlins graded reciprocity by social distance — generalized reciprocity among kin, where accounts are kept loosely and settled never; balanced reciprocity among neighbors; negative reciprocity at the edge of the social world (Sahlins 1972). Bohannan showed that the Tiv ran *separate spheres* of exchange — subsistence, prestige, rights-in-persons — with conversion between spheres morally charged (Bohannan 1955): cultures do not merely use money, they *earmark* it. Polanyi's larger thesis holds that reciprocity and redistribution, not market exchange, organized most economies in history, and that markets are *embedded* in social relation (Polanyi 1944) — the 3% reflection, which redistributes every trade to all holders inside the transfer function itself, is redistribution re-embedded in the market's own plumbing. Graeber's history reads money itself as quantified obligation riding on a substrate of everyday mutual aid (Graeber 2011). And the stone money of Yap supplies the precedent for the substrate claim: the great rai discs rarely moved — ownership changed by communal agreement and communal memory, famously surviving even for a stone lost at sea (Furness 1910; Friedman 1991). Money was a distributed ledger of social consensus long before it was metal; the blockchain is Yap at planetary scale.
+
+**The anthropological reading.** A gesture of LUV is a digitized *hau*: a transfer that carries obligation-free warmth but ledger-permanent memory. The chain remembers what the village remembered — who gave, to whom, and how the giving traveled.
+
+### V.2 The sociological ledger: effervescence, ritual, and earmarked money
+
+Durkheim located the sacred in *collective effervescence* — the emotional energy generated when a group assembles, which consecrates whatever symbol it touches (Durkheim 1912). Community Resonance Depth is effervescence with a cascade tree: the propagation of a seed gesture through reciprocal gestures is precisely the assembly's energy made traceable. Simmel, in *The Philosophy of Money*, defined money as a claim upon society — pure relation reified into a token (Simmel 1900); an emotonomic token makes the relation legible where conventional money anonymizes it. Collins's interaction-ritual theory is the strongest modern statement: *emotional energy is the common currency of social life*, sought across chains of encounters, and successful rituals charge symbols with sentiment (Collins 2004). Emotonomics takes Collins at his word and removes the metaphor: the currency of feeling is given a denomination, a settlement layer, and a market price.
+
+The critical tradition must be faced rather than skipped. Hochschild documented what the commercialization of feeling does to feeling — emotional labor estranges the worker from her own affect (Hochschild 1983) — and Illouz traced the making of "emotional capitalism," in which intimacy adopts the language of exchange (Illouz 2007). This is the Goodhart objection in sociological dress, and the emotonomic answer must respect its force: the gesture differs from managed emotional labor in that no employer commands it — it is voluntary, peer-directed, and transparent in mechanism — but a system that *pays* for feeling walks the line Hochschild drew, and Section VII returns to it. Zelizer, finally, showed that people refuse money's fungibility in practice — earmarking gift money, blood money, pin money; keeping domestic monies in labeled jars (Zelizer 1994). The LUV denominations — the standard gesture, "a lot of LUV," the trillion as *a million millions* — are Zelizer's jars designed in: a currency that arrives pre-earmarked for feeling.
+
+### V.3 The psychological ledger: the bond, reciprocity, and broaden-and-build
+
+Attachment theory established that the bond is a primary need, not a derivative of provisioning (Bowlby 1969); Sternberg's triangular theory decomposes love into intimacy, passion, and commitment (Sternberg 1986) — and it is worth noting that commitment, the deliberate, time-extended component, is the one a reflection token structurally rewards: holding is commitment with a yield. Fredrickson's broaden-and-build research shows positive emotions widening thought-action repertoires and compounding into durable social resources (Fredrickson 2001), and her later account defines love itself as *micro-moments of positivity resonance* — small, frequent, reciprocal (Fredrickson 2013). That is the psychological case for denominating warmth in small frequent gestures rather than grand transfers: the standard gesture is a micro-moment with a block number.
+
+Reciprocity, the hinge of every instrument in Section IV, has its own convergent literature: a universal moral norm (Gouldner 1960), an evolved strategy (Trivers 1971), an *enforced* equilibrium — humans pay their own resources to punish non-reciprocators (Fehr & Gächter 2002) — and, in Nowak's synthesis, a mechanism (indirect reciprocity) that scales only where reputation exists: cooperation at scale needs gossip, and gossip needs a record (Nowak 2006). Dunbar's account of language as social grooming at scale completes the arc (Dunbar 1996). The eROI distribution is that record made native: reciprocity health published as a statistic rather than carried in the village's working memory.
+
+### V.4 The lexicon: LUV across cultures and timelines
+
+Languages denominate love more finely than English ever has. Greek divided it four ways — agape, philia, eros, storge (Lewis 1960). The Buddhist mettā tradition treats loving-kindness as a *practice* — feeling deliberately cultivated, which is to say mintable. The Confucian ren 仁, the master virtue of the *Analects*, exists only between persons — the character itself is "person" beside "two." Chinese renqing keeps the explicit social accounting of favor and obligation that everyone honors and no one calls accounting; Japanese amae names the sweetness of permitted dependence (Doi 1971), while giri and on grade obligation so precisely that Benedict's informants called giri "hardest to bear" (Benedict 1946). Southern Africa's ubuntu — *a person is a person through other persons* (Tutu 1999) — states the emotonomic axiom in a single phrase: the unit of value is the relation. Across every case and every century the pattern repeats: **cultures that take feeling seriously give it denominations, registers, and settlement rules.** The LUV ladder — 1 LUV exact and fee-free between persons, the standard gesture, the trillion as a million millions — is a designed lexicon in this lineage: not the first vocabulary of denominated feeling, only the first with 18-decimal settlement.
+
+### V.5 The knowledge-economy horizon (a hint)
+
+One movement remains, and we state it only as a horizon, labeled speculative. The arc that made feeling measurable ran earlier, and further, for *knowledge*: Hayek made dispersed knowledge the central economic problem (Hayek 1945); Machlup counted the knowledge industries (Machlup 1962); Drucker named the knowledge worker (Drucker 1969); Bell the post-industrial society (Bell 1973); and Marx's *Grundrisse* foresaw production organized by the "general intellect" (Marx 1857–58). Emotonomics prices recorded attention; a knowledge economy prices recorded understanding — and the two ledgers want to meet, with gestures flowing to the agents, human and machine, whose knowledge earns them. That meeting is being engineered in an adjacent program — the knowledge-economy documents at https://mindx.pythai.net/docs — and deserves a treatise of its own. Here it is a hint, not a result.
+
+---
+
+## VI. Testable Propositions
 
 The emotonomic framework earns scientific standing only if it risks falsification. We state five propositions, ordered from established-literature replications to native claims:
 
@@ -148,7 +182,7 @@ The emotonomic framework earns scientific standing only if it risks falsificatio
 
 ---
 
-## VI. Objections Answered
+## VII. Objections Answered
 
 **Goodhart drift.** The gravest objection: any measure adopted as a target ceases to be a good measure (Goodhart 1975; Strathern's 1997 formulation — "when a measure becomes a target, it ceases to be a good measure" — is the canonical phrasing). An economy that *pays* for attention acts invites their simulation; sentiment instruments built on paid acts risk measuring the payment, not the feeling. The answer is architectural, not rhetorical: the SHAMBA LUV attention rail is identity-bound (social-gated, Sybil-resistant by construction), human-reviewed before payout, on-chain deduplicated per act, and denominated in fixed amounts — friction deliberately retained so that the marginal fabricated gesture costs more than it yields. This mitigates but does not dissolve the objection; the honest position is that ledger-native components (4–7) must be continuously re-validated against components (1–3) that cannot be farmed, and weights re-estimated when divergence appears.
 
@@ -160,7 +194,7 @@ The emotonomic framework earns scientific standing only if it risks falsificatio
 
 ---
 
-## VII. Conclusion
+## VIII. Conclusion
 
 Sentiment research began as an insult ("animal spirits"), matured into a factor, and industrialized into an instrument stack: surveys that ask, derivatives that price fear in dollars, texts and searches that betray mood at scale, and composites — Fear & Greed foremost — that compress the state of collective feeling into one public number. The emotonomic turn takes the final step the literature prepared but never took: if feeling is measurable, persistent, and priced, a system may be built that denominates value in it deliberately. The instruments proposed here — gesture velocity, resonance depth, reciprocity health, and a seven-component LUV composite anchored by a genesis-fixed baseline — are that step's engineering documents. Their scientific fate rests on Propositions P1–P5, and the program should want it that way: a measure of feeling that fears no measurement of itself.
 
@@ -176,31 +210,63 @@ Sentiment research began as an insult ("animal spirits"), matured into a factor,
 - Baker, Malcolm, and Jeffrey Wurgler. 2006. "Investor Sentiment and the Cross-Section of Stock Returns." *Journal of Finance* 61(4): 1645–1680.
 - Baker, Malcolm, and Jeffrey Wurgler. 2007. "Investor Sentiment in the Stock Market." *Journal of Economic Perspectives* 21(2): 129–152.
 - Barberis, Nicholas, Andrei Shleifer, and Robert Vishny. 1998. "A Model of Investor Sentiment." *Journal of Financial Economics* 49(3): 307–343.
+- Bell, Daniel. 1973. *The Coming of Post-Industrial Society*. New York: Basic Books.
+- Benedict, Ruth. 1946. *The Chrysanthemum and the Sword*. Boston: Houghton Mifflin.
 - Black, Fischer. 1986. "Noise." *Journal of Finance* 41(3): 529–543.
+- Bohannan, Paul. 1955. "Some Principles of Exchange and Investment among the Tiv." *American Anthropologist* 57(1): 60–70.
 - Bollen, Johan, Huina Mao, and Xiaojun Zeng. 2011. "Twitter Mood Predicts the Stock Market." *Journal of Computational Science* 2(1): 1–8.
+- Bowlby, John. 1969. *Attachment and Loss, Vol. 1: Attachment*. New York: Basic Books.
 - CNN Business. Ongoing. "Fear & Greed Index." Published methodology: market momentum, stock price strength, stock price breadth, put/call ratio, junk bond demand, market volatility (VIX), safe-haven demand. https://www.cnn.com/markets/fear-and-greed
+- Collins, Randall. 2004. *Interaction Ritual Chains*. Princeton: Princeton University Press.
 - Da, Zhi, Joseph Engelberg, and Pengjie Gao. 2015. "The Sum of All FEARS: Investor Sentiment and Asset Prices." *Review of Financial Studies* 28(1): 1–32.
 - De Long, J. Bradford, Andrei Shleifer, Lawrence H. Summers, and Robert J. Waldmann. 1990. "Noise Trader Risk in Financial Markets." *Journal of Political Economy* 98(4): 703–738.
+- Doi, Takeo. 1971. *The Anatomy of Dependence*. Tokyo: Kodansha International (English translation 1973).
+- Drucker, Peter F. 1969. *The Age of Discontinuity*. New York: Harper & Row.
+- Dunbar, Robin I. M. 1996. *Grooming, Gossip, and the Evolution of Language*. Cambridge, MA: Harvard University Press.
+- Durkheim, Émile. 1912. *The Elementary Forms of Religious Life*. Paris: F. Alcan.
 - Fama, Eugene F. 1970. "Efficient Capital Markets: A Review of Theory and Empirical Work." *Journal of Finance* 25(2): 383–417.
+- Fehr, Ernst, and Simon Gächter. 2002. "Altruistic Punishment in Humans." *Nature* 415: 137–140.
+- Fredrickson, Barbara L. 2001. "The Role of Positive Emotions in Positive Psychology: The Broaden-and-Build Theory of Positive Emotions." *American Psychologist* 56(3): 218–226.
+- Fredrickson, Barbara L. 2013. *Love 2.0: How Our Supreme Emotion Affects Everything We Feel, Think, Do, and Become*. New York: Hudson Street Press.
 - Friedman, Milton. 1953. "The Case for Flexible Exchange Rates." In *Essays in Positive Economics*. Chicago: University of Chicago Press.
+- Friedman, Milton. 1991. "The Island of Stone Money." Hoover Institution Working Papers in Economics E-91-3.
+- Furness, William Henry. 1910. *The Island of Stone Money: Uap of the Carolines*. Philadelphia: J. B. Lippincott.
 - Garcia, Diego. 2013. "Sentiment during Recessions." *Journal of Finance* 68(3): 1267–1300.
 - Goodhart, Charles A. E. 1975. "Problems of Monetary Management: The U.K. Experience." In *Papers in Monetary Economics*, vol. I. Sydney: Reserve Bank of Australia.
+- Gouldner, Alvin W. 1960. "The Norm of Reciprocity: A Preliminary Statement." *American Sociological Review* 25(2): 161–178.
+- Graeber, David. 2011. *Debt: The First 5,000 Years*. New York: Melville House.
+- Hayek, Friedrich A. 1945. "The Use of Knowledge in Society." *American Economic Review* 35(4): 519–530.
+- Hochschild, Arlie Russell. 1983. *The Managed Heart: Commercialization of Human Feeling*. Berkeley: University of California Press.
+- Illouz, Eva. 2007. *Cold Intimacies: The Making of Emotional Capitalism*. Cambridge: Polity.
 - Kahneman, Daniel, and Amos Tversky. 1979. "Prospect Theory: An Analysis of Decision under Risk." *Econometrica* 47(2): 263–291.
 - Katona, George. 1975. *Psychological Economics*. New York: Elsevier.
 - Keynes, John Maynard. 1936. *The General Theory of Employment, Interest and Money*. London: Macmillan. (Ch. 12, "The State of Long-Term Expectation.")
 - Kindleberger, Charles P. 1978. *Manias, Panics, and Crashes: A History of Financial Crises*. New York: Basic Books.
 - Lee, Charles M. C., Andrei Shleifer, and Richard H. Thaler. 1991. "Investor Sentiment and the Closed-End Fund Puzzle." *Journal of Finance* 46(1): 75–109.
+- Lewis, C. S. 1960. *The Four Loves*. London: Geoffrey Bles.
 - Lopez-Lira, Alejandro, and Yuehua Tang. 2023. "Can ChatGPT Forecast Stock Price Movements? Return Predictability and Large Language Models." arXiv:2304.07619.
 - Loughran, Tim, and Bill McDonald. 2011. "When Is a Liability Not a Liability? Textual Analysis, Dictionaries, and 10-Ks." *Journal of Finance* 66(1): 35–65.
+- Machlup, Fritz. 1962. *The Production and Distribution of Knowledge in the United States*. Princeton: Princeton University Press.
 - Mackay, Charles. 1841. *Extraordinary Popular Delusions and the Madness of Crowds*. London: Richard Bentley.
+- Malinowski, Bronisław. 1922. *Argonauts of the Western Pacific*. London: Routledge & Kegan Paul.
+- Marx, Karl. 1857–58. *Grundrisse* (the "Fragment on Machines"; English translation, Penguin, 1973).
+- Mauss, Marcel. 1925. *Essai sur le don* ("The Gift"). *L'Année Sociologique*.
+- Nowak, Martin A. 2006. "Five Rules for the Evolution of Cooperation." *Science* 314(5805): 1560–1563.
+- Polanyi, Karl. 1944. *The Great Transformation*. New York: Farrar & Rinehart.
+- Sahlins, Marshall. 1972. *Stone Age Economics*. Chicago: Aldine-Atherton.
 - Shiller, Robert J. 1981. "Do Stock Prices Move Too Much to Be Justified by Subsequent Changes in Dividends?" *American Economic Review* 71(3): 421–436.
 - Shiller, Robert J. 2000. *Irrational Exuberance*. Princeton: Princeton University Press.
 - Shleifer, Andrei, and Robert W. Vishny. 1997. "The Limits of Arbitrage." *Journal of Finance* 52(1): 35–55.
+- Simmel, Georg. 1900. *The Philosophy of Money* (*Philosophie des Geldes*). Leipzig: Duncker & Humblot.
 - Smith, Adam. 1759. *The Theory of Moral Sentiments*. London: A. Millar.
 - Soros, George. 1987. *The Alchemy of Finance: Reading the Mind of the Market*. New York: Simon & Schuster.
+- Sternberg, Robert J. 1986. "A Triangular Theory of Love." *Psychological Review* 93(2): 119–135.
 - Strathern, Marilyn. 1997. "'Improving Ratings': Audit in the British University System." *European Review* 5(3): 305–321.
 - Tetlock, Paul C. 2007. "Giving Content to Investor Sentiment: The Role of Media in the Stock Market." *Journal of Finance* 62(3): 1139–1168.
+- Trivers, Robert L. 1971. "The Evolution of Reciprocal Altruism." *Quarterly Review of Biology* 46(1): 35–57.
+- Tutu, Desmond. 1999. *No Future Without Forgiveness*. New York: Doubleday.
 - Whaley, Robert E. 2000. "The Investor Fear Gauge." *Journal of Portfolio Management* 26(3): 12–17.
+- Zelizer, Viviana A. 1994. *The Social Meaning of Money*. New York: Basic Books.
 - Zweig, Martin E. 1973. "An Investor Expectations Stock Price Predictive Model Using Closed-End Fund Premiums." *Journal of Finance* 28(1): 67–78.
 
 *Internal sources: EMOTONOMICS.md (the emotonomics whitepaper), LUVPAPER.md, LUV_LIVE_PROOF.md (the mainnet deployment record), and the live measurement stack at luv.pythai.net/view.html.*

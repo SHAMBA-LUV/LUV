@@ -64,6 +64,29 @@ h1{margin:52px 0 6px;text-align:center;font-size:clamp(30px,5.6vw,46px);font-wei
 .paper .hi{border:1px solid rgba(227,178,95,.5);border-radius:10px;background:var(--wine);padding:16px 20px;margin-bottom:16px}
 .paper .hi .t{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
 .paper .hi p{margin:0;font-size:14.5px}
+.conv{border:1px solid rgba(227,178,95,.55);border-radius:14px;background:linear-gradient(180deg,var(--wine),rgba(43,17,28,.55));
+  padding:20px 22px;margin:0 0 42px;box-shadow:0 0 34px rgba(255,0,110,.07)}
+.conv .t{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;text-align:center}
+.conv .rate{font-family:var(--mono);font-size:11.5px;color:var(--blush);text-align:center;margin-bottom:4px;overflow-wrap:anywhere;line-height:1.55}
+.conv .src{font-family:var(--mono);font-size:10.5px;color:var(--dim);text-align:center;margin-bottom:14px}
+.conv .rows{display:grid;gap:10px}
+.conv label{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--gold)}
+.conv label b{width:36px;text-align:right;font-weight:700;color:var(--gold)}
+.conv input{flex:1;min-width:0;background:var(--ink);border:1px solid var(--seam);border-radius:8px;color:var(--cream);
+  font-family:var(--mono);font-size:13px;padding:9px 12px}
+.conv input:focus{border-color:var(--rose);outline:none}
+.conv .ladder{display:flex;gap:4px;margin:18px 0 8px}
+.conv .ladder span{flex:1;text-align:center;font-family:var(--mono);font-size:10px;color:var(--dim);
+  border:1px solid var(--seam);border-radius:7px;padding:6px 2px;line-height:1.45;transition:background .2s,color .2s,border-color .2s}
+.conv .ladder span b{display:block;font-size:11.5px;color:inherit}
+.conv .ladder span.lit{color:var(--blush);border-color:rgba(227,178,95,.45)}
+.conv .ladder span.on{color:var(--ink);background:var(--gold);border-color:var(--gold);font-weight:700}
+.conv .scalecap{font-family:var(--mono);font-size:11px;color:var(--dim);text-align:center;overflow-wrap:anywhere}
+.conv .links{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center;margin-top:16px}
+.conv .links a{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11.5px;color:var(--blush);
+  text-decoration:none;border:1px solid var(--seam);border-radius:999px;padding:7px 16px;transition:border-color .15s,color .15s}
+.conv .links a:hover{color:var(--rose);border-color:var(--rose)}
+.conv .links img{height:15px;width:auto;display:block}
 .readmore{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:44px 0 8px}
 .btn{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--blush);text-decoration:none;
   border:1px solid var(--seam);border-radius:999px;padding:8px 18px;transition:color .15s,border-color .15s}
@@ -95,6 +118,28 @@ footer .brandmark:hover img{opacity:1}
   <h1>THE EXABYTE, THE ETHER, AND THE LUV</h1>
   <div class="sub">One number, three units — 10¹⁸ as the shared atomic resolution of information and value</div>
   <div class="paperkind">the identity paper · 10¹⁸</div>
+
+  <section class="conv" aria-label="the identity converter">
+    <div class="t">the converter · WEI ⇄ LUV · LUV ⇄ ETH · one lattice</div>
+    <div class="rate" id="conv-r1">1 LUV = 10.000000000000000000 WEI · 1 WEI = 0.100000000000000000 LUV</div>
+    <div class="rate" id="conv-r2">1 ETH = 100,000,000,000,000,000.000000000000000000 LUV · 1 LUV = 0.000000000000000010 ETH</div>
+    <div class="src" id="conv-src">seed price — exactly 10 WEI per LUV (live pair loading…)</div>
+    <div class="rows">
+      <label><b>LUV</b><input id="conv-luv" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="amount in LUV"></label>
+      <label><b>ETH</b><input id="conv-eth" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="amount in ETH"></label>
+      <label><b>WEI</b><input id="conv-wei" inputmode="numeric" autocomplete="off" spellcheck="false" aria-label="amount in wei — the atomic count"></label>
+    </div>
+    <div class="ladder" id="conv-ladder" aria-label="the byte ladder — from the byte to the exabyte">
+      <span><b>B</b>10⁰</span><span><b>KB</b>10³</span><span><b>MB</b>10⁶</span><span><b>GB</b>10⁹</span><span><b>TB</b>10¹²</span><span><b>PB</b>10¹⁵</span><span><b>EB</b>10¹⁸</span>
+    </div>
+    <div class="scalecap" id="conv-scale">enter an amount — the ladder places its wei on the rungs from the byte to the exabyte</div>
+    <div class="links">
+      <a href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=ETH&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="swap at the pair that creates the price — preset ETH → LUV · set slippage ~10%">
+        <img src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap"> LUV / ETH live</a>
+      <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="the live contract, source verified — the green checkmark · Powered by Etherscan.io APIs">
+        <img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan"> the live contract ✓</a>
+    </div>
+  </section>
 
   <div class="preface"><b>Preface.</b> Companion to <a href="wei.html">THE WEI OF LUV</a> (the arithmetic
   paper). Every figure below is exact — computed, not quoted — and reproducible from the appendix.
@@ -248,5 +293,6 @@ python3 -c "print(111111111111111111111111111111111111 / 10**30)"</pre>
   </div>
 </footer>
 
+<script src="exabyte.js?v=1" defer></script>
 </body>
 </html>
