@@ -4,7 +4,7 @@
 
 *SHAMBA LUV research series — companion to EMOTONOMICS.md and LUVPAPER.md*
 
-**Live web publication:** https://luv.pythai.net/sentiment.html · companion field paper: https://luv.pythai.net/emotonomics.html · live measurement stack: https://luv.pythai.net/view.html
+**Live web publication:** https://luv.pythai.net/sentiment.html · companion field paper: https://luv.pythai.net/emotonomics.html · live measurement stack: https://luv.pythai.net/view.html · standard publication: https://github.com/cypherpunk4096/sentiment · the in-house Bitcoin rainbow: https://luv.pythai.net/rainbow.html
 
 ---
 
