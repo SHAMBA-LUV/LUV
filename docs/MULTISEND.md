@@ -79,6 +79,27 @@ Both must be fee-exempt; neither touches the other's accounting.
 - Console: https://luv.pythai.net/luvbus.html (paste the deployed address; reads via the
   wallet provider, writes arm only for the owner).
 
+## LUV as the bridge for chains
+
+LUV is not merely deployed per chain — **LUV is the bridge unit between them**, by design:
+
+- **One address on every chain.** The create3d rail makes the deployment deterministic —
+  the initcode is the name — so LUV on POL is LUV on ARB is LUV on ETH: no lookup tables,
+  no wrapped-token drift, nothing to misroute.
+- **One lattice.** 18 decimals everywhere; **1 LUV === 1 LUV on every chain** — amounts
+  cross without rescaling, and the denominations (the gesture, the trillion) mean the same
+  thing on every side.
+- **Fee-exempt plumbing.** The token exempts bridges and infra exactly like the liquidity
+  wallet (`setFeeExemption`) — crossing carries no trade fee; the 5% belongs to market
+  trades only.
+- **Chain-aware rails on both sides.** LUVbus knows where it is (`chainId()`), so the same
+  unit loads on the source chain and distributes on the destination; the allchain map keys
+  every deployment by `(chainId, address)`.
+- **Mechanism (pending).** Until a dedicated bridge unit ships and earns its green
+  checkmark, crossings settle operator-side between the per-chain treasuries; when the
+  bridge contract deploys it enters fee- and maxTx-exempt like the distributor. Stated
+  plainly: the doctrine is live, the contract is roadmap.
+
 ## The allchain map
 
 Each per-chain LUVbus deployment maps onto **agenticplace.pythai.net/allchain.html from the

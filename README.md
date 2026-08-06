@@ -35,7 +35,11 @@ hard-test harness.
   **marketing · development · community allocation wallets are being made actual next** — each
   component spends only by **2-of-3 DAIO consensus** (*consensus before custody*), and the
   marketing + community allocations deposit into the locker as published.
-- **Primary chain:** Ethereum (router + WETH configurable → cross-chain ready).
+- **Primary chain:** Ethereum (router + WETH configurable → cross-chain ready). **LUV is the
+  bridge for chains**: one deterministic address on every chain it mints on, 18 decimals
+  everywhere, bridges fee-exempt by design — value crosses as LUV, and 1 LUV === 1 LUV on
+  every chain (doctrine + design affordances in [`docs/MULTISEND.md`](docs/MULTISEND.md);
+  the dedicated bridge contract is roadmap).
 
 ## Fee model (rewards on buy/sell)
 - **Wallet-to-wallet (EOA ↔ EOA) is always 0 fee** — share the LUV freely.
