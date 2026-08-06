@@ -440,6 +440,24 @@
           .attr('width', bodyW).attr('height', hgt).attr('rx', 1.5)
           .attr('fill', 'url(#' + (c.up ? 'luvup' : 'luvdn') + g + ')')
           .attr('stroke', '#2b111c').attr('stroke-width', 1);
+        // the flame: a sustained green run burns upward — embers rise off the top
+        if (c.up && c.streak >= 2) {
+          var bodyTop = yTop;
+          var nFl = Math.min(c.streak - 1, 3);
+          var fAlpha = Math.min(0.5 + 0.06 * c.streak, 0.8);
+          for (var q = 0; q < nFl; q++) {
+            var fx = cx + (q - (nFl - 1) / 2) * (bodyW / 3);
+            var flen = 4 + c.streak * 3 + ((q * 11 + c.streak * 5) % 6);
+            flen = Math.min(flen, bodyTop - m.top - 3);
+            if (flen < 3) continue;
+            svg.append('line').attr('x1', fx).attr('x2', fx)
+              .attr('y1', bodyTop - 1).attr('y2', bodyTop - flen)
+              .attr('stroke', GREENS[5]).attr('stroke-width', 2)
+              .attr('stroke-linecap', 'round').attr('stroke-opacity', fAlpha);
+            svg.append('circle').attr('cx', fx).attr('cy', bodyTop - flen)
+              .attr('r', 1.8).attr('fill', GREENS[5]).attr('fill-opacity', fAlpha);
+          }
+        }
         // the bleed: a sustained red run drips from the bottom of the body
         if (!c.up && c.streak >= 2) {
           var bodyBottom = yTop + hgt;
@@ -633,7 +651,7 @@
   };
   Market.prototype.stop = function () { clearTimeout(this._timer); this._timer = 0; return this; };
 
-  var DVLuvMarket = { Market: Market, PAIR: PAIR, REFRESH_MS: REFRESH_MS, version: '2.6.0' };
+  var DVLuvMarket = { Market: Market, PAIR: PAIR, REFRESH_MS: REFRESH_MS, version: '2.6.1' };
   // DVLuvMarket.diag() — diagnostics of the auto-booted instance, for widgets and internals
   DVLuvMarket.diag = function () { return DVLuvMarket._booted ? DVLuvMarket._booted.diag() : null; };
   if (typeof module !== 'undefined' && module.exports) module.exports = DVLuvMarket;
