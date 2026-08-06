@@ -206,6 +206,41 @@ footer .brandmark:hover img{opacity:1}
   sentiment about sentiment. Use it the way the paper uses every instrument: as one dial among many,
   never as the needle.</p>
 
+  <h2><span class="n">IV.</span> The window ahead — the next halving and the five-year read</h2>
+  <p>The fit, projected forward. The halving rhythm and the residual rhythm share a clock: historically
+  the deep-band visits (where the dot sits now) came in the season <em>before</em> a halving, and the
+  excursions into the upper bands arrived 12–18 months <em>after</em>. If the next cycle rhymes, the
+  path runs: lower bands through the pre-halving trough, across the center line near the
+  <b>April 2028</b> halving, upper-band excursions inside the five-year window. One honest asymmetry:
+  each cycle's amplitude has <em>damped</em> — 2013 overshot the center far more than 2021 did — so the
+  center is the gravity, the halving sets the phase, and the amplitude is the one thing the chart
+  cannot promise.</p>
+  <div class="tablewrap"><table>
+    <tr><th>date</th><th>center line</th><th>"accumulate" band</th><th>top of "HODL!"</th><th>"max bubble" starts</th></tr>
+    <tr><td>today · 2026-08-05</td><td>$121,931</td><td>$58,065 … $89,705</td><td>$214,050</td><td>$789,250+</td></tr><tr><td>next halving · ~2028-04</td><td>$200,044</td><td>$95,263 … $147,172</td><td>$351,177</td><td>$1,294,869+</td></tr><tr><td>the 5-year window · 2031-08</td><td>$468,623</td><td>$223,164 … $344,765</td><td>$822,666</td><td>$3,033,356+</td></tr><tr><td>the century mark · 2100 <em>(extrapolation absurdum)</em></td><td>$870,996,627</td><td>$414,778,726 … $640,791,103</td><td>$1,529,031,643</td><td>$5,637,888,378+</td></tr>
+  </table></div>
+  <p>The 2100 row is printed to make the caveat visible, not to make a claim: a log-time regression,
+  pushed to the century mark, hands back <b>$871 million per bitcoin</b> — and $6.1 billion by 2140.
+  Numbers that large are the fit confessing it is a description of one era, not a law of the next
+  eleven. Read the near rows with interest and the far rows as a lesson in humility.</p>
+
+  <h2><span class="n">V.</span> The ambiguous message of fact</h2>
+  <div class="hi"><div class="t">read it twice</div>
+  <p><b>Bitcoin is mathematically guaranteed to go to 21 million.</b></p></div>
+  <p>Read as a price, that sentence is sentiment — the upper bands talking. Read as a supply, it is
+  consensus code, and the guarantee is real arithmetic: the block subsidy started at 50 BTC and halves
+  every 210,000 blocks, so the total that can ever exist is a finite geometric sum —</p>
+  <pre>total supply = 210,000 × Σ floor(5,000,000,000 / 2ⁱ) sat   for i = 0 … 32
+             = 2,099,999,997,690,000 sat
+             = <b>20,999,999.9769 BTC</b>  — forever less than 21 million, forever approaching it</pre>
+  <p>The subsidy reaches zero at block <b>6,930,000</b>; at exactly ten minutes per block from the
+  genesis stamp that lands on <b>2140-10-08</b> — the famous "around 2140" (blocks have averaged
+  slightly under ten minutes, so reality runs a little early). The asymmetry worth feeling:
+  <b>99% of all bitcoin will exist by ~November 2035</b> — inside the five-year-plus-one window of
+  §IV — while the last 1% takes the remaining century. The sentence is ambiguous; the ambiguity is
+  the point: one reading is a hope priced in dollars, the other is a certainty priced in blocks, and
+  the whole discipline of this page is knowing which kind of claim you are holding.</p>
+
   <h2>Appendix — reproduce every number</h2>
   <pre># the feed (keyless)
 curl "https://coins.llama.fi/chart/coingecko:bitcoin?start=1279324800&amp;span=500&amp;period=2w"
@@ -216,7 +251,11 @@ curl "https://coins.llama.fi/prices/current/coingecko:bitcoin"
 # residual   = log10(price) - log10(center)
 # bands      = nine equal slices of [-0.70, +1.00]
 python3 -c "import math; d=6423; print(10**(5.380917*math.log10(d)-15.403007))"  # ≈ 121932
-python3 -c "import math; print(math.log10(64482)-(5.380917*math.log10(6423)-15.403007))"  # ≈ -0.28</pre>
+python3 -c "import math; print(math.log10(64482)-(5.380917*math.log10(6423)-15.403007))"  # ≈ -0.28
+
+# the 21-million guarantee (supply, not price)
+python3 -c "print(sum(210000*(50*10**8>>i) for i in range(33)))"   # 2099999997690000 sat
+python3 -c "print(6930000*600/31557600+2009.0)"                    # subsidy ends ≈ 2140</pre>
   <p class="cite" style="font-size:13px">Lineage: the original rainbow chart tradition
   (bitcointalk log-regression threads, 2014; Blockchaincenter's popularization) — rebuilt here from
   first principles. Data: DeFiLlama (primary feed), CoinGecko, CoinMarketCap (references).
