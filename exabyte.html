@@ -141,6 +141,7 @@ footer .brandmark:hover img{opacity:1}
     <div class="rate" id="conv-r1">1 LUV = 10.000000000000000000 WEI · 1 WEI = 0.100000000000000000 LUV</div>
     <div class="rate" id="conv-r2">⚖ 1 LUV = 10 WEI = 1.0000e-17 ETH · 1 ETH = 100,000T LUV</div>
     <div class="src" id="conv-src">seed price — exactly 10 WEI per LUV (live pair loading…)</div>
+    <div class="src" data-weiperluv style="color:var(--gold);font-size:11px">1 LUV = … WEI</div>
     <div class="rows">
       <label><b>LUV</b><input id="conv-luv" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="amount in LUV"></label>
       <label><b>ETH</b><input id="conv-eth" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="amount in ETH"></label>
@@ -316,5 +317,6 @@ python3 -c "print(111111111111111111111111111111111111 / 10**30)"</pre>
 </footer>
 
 <script src="exabyte.js?v=2" defer></script>
+<script src="substrate/luv-wei.js?v=1" defer></script>
 </body>
 </html>
