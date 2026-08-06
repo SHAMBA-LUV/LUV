@@ -29,6 +29,7 @@ deployed bytecode. Verify everything yourself; that is the point.
 - https://luv.pythai.net/luv.live.json — launch state, phase, contract addresses.
 - https://luv.pythai.net/market.json — the live market contract: reserves-first price from the pair, median ETH/USD, chronos time attestation (`chronos.observed_ms`), and per-window trade stats (`windows.{m5,h1,h6,h24}`: buys/sells, buy/sell volume USD, buyers/sellers/makers — computed from the pair's own Swap events, not an aggregator).
 - https://luv.pythai.net/market-trades.json — the transaction log: the pair's Swap events decoded (`trades`: [tsMs, block, 'b'|'s', luv, weth, usd, priceNative, maker, txHash, logIndex]), rolling 600, refreshed every minute.
+- https://luv.pythai.net/market-holders.json — the holders: `top` = [[address, luv]...] read live from `balanceOf` (reflections included — the same truth the Etherscan holders tab expresses; candidate discovery is enrichment, balances are chain reads), `count` = holders ≥ 1 LUV. Holding LUV is recognized participation.
 - https://luv.pythai.net/substrate/ — the engine substrates, readable source (zero-dependency JS; luv-pulse.js emits the 1 Hz heartbeat signal any consumer can drink).
 
 ## Guide to bot trading

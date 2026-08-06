@@ -202,71 +202,71 @@ Sentiment research began as an insult ("animal spirits"), matured into a factor,
 
 ## References
 
-- Akerlof, George A., and Robert J. Shiller. 2009. *Animal Spirits: How Human Psychology Drives the Economy, and Why It Matters for Global Capitalism*. Princeton: Princeton University Press.
+- Akerlof, George A., and Robert J. Shiller. 2009. *Animal Spirits: How Human Psychology Drives the Economy, and Why It Matters for Global Capitalism*. Princeton: Princeton University Press. https://en.wikipedia.org/wiki/Animal_Spirits_(book)
 - Alternative.me. Ongoing. "Crypto Fear & Greed Index." Published methodology: volatility, market momentum/volume, social media, Bitcoin dominance, and search-trend components. https://alternative.me/crypto/fear-and-greed-index/
-- Antweiler, Werner, and Murray Z. Frank. 2004. "Is All That Talk Just Noise? The Information Content of Internet Stock Message Boards." *Journal of Finance* 59(3): 1259–1294.
-- Araci, Dogu. 2019. "FinBERT: Financial Sentiment Analysis with Pre-trained Language Models." arXiv:1908.10063.
-- Baker, Malcolm, and Jeremy C. Stein. 2004. "Market Liquidity as a Sentiment Indicator." *Journal of Financial Markets* 7(3): 271–299.
-- Baker, Malcolm, and Jeffrey Wurgler. 2006. "Investor Sentiment and the Cross-Section of Stock Returns." *Journal of Finance* 61(4): 1645–1680.
-- Baker, Malcolm, and Jeffrey Wurgler. 2007. "Investor Sentiment in the Stock Market." *Journal of Economic Perspectives* 21(2): 129–152.
-- Barberis, Nicholas, Andrei Shleifer, and Robert Vishny. 1998. "A Model of Investor Sentiment." *Journal of Financial Economics* 49(3): 307–343.
-- Bell, Daniel. 1973. *The Coming of Post-Industrial Society*. New York: Basic Books.
-- Benedict, Ruth. 1946. *The Chrysanthemum and the Sword*. Boston: Houghton Mifflin.
-- Black, Fischer. 1986. "Noise." *Journal of Finance* 41(3): 529–543.
-- Bohannan, Paul. 1955. "Some Principles of Exchange and Investment among the Tiv." *American Anthropologist* 57(1): 60–70.
-- Bollen, Johan, Huina Mao, and Xiaojun Zeng. 2011. "Twitter Mood Predicts the Stock Market." *Journal of Computational Science* 2(1): 1–8.
-- Bowlby, John. 1969. *Attachment and Loss, Vol. 1: Attachment*. New York: Basic Books.
+- Antweiler, Werner, and Murray Z. Frank. 2004. "Is All That Talk Just Noise? The Information Content of Internet Stock Message Boards." *Journal of Finance* 59(3): 1259–1294. https://doi.org/10.1111/j.1540-6261.2004.00662.x
+- Araci, Dogu. 2019. "FinBERT: Financial Sentiment Analysis with Pre-trained Language Models." arXiv:1908.10063. https://arxiv.org/abs/1908.10063
+- Baker, Malcolm, and Jeremy C. Stein. 2004. "Market Liquidity as a Sentiment Indicator." *Journal of Financial Markets* 7(3): 271–299. https://doi.org/10.1016/j.finmar.2003.11.005
+- Baker, Malcolm, and Jeffrey Wurgler. 2006. "Investor Sentiment and the Cross-Section of Stock Returns." *Journal of Finance* 61(4): 1645–1680. https://doi.org/10.1111/j.1540-6261.2006.00885.x
+- Baker, Malcolm, and Jeffrey Wurgler. 2007. "Investor Sentiment in the Stock Market." *Journal of Economic Perspectives* 21(2): 129–152. https://doi.org/10.1257/jep.21.2.129
+- Barberis, Nicholas, Andrei Shleifer, and Robert Vishny. 1998. "A Model of Investor Sentiment." *Journal of Financial Economics* 49(3): 307–343. https://doi.org/10.1016/S0304-405X(98)00027-0
+- Bell, Daniel. 1973. *The Coming of Post-Industrial Society*. New York: Basic Books. https://scholar.google.com/scholar?q=The%20Coming%20of%20Post-Industrial%20Society
+- Benedict, Ruth. 1946. *The Chrysanthemum and the Sword*. Boston: Houghton Mifflin. https://en.wikipedia.org/wiki/The_Chrysanthemum_and_the_Sword
+- Black, Fischer. 1986. "Noise." *Journal of Finance* 41(3): 529–543. https://doi.org/10.1111/j.1540-6261.1986.tb04513.x
+- Bohannan, Paul. 1955. "Some Principles of Exchange and Investment among the Tiv." *American Anthropologist* 57(1): 60–70. https://doi.org/10.1525/aa.1955.57.1.02a00080
+- Bollen, Johan, Huina Mao, and Xiaojun Zeng. 2011. "Twitter Mood Predicts the Stock Market." *Journal of Computational Science* 2(1): 1–8. https://doi.org/10.1016/j.jocs.2010.12.007
+- Bowlby, John. 1969. *Attachment and Loss, Vol. 1: Attachment*. New York: Basic Books. https://scholar.google.com/scholar?q=Attachment%20and%20Loss%20Bowlby
 - CNN Business. Ongoing. "Fear & Greed Index." Published methodology: market momentum, stock price strength, stock price breadth, put/call ratio, junk bond demand, market volatility (VIX), safe-haven demand. https://www.cnn.com/markets/fear-and-greed
-- Collins, Randall. 2004. *Interaction Ritual Chains*. Princeton: Princeton University Press.
-- Da, Zhi, Joseph Engelberg, and Pengjie Gao. 2015. "The Sum of All FEARS: Investor Sentiment and Asset Prices." *Review of Financial Studies* 28(1): 1–32.
-- De Long, J. Bradford, Andrei Shleifer, Lawrence H. Summers, and Robert J. Waldmann. 1990. "Noise Trader Risk in Financial Markets." *Journal of Political Economy* 98(4): 703–738.
-- Doi, Takeo. 1971. *The Anatomy of Dependence*. Tokyo: Kodansha International (English translation 1973).
-- Drucker, Peter F. 1969. *The Age of Discontinuity*. New York: Harper & Row.
-- Dunbar, Robin I. M. 1996. *Grooming, Gossip, and the Evolution of Language*. Cambridge, MA: Harvard University Press.
-- Durkheim, Émile. 1912. *The Elementary Forms of Religious Life*. Paris: F. Alcan.
-- Fama, Eugene F. 1970. "Efficient Capital Markets: A Review of Theory and Empirical Work." *Journal of Finance* 25(2): 383–417.
-- Fehr, Ernst, and Simon Gächter. 2002. "Altruistic Punishment in Humans." *Nature* 415: 137–140.
-- Fredrickson, Barbara L. 2001. "The Role of Positive Emotions in Positive Psychology: The Broaden-and-Build Theory of Positive Emotions." *American Psychologist* 56(3): 218–226.
-- Fredrickson, Barbara L. 2013. *Love 2.0: How Our Supreme Emotion Affects Everything We Feel, Think, Do, and Become*. New York: Hudson Street Press.
-- Friedman, Milton. 1953. "The Case for Flexible Exchange Rates." In *Essays in Positive Economics*. Chicago: University of Chicago Press.
-- Friedman, Milton. 1991. "The Island of Stone Money." Hoover Institution Working Papers in Economics E-91-3.
-- Furness, William Henry. 1910. *The Island of Stone Money: Uap of the Carolines*. Philadelphia: J. B. Lippincott.
-- Garcia, Diego. 2013. "Sentiment during Recessions." *Journal of Finance* 68(3): 1267–1300.
-- Goodhart, Charles A. E. 1975. "Problems of Monetary Management: The U.K. Experience." In *Papers in Monetary Economics*, vol. I. Sydney: Reserve Bank of Australia.
-- Gouldner, Alvin W. 1960. "The Norm of Reciprocity: A Preliminary Statement." *American Sociological Review* 25(2): 161–178.
-- Graeber, David. 2011. *Debt: The First 5,000 Years*. New York: Melville House.
-- Hayek, Friedrich A. 1945. "The Use of Knowledge in Society." *American Economic Review* 35(4): 519–530.
-- Hochschild, Arlie Russell. 1983. *The Managed Heart: Commercialization of Human Feeling*. Berkeley: University of California Press.
-- Illouz, Eva. 2007. *Cold Intimacies: The Making of Emotional Capitalism*. Cambridge: Polity.
-- Kahneman, Daniel, and Amos Tversky. 1979. "Prospect Theory: An Analysis of Decision under Risk." *Econometrica* 47(2): 263–291.
-- Katona, George. 1975. *Psychological Economics*. New York: Elsevier.
-- Keynes, John Maynard. 1936. *The General Theory of Employment, Interest and Money*. London: Macmillan. (Ch. 12, "The State of Long-Term Expectation.")
-- Kindleberger, Charles P. 1978. *Manias, Panics, and Crashes: A History of Financial Crises*. New York: Basic Books.
-- Lee, Charles M. C., Andrei Shleifer, and Richard H. Thaler. 1991. "Investor Sentiment and the Closed-End Fund Puzzle." *Journal of Finance* 46(1): 75–109.
-- Lewis, C. S. 1960. *The Four Loves*. London: Geoffrey Bles.
-- Lopez-Lira, Alejandro, and Yuehua Tang. 2023. "Can ChatGPT Forecast Stock Price Movements? Return Predictability and Large Language Models." arXiv:2304.07619.
-- Loughran, Tim, and Bill McDonald. 2011. "When Is a Liability Not a Liability? Textual Analysis, Dictionaries, and 10-Ks." *Journal of Finance* 66(1): 35–65.
-- Machlup, Fritz. 1962. *The Production and Distribution of Knowledge in the United States*. Princeton: Princeton University Press.
-- Mackay, Charles. 1841. *Extraordinary Popular Delusions and the Madness of Crowds*. London: Richard Bentley.
-- Malinowski, Bronisław. 1922. *Argonauts of the Western Pacific*. London: Routledge & Kegan Paul.
-- Marx, Karl. 1857–58. *Grundrisse* (the "Fragment on Machines"; English translation, Penguin, 1973).
-- Mauss, Marcel. 1925. *Essai sur le don* ("The Gift"). *L'Année Sociologique*.
-- Nowak, Martin A. 2006. "Five Rules for the Evolution of Cooperation." *Science* 314(5805): 1560–1563.
-- Polanyi, Karl. 1944. *The Great Transformation*. New York: Farrar & Rinehart.
-- Sahlins, Marshall. 1972. *Stone Age Economics*. Chicago: Aldine-Atherton.
-- Shiller, Robert J. 1981. "Do Stock Prices Move Too Much to Be Justified by Subsequent Changes in Dividends?" *American Economic Review* 71(3): 421–436.
-- Shiller, Robert J. 2000. *Irrational Exuberance*. Princeton: Princeton University Press.
-- Shleifer, Andrei, and Robert W. Vishny. 1997. "The Limits of Arbitrage." *Journal of Finance* 52(1): 35–55.
-- Simmel, Georg. 1900. *The Philosophy of Money* (*Philosophie des Geldes*). Leipzig: Duncker & Humblot.
-- Smith, Adam. 1759. *The Theory of Moral Sentiments*. London: A. Millar.
-- Soros, George. 1987. *The Alchemy of Finance: Reading the Mind of the Market*. New York: Simon & Schuster.
-- Sternberg, Robert J. 1986. "A Triangular Theory of Love." *Psychological Review* 93(2): 119–135.
-- Strathern, Marilyn. 1997. "'Improving Ratings': Audit in the British University System." *European Review* 5(3): 305–321.
-- Tetlock, Paul C. 2007. "Giving Content to Investor Sentiment: The Role of Media in the Stock Market." *Journal of Finance* 62(3): 1139–1168.
-- Trivers, Robert L. 1971. "The Evolution of Reciprocal Altruism." *Quarterly Review of Biology* 46(1): 35–57.
-- Tutu, Desmond. 1999. *No Future Without Forgiveness*. New York: Doubleday.
-- Whaley, Robert E. 2000. "The Investor Fear Gauge." *Journal of Portfolio Management* 26(3): 12–17.
-- Zelizer, Viviana A. 1994. *The Social Meaning of Money*. New York: Basic Books.
-- Zweig, Martin E. 1973. "An Investor Expectations Stock Price Predictive Model Using Closed-End Fund Premiums." *Journal of Finance* 28(1): 67–78.
+- Collins, Randall. 2004. *Interaction Ritual Chains*. Princeton: Princeton University Press. https://scholar.google.com/scholar?q=Interaction%20Ritual%20Chains%20Collins
+- Da, Zhi, Joseph Engelberg, and Pengjie Gao. 2015. "The Sum of All FEARS: Investor Sentiment and Asset Prices." *Review of Financial Studies* 28(1): 1–32. https://doi.org/10.1093/rfs/hhu072
+- De Long, J. Bradford, Andrei Shleifer, Lawrence H. Summers, and Robert J. Waldmann. 1990. "Noise Trader Risk in Financial Markets." *Journal of Political Economy* 98(4): 703–738. https://doi.org/10.1086/261703
+- Doi, Takeo. 1971. *The Anatomy of Dependence*. Tokyo: Kodansha International (English translation 1973). https://en.wikipedia.org/wiki/The_Anatomy_of_Dependence
+- Drucker, Peter F. 1969. *The Age of Discontinuity*. New York: Harper & Row. https://scholar.google.com/scholar?q=The%20Age%20of%20Discontinuity%20Drucker
+- Dunbar, Robin I. M. 1996. *Grooming, Gossip, and the Evolution of Language*. Cambridge, MA: Harvard University Press. https://en.wikipedia.org/wiki/Grooming,_Gossip_and_the_Evolution_of_Language
+- Durkheim, Émile. 1912. *The Elementary Forms of Religious Life*. Paris: F. Alcan. https://en.wikipedia.org/wiki/The_Elementary_Forms_of_the_Religious_Life
+- Fama, Eugene F. 1970. "Efficient Capital Markets: A Review of Theory and Empirical Work." *Journal of Finance* 25(2): 383–417. https://doi.org/10.2307/2325486
+- Fehr, Ernst, and Simon Gächter. 2002. "Altruistic Punishment in Humans." *Nature* 415: 137–140. https://doi.org/10.1038/415137a
+- Fredrickson, Barbara L. 2001. "The Role of Positive Emotions in Positive Psychology: The Broaden-and-Build Theory of Positive Emotions." *American Psychologist* 56(3): 218–226. https://doi.org/10.1037/0003-066X.56.3.218
+- Fredrickson, Barbara L. 2013. *Love 2.0: How Our Supreme Emotion Affects Everything We Feel, Think, Do, and Become*. New York: Hudson Street Press. https://scholar.google.com/scholar?q=Love%202.0%20Fredrickson
+- Friedman, Milton. 1953. "The Case for Flexible Exchange Rates." In *Essays in Positive Economics*. Chicago: University of Chicago Press. https://en.wikipedia.org/wiki/Essays_in_Positive_Economics
+- Friedman, Milton. 1991. "The Island of Stone Money." Hoover Institution Working Papers in Economics E-91-3. https://scholar.google.com/scholar?q=The%20Island%20of%20Stone%20Money%20Friedman%201991
+- Furness, William Henry. 1910. *The Island of Stone Money: Uap of the Carolines*. Philadelphia: J. B. Lippincott. https://scholar.google.com/scholar?q=The%20Island%20of%20Stone%20Money%20Furness%201910
+- Garcia, Diego. 2013. "Sentiment during Recessions." *Journal of Finance* 68(3): 1267–1300. https://doi.org/10.1111/jofi.12027
+- Goodhart, Charles A. E. 1975. "Problems of Monetary Management: The U.K. Experience." In *Papers in Monetary Economics*, vol. I. Sydney: Reserve Bank of Australia. https://en.wikipedia.org/wiki/Goodhart%27s_law
+- Gouldner, Alvin W. 1960. "The Norm of Reciprocity: A Preliminary Statement." *American Sociological Review* 25(2): 161–178. https://doi.org/10.2307/2092623
+- Graeber, David. 2011. *Debt: The First 5,000 Years*. New York: Melville House. https://en.wikipedia.org/wiki/Debt:_The_First_5000_Years
+- Hayek, Friedrich A. 1945. "The Use of Knowledge in Society." *American Economic Review* 35(4): 519–530. https://en.wikipedia.org/wiki/The_Use_of_Knowledge_in_Society
+- Hochschild, Arlie Russell. 1983. *The Managed Heart: Commercialization of Human Feeling*. Berkeley: University of California Press. https://en.wikipedia.org/wiki/The_Managed_Heart
+- Illouz, Eva. 2007. *Cold Intimacies: The Making of Emotional Capitalism*. Cambridge: Polity. https://scholar.google.com/scholar?q=Cold%20Intimacies%20Illouz%20emotional%20capitalism
+- Kahneman, Daniel, and Amos Tversky. 1979. "Prospect Theory: An Analysis of Decision under Risk." *Econometrica* 47(2): 263–291. https://doi.org/10.2307/1914185
+- Katona, George. 1975. *Psychological Economics*. New York: Elsevier. https://scholar.google.com/scholar?q=Psychological%20Economics%20Katona%201975
+- Keynes, John Maynard. 1936. *The General Theory of Employment, Interest and Money*. London: Macmillan. (Ch. 12, "The State of Long-Term Expectation.") https://en.wikipedia.org/wiki/The_General_Theory_of_Employment,_Interest_and_Money
+- Kindleberger, Charles P. 1978. *Manias, Panics, and Crashes: A History of Financial Crises*. New York: Basic Books. https://scholar.google.com/scholar?q=Manias+Panics+and+Crashes+Kindleberger
+- Lee, Charles M. C., Andrei Shleifer, and Richard H. Thaler. 1991. "Investor Sentiment and the Closed-End Fund Puzzle." *Journal of Finance* 46(1): 75–109. https://doi.org/10.1111/j.1540-6261.1991.tb03746.x
+- Lewis, C. S. 1960. *The Four Loves*. London: Geoffrey Bles. https://en.wikipedia.org/wiki/The_Four_Loves
+- Lopez-Lira, Alejandro, and Yuehua Tang. 2023. "Can ChatGPT Forecast Stock Price Movements? Return Predictability and Large Language Models." arXiv:2304.07619. https://arxiv.org/abs/2304.07619
+- Loughran, Tim, and Bill McDonald. 2011. "When Is a Liability Not a Liability? Textual Analysis, Dictionaries, and 10-Ks." *Journal of Finance* 66(1): 35–65. https://doi.org/10.1111/j.1540-6261.2010.01625.x
+- Machlup, Fritz. 1962. *The Production and Distribution of Knowledge in the United States*. Princeton: Princeton University Press. https://scholar.google.com/scholar?q=The%20Production%20and%20Distribution%20of%20Knowledge%20in%20the%20United%20States%20Machlup
+- Mackay, Charles. 1841. *Extraordinary Popular Delusions and the Madness of Crowds*. London: Richard Bentley. https://en.wikipedia.org/wiki/Extraordinary_Popular_Delusions_and_the_Madness_of_Crowds
+- Malinowski, Bronisław. 1922. *Argonauts of the Western Pacific*. London: Routledge & Kegan Paul. https://en.wikipedia.org/wiki/Argonauts_of_the_Western_Pacific
+- Marx, Karl. 1857–58. *Grundrisse* (the "Fragment on Machines"; English translation, Penguin, 1973). https://www.marxists.org/archive/marx/works/1857/grundrisse/
+- Mauss, Marcel. 1925. *Essai sur le don* ("The Gift"). *L'Année Sociologique*. https://en.wikipedia.org/wiki/The_Gift_(essay)
+- Nowak, Martin A. 2006. "Five Rules for the Evolution of Cooperation." *Science* 314(5805): 1560–1563. https://doi.org/10.1126/science.1133755
+- Polanyi, Karl. 1944. *The Great Transformation*. New York: Farrar & Rinehart. https://en.wikipedia.org/wiki/The_Great_Transformation_(book)
+- Sahlins, Marshall. 1972. *Stone Age Economics*. Chicago: Aldine-Atherton. https://scholar.google.com/scholar?q=Stone%20Age%20Economics%20Sahlins
+- Shiller, Robert J. 1981. "Do Stock Prices Move Too Much to Be Justified by Subsequent Changes in Dividends?" *American Economic Review* 71(3): 421–436. https://scholar.google.com/scholar?q=Do%20Stock%20Prices%20Move%20Too%20Much%20to%20Be%20Justified%20by%20Subsequent%20Changes%20in%20Dividends
+- Shiller, Robert J. 2000. *Irrational Exuberance*. Princeton: Princeton University Press. https://en.wikipedia.org/wiki/Irrational_Exuberance_(book)
+- Shleifer, Andrei, and Robert W. Vishny. 1997. "The Limits of Arbitrage." *Journal of Finance* 52(1): 35–55. https://doi.org/10.1111/j.1540-6261.1997.tb03807.x
+- Simmel, Georg. 1900. *The Philosophy of Money* (*Philosophie des Geldes*). Leipzig: Duncker & Humblot. https://en.wikipedia.org/wiki/The_Philosophy_of_Money
+- Smith, Adam. 1759. *The Theory of Moral Sentiments*. London: A. Millar. https://en.wikipedia.org/wiki/The_Theory_of_Moral_Sentiments
+- Soros, George. 1987. *The Alchemy of Finance: Reading the Mind of the Market*. New York: Simon & Schuster. https://en.wikipedia.org/wiki/The_Alchemy_of_Finance
+- Sternberg, Robert J. 1986. "A Triangular Theory of Love." *Psychological Review* 93(2): 119–135. https://doi.org/10.1037/0033-295X.93.2.119
+- Strathern, Marilyn. 1997. "'Improving Ratings': Audit in the British University System." *European Review* 5(3): 305–321. https://scholar.google.com/scholar?q=Improving%20Ratings%20audit%20British%20university%20system%20Strathern
+- Tetlock, Paul C. 2007. "Giving Content to Investor Sentiment: The Role of Media in the Stock Market." *Journal of Finance* 62(3): 1139–1168. https://doi.org/10.1111/j.1540-6261.2007.01232.x
+- Trivers, Robert L. 1971. "The Evolution of Reciprocal Altruism." *Quarterly Review of Biology* 46(1): 35–57. https://doi.org/10.1086/406755
+- Tutu, Desmond. 1999. *No Future Without Forgiveness*. New York: Doubleday. https://scholar.google.com/scholar?q=No%20Future%20Without%20Forgiveness%20Tutu
+- Whaley, Robert E. 2000. "The Investor Fear Gauge." *Journal of Portfolio Management* 26(3): 12–17. https://doi.org/10.3905/jpm.2000.319728
+- Zelizer, Viviana A. 1994. *The Social Meaning of Money*. New York: Basic Books. https://scholar.google.com/scholar?q=The%20Social%20Meaning%20of%20Money%20Zelizer
+- Zweig, Martin E. 1973. "An Investor Expectations Stock Price Predictive Model Using Closed-End Fund Premiums." *Journal of Finance* 28(1): 67–78. https://scholar.google.com/scholar?q=Zweig%20investor%20expectations%20closed-end%20fund%20premiums%201973
 
 *Internal sources: EMOTONOMICS.md (the emotonomics whitepaper), LUVPAPER.md, LUV_LIVE_PROOF.md (the mainnet deployment record), and the live measurement stack at luv.pythai.net/view.html.*
