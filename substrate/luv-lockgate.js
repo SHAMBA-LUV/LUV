@@ -6,8 +6,9 @@
  * on this one page: connect to prove you are the OVERLORD, or be sent to the live market.
  *
  * Every wallet that is NOT the OVERLORD — and anyone who declines to connect or has no
- * wallet — is redirected to the live view (view.html), where the emphasized Uniswap
- * USDC → LUV preset waits. Only bankon.eth sees the instructions revealed.
+ * wallet — is sent to their own collection: the sign-in flow at "/", where each
+ * participant's 1,000,000 LUV arrives one at a time, on a steady beat, for as long as they
+ * stay signed in — thanks a million. Only bankon.eth sees the instructions revealed.
  *
  * cypherpunk2048/CSP-safe: external file, no inline JS, no network fetch — it reads only
  * the injected window.ethereum and redirects with window.location.
@@ -15,12 +16,12 @@
 (function () {
   'use strict';
   var OVERLORD = '0x10f7ee226b16bea7f365dc1edef159fc1957d169'; // bankon.eth (lowercased for compare)
-  var VIEW = 'view.html';
+  var COLLECT = '/'; // the sign-in flow — each participant's own daily-bonus collection
 
   function $(id) { return document.getElementById(id); }
   function toView(reason) {
     try { sessionStorage.setItem('lockgate', reason || 'redirect'); } catch (e) {}
-    window.location.replace(VIEW);
+    window.location.replace(COLLECT);
   }
   function reveal() {
     var g = $('lock-gate'), i = $('lock-instructions');
@@ -38,7 +39,7 @@
   function connect() {
     var eth = window.ethereum, s = $('lock-status');
     if (!eth || !eth.request) {
-      if (s) s.textContent = 'no wallet found — opening the live market…';
+      if (s) s.textContent = 'no wallet found — opening your daily collection…';
       setTimeout(function () { toView('no-wallet'); }, 1400);
       return;
     }
