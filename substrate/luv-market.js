@@ -43,7 +43,71 @@
   }
   function fmtUsdc(v) {
     if (v === null || v === undefined || isNaN(v)) return '—';
-    return '$' + Number(v).toFixed(4) + ' USDC';
+    var n = Number(v);
+    // accuracy: 6 decimals under a dollar, 4 above — approximation is display-only
+    return '$' + n.toFixed(Math.abs(n) < 1 ? 6 : 4) + ' USDC';
+  }
+  function grp(s) { return s.replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  function fmtNum(v, dec) {
+    var parts = Number(v).toFixed(dec).split('.');
+    return grp(parts[0]) + (parts[1] ? '.' + parts[1] : '');
+  }
+  // adaptive axis decimals: enough digits that neighbouring ticks stay distinct
+  function decFor(span, base, cap) {
+    if (!(span > 0)) return base;
+    var d = Math.ceil(-Math.log10(span / 5)) + 1;
+    return Math.min(Math.max(d, base), cap);
+  }
+
+  // ── the unit toggle: one price, three expressions ──
+  //   $   — 1T LUV in USDC (the measure of value)
+  //   WEI — wei per ONE LUV (the identity lattice; the seed was exactly 10 wei)
+  //   Ξ   — LUV per ONE ETH (the inverse measure, in trillions)
+  // val() maps a history point [ms, priceUsd, priceNative]; every series, axis,
+  // candle and tooltip re-expresses through the active unit. Full precision is
+  // carried by the data; decimals shown adapt to the visible span.
+  var UNITS = {
+    usdc: {
+      btn: '$', title: 'one trillion LUV priced in USDC',
+      amt: '1T LUV', aria: 'LUV price in USD',
+      val: function (p) { return Number(p[1]); },
+      line: function (m) { return fmtUsdc(m.oneTrillionUsd); },
+      axis: function (v, dec) { return '$' + Number(v * 1e12).toFixed(dec); },
+      axisDec: function (span) { return decFor(span * 1e12, 4, 8); },
+      tip: function (v, dec) { return '$' + Number(v * 1e12).toFixed(Math.max(dec, 6)); },
+      tipHead: '1T LUV'
+    },
+    wei: {
+      btn: 'WEI', title: 'wei per ONE LUV — the seed was exactly 10 wei',
+      amt: '1 LUV', aria: 'LUV price in wei per LUV',
+      val: function (p) { return Number(p[2]) * 1e18; },
+      line: function (m) {
+        var pn = Number(m.priceNative);
+        return pn > 0 ? fmtNum(pn * 1e18, 6) + ' WEI' : '—';
+      },
+      axis: function (v, dec) { return Number(v).toFixed(dec); },
+      axisDec: function (span) { return decFor(span, 2, 6); },
+      tip: function (v, dec) { return fmtNum(v, Math.max(dec, 4)) + ' wei'; },
+      tipHead: 'WEI / LUV'
+    },
+    eth: {
+      btn: '\u039E', title: 'LUV per ONE ETH, in trillions — the inverse measure',
+      amt: '1 ETH', aria: 'LUV per ETH',
+      val: function (p) { var pn = Number(p[2]); return pn > 0 ? 1 / pn : NaN; },
+      line: function (m) {
+        var pn = Number(m.priceNative);
+        return pn > 0 ? fmtNum(1 / pn / 1e12, 4) + 'T LUV' : '—';
+      },
+      axis: function (v, dec) { return Number(v / 1e12).toFixed(dec) + 'T'; },
+      axisDec: function (span) { return decFor(span / 1e12, 2, 6); },
+      tip: function (v, dec) { return fmtNum(v / 1e12, Math.max(dec, 4)) + 'T LUV'; },
+      tipHead: 'LUV / ETH'
+    }
+  };
+  var UNIT_ORDER = ['usdc', 'wei', 'eth'];
+  function loadUnit() {
+    try { var u = global.localStorage.getItem('luv-market-unit'); if (UNITS[u]) return u; } catch (e) { /* private */ }
+    return 'usdc';
   }
 
   // ── indicator math (plain arrays, index-aligned to their inputs) ──
@@ -86,6 +150,7 @@
     this.market = null;
     this.points = [];   // [ms, priceUsd, priceNative]
     this._timer = 0;
+    this.mode = loadUnit();
   }
 
   Market.prototype._skeleton = function () {
@@ -98,12 +163,48 @@
       '<span class="mkt-bar" role="img" aria-label="24 hour change bar"><span class="mkt-bar-zero"></span><span class="mkt-bar-fill"></span></span>' +
       '<span class="mkt-pct">…</span>' +
       '<span class="mkt-win">24H</span>' +
+      '<span class="mkt-units" role="group" aria-label="unit toggle — USDC, wei per LUV, LUV per ETH"></span>' +
       '</div>' +
       '<div class="mkt-chart"><svg role="img" aria-label="LUV price in USD over the last 24 hours"></svg>' +
       '<div class="mkt-tip" hidden></div></div>' +
       '<div class="mkt-fine"><span class="mkt-delta"></span><span class="mkt-x" title="the X multiplier — measured from the liquidity seed (price X = 1.00e-17 ETH per LUV)"></span><span class="mkt-spacer"></span>' +
       '<span class="mkt-src">price every minute · full refresh every 5 min · read on-chain from the Uniswap pair (where 100% of circulating LUV lives) · ' +
       'EMA ribbon 8·13·21·34·55 · fib retracement · RSI 14 · MACD 12·26·9</span></div>';
+  };
+
+  Market.prototype._buildToggle = function () {
+    var self = this;
+    var wrap = this.root.querySelector('.mkt-units');
+    if (!wrap) return;
+    wrap.style.cssText = 'display:inline-flex;gap:4px;margin-left:10px;vertical-align:middle';
+    UNIT_ORDER.forEach(function (key) {
+      var u = UNITS[key];
+      var b = document.createElement('button');
+      b.type = 'button'; b.textContent = u.btn; b.title = u.title;
+      b.setAttribute('data-u', key);
+      b.setAttribute('aria-pressed', String(key === self.mode));
+      b.style.cssText = 'font:11px ui-monospace,Menlo,monospace;letter-spacing:.06em;cursor:pointer;' +
+        'padding:3px 9px;border-radius:999px;background:transparent;transition:color .15s,border-color .15s';
+      b.addEventListener('click', function () {
+        if (self.mode === key) return;
+        self.mode = key;
+        try { global.localStorage.setItem('luv-market-unit', key); } catch (e) { /* private */ }
+        self._paintToggle(); self._renderAll();
+      });
+      wrap.appendChild(b);
+    });
+    this._paintToggle();
+  };
+  Market.prototype._paintToggle = function () {
+    var self = this;
+    var btns = this.root.querySelectorAll('.mkt-units button');
+    btns.forEach(function (b) {
+      var on = b.getAttribute('data-u') === self.mode;
+      b.setAttribute('aria-pressed', String(on));
+      b.style.border = '1px solid ' + (on ? '#e3b25f' : '#4a1f30');
+      b.style.color = on ? '#e3b25f' : '#b98da0';
+      b.style.fontWeight = on ? '700' : '400';
+    });
   };
 
   Market.prototype._fetch = function () {
@@ -131,7 +232,10 @@
     if (!this.market) return;
     var pc = this.market.priceChange || {};
     var h24 = pc.h24 === undefined ? null : Number(pc.h24);
-    this.root.querySelector('.mkt-usdc').textContent = fmtUsdc(this.market.oneTrillionUsd);
+    var U = UNITS[this.mode] || UNITS.usdc;
+    var amtEl = this.root.querySelector('.mkt-amt');
+    if (amtEl) amtEl.textContent = U.amt;
+    this.root.querySelector('.mkt-usdc').textContent = U.line(this.market);
     var pctEl = this.root.querySelector('.mkt-pct');
     pctEl.textContent = pctArrow(h24) + ' ' + fmtPct(h24);
     pctEl.style.color = pctColor(h24);
@@ -151,8 +255,8 @@
     if (xEl && pn) {
       var priceX = pn / SEED_PRICE_NATIVE;
       var liqX = lq ? lq / SEED_WETH : null;
-      xEl.textContent = 'price ' + priceX.toFixed(2) + '× from X' +
-        (liqX ? ' · liquidity ' + liqX.toFixed(2) + '×' : '');
+      xEl.textContent = 'price ' + priceX.toFixed(4) + '× from X' +
+        (liqX ? ' · liquidity ' + liqX.toFixed(4) + '×' : '');
       xEl.style.color = '#e3b25f';
       // the page-level statement: how many times the price has X'd from the seed
       var xLine = document.getElementById('luv-xcount');
@@ -167,10 +271,12 @@
     svg.selectAll('*').remove();
 
     var now = Date.now();
+    var U = UNITS[this.mode] || UNITS.usdc;
+    var V = U.val;
     var svgEl = this.root.querySelector('.mkt-chart svg');
-    if (svgEl) svgEl.setAttribute('aria-label', 'LUV price in USD — 4-hour view in 5-minute candles with EMA ribbon, Fibonacci retracement, RSI and MACD panes; flat stretches between trades stay level');
-    var pts = this.points.filter(function (p) { return p[0] >= now - WINDOW_MS; });
-    if (pts.length < 2) pts = this.points.slice();
+    if (svgEl) svgEl.setAttribute('aria-label', U.aria + ' — 4-hour view in 5-minute candles with EMA ribbon, Fibonacci retracement, RSI and MACD panes; flat stretches between trades stay level');
+    var pts = this.points.filter(function (p) { return p[0] >= now - WINDOW_MS && isFinite(V(p)) && V(p) > 0; });
+    if (pts.length < 2) pts = this.points.filter(function (p) { return isFinite(V(p)) && V(p) > 0; });
     var deltaEl = this.root.querySelector('.mkt-delta');
     if (pts.length < 2) {
       svg.attr('viewBox', '0 0 ' + W + ' ' + HM).attr('width', '100%').attr('height', HM);
@@ -189,8 +295,9 @@
     var buckets = {};
     pts.forEach(function (p) {
       var k = Math.floor(p[0] / BUCKET) * BUCKET;
-      var b = buckets[k] || (buckets[k] = { t: k, o: p[1], h: p[1], l: p[1], c: p[1] });
-      b.h = Math.max(b.h, p[1]); b.l = Math.min(b.l, p[1]); b.c = p[1];
+      var v = V(p);
+      var b = buckets[k] || (buckets[k] = { t: k, o: v, h: v, l: v, c: v });
+      b.h = Math.max(b.h, v); b.l = Math.min(b.l, v); b.c = v;
     });
     var candles = Object.keys(buckets).sort().map(function (k) { return buckets[k]; });
     // keep the candles thick and defined: show the most recent ones that fit at full width
@@ -204,7 +311,7 @@
       ext = [d3.min(candles, function (c) { return c.l; }), d3.max(candles, function (c) { return c.h; })];
     } else {
       x = d3.scaleUtc().domain(d3.extent(pts, function (p) { return p[0]; })).range([m.left, W - m.right]);
-      ext = d3.extent(pts, function (p) { return p[1]; });
+      ext = d3.extent(pts, function (p) { return V(p); });
     }
     // sub-panes (RSI + MACD) render once there are enough 5m closes to mean anything
     var closes = candles.map(function (c) { return c.c; });
@@ -216,8 +323,9 @@
     var pad = (ext[1] - ext[0]) * 0.15 || ext[1] * 0.05 || 1e-15;
     var y = d3.scaleLinear().domain([ext[0] - pad, ext[1] + pad]).range([HM - m.bottom, m.top]);
 
+    var axDec = U.axisDec(ext[1] - ext[0] + 2 * pad);
     svg.append('g').call(function (g) {
-      y.ticks(4).forEach(function (t) {
+      y.ticks(5).forEach(function (t) {
         g.append('line').attr('x1', m.left).attr('x2', W - m.right).attr('y1', y(t)).attr('y2', y(t))
           .attr('stroke', 'rgba(246,231,235,.07)');
       });
@@ -225,7 +333,7 @@
     var ax = svg.append('g').attr('transform', 'translate(0,' + (HM - m.bottom) + ')')
       .call(d3.axisBottom(x).ticks(5).tickSize(0).tickPadding(8));
     var ay = svg.append('g').attr('transform', 'translate(' + m.left + ',0)')
-      .call(d3.axisLeft(y).ticks(4).tickSize(0).tickPadding(6).tickFormat(function (v) { return '$' + (Number(v) * 1e12).toFixed(4); }));
+      .call(d3.axisLeft(y).ticks(5).tickSize(0).tickPadding(6).tickFormat(function (v) { return U.axis(v, axDec); }));
     [ax, ay].forEach(function (g) {
       g.select('.domain').remove();
       g.selectAll('text').attr('fill', '#b98da0').attr('font-size', 10)
@@ -253,7 +361,7 @@
       .x(function (d) { return x(d[0]); }).y(function (d) { return y(d[1]); })
       .defined(function (d) { return d[0] >= x.domain()[0] && d[0] <= x.domain()[1]; });
     RIBBON.forEach(function (r) {
-      var e = emaSeries(pts.map(function (p) { return p[1]; }), r.p * 5); // minute samples → ×5
+      var e = emaSeries(pts.map(function (p) { return V(p); }), r.p * 5); // minute samples → ×5
       var series = pts.map(function (p, i) { return [p[0], e[i]]; });
       svg.append('path').datum(series).attr('d', ribbonLine).attr('fill', 'none')
         .attr('stroke', r.col).attr('stroke-opacity', 0.5).attr('stroke-width', 1.3);
@@ -278,8 +386,8 @@
       });
     } else {
       // too young for two candles — fall back to the growing line
-      var area = d3.area().x(function (p) { return x(p[0]); }).y0(HM - m.bottom).y1(function (p) { return y(p[1]); });
-      var line = d3.line().x(function (p) { return x(p[0]); }).y(function (p) { return y(p[1]); });
+      var area = d3.area().x(function (p) { return x(p[0]); }).y0(HM - m.bottom).y1(function (p) { return y(V(p)); });
+      var line = d3.line().x(function (p) { return x(p[0]); }).y(function (p) { return y(V(p)); });
       var grad = svg.append('defs').append('linearGradient').attr('id', 'luvfill')
         .attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 1);
       grad.append('stop').attr('offset', '0%').attr('stop-color', FILL_TOP);
@@ -289,7 +397,7 @@
         .attr('stroke', LINE).attr('stroke-width', 2).attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round');
     }
 
-    var chg = (pts[pts.length - 1][1] / pts[0][1] - 1) * 100;
+    var chg = (V(pts[pts.length - 1]) / V(pts[0]) - 1) * 100;
     deltaEl.innerHTML = 'Δ across our samples: <b style="color:' + pctColor(chg) + '">' +
       pctArrow(chg) + ' ' + fmtPct(chg) + '</b>';
 
@@ -377,15 +485,15 @@
           var k = Math.floor(t / BUCKET) * BUCKET, c = buckets[k];
           if (!c || k < candles[0].t) return;
           cx = x(c.t + BUCKET / 2); cy = y(c.c);
-          tip.innerHTML = '<b>' + new Date(c.t).toLocaleTimeString() + ' · 5m candle · 1T LUV</b><br>' +
-            'O ' + fmtUsdc(c.o * 1e12) + ' · C ' + fmtUsdc(c.c * 1e12) + '<br>' +
-            'H ' + fmtUsdc(c.h * 1e12) + ' · L ' + fmtUsdc(c.l * 1e12);
+          tip.innerHTML = '<b>' + new Date(c.t).toLocaleTimeString() + ' · 5m candle · ' + U.tipHead + '</b><br>' +
+            'O ' + U.tip(c.o, axDec) + ' · C ' + U.tip(c.c, axDec) + '<br>' +
+            'H ' + U.tip(c.h, axDec) + ' · L ' + U.tip(c.l, axDec);
         } else {
           var p = pts[bis(pts, t)];
           if (!p) return;
-          cx = x(p[0]); cy = y(p[1]);
+          cx = x(p[0]); cy = y(V(p));
           tip.innerHTML = '<b>' + new Date(p[0]).toLocaleTimeString() + '</b><br>' +
-            '1T LUV = ' + fmtUsdc(p[1] * 1e12);
+            U.amt + ' = ' + U.tip(V(p), axDec);
         }
         xhair.attr('x1', cx).attr('x2', cx).attr('display', null);
         dot.attr('cx', cx).attr('cy', cy).attr('display', null);
@@ -431,6 +539,7 @@
     if (!this.root) return this;
     var self = this;
     this._skeleton();
+    this._buildToggle();
     var tick = function () {
       if (!document.hidden) self._fetch().then(function () { self._renderAll(); });
       self._timer = setTimeout(tick, REFRESH_MS);
@@ -449,7 +558,7 @@
   };
   Market.prototype.stop = function () { clearTimeout(this._timer); this._timer = 0; return this; };
 
-  var DVLuvMarket = { Market: Market, PAIR: PAIR, REFRESH_MS: REFRESH_MS, version: '2.4.0' };
+  var DVLuvMarket = { Market: Market, PAIR: PAIR, REFRESH_MS: REFRESH_MS, version: '2.5.0' };
   // DVLuvMarket.diag() — diagnostics of the auto-booted instance, for widgets and internals
   DVLuvMarket.diag = function () { return DVLuvMarket._booted ? DVLuvMarket._booted.diag() : null; };
   if (typeof module !== 'undefined' && module.exports) module.exports = DVLuvMarket;
