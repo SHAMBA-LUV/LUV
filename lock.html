@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LP-LOCK — OVERLORD only — SHAMBA LUV</title>
+<meta name="description" content="The LP-lock instructions are gated to the OVERLORD (bankon.eth) by the OVERLORD protocol. Every other wallet is directed to the live market.">
+<meta name="robots" content="noindex,nofollow">
+<link rel="canonical" href="https://luv.pythai.net/lock.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+:root{--ink:#160a0f;--wine:#2b111c;--seam:#4a1f30;--rose:#ff4d6d;--pink:#ff006e;--purple:#8338ec;
+  --blush:#ffb3c1;--cream:#f6e7eb;--dim:#b98da0;--gold:#e3b25f;
+  --mono:ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;}
+*{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--ink);color:var(--cream);font-family:var(--sans);line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--blush)}a:hover{color:var(--rose)}
+:focus-visible{outline:2px solid var(--rose);outline-offset:3px;border-radius:2px}
+.wrap{max-width:780px;margin:0 auto;padding:0 24px}
+header{border-bottom:1px solid var(--seam)}
+.bar{display:flex;align-items:center;gap:14px;padding:16px 0}
+.brand{font-family:var(--mono);font-size:15px;letter-spacing:.14em;color:var(--cream);text-decoration:none}
+.brand b{color:var(--rose)}
+.bar .spacer{flex:1}
+.bar a.back{font-family:var(--mono);font-size:12px;text-decoration:none;color:var(--dim)}
+.bar a.back:hover{color:var(--rose)}
+/* the gate */
+.gate{max-width:560px;margin:64px auto 0;text-align:center;border:1px solid var(--seam);border-radius:16px;
+  background:radial-gradient(120% 140% at 50% 0%,rgba(131,56,236,.12),transparent 60%),var(--wine);padding:44px 30px}
+.gate .sigil{font-size:34px;color:var(--gold)}
+.gate h1{font-size:clamp(22px,4vw,30px);font-weight:800;margin:12px 0 6px;letter-spacing:-.01em}
+.gate .sub{color:var(--dim);font-size:14.5px;margin-bottom:24px}
+.gate .sub b{color:var(--blush)}
+.btn-primary{font-family:var(--mono);font-size:14px;letter-spacing:.06em;color:#fff;border:0;cursor:pointer;
+  background:linear-gradient(100deg,var(--pink),var(--purple));border-radius:999px;padding:14px 34px;min-height:48px}
+.btn-primary:hover{filter:brightness(1.12)}
+.status{font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:16px;min-height:1.2em}
+.gate .alt{margin-top:22px;font-size:13px;color:var(--dim)}
+.gate .alt a{font-family:var(--mono)}
+/* the instructions (revealed for OVERLORD) */
+.paper h2{font-family:var(--mono);font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);
+  margin:40px 0 14px;padding-top:24px;border-top:1px solid var(--seam)}
+.paper h1{margin:52px 0 4px;text-align:center;font-size:clamp(28px,5vw,40px);font-weight:800;
+  background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+.paper .who{text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+.paper p{margin:0 0 14px;font-size:15px}
+.paper b{color:var(--cream)}
+.paper .step{border:1px solid var(--seam);border-radius:12px;background:var(--wine);padding:16px 20px;margin-bottom:12px}
+.paper .step .t{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--rose);margin-bottom:6px}
+.paper .links{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}
+.paper .links a{font-family:var(--mono);font-size:12px;color:var(--blush);text-decoration:none;border:1px solid var(--seam);border-radius:999px;padding:8px 16px}
+.paper .links a:hover{color:var(--rose);border-color:var(--rose)}
+.warn{color:var(--rose)}
+footer{margin-top:64px;border-top:1px solid var(--seam);padding:26px 0 44px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:18px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--dim)}
+footer a{text-decoration:none}
+footer .spacer{flex:1}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="/">❤ SHAMBA <b>LUV</b></a>
+    <span class="spacer"></span>
+    <a class="back" href="view.html">the live market</a>
+    <a class="back" href="/">← the doorway</a>
+  </div>
+</header>
+
+<!-- ═══ the gate (default) — OVERLORD only ═══ -->
+<main class="wrap" id="lock-gate">
+  <div class="gate">
+    <div class="sigil">⟁</div>
+    <h1>OVERLORD only</h1>
+    <div class="sub">The LP-lock is the OVERLORD's hand. By the <b>OVERLORD protocol</b>, these
+      instructions open only to <b>bankon.eth</b>. Connect to prove the hand.</div>
+    <button class="btn-primary" id="lockgate-connect" type="button">⟁ connect to verify</button>
+    <div class="status" id="lock-status"></div>
+    <div class="alt">Not the OVERLORD? You'll be sent to <a href="view.html">the live market</a> —
+      buy &amp; sell LUV with the preset USDC → LUV swap.</div>
+  </div>
+</main>
+
+<!-- ═══ the instructions (revealed only for the OVERLORD) ═══ -->
+<main class="wrap paper" id="lock-instructions" hidden>
+  <h1>LOCK THE LP</h1>
+  <div class="who" id="lock-who">OVERLORD</div>
+  <p>The two locks that give the value permanence, both through <b>LUVLocker</b>
+  (<a href="https://etherscan.io/address/0xe07ACAde4bE2bbc264EA702880ed988EBae9B898#code" rel="noopener">0xe07A…B898, verified ↗</a>).
+  The full step-by-step runbook — pre-flight reads, the rehearsal, the exact transactions, the
+  OVERSEER handoff — is authoritative in <a href="docs/LOCK_THE_LP.md" rel="noopener">docs/LOCK_THE_LP.md</a>;
+  the interactive console (reads public, write buttons armed only for bankon.eth) is the deploy page.</p>
+
+  <h2>§1 · The liquidity lock (standing priority)</h2>
+  <div class="step"><div class="t">unremovable liquidity</div>
+    Rehearse with 0.001 LP, then lock <b>100% of the circulating LUV/ETH LP</b> into LUVLocker until the
+    unlock date (365 days recommended — <span class="warn">the asset-lock maturity is IMMUTABLE</span>).
+    Re-read the treasury LP balance at execution. This clears the honeypot / unlocked-liquidity flags.</div>
+
+  <h2>§2 · The principal lock, that earns</h2>
+  <div class="step"><div class="t">the teams earn from the principal</div>
+    Deposit the <b>marketing + community</b> allocations into the same vault on its <b>extend-only</b>
+    rail. The vault stays <b>reflection-included</b>, so the locked principal <b>earns the 3% reflection
+    interest the whole time it is locked</b> — route the interest to the IncentiveDistributor to fund the
+    community rewards rail. Locked supply is the largest holder being paid to hold.</div>
+
+  <h2>§3 · The timelock over the supply</h2>
+  <div class="step"><div class="t">emission &amp; allocation, announced before they act</div>
+    The <b>~90% circulating emission</b> (the 100-quadrillion pool) and every <b>allocation decision</b>
+    move behind a <b>timelock</b> — nothing about the supply changes silently. Consensus before custody.</div>
+
+  <p class="warn">⚠ Only bankon.eth (0x10f7Ee…D169) signs. An agent never holds funded keys — the OVERLORD
+  signs in-wallet.</p>
+
+  <div class="links">
+    <a href="docs/LOCK_THE_LP.md" rel="noopener">📄 the full runbook — LOCK_THE_LP.md</a>
+    <a href="https://etherscan.io/address/0xe07ACAde4bE2bbc264EA702880ed988EBae9B898#writeContract" rel="noopener">LUVLocker — Write ↗</a>
+    <a href="https://etherscan.io/address/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31#readContract" rel="noopener">the pair — getReserves() ↗</a>
+    <a href="luv.live.json" rel="noopener">luv.live.json — the ledger</a>
+    <a href="faq.html#roadmap">← back to the roadmap</a>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>❤ LUV is priceless</span>
+    <span class="spacer"></span>
+    <a href="view.html">the live market</a>
+    <a href="faq.html#roadmap">the roadmap</a>
+    <a href="https://github.com/cypherpunk4096" target="_blank" rel="noopener">⟁ cypherpunk4096</a>
+  </div>
+</footer>
+
+<script src="substrate/luv-lockgate.js?v=1"></script>
+</body>
+</html>
