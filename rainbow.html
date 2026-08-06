@@ -69,10 +69,29 @@ h1{margin:52px 0 6px;text-align:center;font-size:clamp(30px,5.6vw,46px);font-wei
 .zoomrow button:hover{color:var(--rose);border-color:var(--rose)}
 .zoomrow button:disabled{opacity:.4;cursor:default}
 .zoomrow .zoomlvl{font-size:11px;color:var(--dim);min-width:44px;text-align:center}
-.readmore{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:44px 0 8px}
-.btn{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--blush);text-decoration:none;
-  border:1px solid var(--seam);border-radius:999px;padding:8px 18px;transition:color .15s,border-color .15s}
-.btn:hover{color:var(--rose);border-color:var(--rose)}
+.readmore{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;align-items:center;margin:44px 0 8px}
+/* ── the outer ring, massively — a gradient halo around every button ── */
+.btn{position:relative;display:inline-block;font-family:var(--mono);font-size:12.5px;letter-spacing:.06em;color:var(--blush);
+  text-decoration:none;border:2px solid transparent;border-radius:999px;padding:11px 24px;
+  background:linear-gradient(var(--wine),var(--wine)) padding-box,
+             linear-gradient(100deg,var(--pink),var(--purple),var(--gold)) border-box;
+  box-shadow:0 0 18px -6px rgba(255,0,110,.55),0 0 34px -14px rgba(131,56,236,.6);
+  transition:transform .15s,box-shadow .15s,color .15s}
+.btn::after{content:'';position:absolute;inset:-7px;border-radius:999px;border:1px solid rgba(255,0,110,.28);
+  pointer-events:none;transition:inset .15s,border-color .15s}
+.btn:hover{color:var(--cream);transform:translateY(-2px);
+  box-shadow:0 0 26px -4px rgba(255,0,110,.8),0 0 54px -12px rgba(131,56,236,.85)}
+.btn:hover::after{inset:-10px;border-color:rgba(227,178,95,.5)}
+/* the offering — the Uniswap button leads the row, unmistakably */
+.uni-cta{position:relative;display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:16px;color:#fff;
+  text-decoration:none;border-radius:999px;padding:15px 30px;flex-basis:100%;justify-content:center;max-width:520px;margin:0 auto;
+  background:linear-gradient(100deg,#FF007A,var(--purple));
+  box-shadow:0 0 30px -6px rgba(255,0,122,.85),0 0 70px -18px rgba(131,56,236,.9);
+  transition:transform .15s,box-shadow .15s}
+.uni-cta::after{content:'';position:absolute;inset:-8px;border-radius:999px;border:1px solid rgba(255,0,122,.45);pointer-events:none}
+.uni-cta:hover{color:#fff;transform:translateY(-2px) scale(1.02);
+  box-shadow:0 0 44px -4px rgba(255,0,122,1),0 0 90px -16px rgba(131,56,236,1)}
+.uni-cta img{height:20px;width:auto}
 footer{margin-top:64px;border-top:1px solid var(--seam);padding:26px 0 44px}
 footer .wrap{max-width:1180px;display:flex;flex-wrap:wrap;gap:18px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--dim)}
 footer a{text-decoration:none}
@@ -508,6 +527,8 @@ python3 -c "print((1050000-961239)*600/86400)"                     # next halvin
   BTC genesis: Nakamoto, block 0, 2009-01-03.</p>
 
   <div class="readmore">
+    <a class="uni-cta" href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="the offering — preset USDC → LUV · set slippage ~10%">
+      <img src="gfx/brand/uniswap_horizontal_white.svg" alt="Uniswap"> · buy &amp; sell <b>LUV</b> live ❤</a>
     <a class="btn" href="sentiment.html">🎭 SENTIMENT — the measurement paper</a>
     <a class="btn" href="https://github.com/cypherpunk4096/sentiment" rel="noopener">⟁ published to cypherpunk4096</a>
     <a class="btn" href="wei.html">⚖️ the WEI of LUV</a>
