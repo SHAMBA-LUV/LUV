@@ -126,6 +126,15 @@ a.collect .uni-logo{height:20px}
 .badge{padding:3px 11px;border-radius:999px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--seam)}
 .badge.imminent{color:var(--gold);border-color:var(--gold)}
 .badge.live{color:var(--ink);background:var(--rose);border-color:var(--rose)}
+/* ── VERIFIED — the green checkmark ── */
+.vbadge{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12.5px;letter-spacing:.18em;
+  text-transform:uppercase;color:#7ee2a0;border:1px solid rgba(126,226,160,.55);border-radius:999px;padding:10px 22px;
+  text-decoration:none;background:rgba(24,52,36,.35)}
+.vbadge:hover{border-color:#7ee2a0;box-shadow:0 0 22px -8px rgba(126,226,160,.6)}
+.vcheck{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;
+  background:#21a45d;color:#fff;font-size:12px;font-weight:800}
+.vnote{color:var(--dim);font-size:12.5px;margin-top:10px}
+.vnote a{color:var(--blush)}
 .strip .addr{color:var(--blush);word-break:break-all}
 .strip .note{color:var(--dim);font-size:12px}
 .btn{font-family:var(--mono);font-size:12px;background:none;border:1px solid var(--seam);color:var(--cream);border-radius:7px;padding:7px 13px;text-decoration:none;display:inline-block}
@@ -546,13 +555,12 @@ footer .brandmark:hover img{opacity:1}
     </div>
   </div>
 
-  <!-- Contract ledger lives in the FAQ (every address, verifiable) -->
+  <!-- VERIFIED — the green checkmark; ledger + standard details live in the FAQ & docs -->
   <section class="landing-only" style="text-align:center">
-    <div class="sechead gold">in-house contracts — all open, all verifiable</div>
-    <p style="color:var(--dim);max-width:60ch;margin:0 auto 16px">The full ledger — token, launcher, airdrop,
-    distributor, locker, and the ERC-4337 wallet stack — with every mainnet address and an explorer link,
-    lives in the FAQ.</p>
-    <a class="btn" href="faq.html#contracts">📜 see the full contract ledger →</a>
+    <a class="vbadge" href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254#code" rel="noopener"
+       title="verified means the green checkmark: published source compiled and matched against the deployed bytecode on Etherscan">
+      <span class="vcheck">✓</span>VERIFIED · cypherpunk2048 standard</a>
+    <p class="vnote">in-house contracts, all open — <a href="faq.html#contracts">the full ledger in the FAQ 📜</a> · <a href="docs.html">the docs 📚</a></p>
   </section>
 
   <!-- The roadmap — from priceless to multi-billion (emotonomics) -->

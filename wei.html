@@ -93,10 +93,10 @@ footer .brandmark:hover img{opacity:1}
 
 <main class="wrap paper">
   <h1>THE WEI OF LUV</h1>
-  <div class="sub">On the smallest units of two currencies, the exact arithmetic of the LUV/ETH price, and where the pool's ETH comes from</div>
+  <div class="sub">On the smallest units of currencies — the satoshi, the wei, and the wei of LUV — the exact arithmetic of the LUV/ETH price, and where the pool's ETH comes from</div>
   <div class="paperkind">the arithmetic paper · born at ten wei</div>
 
-  <div class="preface"><b>Preface.</b> Every figure below is verified on-chain as of 2026-08-03, read
+  <div class="preface"><b>Preface.</b> Every figure below is verified on-chain as of 2026-08-05, read
   directly from <em>getReserves()</em> on the pair
   <a href="https://etherscan.io/address/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31" rel="noopener" target="_blank">0x57D2…8a31</a>,
   and every calculation is reproducible from the appendix. Markdown source:
@@ -115,52 +115,82 @@ footer .brandmark:hover img{opacity:1}
   0.000000000000000001 LUV. The total supply, the 36-digit repunit
   <em>111111111111111111111111111111111111</em> LUV-wei, is ≈ 111.1 quadrillion whole LUV. Down to the
   last wei, the supply is ones.</p>
+  <p><b>Bitcoin's atomic unit, for comparison, is the satoshi.</b> One bitcoin divides into exactly</p>
+  <pre>1 BTC = 10⁸ sats = 100,000,000 satoshi        1 sat = 0.00000001 BTC</pre>
+  <p>— eight decimal places, fixed in Bitcoin's source <span class="cite">(Nakamoto 2008)</span>. Ethereum's
+  wei slices its coin <b>ten orders of magnitude finer</b>: 10¹⁸ atomic units per ETH against 10⁸ per BTC —
+  one wei is to the ether what a <em>ten-billionth of a satoshi</em> would be to the bitcoin. And
+  <b>USDC, the dollar's on-chain expression, carries just 6 decimals</b> — 1 USDC = 10⁶ base units, read
+  from the verified mainnet contract
+  <a href="https://etherscan.io/token/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" rel="noopener" target="_blank">0xA0b8…eB48 ↗</a>
+  (source: <a href="https://github.com/circlefin/stablecoin-evm" rel="noopener">circlefin/stablecoin-evm ↗</a>).
+  The decimals ladder of the currencies LUV meets: <b>USDC 10⁶ · BTC 10⁸ · ETH 10¹⁸ · LUV 10¹⁸</b> —
+  LUV carries the dollar's rail at Ethereum's full atomic resolution.</p>
 
   <h2><span class="n">II.</span> The price of LUV, measured in wei</h2>
-  <p>The Uniswap V2 pair prices LUV by the ratio of its reserves. As of 2026-08-03:</p>
-  <pre>LUV reserve  = 1,974,737,045,122,436.05587… LUV
-WETH reserve = 0.137747730452916271 ETH = 137747730452916271 wei
+  <p>The Uniswap V2 pair prices LUV by the ratio of its reserves, read live from
+  <em>getReserves()</em> on the <b>verified ✓</b> pair contract. As of 2026-08-05:</p>
+  <pre>LUV reserve  = 1,724,567,606,433,016.948103… LUV
+WETH reserve = 0.157791715097253640 ETH = 157791715097253640 wei
 
 price(ONE LUV) = WETH reserve ÷ LUV reserve
-               = 6.975497 × 10⁻¹⁷ ETH
-               = <b>69.754974 wei</b></pre>
+               = 0.000000000000000091496392781967952166 ETH
+               = <b>91.496392781967952166 wei</b>   (full 18-decimal precision)</pre>
+  <p>The price is carried to <b>all 18 decimals</b> because <b>1 × 10¹⁸ atomic units is the entire mint
+  of one whole unit</b> — 1 ETH <em>is</em> 10¹⁸ wei, 1 LUV <em>is</em> 10¹⁸ LUV-wei — so a price
+  written to 18 decimal places of wei is exact down to the last atomic unit; anything shorter is a
+  display choice, never a stored one. Read the other way at the same precision:
+  <b>1 wei = 0.010929392619695487 LUV = exactly 10,929,392,619,695,487 LUV-wei</b>.</p>
   <div class="hi"><div class="t">the headline</div>
-  <p><b>ONE LUV costs 69.75 wei.</b> A whole LUV — a quintillion LUV-wei — trades for fewer than seventy
-  of ETH's smallest units. And genesis was cleaner still: the pool was seeded at price
+  <p><b>ONE LUV costs 91.50 wei.</b> A whole LUV — a quintillion LUV-wei — trades for fewer than a
+  hundred of ETH's smallest units. And genesis was cleaner still: the pool was seeded at price
   <b>X = 1.00 × 10⁻¹⁷ ETH = exactly 10 wei per LUV</b>. Today's price is a direct read:
-  <b>6.9755× from X</b>. LUV was born at ten wei.</p></div>
+  <b>9.1496× from X</b>. LUV was born at ten wei.</p></div>
   <ol class="points">
-    <li><b>The wei of LUV in wei of ETH.</b> One LUV-wei ≈ 6.98 × 10⁻¹⁷ wei — the smallest unit of LUV
-    undercuts Ethereum's smallest unit by seventeen orders of magnitude. There is no smaller denominated
-    feeling on the chain.</li>
-    <li><b>LUV per wei.</b> Inverting the price: 1 wei buys <b>0.014336 LUV</b> — about a seventieth of
-    a LUV.</li>
+    <li><b>The wei of LUV in wei of ETH.</b> One LUV-wei = 91.496392781967952166 × 10⁻¹⁸ wei
+    ≈ 9.15 × 10⁻¹⁷ wei — the smallest unit of LUV undercuts Ethereum's smallest unit by seventeen
+    orders of magnitude. There is no smaller denominated feeling on the chain.</li>
+    <li><b>LUV per wei.</b> Inverting the price: 1 wei buys <b>0.010929392619695487 LUV</b> —
+    exactly 10,929,392,619,695,487 LUV-wei, about a ninety-first of a LUV.</li>
     <li><b>Integer-story pricing.</b> Because X was fixed at a round ten wei, every future price is a
     small, legible multiplier — the X multiplier shown live on <a href="view.html">the measure</a>.</li>
   </ol>
 
   <h2><span class="n">III.</span> LUV and ETH, price against price</h2>
-  <p>Using the pair's own USD leg at the same instant — ONE LUV = $1.358 × 10⁻¹³, implied ETH ≈
-  <b>$1,946.9</b> (priceUsd ÷ priceNative) — the two currencies compare denomination by denomination:</p>
+  <p>The two legs come from two different kinds of source, and the difference matters.
+  <b>The LUV leg is verified ✓</b>: it is computed above from live reserves on the pair contract —
+  on-chain state anyone can re-read; the price is <em>created</em> by the liquidity pair, and
+  aggregators are enrichment, never the source. <b>The ETH-dollar leg is actual</b>: at the same
+  instant (2026-08-05) the references agree at <b>ETH ≈ $1,909</b> —
+  <a href="https://defillama.com/chain/Ethereum" rel="noopener" target="_blank">DeFiLlama ↗</a> $1,909.08,
+  <a href="https://www.coingecko.com/en/coins/ethereum" rel="noopener" target="_blank">CoinGecko ↗</a> $1,908.90,
+  cross-checked against <a href="https://coinmarketcap.com/currencies/ethereum/" rel="noopener" target="_blank">CoinMarketCap ↗</a>.
+  So ONE LUV = 9.1496 × 10⁻¹⁷ ETH × $1,909 = <b>$1.747 × 10⁻¹³</b>, and the two currencies compare
+  denomination by denomination:</p>
   <div class="tablewrap"><table>
     <tr><th>quantity</th><th>in the other currency</th><th>in USD</th></tr>
-    <tr><td>1 wei (ETH)</td><td>0.014336 LUV</td><td>$1.95 × 10⁻¹⁵</td></tr>
-    <tr><td>1 gwei (10⁹ wei)</td><td>14,335,895 LUV (~14.3M)</td><td>$1.95 × 10⁻⁶</td></tr>
-    <tr><td>1 ETH (10¹⁸ wei)</td><td>~14.34 quadrillion LUV (mid)</td><td>~$1,947</td></tr>
-    <tr><td>1 LUV-wei</td><td>6.98 × 10⁻¹⁷ wei</td><td>$1.36 × 10⁻³¹</td></tr>
-    <tr><td>1 LUV</td><td>69.754974 wei</td><td>$1.358 × 10⁻¹³</td></tr>
-    <tr><td>1 billion LUV — <em>some LUV</em>, the gesture</td><td>6.975 × 10⁻⁸ ETH</td><td>$0.000136</td></tr>
-    <tr><td>100 billion LUV — <em>a lot of LUV</em></td><td>6.975 × 10⁻⁶ ETH</td><td>$0.0136</td></tr>
-    <tr><td><b>1 trillion LUV — thanks a million millions</b></td><td><b>6.975 × 10⁻⁵ ETH</b></td><td><b>$0.1358</b></td></tr>
+    <tr><td>1 wei (ETH)</td><td>0.010929392619695487 LUV</td><td>$1.91 × 10⁻¹⁵</td></tr>
+    <tr><td>1 gwei (10⁹ wei)</td><td>10,929,393 LUV (~10.9M)</td><td>$1.91 × 10⁻⁶</td></tr>
+    <tr><td>1 ETH (10¹⁸ wei)</td><td>~10.93 quadrillion LUV (mid)</td><td>~$1,909</td></tr>
+    <tr><td>1 LUV-wei</td><td>9.15 × 10⁻¹⁷ wei</td><td>$1.75 × 10⁻³¹</td></tr>
+    <tr><td>1 LUV</td><td>91.496392781967952166 wei</td><td>$1.747 × 10⁻¹³</td></tr>
+    <tr><td>1 billion LUV — <em>some LUV</em>, the gesture</td><td>9.150 × 10⁻⁸ ETH</td><td>$0.000175</td></tr>
+    <tr><td>100 billion LUV — <em>a lot of LUV</em></td><td>9.150 × 10⁻⁶ ETH</td><td>$0.0175</td></tr>
+    <tr><td><b>1 trillion LUV — thanks a million millions</b></td><td><b>9.150 × 10⁻⁵ ETH</b></td><td><b>$0.1747</b></td></tr>
   </table></div>
-  <p>The single number beneath the whole table: <b>price(ETH) ÷ price(LUV) = 1.434 × 10¹⁶</b> — one ETH
-  is worth what ~14.34 quadrillion LUV are worth. That ratio and the per-ETH row are the same fact stated
+  <p>The single number beneath the whole table: <b>price(ETH) ÷ price(LUV) = 1.093 × 10¹⁶</b> — one ETH
+  is worth what ~10.93 quadrillion LUV are worth. That ratio and the per-ETH row are the same fact stated
   twice, which is the internal-consistency check.</p>
+  <p><b>A note on listings.</b> DeFiLlama, CoinGecko, and CoinMarketCap do not yet carry a LUV feed —
+  which is why the LUV leg is read from the chain, not an index. Absence from an aggregator says a token
+  is unindexed; the <b>green checkmark ✓</b> on the
+  <a href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254#code" rel="noopener" target="_blank">verified contract ↗</a>
+  says what it <em>is</em>. Verification over trust, in both directions.</p>
   <p><b>Gas in LUV.</b> A plain ETH transfer (21,000 gas at 1 gwei) costs 2.1 × 10⁻⁵ ETH ≈
-  <b>301 billion LUV</b> — three "a lot of LUV" gestures just to move ETH once. Wallet-to-wallet LUV
-  transfers carry <b>0% token fee</b> by design.</p>
-  <p><b>The mid-price caveat.</b> "1 ETH buys 14.34 quadrillion LUV" is the ratio, not an executable
-  trade: the pool holds 1.97 quadrillion LUV, the constant-product curve moves price against size, and
+  <b>229.5 billion LUV</b> — more than two "a lot of LUV" gestures just to move ETH once. Wallet-to-wallet
+  LUV transfers carry <b>0% token fee</b> by design.</p>
+  <p><b>The mid-price caveat.</b> "1 ETH buys 10.93 quadrillion LUV" is the ratio, not an executable
+  trade: the pool holds 1.72 quadrillion LUV, the constant-product curve moves price against size, and
   real fills bear the 0.3% LP fee plus LUV's 5% transfer fee — hence the standing ~10% slippage
   guidance.</p>
 
@@ -175,8 +205,8 @@ price(ONE LUV) = WETH reserve ÷ LUV reserve
     The seed arithmetic is exact: (2¹¹²−1) × 10 wei ÷ 10¹⁸ = 0.05192296858… ETH — the ETH leg
     <em>is</em> the LUV leg times ten wei.</li>
     <li><b>Buys (continuous).</b> Every purchase deposits WETH and withdraws LUV. The ETH reserve's
-    growth from 0.05192 to 0.13775 ETH — a <b>2.653× liquidity multiplier from X</b> — is, net of the
-    few sells, accumulated buyer ETH. Price multiplier (6.98×) says what enthusiasm claims; the ETH leg
+    growth from 0.05192 to 0.15779 ETH — a <b>3.039× liquidity multiplier from X</b> — is, net of the
+    few sells, accumulated buyer ETH. Price multiplier (9.15×) says what enthusiasm claims; the ETH leg
     says what it deposited.</li>
     <li><b>The 1% auto-liquidity fee (protocol-native).</b> Of LUV's 5% trade fee, one point accrues as
     LUV in the token contract and is swapped to ETH via public <em>processFees()</em> toward the
@@ -195,7 +225,7 @@ price(ONE LUV) = WETH reserve ÷ LUV reserve
   which now holds <b>4,980,559,643,425,538 LUV (4.483% of supply)</b> — burned forever and
   <b>excluded from reflections</b> (verified: <em>isExcludedFromReflection = true</em>). Reported market
   capitalization = price × counted supply, so the burn <em>reduced the reported cap by exactly its
-  share</em> — at today's price, ≈ $15,089 full-supply versus ≈ $14,413 excluding the burn — while every
+  share</em> — at today's price, ≈ $19,407 full-supply versus ≈ $18,537 excluding the burn — while every
   surviving holder's claim on future reflections grew, since a burned balance can never absorb a
   reflection. <b>The cap fell; each remaining LUV's share of the feeling rose.</b></p>
 
@@ -235,7 +265,9 @@ cast call 0x2711…8254 "isExcludedFromReflection(address)" 0x…dEaD</pre>
   <p class="cite" style="font-size:13px">References: Wood, G. (2014), "Ethereum: A Secure Decentralised
   Generalised Transaction Ledger" (the Yellow Paper, defining wei) · Dai, W. (1998), "b-money" · Adams,
   H., Zinsmeister, N., &amp; Robinson, D. (2020), "Uniswap v2 Core" (uint112 reserves) · Nakamoto, S.
-  (2008), "Bitcoin: A Peer-to-Peer Electronic Cash System."</p>
+  (2008), "Bitcoin: A Peer-to-Peer Electronic Cash System" (the 10⁸-satoshi denomination) · Circle,
+  "USDC" — <a href="https://github.com/circlefin/stablecoin-evm" rel="noopener">stablecoin-evm source ↗</a>
+  (6 decimals). ETH/USD reference data: DeFiLlama, CoinGecko, CoinMarketCap (2026-08-05).</p>
 
   <div class="readmore">
     <a class="btn" href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/WEI_OF_LUV.md" rel="noopener">📄 this paper on GitHub</a>
