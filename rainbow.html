@@ -427,7 +427,9 @@ footer .brandmark:hover img{opacity:1}
   <p>Read as a price, that sentence is sentiment — the upper bands talking. Read as a supply, it is
   consensus code, and the guarantee is real arithmetic: the block subsidy started at 50 BTC and halves
   every 210,000 blocks, so the total that can ever exist is a finite geometric sum —</p>
-  <pre>total supply = 210,000 × Σ floor(5,000,000,000 / 2ⁱ) sat   for i = 0 … 32
+  <pre>total supply = 210,000 × Σᵢ₌₀³² ⌊5,000,000,000 / 2ⁱ⌋ sat
+             = 210,000 × (5,000,000,000 + 2,500,000,000 + … + 2 + 1) sat
+             = 210,000 × 9,999,999,989 sat
              = 2,099,999,997,690,000 sat
              = <b>20,999,999.97690000 BTC</b>   (full satoshi precision — 8 decimals)
 
