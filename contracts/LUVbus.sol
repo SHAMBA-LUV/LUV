@@ -74,6 +74,10 @@ contract LUVbus {
 
     constructor() { owner = msg.sender; emit OwnershipTransferred(address(0), msg.sender); }
 
+    /// The rail is CHAIN-AWARE: one identical unit deploys on every chain (ETH anchor +
+    /// POL/ARB/OPT/0G) and knows where it is — the skill is shared, the chain is read.
+    function chainId() external view returns (uint256) { return block.chainid; }
+
     function transferOwnership(address newOwner) external onlyOwner {
         pendingOwner = newOwner;
         emit OwnershipTransferStarted(owner, newOwner);

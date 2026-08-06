@@ -6,14 +6,23 @@ ABI interaction: https://luv.pythai.net/luvbus.html
 **Suite home (ops):** DeltaVerse `deploy/multisend/` — bundle `deploy/suites/multisend.xml`,
 registry `deploy/suites.json` → `settlement-multisend` (settlement / payment-infra, stage E12, aux)
 
-One rail, two implementations:
+One rail, two implementations. **Multichain doctrine (operator, 2026-08-05): LUV mints on
+POL, ARB, OPT and 0G — `MultiSend.sol` is MAINTAINED as the batch rail on the expansion
+chains, not a frozen reference.** **The rail is chain-aware: `chainId()` (`block.chainid`)
+tells each deployment where it is — multisend just needs to know which chain it is on and
+share its skill across the chains.** **LUVbus is the FOCUS unit** — the ETH-anchored
+multisend deployed identically on every chain (MultiSend stays the import-based OZ
+reference for builds that specifically want it); on every chain the wiring rule is the same — fee- and
+maxTx-exempt the rail on that chain's LUV deployment before it carries LUV.
+
+
 
 | | `LUVbus.sol` | `MultiSend.sol` |
 |---|---|---|
-| chain | **Ethereum mainnet** (LUV-first) | **Polygon** (reference original) |
+| chain | **Ethereum mainnet** (LUV-first) | **POL · ARB · OPT · 0G** — the expansion chains (Polygon original, MAINTAINED) |
 | dependencies | **zero** — Ownable2Step/Pausable/ReentrancyGuard/SafeTransfer inlined (cypherpunk4096) | OpenZeppelin (`Ownable2Step`, `SafeERC20`, `ReentrancyGuard`, `Pausable`) |
 | reverts | custom errors (no revert strings in runtime) | require strings |
-| native leg | ETH (`payable` batch entrypoints — fund with tx value) | MATIC |
+| native leg | ETH (`payable` batch entrypoints — fund with tx value) | the chain's gas coin — POL / ETH (ARB, OPT) / 0G |
 | one-way switch | **`retire()` — pause ON forever**, no unpause; withdraw/recover stay live | — |
 | ownership | two-step + `transferOwnershipToAddress` (direct) + `renounceOwnership` (one-way; **sweep first** — renounce kills withdrawals) | two-step |
 | compile | solc 0.8.24+ (checked 0.8.36, optimizer 200) | solc 0.8.23 + OZ remapping |
@@ -69,3 +78,12 @@ Both must be fee-exempt; neither touches the other's accounting.
   set the default seat amount.
 - Console: https://luv.pythai.net/luvbus.html (paste the deployed address; reads via the
   wallet provider, writes arm only for the owner).
+
+## The allchain map
+
+Each per-chain LUVbus deployment maps onto **agenticplace.pythai.net/allchain.html from the
+database**: the deploy record (live-registry manifest: suite, contract, address, tx, verify
+status) enters the AgenticPlace verified database (`agenticplace.pythai.net/allchain/api`),
+keyed by `(chainId, address)` — the `chainId` the unit itself reports via `chainId()`. The
+allchain board then renders the rail across every chain it lives on: one skill, every chain,
+one map.

@@ -15,10 +15,12 @@ import "@openzeppelin/contracts/utils/Pausable.sol";
  * - Pausable & non-reentrant
  * - Recover functions for stuck balances
  *
- * SUITE NOTE (DeltaVerse multisend suite): this is the POLYGON REFERENCE version,
- * OpenZeppelin-based, kept verbatim as received. For Ethereum mainnet use LUVbus.sol
+ * SUITE NOTE (multisend suite): the MAINTAINED multichain rail — LUV mints on
+ * POL, ARB, OPT and 0G, and this OpenZeppelin-based version serves those chains
+ * ("native" = the chain's own gas coin: POL on Polygon, ETH on Arbitrum/Optimism,
+ * 0G on 0G — the code is chain-agnostic). For Ethereum mainnet use LUVbus.sol
  * (same rail, zero dependencies, custom errors, calldata-lean modes, one-way retire
- * switch) — see deploy/multisend/README.md and docs/MULTISEND.md.
+ * switch) — see docs/MULTISEND.md.
  */
 contract MultiSend is Ownable2Step, ReentrancyGuard, Pausable {
     using SafeERC20 for IERC20;
@@ -37,6 +39,10 @@ contract MultiSend is Ownable2Step, ReentrancyGuard, Pausable {
     event DefaultAmountUpdated(address indexed token, uint256 amount);
 
     constructor() Ownable(msg.sender) {}
+
+    /// CHAIN-AWARE (maintained addition): the same unit serves POL/ARB/OPT/0G and knows
+    /// which chain it is on — one skill shared across the chains.
+    function chainId() external view returns (uint256) { return block.chainid; }
 
     // Admin controls
     function setMaxBatchSize(uint256 _max) external onlyOwner {

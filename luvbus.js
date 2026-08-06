@@ -84,8 +84,21 @@
     el('l-read').href = base + '#readContract';
     el('l-write').href = base + '#writeContract';
   }
+  var CHAINS = { 1: 'Ethereum', 137: 'Polygon (POL)', 42161: 'Arbitrum One', 10: 'OP Mainnet' };
+  function showChain() {
+    if (!eth()) return;
+    eth().request({ method: 'eth_chainId' }).then(function (r) {
+      var id = Number(BigInt(r));
+      var v = el('d-chain');
+      v.textContent = (CHAINS[id] || 'chain id ' + id) +
+        (id === 1 ? '' : ' — the rail is chain-aware (chainId()); Etherscan links here point at Ethereum mainnet');
+      v.className = 'v' + (id === 1 ? ' ok' : '');
+    }).catch(function () { /* provider quiet */ });
+  }
+
   function refresh() {
     refreshLinks();
+    showChain();
     var bus = busAddr();
     if (!eth()) { status('s-admin', 'no wallet provider found — install a wallet to drive the bus', 'err'); return; }
     if (!bus) { status('s-admin', 'set the LUVbus contract address first (deploy contracts/LUVbus.sol)', ''); return; }
