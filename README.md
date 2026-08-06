@@ -56,6 +56,8 @@ contracts/   ShambaLuv.sol (corrected RFI token) · ShambaLuvAirdrop.sol (signat
              calldata-lean modes ordered by cost, one-way retire switch, renounce + direct
              ownership handoff; owner should setFeeExemption(bus) on the token; operator
              console with diagnostics + ABI interaction: https://luv.pythai.net/luvbus.html)
+             MultiSend.sol (Polygon reference original, OpenZeppelin — the multisend suite's
+             second half; suite doc: docs/MULTISEND.md)
 test/        19 forge tests (self-contained, no forge-std)
 deploy/      anvil deploy + a 29-check live hard-test (deploy-and-test-anvil.mjs)
 auth/        self-hosted social login → sovereign wallet → wallet-to-wallet 1T-LUV gesture

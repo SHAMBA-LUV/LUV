@@ -100,9 +100,9 @@ one transaction:
 - **Contract:** [`contracts/LUVbus.sol`](../contracts/LUVbus.sol) — Ethereum batch
   multisend, zero dependencies, custom errors, calldata-lean modes ordered by cost
   (`UsingDefault` cheapest → `Uniform` → `EqualSplit` → variable), one-way `retire()`
-  switch, renounce + direct ownership handoff. Suite home:
-  `DeltaVerse/deploy/multisend/` (with the Polygon reference `MultiSend.sol`);
-  doc: `DeltaVerse/docs/MULTISEND.md`.
+  switch, renounce + direct ownership handoff. Polygon reference:
+  [`contracts/MultiSend.sol`](../contracts/MultiSend.sol) · suite doc:
+  [`docs/MULTISEND.md`](MULTISEND.md) (ops home: DeltaVerse `deploy/multisend/`).
 - **Console:** https://luv.pythai.net/luvbus.html — diagnostics + ABI interaction via the
   wallet provider only.
 - **Owner wiring (same discipline as the distributor):** after deploying the bus,
