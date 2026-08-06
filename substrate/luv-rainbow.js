@@ -85,6 +85,24 @@
       svg.appendChild(el('text', { x: L - 6, y: Y(d) + 4, fill: '#b98da0', 'font-size': 10.5, 'text-anchor': 'end', 'font-family': 'monospace' }, priceLabel(d)));
     }
 
+    // ── the $1,000 lattice — BTC accurate to 1k increments wherever the view holds them ──
+    // Every $1,000 multiple gets a gridline when it stays distinguishable (≥5px from
+    // the last drawn) and a label when there's room (≥15px) — zoomed in, the read is
+    // exact to the thousand; zoomed out, the lattice thins itself instead of smearing.
+    var lastLineY = Infinity, lastLabelY = Infinity;
+    for (var kUsd = 1000; kUsd <= 1e6; kUsd += 1000) {
+      var lg = Math.log10(kUsd);
+      if (lg <= yLo || lg >= yHi || lg === Math.floor(lg)) continue; // decades already drawn
+      var ky = Y(lg);
+      if (lastLineY - ky < 5) continue;
+      svg.appendChild(el('line', { x1: L, y1: ky, x2: W - R, y2: ky, stroke: '#4a1f30', 'stroke-width': 0.3, 'stroke-opacity': 0.7 }));
+      lastLineY = ky;
+      if (lastLabelY - ky >= 15) {
+        svg.appendChild(el('text', { x: L - 6, y: ky + 3.5, fill: '#7d5d6c', 'font-size': 8.5, 'text-anchor': 'end', 'font-family': 'monospace' }, '$' + (kUsd / 1000) + 'k'));
+        lastLabelY = ky;
+      }
+    }
+
     // ── year ticks ──
     var yearTicks = [2010, 2011, 2012, 2014, 2016, 2020, 2024, 2028, 2032, 2036, 2040, 2050, 2070, 2100, 2140];
     for (var yi = 0; yi < yearTicks.length; yi++) {
@@ -163,7 +181,7 @@
   var SCALE_LABELS = ['$10k', '$100k', '$1M', '$10M', '$100M', '$1B', '$2B', '$10B', '$100B', '$1T', '$2T', '$10T', '$100T'];
 
   var DVLuvRainbow = {
-    FIT: FIT, BANDS: BANDS, GENESIS: GENESIS, version: '1.2.0',
+    FIT: FIT, BANDS: BANDS, GENESIS: GENESIS, version: '1.3.0',
     SCALES: SCALES, SCALE_LABELS: SCALE_LABELS,
     center: function (days) { return Math.pow(10, centerLog(days)); },
     render: render
