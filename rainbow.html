@@ -121,6 +121,14 @@ footer .brandmark:hover img{opacity:1}
   </div>
   <div class="chartbox" id="chartbox" hidden></div>
 
+  <div class="hi"><div class="t">🌈 the rainbow substrate — drawn in your browser</div>
+  <p><b>This rainbow is not an image.</b> It is rendered live by <b>DVLuvRainbow</b>, a DeltaVerse
+  substrate (<a href="substrate/luv-rainbow.js" rel="noopener">readable source</a>, zero dependencies,
+  zero network calls): the published fit and the nine bands, redrawn from the arithmetic every time
+  the page opens. The fit is public — the <em>measured price path</em> above stays login-delivered.
+  The dot is the page's dated figure (BTC $64,482, 2026-08-05).</p></div>
+  <div class="chartbox"><div data-luvrainbow data-from="2010" data-to="2040" data-price="64482" data-date="2026-08-05"></div></div>
+
   <div class="hi gated" hidden><div class="t">you are here</div>
   <p><b>BTC $64,482 sits in the "accumulate" band</b> — 10<sup>−0.28</sup> below the center line.
   The center line values today at $121,932; the dot is where the market disagrees with the curve, which
@@ -526,6 +534,7 @@ python3 -c "print((1050000-961239)*600/86400)"                     # next halvin
   </div>
 </footer>
 
+<script src="substrate/luv-rainbow.js?v=1" defer></script>
 <script src="rainbow.js?v=2" defer></script>
 </body>
 </html>
