@@ -199,6 +199,24 @@ price(ONE LUV) = WETH reserve ÷ LUV reserve
   surviving holder's claim on future reflections grew, since a burned balance can never absorb a
   reflection. <b>The cap fell; each remaining LUV's share of the feeling rose.</b></p>
 
+  <h2><span class="n">VI.</span> The contracts — every address, verified on-chain</h2>
+  <p>Each number in this paper reads from a contract you can open. All are verified on Etherscan (the
+  green checkmark: published source compiled and matched to the deployed bytecode); the complete
+  machine-readable ledger is <a href="luv.live.json" rel="noopener">luv.live.json</a>.</p>
+  <div class="tablewrap"><table>
+    <tr><th>contract</th><th>address</th><th>verify</th></tr>
+    <tr><td>ShambaLuv — the LUV token</td><td>0x2711111111683B8708cb9a48cBf36a51315F8254</td><td><a href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254#code" rel="noopener" target="_blank">source ✓ ↗</a></td></tr>
+    <tr><td>Uniswap V2 pair — LUV/WETH</td><td>0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31</td><td><a href="https://etherscan.io/address/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31#readContract" rel="noopener" target="_blank">getReserves() ↗</a></td></tr>
+    <tr><td>IncentiveDistributor — the earn rail</td><td>0x607E477AB12406A3294A7Ba63817103f92D8f806</td><td><a href="https://etherscan.io/address/0x607E477AB12406A3294A7Ba63817103f92D8f806#code" rel="noopener" target="_blank">source ✓ ↗</a></td></tr>
+    <tr><td>LUVLocker — the vault</td><td>0xe07ACAde4bE2bbc264EA702880ed988EBae9B898</td><td><a href="https://etherscan.io/address/0xe07ACAde4bE2bbc264EA702880ed988EBae9B898#code" rel="noopener" target="_blank">source ✓ ↗</a></td></tr>
+    <tr><td>ShambaLuvAirdrop</td><td>0xdf2C1836550c5711EF9c021cB0de86241dc1DEf3</td><td><a href="https://etherscan.io/address/0xdf2C1836550c5711EF9c021cB0de86241dc1DEf3#code" rel="noopener" target="_blank">source ✓ ↗</a></td></tr>
+    <tr><td>LuvBatchGesture — the luvbus</td><td>0xc734e05A6E944D700FdA948fe7B2D0bDF115B4dD</td><td><a href="https://etherscan.io/address/0xc734e05A6E944D700FdA948fe7B2D0bDF115B4dD#code" rel="noopener" target="_blank">source ✓ ↗</a></td></tr>
+    <tr><td>LuvLauncher — the deterministic deployer</td><td>0xBAAc0a44698230661018A9eED48b4e52F14d7523</td><td><a href="https://etherscan.io/address/0xBAAc0a44698230661018A9eED48b4e52F14d7523#code" rel="noopener" target="_blank">source ✓ ↗</a></td></tr>
+    <tr><td>Create3d — the CREATE3 rail</td><td>0xa5A2581d564248801cc5e06DbB764c99c170320A</td><td><a href="https://etherscan.io/address/0xa5A2581d564248801cc5e06DbB764c99c170320A#code" rel="noopener" target="_blank">source ✓ ↗</a></td></tr>
+    <tr><td>LuvAccountFactory — ERC-4337 accounts</td><td>0xB8cb4780d79ce0c6DA7700ad46d976376AC21D09</td><td><a href="https://etherscan.io/address/0xB8cb4780d79ce0c6DA7700ad46d976376AC21D09#code" rel="noopener" target="_blank">source ✓ ↗</a></td></tr>
+    <tr><td>LuvPaymaster — gasless sponsorship</td><td>0xa5Bee1887F145893Fd3698Eb0b4c761d088Ea68A</td><td><a href="https://etherscan.io/address/0xa5Bee1887F145893Fd3698Eb0b4c761d088Ea68A#code" rel="noopener" target="_blank">source ✓ ↗</a></td></tr>
+  </table></div>
+
   <h2>Appendix — reproduce every number</h2>
   <pre># pair reserves (LUV is token0, WETH token1)
 cast call 0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31 "getReserves()"
