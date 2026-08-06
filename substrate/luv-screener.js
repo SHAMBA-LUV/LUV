@@ -199,6 +199,21 @@
     trade.appendChild(el('span', 'scr-slip', 'set slippage ~10% — the 5% reflection fee rides inside every trade'));
     out.appendChild(trade);
 
+    // ── the allegory — LUV is the WEI, and the WEI to LUV ──
+    var alle = el('div', 'scr-allegory');
+    var a1 = el('div', 'scr-allegory-line');
+    a1.appendChild(el('b', null, 'LUV is the WEI, and the WEI to LUV'));
+    a1.appendChild(document.createTextNode(' — the allegory reads both ways: '));
+    a1.appendChild(el('b', 'scr-buy', 'LUV / ETH'));
+    a1.appendChild(document.createTextNode(' prices the gesture in ether · '));
+    a1.appendChild(el('b', 'scr-sell', 'ETH / LUV'));
+    a1.appendChild(document.createTextNode(' prices ether in gestures. Seeded at exactly 10 WEI per LUV — the identity holds in both directions. '));
+    var wl = el('a', null, '⚖️ the arithmetic paper');
+    wl.href = 'wei.html';
+    a1.appendChild(wl);
+    alle.appendChild(a1);
+    out.appendChild(alle);
+
     // ── pair info ──
     var info = el('div', 'scr-info');
     [['pair', PAIR], ['LUV', LUV], ['WETH', WETH]].forEach(function (kv) {
@@ -315,5 +330,5 @@
   setInterval(refresh, 60000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) refresh(); });
 
-  window.DVLuvScreener = { version: '1.2.0', refresh: refresh };
+  window.DVLuvScreener = { version: '1.3.0', refresh: refresh };
 })();
