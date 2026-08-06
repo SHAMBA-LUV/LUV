@@ -4,7 +4,7 @@
 
 *SHAMBA LUV research series — companion to SENTIMENT.md and EMOTONOMICS.md*
 
-**Live web publication:** https://luv.pythai.net/wei.html · live market: https://luv.pythai.net/view.html
+**Live web publication:** https://luv.pythai.net/wei.html · live market: https://luv.pythai.net/view.html · standard publication: https://github.com/cypherpunk4096/wei
 
 All figures verified on-chain as of 2026-08-05 (pair reserves read directly via `getReserves()` on `0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31`). ETH/USD reference: DeFiLlama / CoinGecko / CoinMarketCap, same instant. Every calculation below is reproducible from the appendix.
 
