@@ -89,3 +89,28 @@ should come last** (nothing pays until then, which is the safe direction).
   and `journalctl -u luv.service`).
 - The countdown reads `hh:mm:ss` to the participant's own next drop and self-collects at
   zero.
+
+## The broadcast rail — multisend suite (LUVbus)
+
+The distributor above is the **earn rail**: per-identity, policy-gated, voucher-signed.
+The LUVdrop suite also carries a **broadcast rail** for cohort-wide sends that don't fit
+per-identity policy — compensation sweeps, partner drops, clearing a gesture backlog in
+one transaction:
+
+- **Contract:** [`contracts/LUVbus.sol`](../contracts/LUVbus.sol) — Ethereum batch
+  multisend, zero dependencies, custom errors, calldata-lean modes ordered by cost
+  (`UsingDefault` cheapest → `Uniform` → `EqualSplit` → variable), one-way `retire()`
+  switch, renounce + direct ownership handoff. Suite home:
+  `DeltaVerse/deploy/multisend/` (with the Polygon reference `MultiSend.sol`);
+  doc: `DeltaVerse/docs/MULTISEND.md`.
+- **Console:** https://luv.pythai.net/luvbus.html — diagnostics + ABI interaction via the
+  wallet provider only.
+- **Owner wiring (same discipline as the distributor):** after deploying the bus,
+  `LUV.setFeeExemption(bus, true)` + `LUV.setMaxTxExemption(bus, true)`, then
+  `LUVbus.setDefaultERC20Amount(LUV, seatAmount)` so cohort drops ride the
+  addresses-only mode. Fund the bus **last**, drive
+  `multiSendERC20UsingDefault(LUV, cohort[])`, and `withdrawERC20`/`retire()` when the
+  campaign closes.
+- **Boundary:** the bus never replaces the distributor — earn stays policy-gated and
+  per-identity; the bus is owner-driven and cohort-wide. Both fee-exempt, separate
+  accounting.
