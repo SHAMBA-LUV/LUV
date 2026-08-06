@@ -126,6 +126,37 @@ footer .brandmark:hover img{opacity:1}
   (source: <a href="https://github.com/circlefin/stablecoin-evm" rel="noopener">circlefin/stablecoin-evm ↗</a>).
   The decimals ladder of the currencies LUV meets: <b>USDC 10⁶ · BTC 10⁸ · ETH 10¹⁸ · LUV 10¹⁸</b> —
   LUV carries the dollar's rail at Ethereum's full atomic resolution.</p>
+  <p><b>The same ladder, in bytes.</b> Information counts the way value counts: an atomic unit, then
+  prefix rungs of a thousand — except storage climbs two ladders at once, decimal (SI, powers of ten)
+  and binary (IEC, powers of two), and they never reconcile. From the atom all the way to the largest
+  prefix ever named, every figure exact:</p>
+  <div class="tablewrap"><table>
+    <tr><th>rung</th><th>decimal (SI)</th><th>binary (IEC)</th><th>drift</th></tr>
+    <tr><td>bit</td><td colspan="2">the atom: 0 or 1</td><td>—</td></tr>
+    <tr><td>byte (B)</td><td colspan="2">8 bits</td><td>—</td></tr>
+    <tr><td>kilobyte KB</td><td>10³ = 1,000</td><td>KiB = 2¹⁰ = 1,024</td><td>+2.40%</td></tr>
+    <tr><td>megabyte MB</td><td>10⁶ = 1,000,000</td><td>MiB = 2²⁰ = 1,048,576</td><td>+4.86%</td></tr>
+    <tr><td>gigabyte GB</td><td>10⁹</td><td>GiB = 2³⁰ = 1,073,741,824</td><td>+7.37%</td></tr>
+    <tr><td>terabyte TB</td><td>10¹²</td><td>TiB = 2⁴⁰ = 1,099,511,627,776</td><td>+9.95%</td></tr>
+    <tr><td>petabyte PB</td><td>10¹⁵ — <em>the quadrillion</em></td><td>PiB = 2⁵⁰ = 1,125,899,906,842,624</td><td>+12.59%</td></tr>
+    <tr><td><b>exabyte EB</b></td><td><b>10¹⁸ — the wei rung</b></td><td>EiB = 2⁶⁰ = 1,152,921,504,606,846,976</td><td>+15.29%</td></tr>
+    <tr><td>zettabyte ZB</td><td>10²¹</td><td>ZiB = 2⁷⁰ = 1,180,591,620,717,411,303,424</td><td>+18.06%</td></tr>
+    <tr><td>yottabyte YB</td><td>10²⁴</td><td>YiB = 2⁸⁰ = 1,208,925,819,614,629,174,706,176</td><td>+20.89%</td></tr>
+    <tr><td>ronnabyte RB</td><td>10²⁷ <em>(SI, 2022)</em></td><td>2⁹⁰ = 1,237,940,039,285,380,274,899,124,224 <em>(no IEC name)</em></td><td>+23.79%</td></tr>
+    <tr><td>quettabyte QB</td><td>10³⁰ <em>(SI, 2022)</em></td><td>2¹⁰⁰ = 1,267,650,600,228,229,401,496,703,205,376 <em>(no IEC name)</em></td><td>+26.77%</td></tr>
+  </table></div>
+  <p>Three identities fall out of the ladder. <b>The exabyte is the wei rung</b>:
+  1 EB = 10¹⁸ bytes ↔ 1 ETH = 10¹⁸ wei ↔ 1 LUV = 10¹⁸ LUV-wei — the exabyte, the ether, and the LUV
+  are the same number wearing three units, and the "entire mint of one whole unit" of §II is literally
+  one exabyte of value-atoms. <b>The petabyte is the quadrillion</b> — 10¹⁵, the denomination LUV's
+  supply is quoted in — and 10¹⁵ = 2¹⁵·5¹⁵ divides <em>exactly</em> by 4096 = 2¹²:
+  1 quadrillion / 4096 = 244,140,625,000 with no remainder, one of the few places the two ladders
+  shake hands (the drift column shows how the handshake fails everywhere else: the drift at rung
+  <em>n</em> is exactly 1.024ⁿ − 1, compounding ×1.024 per rung — 12.589991% at peta, 26.765060% at
+  quetta, to the last decimal). And <b>the supply outruns the namespace</b>: the 36-digit repunit mint is
+  111,111.1̄ quettabytes of LUV-wei — five orders of magnitude past the largest prefix the SI has ever
+  named, while the binary ladder has no names at all above 2⁸⁰. Value already lives where the byte
+  ladders end.</p>
 
   <h2><span class="n">II.</span> The price of LUV, measured in wei</h2>
   <p>The Uniswap V2 pair prices LUV by the ratio of its reserves, read live from
