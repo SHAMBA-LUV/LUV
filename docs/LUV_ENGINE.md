@@ -2,7 +2,7 @@
 
 *Frequency output from heart pulsation at 60 bpm — the pulse as attention's clock*
 
-**Live web publication:** https://luv.pythai.net/engine.html
+**Live web publication:** https://luv.pythai.net/engine.html · standard publication: https://github.com/cypherpunk4096/engine
 
 > Preface. Emotonomics defined the field (see *Emotonomics: An Extension of Economics
 > for the Knowledge Economy*, this repository, `docs/EMOTONOMICS.md` and the field paper).
