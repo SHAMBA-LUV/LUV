@@ -50,6 +50,7 @@
   }
   function priceLabel(log10usd) {
     var p = Math.pow(10, log10usd);
+    if (p >= 1e12) return '$' + (p / 1e12) + 'T';
     if (p >= 1e9) return '$' + (p / 1e9) + 'B';
     if (p >= 1e6) return '$' + (p / 1e6) + 'M';
     if (p >= 1e3) return '$' + (p / 1e3) + 'k';
@@ -65,7 +66,9 @@
     var x0 = Math.log10(daysSinceGenesis(Date.UTC(fromYear, 0, 1)));
     var x1 = Math.log10(daysSinceGenesis(Date.UTC(toYear, 0, 1)));
     var yLo = centerLog(Math.pow(10, x0)) - 0.7 - 0.15;
-    var yHi = centerLog(Math.pow(10, x1)) + 1.0 + 0.15;
+    // yMax (USD) pins the price ceiling — the zoom ladder hands in 1e4 … 1e11;
+    // bands above the ceiling clip at the viewport edge, which IS the zoom.
+    var yHi = opts.yMax > 0 ? Math.log10(opts.yMax) : centerLog(Math.pow(10, x1)) + 1.0 + 0.15;
     function X(lgDays) { return L + (lgDays - x0) / (x1 - x0) * (W - L - R); }
     function Y(lgUsd) { return T + (yHi - lgUsd) / (yHi - yLo) * (H - T - B); }
     function Xdate(ms) { return X(Math.log10(daysSinceGenesis(ms))); }
@@ -92,14 +95,15 @@
       svg.appendChild(el('text', { x: xx, y: H - B + 16, fill: '#b98da0', 'font-size': 10.5, 'text-anchor': 'middle', 'font-family': 'monospace' }, String(yr)));
     }
 
-    // ── the nine bands (straight polygons in log-log) ──
+    // ── the nine bands (straight polygons in log-log; the viewport clips the rest) ──
     var c0 = centerLog(Math.pow(10, x0)), c1 = centerLog(Math.pow(10, x1));
     for (var b = 0; b < 9; b++) {
       var lo = -0.7 + b * STEP, hi = lo + STEP;
       var pts = X(x0) + ',' + Y(c0 + lo) + ' ' + X(x1) + ',' + Y(c1 + lo) + ' ' +
                 X(x1) + ',' + Y(c1 + hi) + ' ' + X(x0) + ',' + Y(c0 + hi);
       svg.appendChild(el('polygon', { points: pts, fill: BANDS[b].col, 'fill-opacity': 0.30, stroke: BANDS[b].col, 'stroke-opacity': 0.5, 'stroke-width': 0.5 }));
-      svg.appendChild(el('text', { x: W - R + 6, y: Y(c1 + lo) - 2, fill: BANDS[b].col, 'font-size': 10.5, 'font-family': 'monospace' }, BANDS[b].name));
+      var ly = Y(c1 + lo) - 2;
+      if (ly > T + 8 && ly < H - B) svg.appendChild(el('text', { x: W - R + 6, y: ly, fill: BANDS[b].col, 'font-size': 10.5, 'font-family': 'monospace' }, BANDS[b].name));
     }
 
     // ── the center line ──
@@ -121,12 +125,29 @@
     }
     svg.appendChild(el('text', { x: Xdate(HALVINGS[0]) - 4, y: T + 13, fill: '#e3b25f', 'font-size': 10.5, 'text-anchor': 'end', 'font-family': 'monospace', 'font-weight': 'bold' }, 'halvings ↓'));
 
-    // ── you are here ──
+    // ── you are here — the origin of perspective ──
+    // The dot anchors the read at every zoom: a vertical now-line splits past from
+    // future, a horizontal line carries today's price across both, and when the
+    // scale pushes the dot outside the window it pins to the edge with an arrow —
+    // the reference point never leaves the chart.
     if (opts.price > 0) {
       var dotMs = opts.dateMs || Date.now();
       var dx = Xdate(dotMs), dy = Y(Math.log10(opts.price));
-      svg.appendChild(el('circle', { cx: dx, cy: dy, r: 4.5, fill: '#ff4d6d', stroke: '#f6e7eb', 'stroke-width': 1.5 }));
-      svg.appendChild(el('text', { x: dx + 9, y: dy + 4, fill: '#ffb3c1', 'font-size': 12, 'font-family': 'monospace', 'font-weight': 'bold' }, 'you are here'));
+      var priceTxt = '$' + Math.round(opts.price).toLocaleString('en-US');
+      svg.appendChild(el('line', { x1: dx, y1: T, x2: dx, y2: H - B, stroke: '#ff4d6d', 'stroke-width': 0.8, 'stroke-dasharray': '2 3', 'stroke-opacity': 0.55 }));
+      svg.appendChild(el('text', { x: dx - 5, y: H - B - 8, fill: '#7d5d6c', 'font-size': 9, 'text-anchor': 'end', 'font-family': 'monospace' }, '← past'));
+      svg.appendChild(el('text', { x: dx + 5, y: H - B - 8, fill: '#7d5d6c', 'font-size': 9, 'font-family': 'monospace' }, 'future →'));
+      var inRange = dy >= T + 6 && dy <= H - B - 6;
+      if (inRange) {
+        svg.appendChild(el('line', { x1: L, y1: dy, x2: W - R, y2: dy, stroke: '#ff4d6d', 'stroke-width': 0.8, 'stroke-dasharray': '2 3', 'stroke-opacity': 0.55 }));
+        svg.appendChild(el('circle', { cx: dx, cy: dy, r: 4.5, fill: '#ff4d6d', stroke: '#f6e7eb', 'stroke-width': 1.5 }));
+        svg.appendChild(el('text', { x: dx + 9, y: dy - 6, fill: '#ffb3c1', 'font-size': 12, 'font-family': 'monospace', 'font-weight': 'bold' }, 'you are here · ' + priceTxt));
+      } else {
+        var py = dy < T + 6 ? T + 14 : H - B - 10;
+        var arrow = dy < T + 6 ? '↑' : '↓';
+        svg.appendChild(el('text', { x: dx + 9, y: py + 4, fill: '#ffb3c1', 'font-size': 12, 'font-family': 'monospace', 'font-weight': 'bold' }, arrow + ' you are here · ' + priceTxt));
+        svg.appendChild(el('circle', { cx: dx, cy: py, r: 4, fill: '#ff4d6d', 'fill-opacity': 0.6, stroke: '#f6e7eb', 'stroke-width': 1, 'stroke-dasharray': '2 2' }));
+      }
     }
 
     // ── the signature ──
@@ -137,8 +158,13 @@
     return svg;
   }
 
+  // the zoom ladder: explicit price ceilings the +/− controls step through
+  var SCALES = [1e4, 1e5, 1e6, 1e7, 1e8, 1e9, 2e9, 1e10, 1e11, 1e12, 2e12, 1e13, 1e14];
+  var SCALE_LABELS = ['$10k', '$100k', '$1M', '$10M', '$100M', '$1B', '$2B', '$10B', '$100B', '$1T', '$2T', '$10T', '$100T'];
+
   var DVLuvRainbow = {
-    FIT: FIT, BANDS: BANDS, GENESIS: GENESIS, version: '1.0.0',
+    FIT: FIT, BANDS: BANDS, GENESIS: GENESIS, version: '1.2.0',
+    SCALES: SCALES, SCALE_LABELS: SCALE_LABELS,
     center: function (days) { return Math.pow(10, centerLog(days)); },
     render: render
   };
@@ -152,13 +178,16 @@
       for (var i = 0; i < els.length; i++) {
         var m = els[i];
         if (m.dataset.rainbowBooted) continue; m.dataset.rainbowBooted = '1';
-        render(m, {
+        var o = {
           from: m.dataset.from ? Number(m.dataset.from) : undefined,
           to: m.dataset.to ? Number(m.dataset.to) : undefined,
           height: m.dataset.height ? Number(m.dataset.height) : undefined,
           price: m.dataset.price ? Number(m.dataset.price) : undefined,
-          dateMs: m.dataset.date ? Date.parse(m.dataset.date + 'T00:00:00Z') : undefined
-        });
+          dateMs: m.dataset.date ? Date.parse(m.dataset.date + 'T00:00:00Z') : undefined,
+          yMax: m.dataset.ymax ? Number(m.dataset.ymax) : undefined
+        };
+        m._rainbowOpts = o;   // the zoom ladder re-renders from these
+        render(m, o);
       }
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();

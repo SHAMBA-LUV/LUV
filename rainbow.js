@@ -4,33 +4,62 @@
  * The chart SVG is served by GET /auth/rainbow ONLY to a live session (wallet signature
  * or social login). Unauthenticated visitors see the gate; the prose stays public.
  * CSP-safe: external file, same-origin fetches only, no eval, no inline handlers.
- * Every .chartbox gets +/− zoom: the svg widens inside its own scrolling box.
+ * Every .chartbox gets +/− zoom. Static charts widen inside their scrolling box;
+ * the substrate rainbow ([data-luvrainbow]) instead steps a PRICE-SCALE LADDER —
+ * the ceiling walks $10k → $100k → $1M → $10M → $100M → $1B → $2B → $10B → $100B
+ * → $1T → $2T → $10T → $100T, re-rendered by DVLuvRainbow at every step.
  */
 (function () {
   var MIN = 1, MAX = 4, STEP = 1.25;
-  function addZoom(box) {
-    if (box.dataset.zoomed) return; box.dataset.zoomed = '1';
-    var z = 1;
+  function makeRow(box) {
     var row = document.createElement('div');
     row.className = 'zoomrow';
     var minus = document.createElement('button');
     minus.type = 'button'; minus.textContent = '−'; minus.setAttribute('aria-label', 'zoom out');
     var lvl = document.createElement('span');
-    lvl.className = 'zoomlvl'; lvl.textContent = '100%';
+    lvl.className = 'zoomlvl';
     var plus = document.createElement('button');
     plus.type = 'button'; plus.textContent = '+'; plus.setAttribute('aria-label', 'zoom in');
     row.appendChild(minus); row.appendChild(lvl); row.appendChild(plus);
     box.parentNode.insertBefore(row, box);
+    return { minus: minus, lvl: lvl, plus: plus };
+  }
+  // width zoom — the static SVGs can't re-render, so they widen
+  function addWidthZoom(box) {
+    var c = makeRow(box), z = 1;
     function apply() {
       var svg = box.querySelector('svg');
       if (svg) svg.style.width = (z * 100) + '%';
-      lvl.textContent = Math.round(z * 100) + '%';
-      minus.disabled = z <= MIN; plus.disabled = z >= MAX;
+      c.lvl.textContent = Math.round(z * 100) + '%';
+      c.minus.disabled = z <= MIN; c.plus.disabled = z >= MAX;
     }
-    minus.addEventListener('click', function () { z = Math.max(MIN, z / STEP); apply(); });
-    plus.addEventListener('click', function () { z = Math.min(MAX, z * STEP); apply(); });
+    c.minus.addEventListener('click', function () { z = Math.max(MIN, z / STEP); apply(); });
+    c.plus.addEventListener('click', function () { z = Math.min(MAX, z * STEP); apply(); });
     apply();
     box._applyZoom = apply; // re-apply after late SVG injection (the gated chart)
+  }
+  // scale-ladder zoom — the substrate rainbow re-renders at an explicit price ceiling
+  function addScaleZoom(box, mount) {
+    var RB = window.DVLuvRainbow;
+    if (!RB) { addWidthZoom(box); return; }
+    var c = makeRow(box);
+    var idx = 4; // $100M — the whole 2010–2040 fit fits under it
+    function apply() {
+      var o = mount._rainbowOpts || {};
+      o.yMax = RB.SCALES[idx];
+      RB.render(mount, o);
+      c.lvl.textContent = RB.SCALE_LABELS[idx];
+      // + zooms IN (lower ceiling), − zooms OUT (higher ceiling)
+      c.plus.disabled = idx <= 0; c.minus.disabled = idx >= RB.SCALES.length - 1;
+    }
+    c.plus.addEventListener('click', function () { if (idx > 0) { idx--; apply(); } });
+    c.minus.addEventListener('click', function () { if (idx < RB.SCALES.length - 1) { idx++; apply(); } });
+    apply();
+  }
+  function addZoom(box) {
+    if (box.dataset.zoomed) return; box.dataset.zoomed = '1';
+    var mount = box.querySelector('[data-luvrainbow]');
+    if (mount) addScaleZoom(box, mount); else addWidthZoom(box);
   }
   function boot() {
     var boxes = document.querySelectorAll('.chartbox');
