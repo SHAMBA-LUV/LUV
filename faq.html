@@ -385,6 +385,21 @@ a.exlink img,.marketrow img{height:16px;width:auto;vertical-align:-4px}
     <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" rel="noopener">total supply ↗</a> ·
     <a href="https://etherscan.io/address/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31" rel="noopener">total liquidity ETH/LUV — the pair ↗</a>.</p>
 
+    <p><b class="g">Phase 2 — the locks (permanence for the value).</b> Two locks turn a live market into a
+    lasting one, both through <a href="https://etherscan.io/address/0xe07ACAde4bE2bbc264EA702880ed988EBae9B898" rel="noopener">LUVLocker ↗</a>.
+    <b>The liquidity lock:</b> the LP position — 100% of the circulating LUV/ETH liquidity — is locked in
+    LUVLocker, making the pool <b>provably unremovable</b> until its unlock date; this is what clears the
+    honeypot / unlocked-liquidity flags, and it is the standing priority. <b>The principal lock, that
+    earns:</b> the team allocations — <b>marketing and community</b> — are deposited into the same vault on
+    its <b>extend-only</b> rail, and because LUVLocker stays <b>reflection-included</b>, that locked
+    principal <b>earns the 3% reflection interest the whole time it is locked</b>. The teams earn interest
+    <em>from</em> the principal without ever touching it: locked supply is not idle supply — it is the
+    largest holder being paid to hold, and the interest can be routed to fund the community rewards rail.
+    <b>The timelock over the supply:</b> the <b>~90% of supply that is the circulating emission</b> (the
+    100-quadrillion pool) and every <b>allocation decision</b> move behind a <b>timelock</b> — emission and
+    allocation are announced before they can act, so nothing about the supply changes silently. Consensus
+    before custody; a clock on every hand.</p>
+
     <p><b class="g">Phase 3 — Sharing is Caring.</b> Attention becomes capital. Through the
     <b>IncentiveDistributor</b>, participants <b>earn LUV for gestures</b> — welcoming, posting,
     interacting — each rewarded on-chain with its own amount, daily limit, and cooldown. Gestures are
