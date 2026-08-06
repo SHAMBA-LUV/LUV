@@ -18,7 +18,13 @@
 
   // ETH per LUV as an exact rational num/den. Seed: 1e-17 ETH = exactly 10 wei per LUV.
   var num = 1n, den = pow10(17), live = false;
+  // USD per LUV as an exact rational un/ud (median ETH/USD via the collector) — $ mode only.
+  var un = 0n, ud = 1n;
   var lastEdited = 'luv';
+  // the rate-expression toggle: $ USDC · WEI/LUV · ETH/LUV · LUV/ETH
+  var MODES = ['usdc', 'wei', 'ethluv', 'luveth'];
+  var mode = 'wei';
+  try { var m0 = localStorage.getItem('luv-conv-mode'); if (MODES.indexOf(m0) >= 0) mode = m0; } catch (e) { /* private */ }
 
   function el(id) { return document.getElementById(id); }
   function group(s) { return s.replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
@@ -42,9 +48,9 @@
     return BigInt(s);
   }
 
-  // parse priceNative from the raw JSON text — exact, no float in the path
-  function parsePriceNative(text) {
-    var m = /"priceNative"\s*:\s*([0-9]+)(?:\.([0-9]+))?(?:[eE](-?[0-9]+))?/.exec(text);
+  // parse a numeric field from the raw JSON text — exact, no float in the path
+  function parseRational(text, field) {
+    var m = new RegExp('"' + field + '"\\s*:\\s*([0-9]+)(?:\\.([0-9]+))?(?:[eE](-?[0-9]+))?').exec(text);
     if (!m) return null;
     var digits = m[1] + (m[2] || '');
     var e = (m[3] ? parseInt(m[3], 10) : 0) - (m[2] ? m[2].length : 0);
@@ -90,16 +96,47 @@
     cap.textContent = line + ' · 10¹⁸ wei = 1 EB = 1 whole ETH';
   }
 
+  function cut(dec18, places) {   // display-only trim of an 18-dp string
+    var i = dec18.indexOf('.');
+    return i < 0 ? dec18 : dec18.slice(0, i + 1 + places);
+  }
   function paintRates() {
     var r1 = el('conv-r1'), r2 = el('conv-r2'), src = el('conv-src');
     if (!r1) return;
-    // 1 LUV in wei (18-dp): num·10³⁶/den atto-wei · 1 WEI in LUV: den/num atto-LUV
-    r1.textContent = '1 LUV = ' + fromAtto((num * E18 * E18) / den) + ' WEI · 1 WEI = ' + fromAtto(den / num) + ' LUV';
-    // 1 ETH in LUV: den·10¹⁸/num atto · 1 LUV in ETH: num·10¹⁸/den atto
-    r2.textContent = '1 ETH = ' + fromAtto((den * E18) / num) + ' LUV · 1 LUV = ' + fromAtto((num * E18) / den) + ' ETH';
+    var pnF = Number(num) / Number(den);                       // display-only floats
+    var weiPerLuv = fromAtto((num * E18 * E18) / den);         // 18-dp exact strings
+    var luvPerWei = fromAtto(den / num);
+    var luvPerEth = fromAtto((den * E18) / num);
+    var ethPerLuv = fromAtto((num * E18) / den);
+    var luvPerEthT = fromAtto((den * E18) / (num * pow10(12)));
+    if (mode === 'usdc') {
+      if (un > 0n) {
+        var usd1T = fromAtto((un * pow10(12) * E18) / ud);     // $ per 1T LUV, 18-dp exact
+        r1.textContent = '1T LUV = $' + cut(usd1T, 6) + ' USDC · 1 LUV = $' + (Number(un) / Number(ud)).toExponential(4);
+      } else {
+        r1.textContent = '$ — the dollar expression rides the live feed (loading…)';
+      }
+    } else if (mode === 'ethluv') {
+      r1.textContent = '1 LUV = ' + ethPerLuv + ' ETH · = ' + pnF.toExponential(6) + ' ETH (native, full precision)';
+    } else if (mode === 'luveth') {
+      r1.textContent = '1 ETH = ' + luvPerEth + ' LUV · = ' + cut(luvPerEthT, 4) + 'T LUV';
+    } else {
+      r1.textContent = '1 LUV = ' + weiPerLuv + ' WEI · 1 WEI = ' + luvPerWei + ' LUV';
+    }
+    // the identities, whatever the toggle says
+    r2.textContent = '⚖ 1 LUV = ' + cut(weiPerLuv, 6) + ' WEI = ' + pnF.toExponential(4) +
+      ' ETH · 1 ETH = ' + cut(luvPerEthT, 4) + 'T LUV';
     if (src) src.textContent = live
       ? 'live — the price is created by the liquidity pair · seed was exactly 10 WEI per LUV'
       : 'seed price — exactly 10 WEI per LUV (live pair loading…)';
+  }
+  function paintModes() {
+    var btns = document.querySelectorAll('#conv-modes button');
+    btns.forEach(function (b) {
+      var on = b.getAttribute('data-m') === mode;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
   }
 
   function recompute() {
@@ -134,9 +171,11 @@
       .then(function (r) { return r.ok ? r.text() : null; })
       .then(function (text) {
         if (!text) return;
-        var p = parsePriceNative(text);
+        var p = parseRational(text, 'priceNative');
         if (!p) return;
         num = p.n; den = p.d; live = true;
+        var u = parseRational(text, 'priceUsd');
+        if (u) { un = u.n; ud = u.d; }
         paintRates();
         recompute();
       })
@@ -146,6 +185,14 @@
   function boot() {
     var luv = el('conv-luv'), eth = el('conv-eth'), wei = el('conv-wei');
     if (!luv || !eth || !wei) return;
+    document.querySelectorAll('#conv-modes button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        mode = b.getAttribute('data-m');
+        try { localStorage.setItem('luv-conv-mode', mode); } catch (e) { /* private */ }
+        paintModes(); paintRates();
+      });
+    });
+    paintModes();
     luv.addEventListener('input', function () { lastEdited = 'luv'; recompute(); });
     eth.addEventListener('input', function () { lastEdited = 'eth'; recompute(); });
     wei.addEventListener('input', function () { lastEdited = 'wei'; recompute(); });

@@ -67,7 +67,13 @@ h1{margin:52px 0 6px;text-align:center;font-size:clamp(30px,5.6vw,46px);font-wei
 .conv{border:1px solid rgba(227,178,95,.55);border-radius:14px;background:linear-gradient(180deg,var(--wine),rgba(43,17,28,.55));
   padding:20px 22px;margin:0 0 42px;box-shadow:0 0 34px rgba(255,0,110,.07)}
 .conv .t{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;text-align:center}
+.conv .modes{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:12px}
+.conv .modes button{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--dim);background:transparent;
+  border:1px solid var(--seam);border-radius:999px;padding:5px 13px;cursor:pointer;transition:color .15s,border-color .15s}
+.conv .modes button:hover{color:var(--rose);border-color:var(--rose)}
+.conv .modes button.on{color:var(--ink);background:var(--gold);border-color:var(--gold);font-weight:700}
 .conv .rate{font-family:var(--mono);font-size:11.5px;color:var(--blush);text-align:center;margin-bottom:4px;overflow-wrap:anywhere;line-height:1.55}
+.conv .rate#conv-r2{color:var(--gold);font-size:11px}
 .conv .src{font-family:var(--mono);font-size:10.5px;color:var(--dim);text-align:center;margin-bottom:14px}
 .conv .rows{display:grid;gap:10px}
 .conv label{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--gold)}
@@ -129,8 +135,11 @@ footer .brandmark:hover img{opacity:1}
 
   <section class="conv" aria-label="the identity converter">
     <div class="t">the converter · WEI ⇄ LUV · LUV ⇄ ETH · one lattice</div>
+    <div class="modes" id="conv-modes" role="group" aria-label="rate expression — USDC, wei per LUV, ETH per LUV, LUV per ETH">
+      <button type="button" data-m="usdc">$ USDC</button><button type="button" data-m="wei">WEI / LUV</button><button type="button" data-m="ethluv">ETH / LUV</button><button type="button" data-m="luveth">LUV / ETH</button>
+    </div>
     <div class="rate" id="conv-r1">1 LUV = 10.000000000000000000 WEI · 1 WEI = 0.100000000000000000 LUV</div>
-    <div class="rate" id="conv-r2">1 ETH = 100,000,000,000,000,000.000000000000000000 LUV · 1 LUV = 0.000000000000000010 ETH</div>
+    <div class="rate" id="conv-r2">⚖ 1 LUV = 10 WEI = 1.0000e-17 ETH · 1 ETH = 100,000T LUV</div>
     <div class="src" id="conv-src">seed price — exactly 10 WEI per LUV (live pair loading…)</div>
     <div class="rows">
       <label><b>LUV</b><input id="conv-luv" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="amount in LUV"></label>
@@ -306,6 +315,6 @@ python3 -c "print(111111111111111111111111111111111111 / 10**30)"</pre>
   </div>
 </footer>
 
-<script src="exabyte.js?v=1" defer></script>
+<script src="exabyte.js?v=2" defer></script>
 </body>
 </html>
