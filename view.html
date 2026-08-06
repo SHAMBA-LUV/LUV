@@ -127,8 +127,13 @@ h2.gold{color:var(--gold)}
 .scr-table th{color:var(--dim);text-transform:uppercase;letter-spacing:.14em;font-size:9.5px;text-align:left;padding:8px 12px;border-bottom:1px solid var(--seam)}
 .scr-table td{padding:6px 12px;border-bottom:1px solid rgba(74,31,48,.5);color:var(--cream);white-space:nowrap}
 .scr-table tr:last-child td{border-bottom:0}
+.scr-table tr.buyrow td{color:#7ee2a0}
+.scr-table tr.sellrow td{color:#ff8098}
 .scr-table tr.buyrow td:first-child{box-shadow:inset 2px 0 0 #21a45d}
 .scr-table tr.sellrow td:first-child{box-shadow:inset 2px 0 0 #c8324f}
+.scr-table tr.buyrow a,.scr-table tr.buyrow a.scr-txlink{color:#7ee2a0;text-decoration:underline;text-decoration-color:rgba(126,226,160,.4)}
+.scr-table tr.sellrow a,.scr-table tr.sellrow a.scr-txlink{color:#ff8098;text-decoration:underline;text-decoration-color:rgba(255,128,152,.4)}
+.scr-table tr.buyrow a:hover,.scr-table tr.sellrow a:hover{color:var(--cream)}
 .scr-table a{color:var(--blush);text-decoration:none}
 .scr-table a:hover{color:var(--rose)}
 .scr-foot{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;padding:10px 2px 0;font-size:11px;color:var(--dim)}
@@ -368,7 +373,7 @@ footer .brandmark:hover img{opacity:1}
 <!-- ?v= busts the immutable .js cache — bump on every change -->
 <script src="substrate/d3.min.js?v=1"></script>
 <script src="substrate/luv-market.js?v=14"></script>
-<script src="substrate/luv-screener.js?v=1"></script>
+<script src="substrate/luv-screener.js?v=2"></script>
 <script src="substrate/luv-share.js?v=3"></script>
 <script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>

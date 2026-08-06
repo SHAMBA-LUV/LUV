@@ -246,7 +246,7 @@
       row.appendChild(el('td', null, weth.toFixed(6)));
       var tdP = el('td'); tdP.appendChild(priceNode(luv > 0 ? usd / luv : null, '$')); row.appendChild(tdP);
       var tdM = el('td'); tdM.appendChild(link('https://etherscan.io/address/' + maker, shortAddr(maker))); row.appendChild(tdM);
-      var tdT = el('td'); tdT.appendChild(link('https://etherscan.io/tx/' + hash, '↗')); row.appendChild(tdT);
+      var tdT = el('td'); tdT.appendChild(link('https://etherscan.io/tx/' + hash, shortAddr(hash) + ' ↗', 'scr-txlink')); row.appendChild(tdT);
       tbody.appendChild(row);
     });
     table.appendChild(tbody);
@@ -310,5 +310,5 @@
   refresh();
   setInterval(refresh, 60000);
 
-  window.DVLuvScreener = { version: '1.0.0', refresh: refresh };
+  window.DVLuvScreener = { version: '1.1.0', refresh: refresh };
 })();
