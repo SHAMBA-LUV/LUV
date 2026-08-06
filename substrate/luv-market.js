@@ -78,7 +78,7 @@
       tipHead: '1T LUV'
     },
     wei: {
-      btn: 'WEI', title: 'wei per ONE LUV — the seed was exactly 10 wei',
+      btn: 'WEI/LUV', title: 'wei per ONE LUV — the seed was exactly 10 wei',
       amt: '1 LUV', aria: 'LUV price in wei per LUV',
       val: function (p) { return Number(p[2]) * 1e18; },
       line: function (m) {
@@ -90,8 +90,24 @@
       tip: function (v, dec) { return fmtNum(v, Math.max(dec, 4)) + ' wei'; },
       tipHead: 'WEI / LUV'
     },
+    ethluv: {
+      btn: 'ETH/LUV', title: 'ETH per ONE LUV — the native price at full precision',
+      amt: '1 LUV', aria: 'LUV price in ETH per LUV',
+      val: function (p) { return Number(p[2]); },
+      line: function (m) {
+        var pn = Number(m.priceNative);
+        return pn > 0 ? pn.toExponential(6) + ' ETH' : '—';
+      },
+      axis: function (v, dec) { return Number(v).toExponential(dec); },
+      axisDec: function (span, hi) {
+        var e = Math.floor(Math.log10(hi > 0 ? hi : 1e-16));
+        return decFor(span / Math.pow(10, e), 3, 9);
+      },
+      tip: function (v, dec) { return Number(v).toExponential(Math.max(dec, 6)) + ' ETH'; },
+      tipHead: 'ETH / LUV'
+    },
     eth: {
-      btn: '\u039E', title: 'LUV per ONE ETH, in trillions — the inverse measure',
+      btn: 'LUV/ETH', title: 'LUV per ONE ETH, in trillions — the inverse measure',
       amt: '1 ETH', aria: 'LUV per ETH',
       val: function (p) { var pn = Number(p[2]); return pn > 0 ? 1 / pn : NaN; },
       line: function (m) {
@@ -104,7 +120,7 @@
       tipHead: 'LUV / ETH'
     }
   };
-  var UNIT_ORDER = ['usdc', 'wei', 'eth'];
+  var UNIT_ORDER = ['usdc', 'wei', 'ethluv', 'eth'];
   function loadUnit() {
     try { var u = global.localStorage.getItem('luv-market-unit'); if (UNITS[u]) return u; } catch (e) { /* private */ }
     return 'usdc';
@@ -248,7 +264,7 @@
     if (conv) {
       var pn0 = Number(this.market.priceNative);
       conv.textContent = pn0 > 0
-        ? '⚖ 1 LUV = ' + fmtNum(pn0 * 1e18, 6) + ' WEI · 1 ETH = ' + fmtNum(1 / pn0 / 1e12, 4) + 'T LUV'
+        ? '⚖ 1 LUV = ' + fmtNum(pn0 * 1e18, 6) + ' WEI = ' + pn0.toExponential(4) + ' ETH · 1 ETH = ' + fmtNum(1 / pn0 / 1e12, 4) + 'T LUV'
         : '';
     }
     var pctEl = this.root.querySelector('.mkt-pct');
@@ -338,7 +354,7 @@
     var pad = (ext[1] - ext[0]) * 0.15 || ext[1] * 0.05 || 1e-15;
     var y = d3.scaleLinear().domain([ext[0] - pad, ext[1] + pad]).range([HM - m.bottom, m.top]);
 
-    var axDec = U.axisDec(ext[1] - ext[0] + 2 * pad);
+    var axDec = U.axisDec(ext[1] - ext[0] + 2 * pad, ext[1]);
     svg.append('g').call(function (g) {
       y.ticks(5).forEach(function (t) {
         g.append('line').attr('x1', m.left).attr('x2', W - m.right).attr('y1', y(t)).attr('y2', y(t))
@@ -573,7 +589,7 @@
   };
   Market.prototype.stop = function () { clearTimeout(this._timer); this._timer = 0; return this; };
 
-  var DVLuvMarket = { Market: Market, PAIR: PAIR, REFRESH_MS: REFRESH_MS, version: '2.5.1' };
+  var DVLuvMarket = { Market: Market, PAIR: PAIR, REFRESH_MS: REFRESH_MS, version: '2.5.2' };
   // DVLuvMarket.diag() — diagnostics of the auto-booted instance, for widgets and internals
   DVLuvMarket.diag = function () { return DVLuvMarket._booted ? DVLuvMarket._booted.diag() : null; };
   if (typeof module !== 'undefined' && module.exports) module.exports = DVLuvMarket;
