@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>THE EXABYTE, THE ETHER, AND THE LUV — SHAMBA LUV</title>
+<meta name="description" content="The exabyte, the ether, and the LUV: one number wearing three units. 10^18 as the shared atomic resolution of information and value — the two byte ladders, the exact law of their drift, the 4096 handshake at the terabyte, and the supply that outruns the namespace.">
+<meta name="author" content="SHAMBA LUV">
+<link rel="canonical" href="https://luv.pythai.net/exabyte.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="SHAMBA LUV">
+<meta property="og:title" content="The exabyte, the ether, and the LUV — one number, three units">
+<meta property="og:description" content="1 EB = 10^18 bytes. 1 ETH = 10^18 wei. 1 LUV = 10^18 LUV-wei. The identity paper: information and value share one atomic geometry.">
+<meta property="og:url" content="https://luv.pythai.net/exabyte.html">
+<meta property="og:image" content="https://luv.pythai.net/gfx/logo.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://luv.pythai.net/gfx/logo.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --ink:#160a0f;--wine:#2b111c;--seam:#4a1f30;--rose:#ff4d6d;--pink:#ff006e;--purple:#8338ec;
+  --blush:#ffb3c1;--cream:#f6e7eb;--dim:#b98da0;--gold:#e3b25f;
+  --mono:ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--ink);color:var(--cream);font-family:var(--sans);line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--blush)}
+a:hover{color:var(--rose)}
+:focus-visible{outline:2px solid var(--rose);outline-offset:3px;border-radius:2px}
+.wrap{max-width:780px;margin:0 auto;padding:0 24px}
+header{border-bottom:1px solid var(--seam)}
+.bar{display:flex;align-items:center;gap:14px;padding:16px 0}
+.bar .wrap{max-width:1180px}
+.brand{font-family:var(--mono);font-size:15px;letter-spacing:.14em;color:var(--cream);text-decoration:none}
+.brand b{color:var(--rose)}
+.bar .spacer{flex:1}
+.bar a.back{font-family:var(--mono);font-size:12px;text-decoration:none;color:var(--dim)}
+.bar a.back:hover{color:var(--rose)}
+h1{margin:52px 0 6px;text-align:center;font-size:clamp(30px,5.6vw,46px);font-weight:800;
+  background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{text-align:center;color:var(--dim);margin-bottom:8px;font-style:italic}
+.paperkind{text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);margin-bottom:36px}
+.paper p{margin:0 0 16px;font-size:15.5px}
+.paper .preface{border:1px solid var(--seam);border-left:3px solid var(--gold);border-radius:10px;background:var(--wine);
+  padding:18px 22px;margin:0 0 36px;color:var(--dim);font-size:14px}
+.paper .preface em{color:var(--blush)}
+.paper h2{font-family:var(--mono);font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);
+  margin:46px 0 16px;padding-top:26px;border-top:1px solid var(--seam)}
+.paper h2 .n{color:var(--rose);margin-right:10px}
+.paper em{font-style:italic;color:var(--blush)}
+.paper b{color:var(--cream);font-weight:700}
+.paper .cite{color:var(--dim)}
+.paper ol.points{margin:0 0 16px 22px}
+.paper ol.points li{margin-bottom:10px;font-size:15.5px}
+.paper pre{background:var(--wine);border:1px solid var(--seam);border-radius:10px;padding:16px 18px;
+  font-family:var(--mono);font-size:12.5px;color:var(--cream);overflow-x:auto;margin:0 0 16px;line-height:1.55}
+.paper pre b{color:var(--gold)}
+.paper table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12.5px;margin:0 0 16px}
+.paper th{color:var(--rose);text-transform:uppercase;letter-spacing:.12em;font-size:10px;text-align:left;padding:7px 10px;border-bottom:1px solid var(--seam)}
+.paper td{padding:6px 10px;border-bottom:1px solid rgba(74,31,48,.5);color:var(--cream)}
+.paper td:nth-child(2),.paper td:nth-child(3){color:var(--blush)}
+.paper .tablewrap{overflow-x:auto;margin:0 0 16px}
+.paper .hi{border:1px solid rgba(227,178,95,.5);border-radius:10px;background:var(--wine);padding:16px 20px;margin-bottom:16px}
+.paper .hi .t{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.paper .hi p{margin:0;font-size:14.5px}
+.readmore{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:44px 0 8px}
+.btn{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--blush);text-decoration:none;
+  border:1px solid var(--seam);border-radius:999px;padding:8px 18px;transition:color .15s,border-color .15s}
+.btn:hover{color:var(--rose);border-color:var(--rose)}
+footer{margin-top:64px;border-top:1px solid var(--seam);padding:26px 0 44px}
+footer .wrap{max-width:1180px;display:flex;flex-wrap:wrap;gap:18px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--dim)}
+footer a{text-decoration:none}
+footer .spacer{flex:1}
+footer .brandmark{display:inline-flex;align-items:center;gap:7px;color:var(--dim)}
+footer .brandmark img{height:14px;width:auto;display:block;opacity:.85;transition:opacity .15s}
+footer .brandmark:hover{color:var(--cream)}
+footer .brandmark:hover img{opacity:1}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="/">❤ SHAMBA <b>LUV</b></a>
+    <span class="spacer"></span>
+    <a class="back" href="wei.html">the arithmetic paper</a>
+    <a class="back" href="engine.html">the engine paper</a>
+    <a class="back" href="view.html">live view</a>
+    <a class="back" href="/">← back to the doorway</a>
+  </div>
+</header>
+
+<main class="wrap paper">
+  <h1>THE EXABYTE, THE ETHER, AND THE LUV</h1>
+  <div class="sub">One number, three units — 10¹⁸ as the shared atomic resolution of information and value</div>
+  <div class="paperkind">the identity paper · 10¹⁸</div>
+
+  <div class="preface"><b>Preface.</b> Companion to <a href="wei.html">THE WEI OF LUV</a> (the arithmetic
+  paper). Every figure below is exact — computed, not quoted — and reproducible from the appendix.
+  Approximation is a display decision, never a storage decision. Markdown source:
+  <a href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/THE_EXABYTE_THE_ETHER_AND_THE_LUV.md" rel="noopener">docs/THE_EXABYTE_THE_ETHER_AND_THE_LUV.md</a>.</div>
+
+  <h2><span class="n">I.</span> One number, three units</h2>
+  <p>Three definitions, from three unrelated standards bodies, arrive at the same integer:</p>
+  <pre>1 EB  = 10¹⁸ bytes     (SI — the exabyte)
+1 ETH = 10¹⁸ wei       (Wood 2014, the Yellow Paper)
+1 LUV = 10¹⁸ LUV-wei   (ShambaLuv, an 18-decimal ERC-20 — verified ✓)</pre>
+  <div class="hi"><div class="t">the identity</div>
+  <p><b>The exabyte, the ether, and the LUV are the same number wearing three units.</b> One whole coin
+  is the entire mint of 10¹⁸ atomic parts — an exabyte of value-atoms. In the units of the current
+  historical moment: <b>a million terabytes</b> — one coin carries the atomic count of a million of
+  today's drives. A price carried to 18 decimals is therefore exact to the last atom; anything shorter
+  is display.</p></div>
+  <p>The identity is not a coincidence of marketing but of arithmetic: any system that names an atom and
+  then counts a quintillion of them lands on the same integer, whether the atoms are bytes in an archive
+  or wei in a coin. Bitcoin stopped ten rungs of a thousand short — <b>1 BTC = 10⁸ satoshi</b>,
+  1 sat = 0.00000001 BTC <span class="cite">(Nakamoto 2008)</span> — and USDC carries the dollar at
+  <b>10⁶ base units</b> (verified in the mainnet contract
+  <a href="https://etherscan.io/token/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" rel="noopener" target="_blank">0xA0b8…eB48 ↗</a>).
+  The resolution ladder of on-chain money — <b>USDC 10⁶ · BTC 10⁸ · ETH 10¹⁸ · LUV 10¹⁸</b> — tops out
+  exactly where the byte ladder names the exabyte.</p>
+
+  <h2><span class="n">II.</span> The two ladders</h2>
+  <p><b>The current historical moment lives at the terabyte rung.</b> The pocket drive, the laptop, the
+  phone — the terabyte is the unit a person can hold, and it is the anchor of comprehension for
+  everything above it: a petabyte is <b>a thousand terabytes</b>; an exabyte is <b>a million</b>. Storage
+  climbs two ladders at once — decimal (SI, powers of ten) and binary (IEC, powers of two) — agreeing at
+  the atom and drifting forever after. From the bit to the largest prefix ever named, every figure
+  exact:</p>
+  <div class="tablewrap"><table>
+    <tr><th>rung</th><th>decimal (SI)</th><th>binary (IEC)</th><th>drift</th></tr>
+    <tr><td>bit</td><td colspan="2">the atom: 0 or 1</td><td>—</td></tr>
+    <tr><td>byte (B)</td><td colspan="2">8 bits</td><td>—</td></tr>
+    <tr><td>kilobyte KB</td><td>10³ = 1,000</td><td>KiB = 2¹⁰ = 1,024</td><td>+2.40%</td></tr>
+    <tr><td>megabyte MB</td><td>10⁶ = 1,000,000</td><td>MiB = 2²⁰ = 1,048,576</td><td>+4.86%</td></tr>
+    <tr><td>gigabyte GB</td><td>10⁹</td><td>GiB = 2³⁰ = 1,073,741,824</td><td>+7.37%</td></tr>
+    <tr><td><b>terabyte TB</b></td><td><b>10¹² — the present moment</b></td><td>TiB = 2⁴⁰ = 1,099,511,627,776</td><td>+9.95%</td></tr>
+    <tr><td>petabyte PB</td><td>10¹⁵ — <em>the quadrillion; 1,000 TB</em></td><td>PiB = 2⁵⁰ = 1,125,899,906,842,624</td><td>+12.59%</td></tr>
+    <tr><td><b>exabyte EB</b></td><td><b>10¹⁸ — the wei rung; 1,000,000 TB</b></td><td>EiB = 2⁶⁰ = 1,152,921,504,606,846,976</td><td>+15.29%</td></tr>
+    <tr><td>zettabyte ZB</td><td>10²¹</td><td>ZiB = 2⁷⁰ = 1,180,591,620,717,411,303,424</td><td>+18.06%</td></tr>
+    <tr><td>yottabyte YB</td><td>10²⁴</td><td>YiB = 2⁸⁰ = 1,208,925,819,614,629,174,706,176</td><td>+20.89%</td></tr>
+    <tr><td>ronnabyte RB</td><td>10²⁷ <em>(SI, 2022)</em></td><td>2⁹⁰ = 1,237,940,039,285,380,274,899,124,224 <em>(no IEC name)</em></td><td>+23.79%</td></tr>
+    <tr><td>quettabyte QB</td><td>10³⁰ <em>(SI, 2022)</em></td><td>2¹⁰⁰ = 1,267,650,600,228,229,401,496,703,205,376 <em>(no IEC name)</em></td><td>+26.77%</td></tr>
+  </table></div>
+  <p>The drift is not noise; it has a closed form. Each rung multiplies the gap by exactly 1024/1000, so
+  at rung <em>n</em>:</p>
+  <pre>drift(n) = 1.024ⁿ − 1        (exact, every rung)
+
+drift(1)  = 2.400000%   kilo          drift(6)  = 15.292150%   exa
+drift(4)  = 9.951163%   tera          drift(10) = 26.765060%   quetta
+drift(5)  = 12.589991%  peta</pre>
+  <p>By the exabyte — the wei rung — the binary reading runs more than 15% hot. A marketer's exabyte and
+  an engineer's exbibyte are two different numbers pretending to be one, which is exactly the kind of
+  ambiguity an 18-decimal ledger refuses: on the chain there is one integer, and every party reads the
+  same one.</p>
+
+  <h2><span class="n">III.</span> The handshake at the terabyte</h2>
+  <p>The two ladders disagree on every named rung — yet the decimal rungs quietly contain powers of two.
+  Since 10 = 2 × 5, the rung 10<sup><em>d</em></sup> = 2<sup><em>d</em></sup> · 5<sup><em>d</em></sup>
+  carries <em>d</em> factors of two. So <b>the terabyte is the first rung divisible by 4096 = 2¹²</b>,
+  and it divides <em>exactly</em>:</p>
+  <pre>1 terabyte    / 4096 = 10¹² / 2¹² = 5¹²      = 244,140,625          (no remainder)
+1 quadrillion / 4096 = 10¹⁵ / 2¹² = 2³ · 5¹⁵ = 244,140,625,000      (no remainder)</pre>
+  <p>This is the irony of expanding from terabytes: at the very scale where storage goes decimal in the
+  brochure and binary in the silicon, the decimal quadrillion turns out to be secretly 4096-divisible —
+  one of the few places the two ladders shake hands. The power-of-two discipline of the
+  <a href="https://github.com/cypherpunk2048" rel="noopener">cypherpunk2048</a> standard (and its 2¹²
+  successor tier, <a href="https://github.com/cypherpunk4096/standard" rel="noopener">cypherpunk4096</a>)
+  is built on noticing exactly this kind of fact: quantities that can be exact are exact, and the places
+  where exactness holds are load-bearing.</p>
+
+  <h2><span class="n">IV.</span> Where the names end</h2>
+  <p>The SI added <em>ronna</em> (10²⁷) and <em>quetta</em> (10³⁰) in November 2022 — the first new
+  prefixes in thirty-one years <span class="cite">(27th CGPM, Resolution 3)</span>. The binary ladder
+  never followed: the IEC names stop at yobi (2⁸⁰); above it, powers of two are nameless. And the LUV
+  supply is already past both:</p>
+  <pre>supply = 111,111,111,111,111,111,111,111,111,111,111,111 LUV-wei   (the 36-digit repunit)
+       = 111,111.111… quettabytes of value-atoms
+       ≈ 111.1 quadrillion whole LUV</pre>
+  <div class="hi"><div class="t">the observation</div>
+  <p><b>The supply outruns the namespace.</b> The mint is five orders of magnitude past the largest
+  prefix the SI has ever named, and the binary ladder has no names at all where it lives. Value already
+  operates where the byte ladders end — the ledger doesn't wait for the committee.</p></div>
+
+  <h2><span class="n">V.</span> The emotonomic reading</h2>
+  <p>Emotonomics holds that attention is the source of value, and attention is <em>recorded</em> — as
+  information, in bytes. The identity of §I says the recording medium and the value medium share one
+  atomic geometry: a gesture stored is bytes, a gesture sent is LUV-wei, and both are counted on the
+  same 10¹⁸ lattice. The smallest possible gesture — one LUV-wei — is the value-atom the way the bit is
+  the information-atom; there is no smaller denominated feeling on the chain.</p>
+  <p>The historical moment matters for comprehension. A person today holds a terabyte and can therefore
+  <em>feel</em> what a thousand of them is; the petabyte-as-quadrillion is one imaginative step from the
+  drive in their pocket, and the exabyte-as-whole-coin is a thousand more. As the world expands from
+  terabytes — the rung we live on — through the petabyte that is the quadrillion, toward the exabyte
+  that is the whole coin, the economy's ledger and the world's archive climb the same ladder from
+  opposite ends. LUV prices that climb in wei, to all 18 decimals, because the standard demands
+  exactness where exactness is possible: <b>one number, three units, zero approximation</b>.</p>
+
+  <h2>Appendix — reproduce every number</h2>
+  <pre># the ladder, both sides, with exact drift
+python3 -c "
+for n,(name,d,b) in enumerate([('kilo',3,10),('mega',6,20),('giga',9,30),
+    ('tera',12,40),('peta',15,50),('exa',18,60),('zetta',21,70),
+    ('yotta',24,80),('ronna',27,90),('quetta',30,100)],1):
+  print(name, 10**d, 2**b, round((1.024**n-1)*100,6))"
+
+# the handshakes
+python3 -c "print(10**12 // 4096, 10**12 % 4096)"   # 244140625 0
+python3 -c "print(10**15 // 4096, 10**15 % 4096)"   # 244140625000 0
+python3 -c "print(5**12)"                            # 244140625
+
+# the supply in quettabytes
+python3 -c "print(111111111111111111111111111111111111 / 10**30)"</pre>
+  <p class="cite" style="font-size:13px">References: BIPM (2022), Resolution 3 of the 27th CGPM
+  (ronna/quetta) · IEC 80000-13 (binary prefixes kibi…yobi) · Wood, G. (2014), "Ethereum: A Secure
+  Decentralised Generalised Transaction Ledger" (the Yellow Paper, defining wei) · Nakamoto, S. (2008),
+  "Bitcoin: A Peer-to-Peer Electronic Cash System" (the 10⁸-satoshi denomination) · Dai, W. (1998),
+  "b-money" · Circle, "USDC" — <a href="https://github.com/circlefin/stablecoin-evm" rel="noopener">stablecoin-evm source ↗</a>
+  (6 decimals).</p>
+
+  <div class="readmore">
+    <a class="btn" href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/THE_EXABYTE_THE_ETHER_AND_THE_LUV.md" rel="noopener">📄 this paper on GitHub</a>
+    <a class="btn" href="wei.html">⚖️ THE WEI OF LUV — the arithmetic paper</a>
+    <a class="btn" href="engine.html">⚙️ THE LUV ENGINE — the engine paper</a>
+    <a class="btn" href="emotonomics.html">🎓 EMOTONOMICS — the field paper</a>
+    <a class="btn" href="sentiment.html">🎭 SENTIMENT — the measurement paper</a>
+    <a class="btn" href="view.html">📈 the live market</a>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>❤ LUV is priceless</span>
+    <span class="spacer"></span>
+    <a href="/">the doorway</a>
+    <a href="faq.html">FAQ</a>
+    <a href="docs.html">docs</a>
+    <a href="https://github.com/SHAMBA-LUV/LUV" rel="noopener">source &amp; audit</a>
+    <a href="https://github.com/cypherpunk4096/standard" target="_blank" rel="noopener" title="cypherpunk4096 — the standard LUV is built to (2¹²): determinism · zero deps · green-checkmark verification · precision · quantum compliance">⟁ cypherpunk4096</a>
+    <a href="https://github.com/cypherpunk4096/scientific" target="_blank" rel="noopener" title="SCIEN·TIFIC — the reference deployment: scientific-maximum ERC-20, deterministic at one address on every chain, verified on-chain">🔬 SCIEN·TIFIC</a>
+    <a class="brandmark" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="LUV verified on Etherscan · Powered by Etherscan.io APIs">
+      <img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="14">
+      <span>Powered by Etherscan.io APIs</span>
+    </a>
+    <span>SHAMBA © 2026 LUV</span>
+  </div>
+</footer>
+
+</body>
+</html>
