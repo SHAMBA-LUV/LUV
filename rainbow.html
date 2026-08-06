@@ -195,8 +195,11 @@ footer .brandmark:hover img{opacity:1}
   difficulty target land in <b>January 2140</b>; the naive schedule from the genesis stamp says
   2140-10-08; the canonical answer is the famous <b>"around 2140"</b> (the chain has historically
   run ahead of its own calendar — every halving has arrived early). Emission is already mostly
-  history: at height 961,239 exactly <b>20,066,371.875 BTC</b> exist — <b>95.55% of all bitcoin
-  that will ever be</b> — the next halving (block 1,050,000) is 88,761 blocks out, ≈ <b>April
+  history: through height 961,239 the schedule has emitted exactly <b>20,066,375.000 BTC</b> —
+  <b>95.55% of all bitcoin that will ever be</b> (the live UTXO set runs a few dozen BTC under
+  schedule — miners have occasionally claimed less than the full subsidy, and the genesis coinbase
+  is unspendable — so the schedule is the exact protocol arithmetic and the ceiling of the actual;
+  blockchain.info read 20,066,359 at this hour) — the next halving (block 1,050,000) is 88,761 blocks out, ≈ <b>April
   2028</b> chain-anchored, and <b>99% of the supply will exist by early 2035</b> (block 1,411,200,
   ≈ Feb–Mar) — inside the five-year-plus-one window of §IV — while the last 1% takes the
   remaining century. The sentence is ambiguous; the ambiguity is
@@ -227,7 +230,8 @@ python3 -c "print(6930000*600/31557600+2009.0)"                    # naive genes
 # chain-anchored (live tip 961,239 @ 2026-08-05; two independent sources)
 curl -s https://mempool.space/api/blocks/tip/height
 curl -s https://blockchain.info/q/getblockcount
-python3 -c "print(19687500 + (961239-840000)*3.125)"               # 20066371.875 BTC exist (95.55%)
+python3 -c "print(19687500 + (961239-840000+1)*3.125)"             # 20066375.0 BTC emitted by schedule (blocks 0..tip inclusive)
+curl -s https://blockchain.info/q/totalbc                          # live accounting: a few dozen BTC under schedule
 python3 -c "print((6930000-961239)*600/31557600 + 2026.6)"         # subsidy ends ≈ 2140.1
 python3 -c "print((1411200-961239)*600/31557600 + 2026.6)"         # 99% of supply ≈ 2035.15
 python3 -c "print((1050000-961239)*600/86400)"                     # next halving in ~616 days ≈ 2028-04</pre>
