@@ -315,6 +315,18 @@ details.festwrap>summary.topfest .cue::before{content:"▶"}
 /* bottom: airdrops-claimed count + Uniswap CTA */
 .claimed-count{font-family:var(--mono);font-size:14px;color:var(--dim);margin-bottom:14px}
 .claimed-count b{color:var(--gold);font-size:20px}
+/* ── the LUVdrip meter (substrate/luv-drip.js renders into #luvdripmeter) ── */
+#luvdripmeter .drip-flow{border:1px solid var(--seam);border-radius:12px;background:var(--ink);padding:14px 16px}
+#luvdripmeter .drip-flow.on{border-color:rgba(126,226,160,.45)}
+#luvdripmeter .drip-label{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+#luvdripmeter .drip-amt{font-family:var(--mono);font-weight:800;font-size:clamp(20px,3.4vw,30px);color:var(--cream);margin:4px 0 8px}
+#luvdripmeter .drip-unit{font-size:13px;color:var(--rose)}
+#luvdripmeter .drip-bar{height:7px;border-radius:999px;background:var(--seam);overflow:hidden}
+#luvdripmeter .drip-bar span{display:block;height:100%;background:linear-gradient(90deg,var(--pink),var(--purple));transition:width .2s linear}
+#luvdripmeter .drip-meta{margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--dim)}
+#luvdripmeter .drip-mode{color:var(--gold)}
+/* CLAIM/REDEEM live as the panel's own buttons wired to the backend rails */
+#luvdripmeter .drip-actions,#luvdripmeter .drip-buy{display:none}
 .uni-cta{display:inline-flex;align-items:center;gap:9px;flex-wrap:wrap;justify-content:center;
   font-family:var(--mono);font-size:14px;color:var(--cream);text-decoration:none;
   border:1px solid #FF007A;border-radius:999px;padding:11px 20px}
@@ -466,21 +478,28 @@ the live deployment landed · <b>launch successful</b> ·
       <div class="statusline" id="statusline">checking your gesture…</div>
     </div>
     <div class="panel" style="margin-top:16px" id="droppanel" hidden>
-      <div class="k">daily LUVdrop</div>
-      <div style="font-size:17px;margin:4px 0 2px">💧 <b id="dropreward" style="color:var(--rose)">1 Billion</b> LUV — every day you return ❤</div>
-      <div style="color:var(--dim);font-size:13px">no proof, no task — coming back IS the action. One drop per day, on your own 24-hour clock.</div>
+      <div class="k">the daily LUVdrip — reward from login</div>
+      <div style="font-size:17px;margin:4px 0 2px">💧 <b id="dropreward" style="color:var(--rose)">1,000,000</b> LUV a day — flowing at <b style="color:var(--gold)">11.574 LUV/s</b> while you're signed in ❤</div>
+      <div style="color:var(--dim);font-size:13px">the LUVdrip activates for every <b style="color:var(--cream)">recognized participant</b> — signing in IS the action. A million per day, on your own 24-hour clock.</div>
+      <div id="luvdripmeter" style="margin-top:12px"></div>
       <div id="dropclockrow" style="font-family:var(--mono);font-size:13px;color:var(--dim);margin-top:10px" hidden>
         next LUVdrop in <b id="dropcount" style="color:var(--gold);font-size:18px;letter-spacing:.08em">--:--:--</b>
       </div>
-      <div class="taskmsg" id="dropmsg">checking your LUVdrop…</div>
+      <div class="taskmsg" id="dropmsg">checking your LUVdrip…</div>
+      <div class="taskmsg ok" id="dropfull" hidden>🎁 <b>MAX LUVdrops received</b> — today's million is complete, saved to your pile · thanks a million ❤
+        <a href="https://twitter.com/intent/tweet?text=the%20LUVdrip%20is%20flowing%20%E2%80%94%20a%20million%20LUV%20a%20day%20%E2%9D%A4%20HOLD%20LUV%20to%20watch%20LUV%20grow%20%40shambaluv%20%23SHAMBALUV%20https%3A%2F%2Fluv.pythai.net" target="_blank" rel="noopener">𝕏 tweet to earn more LUV →</a></div>
       <div id="dropacc" style="margin-top:12px;border-top:1px dashed var(--seam);padding-top:12px" hidden>
-        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)">accumulated — yours to redeem</div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)">accumulated — the actual, counted server-side</div>
         <div style="font-size:17px;margin:6px 0"><b id="accluv" style="color:var(--rose)">—</b> LUV <span id="accusd" style="color:var(--gold);font-family:var(--mono);font-size:14px"></span></div>
-        <div style="color:var(--dim);font-size:13px">your drops pile up here gas-free — one transaction delivers them all, whenever <b style="color:var(--cream)">you</b> say it's worth it.</div>
+        <div style="color:var(--dim);font-size:13px"><b style="color:var(--cream)">CLAIM</b> banks today's drop into your pile — <b>gas-free, always</b>. <b style="color:var(--cream)">REDEEM</b> delivers the whole pile on-chain — the only step that costs gas. Two choices, deliberately separate: claim every day, redeem when <b style="color:var(--cream)">you</b> say it's worth the gas.</div>
         <div style="color:var(--dim);font-size:13px;margin-top:6px;font-family:var(--mono)" id="accgas">estimating the redeem gas…</div>
-        <div class="row" style="margin-top:10px"><button class="btn" id="redeembtn" type="button" disabled>💎 REDEEM — deliver my LUV on-chain</button></div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn" id="claimdropbtn" type="button" disabled>💧 CLAIM today's drop — free</button>
+          <button class="btn" id="redeembtn" type="button" disabled>💎 REDEEM — deliver my LUV on-chain</button>
+        </div>
         <div class="taskmsg" id="redeemmsg"></div>
       </div>
+      <div style="margin-top:10px;color:var(--dim);font-size:13px"><b style="color:var(--gold)">HOLD LUV to watch LUV grow</b> — 3% of every trade reflects to every holder, automatically ❤</div>
     </div>
     <div class="panel" style="margin-top:16px" id="tradepanel">
       <div class="k">Phase 2 — trade LUV</div>
@@ -493,9 +512,12 @@ the live deployment landed · <b>launch successful</b> ·
       </div>
     </div>
     <div class="panel" style="margin-top:16px" id="taskspanel">
-      <div class="k">earn more LUV</div>
-      <div class="comingsoon">✨ Come back soon to <b>EARN more LUV</b> ✨
-        <span>Phase 4 — <b>SHARE the LUV</b>: tweet, post, and engage with the community to earn LUV rewards. Launching soon ❤</span>
+      <div class="k">share the LUV — earn more</div>
+      <div class="comingsoon" style="border-color:rgba(126,226,160,.55)">✨ <b>Sharing is Caring</b> ❤
+        <span>Your daily <b>LUVdrip</b> flows above — a million LUV a day from login. Want more? <b>Tweet about LUV</b> — sharing IS the marketing, and the earn rail rewards it.</span>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <a class="btn" href="https://twitter.com/intent/tweet?text=the%20LUVdrip%20is%20flowing%20%E2%80%94%20a%20million%20LUV%20a%20day%20%E2%9D%A4%20HOLD%20LUV%20to%20watch%20LUV%20grow%20%40shambaluv%20%23SHAMBALUV%20https%3A%2F%2Fluv.pythai.net" target="_blank" rel="noopener">𝕏 tweet to earn LUV</a>
       </div>
     </div>
     <div class="dashfoot">
@@ -508,14 +530,21 @@ the live deployment landed · <b>launch successful</b> ·
   <div class="hero landing-only">
     <img class="logo" src="gfx/heart-512.png" alt="SHAMBA LUV" width="512" height="512">
     <h1>SHAMBA LUV</h1>
-    <div class="phase">✨ Phase 2 — The Value of LUV · <span style="color:#7ee2a0;font-weight:800">COMPLETE ✅</span></div>
+    <div class="phase"><span style="color:#7ee2a0;font-weight:800">✅ Phase 2 complete</span> · 🌕 Phase 3 — The Price of LUV · <span style="color:var(--gold);font-weight:800">LIVE</span> ✨</div>
     <div class="claimhero soldout">
-      <span class="tag">🎉 airdrop sold out · thank you</span>
-      <div class="amt">SOLD&nbsp;OUT</div>
-      <div class="cap">The one-year free airdrop has <b>concluded</b> — every trillion has found its home. <b>Thank you to everyone</b> who joined the gesture. ❤ LUV is now <b>live on Uniswap</b>.</div>
+      <span class="tag">💧 the LUVdrip is flowing</span>
+      <div class="amt">1,000,000&nbsp;LUV&nbsp;/&nbsp;DAY</div>
+      <div class="cap">The one-year <b>principal</b> airdrop has concluded — every trillion has found its home,
+      <b>thank you to everyone</b> who joined the gesture. ❤ Now LUV <b>accrues</b>: sign in and the
+      <b>LUVdrip</b> flows <b>a million LUV a day</b> — 11.574 LUV every second — to every
+      <b>recognized participant</b>. Claim daily, gas-free; redeem on-chain when you say so.
+      And LUV is <b>live on Uniswap</b>.
+      To the original community: <b>LUV returns to POL</b> — the same deterministic contract address,
+      deploying back to Polygon where LUV first lived — and <b>all LUV from the Polygon snapshot
+      will be honoured</b> ❤</div>
     </div>
     <a class="collect" id="tradebtn" href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img class="uni-logo" src="gfx/brand/uniswap_horizontal_white.svg" alt="Uniswap"> <span>Trade LUV LIVE ❤</span></a>
-    <div class="connect" style="margin-top:10px">already claimed? <button class="wordbtn" data-open-login type="button">sign in to your wallet</button> · set slippage ~8–12% (5% reflection fee)</div>
+    <div class="connect" style="margin-top:10px">start your LUVdrip — <button class="wordbtn" data-open-login type="button">sign in to your wallet ❤</button> · trading? set slippage ~8–12% (5% reflection fee)</div>
   </div>
 
 
@@ -801,7 +830,8 @@ the live deployment landed · <b>launch successful</b> ·
 </div>
 
 <!-- ?v= busts the immutable .js cache — bump it whenever luv.app.js changes -->
-<script src="luv.app.js?v=26"></script>
+<script src="substrate/luv-drip.js?v=2"></script>
+<script src="luv.app.js?v=27"></script>
 <script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
 <script src="substrate/emotonomic.js?v=1"></script>

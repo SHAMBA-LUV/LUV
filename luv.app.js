@@ -458,7 +458,7 @@
   // ── the daily LUVdrop (presence claims — 1B every day you return) ──────────
   // GET /airdrop/drop gives nextAt + serverNow; we count down against the SERVER clock
   // (client clocks drift) and collect automatically the moment the 24h window opens.
-  let dropTick = null; let dropNextAt = 0; let dropSkew = 0; let dropClaiming = false; let dropTriedAt = -1;
+  let dropTick = null; let dropNextAt = 0; let dropSkew = 0; let dropClaiming = false;
   function fmtClock(s) {
     s = Math.max(0, Math.floor(s));
     const p = (n) => String(n).padStart(2, '0');
@@ -467,10 +467,18 @@
   async function collectDrop() {
     if (dropClaiming) return; dropClaiming = true;
     const msg = $('dropmsg');
-    if (msg) msg.textContent = 'your LUVdrop is ready — collecting… ❤';
+    if (msg) msg.textContent = 'claiming your drop — gas-free ❤';
     try { await j('/airdrop/return', { method: 'POST' }); } catch (e) { /* clock not open / offline — loadDrop resyncs */ }
     dropClaiming = false;
     loadDrop();
+  }
+  // the LUVdrip meter — activates for the recognized participant the moment the
+  // wallet dashboard opens (login mode: flows only while signed in and the tab lives)
+  let dripMeter = null;
+  function bootDrip(identity) {
+    if (dripMeter || !window.DVLuvDrip) return;
+    const mount = $('luvdripmeter'); if (!mount) return;
+    dripMeter = new DVLuvDrip.Drip({ mount, mode: 'login', identity: identity || 'participant', signedIn: true }).start();
   }
   // Express LUV amounts in USD via the oracle (market.json, same-origin): the participant
   // must SEE what the accumulated LUV is worth next to what the redeem transaction costs.
@@ -497,6 +505,7 @@
     let d; try { d = await j('/airdrop/drop'); } catch (e) { return; }
     if (!d || d.eligible === false) { panel.hidden = true; return; }
     panel.hidden = false;
+    bootDrip(($('youwallet') || {}).textContent || 'participant');
     // Value + gas expression (both best-effort; the clock never waits on them).
     let mkt = null; let gas = null;
     try { mkt = await (await fetch('/market.json', { cache: 'no-store' })).json(); } catch (e) { /* oracle offline */ }
@@ -529,11 +538,19 @@
     dropNextAt = d.nextAt || 0;
     const msg = $('dropmsg');
     const st = d.lastDrop && d.lastDrop.status;
+    // CLAIM is the participant's own explicit, gas-free act — deliberately separate
+    // from REDEEM (the on-chain delivery that costs gas). No auto-collect.
+    const claimBtn = $('claimdropbtn');
+    if (claimBtn) claimBtn.disabled = !d.claimable;
+    // 🎁 the end-of-period message: today's maximum landed — saved, and said so
+    const full = st === 'accrued' || st === 'redeeming' || st === 'paid';
+    const df = $('dropfull');
+    if (df) {
+      df.hidden = !full;
+      if (full) { try { localStorage.setItem('luv-maxdrops', JSON.stringify({ t: Date.now(), status: st })); } catch (e) {} }
+    }
     if (d.claimable) {
-      // Auto-collect ONCE per window: a failed collect leaves nextAt unchanged, so we
-      // don't hammer the desk — a reload or the next visit tries again.
-      if (dropTriedAt !== dropNextAt) { dropTriedAt = dropNextAt; collectDrop(); return; }
-      msg.textContent = 'your LUVdrop is ready — it will be collected on your next visit ❤';
+      msg.textContent = 'your LUVdrop is ready — CLAIM your million, gas-free ❤';
     } else if (st === 'accrued') {
       msg.textContent = 'today’s LUVdrop landed in your pile ❤ come back tomorrow';
     } else if (st === 'redeeming') {
@@ -548,10 +565,12 @@
         const remain = dropNextAt - (Math.floor(Date.now() / 1000) - dropSkew);
         $('dropclockrow').hidden = remain <= 0;
         $('dropcount').textContent = fmtClock(remain);
-        if (remain <= 0) { clearInterval(dropTick); dropTick = null; if (dropTriedAt !== dropNextAt) { dropTriedAt = dropNextAt; collectDrop(); } }
+        if (remain <= 0) { clearInterval(dropTick); dropTick = null; loadDrop(); }
       }, 1000);
     }
   }
+
+  on('claimdropbtn', 'click', collectDrop);
 
   on('redeembtn', 'click', async () => {
     const btn = $('redeembtn'); const msg = $('redeemmsg');
