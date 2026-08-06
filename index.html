@@ -285,6 +285,19 @@ section{padding:52px 0 0}
   background:linear-gradient(100deg,var(--pink),var(--purple));color:#fff;text-decoration:none}
 .topfest:hover{filter:brightness(1.12);color:#fff}
 .topfest b{text-decoration:underline;text-underline-offset:3px}
+/* the player rides in a no-JS details reveal — press play ▶ opens it right here */
+details.festwrap{margin:0}
+details.festwrap>summary.topfest{cursor:pointer;list-style:none}
+details.festwrap>summary.topfest::-webkit-details-marker{display:none}
+details.festwrap[open]>summary.topfest .cue::before{content:"▼"}
+details.festwrap>summary.topfest .cue::before{content:"▶"}
+.festplayer{background:var(--wine);border-bottom:1px solid var(--seam);padding:14px 16px 10px}
+.festplayer .inner{max-width:880px;margin:0 auto}
+.festplayer iframe{display:block;width:100%;height:450px;border:0;border-radius:12px}
+.festplayer .credit{font-family:var(--mono);font-size:10px;color:var(--dim);padding:8px 2px 2px;
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.festplayer .credit a{color:var(--dim);text-decoration:none}
+.festplayer .credit a:hover{color:var(--rose)}
 /* bottom: airdrops-claimed count + Uniswap CTA */
 .claimed-count{font-family:var(--mono);font-size:14px;color:var(--dim);margin-bottom:14px}
 .claimed-count b{color:var(--gold);font-size:20px}
@@ -347,7 +360,14 @@ footer .brandmark:hover img{opacity:1}
 </head>
 <body>
 
-<a class="topfest" href="https://soundcloud.com/mag-magnus/sets/music-for-robots-to-dance-2" target="_blank" rel="noopener">❤ the LUV drop landed Sunday night — <b>thanks a million millions · another successful year</b> · press play ▶</a>
+<details class="festwrap">
+  <summary class="topfest">❤ the LUV drop landed Sunday night — <b>thanks a million millions · another successful year</b> · press play <span class="cue"></span></summary>
+  <div class="festplayer"><div class="inner">
+    <iframe title="Music 4 Robots 2 Dance 2 — the SHAMBA LUV playlist" loading="lazy" scrolling="no" allow="autoplay; encrypted-media"
+      src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/soundcloud%253Aplaylists%253A2216206346&color=%23ff006e&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true"></iframe>
+    <div class="credit"><a href="https://soundcloud.com/mag-magnus" target="_blank" rel="noopener" title="Mag Magnus">Mag Magnus</a> · <a href="https://soundcloud.com/mag-magnus/sets/music-for-robots-to-dance-2" target="_blank" rel="noopener" title="Music 4 Robots 2 Dance 2">Music 4 Robots 2 Dance 2</a> · music for robots to dance — intelligence is intelligence ❤</div>
+  </div></div>
+</details>
 
 <header>
   <div class="wrap bar">
