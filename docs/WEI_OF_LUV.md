@@ -72,15 +72,15 @@ price(ONE LUV) = WETH reserve ÷ LUV reserve
                = 91.496392781967952166 wei   (full 18-decimal precision)
 ```
 
-The price is carried to **all 18 decimals** because **1 × 10^18 atomic units is the entire mint of one whole unit** — 1 ETH *is* 10^18 wei, 1 LUV *is* 10^18 LUV-wei — so a price written to 18 decimal places of wei is exact down to the last atomic unit; anything shorter is a display choice, never a stored one. Read the other way at the same precision: **1 wei = 0.010929392619695487 LUV = exactly 10,929,392,619,695,487 LUV-wei**.
+The price is carried to **all 18 decimals** because **1 × 10^18 atomic units is the entire mint of one whole unit** — 1 ETH *is* 10^18 wei, 1 LUV *is* 10^18 LUV-wei — so a price written to 18 decimal places of wei is exact down to the last atomic unit; anything shorter is a display choice, never a stored one. Read the other way at the same precision: **1 wei = 0.010929392619695487 LUV = 10,929,392,619,695,487 LUV-wei** (the reserve ratio truncated to the whole atomic unit — the exact quotient 10,929,392,619,695,487.3888… does not terminate, and a fraction of an atomic unit is not transactable).
 
 **ONE LUV costs 91.50 wei.** A whole LUV — a quintillion LUV-wei — trades for fewer than a hundred of ETH's smallest units.
 
 Three corollaries, computed exactly:
 
-1. **The wei of LUV in wei of ETH.** One LUV-wei = 91.496392781967952166 × 10⁻¹⁸ wei ≈ 9.15 × 10⁻¹⁷ wei — the smallest unit of LUV is worth about a *ten-quadrillionth of a wei*. LUV's atomic unit undercuts Ethereum's atomic unit by seventeen orders of magnitude: there is no smaller denominated feeling on the chain.
+1. **The wei of LUV in wei of ETH.** One LUV-wei = 91.496392781967952166 × 10⁻¹⁸ wei ≈ 9.15 × 10⁻¹⁷ wei — the smallest unit of LUV is worth about a *ten-quadrillionth of a wei*. LUV's atomic unit undercuts Ethereum's atomic unit by sixteen orders of magnitude (one wei buys ~1.09 × 10¹⁶ LUV-wei; log₁₀ of the ratio is 16.04): there is no smaller denominated feeling on the chain.
 
-2. **LUV per wei.** Invert the price: 1 wei buys **0.010929392619695487 LUV** — exactly 10,929,392,619,695,487 LUV-wei, about a ninety-first of a LUV per wei.
+2. **LUV per wei.** Invert the price: 1 wei buys **0.010929392619695487 LUV** — 10,929,392,619,695,487 LUV-wei (truncated to the atomic unit; the exact quotient carries a .3888… tail), about a ninety-first of a LUV per wei.
 
 3. **Genesis was ten wei, exactly.** The pool was seeded at price X = 1.00 × 10⁻¹⁷ ETH per LUV — which is *precisely 10 wei per LUV*, by construction. Today's 91.50 wei is therefore a clean multiplier read: **9.1496× from X**. LUV was born at ten wei; every future price is a small-integer story.
 
