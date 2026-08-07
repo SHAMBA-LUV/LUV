@@ -373,7 +373,8 @@ router.get('/gas', async (req, res) => {
     } catch (e) { /* feed unreachable — ETH-only estimate */ }
     const feeWei = gasPrice * CLAIM_GAS;
     const feeEth = ethers.formatEther(feeWei);
-    const redeemFeeEth = ethers.formatEther(gasPrice * REDEEM_GAS);
+    const redeemFeeWei = gasPrice * REDEEM_GAS;
+    const redeemFeeEth = ethers.formatEther(redeemFeeWei);
     // Gas tank: the relayer's ETH + how many claims it can sponsor at the current fee.
     let relayerAddress = null; let relayerEth = null; let sponsorsLeft = null;
     if (config.relayerPrivateKey) {
@@ -390,11 +391,13 @@ router.get('/gas', async (req, res) => {
       gasPriceWei: gasPrice.toString(),
       gwei: Math.round(gwei * 1000) / 1000,
       claimGas: Number(CLAIM_GAS),
+      claimFeeWei: feeWei.toString(),
       claimFeeEth: feeEth,
       ethUsd,
       claimFeeUsd: ethUsd != null ? Number(feeEth) * ethUsd : null,
       // REDEEM (distributeReward — accumulated presence LUV in one tx)
       redeemGas: Number(REDEEM_GAS),
+      redeemFeeWei: redeemFeeWei.toString(),
       redeemFeeEth,
       redeemFeeUsd: ethUsd != null ? Number(redeemFeeEth) * ethUsd : null,
       // gas tank
