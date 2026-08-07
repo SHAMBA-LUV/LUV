@@ -171,7 +171,9 @@ price(ONE LUV) = WETH reserve ÷ LUV reserve
   of one whole unit</b> — 1 ETH <em>is</em> 10¹⁸ wei, 1 LUV <em>is</em> 10¹⁸ LUV-wei — so a price
   written to 18 decimal places of wei is exact down to the last atomic unit; anything shorter is a
   display choice, never a stored one. Read the other way at the same precision:
-  <b>1 wei = 0.010929392619695487 LUV = exactly 10,929,392,619,695,487 LUV-wei</b>.</p>
+  <b>1 wei = 0.010929392619695487 LUV = 10,929,392,619,695,487 LUV-wei</b> (the reserve ratio
+  truncated to the whole atomic unit — the exact quotient 10,929,392,619,695,487.3888… does not
+  terminate, and a fraction of an atomic unit is not transactable).</p>
   <div class="hi"><div class="t">the headline</div>
   <p><b>ONE LUV costs 91.50 wei.</b> A whole LUV — a quintillion LUV-wei — trades for fewer than a
   hundred of ETH's smallest units. And genesis was cleaner still: the pool was seeded at price
@@ -179,10 +181,12 @@ price(ONE LUV) = WETH reserve ÷ LUV reserve
   <b>9.1496× from X</b>. LUV was born at ten wei.</p></div>
   <ol class="points">
     <li><b>The wei of LUV in wei of ETH.</b> One LUV-wei = 91.496392781967952166 × 10⁻¹⁸ wei
-    ≈ 9.15 × 10⁻¹⁷ wei — the smallest unit of LUV undercuts Ethereum's smallest unit by seventeen
-    orders of magnitude. There is no smaller denominated feeling on the chain.</li>
+    ≈ 9.15 × 10⁻¹⁷ wei — the smallest unit of LUV undercuts Ethereum's smallest unit by sixteen
+    orders of magnitude (one wei buys ~1.09 × 10¹⁶ LUV-wei; log₁₀ of the ratio is 16.04).
+    There is no smaller denominated feeling on the chain.</li>
     <li><b>LUV per wei.</b> Inverting the price: 1 wei buys <b>0.010929392619695487 LUV</b> —
-    exactly 10,929,392,619,695,487 LUV-wei, about a ninety-first of a LUV.</li>
+    10,929,392,619,695,487 LUV-wei (truncated to the atomic unit; the exact quotient carries a
+    .3888… tail), about a ninety-first of a LUV.</li>
     <li><b>Integer-story pricing.</b> Because X was fixed at a round ten wei, every future price is a
     small, legible multiplier — the X multiplier shown live on <a href="view.html">the measure</a>.</li>
   </ol>
