@@ -225,7 +225,7 @@ price(ONE LUV) = WETH reserve ÷ LUV reserve
   <b>229.5 billion LUV</b> — more than two "a lot of LUV" gestures just to move ETH once. Wallet-to-wallet
   LUV transfers carry <b>0% token fee</b> by design.</p>
   <p><b>The mid-price caveat.</b> "1 ETH buys 10.93 quadrillion LUV" is the ratio, not an executable
-  trade: the pool holds 1.72 quadrillion LUV, the constant-product curve moves price against size, and
+  trade: the pool holds 1,724,567,606,433,016.948103192730427491 LUV (~1.72 quadrillion — the actual reserve, all 18 decimals), the constant-product curve moves price against size, and
   real fills bear the 0.3% LP fee plus LUV's 5% transfer fee — hence the standing ~10% slippage
   guidance.</p>
 
@@ -234,13 +234,13 @@ price(ONE LUV) = WETH reserve ÷ LUV reserve
     <li><b>The genesis seed (verified on-chain).</b> One <em>addLiquidityETH</em> transaction
     (<a href="https://etherscan.io/tx/0x9f8e0bf6e566e809ca78eb18730b8f4305534e755a98a78f7924794757d4ff13" rel="noopener" target="_blank">0x9f8e0bf6… ↗</a>,
     block 25620950) paired <b>0.051922968585348276 ETH</b> from the treasury against
-    <b>2¹¹²−1 LUV-wei ≈ 5.19 quadrillion LUV</b> — the absolute maximum a Uniswap V2 pair can hold,
+    <b>2¹¹²−1 LUV-wei = exactly 5,192,296,858,534,827.628530496329220095 LUV</b> (~5.19 quadrillion; exact because an integer count of LUV-wei terminates at 18 decimals) — the absolute maximum a Uniswap V2 pair can hold,
     since V2 stores reserves as uint112 and reverts above it
     (<a href="https://github.com/Uniswap/v2-core/blob/master/contracts/UniswapV2Pair.sol" rel="noopener">'UniswapV2: OVERFLOW', UniswapV2Pair.sol ↗</a>).
     The seed arithmetic is exact: (2¹¹²−1) × 10 wei ÷ 10¹⁸ = 0.05192296858… ETH — the ETH leg
     <em>is</em> the LUV leg times ten wei.</li>
     <li><b>Buys (continuous).</b> Every purchase deposits WETH and withdraws LUV. The ETH reserve's
-    growth from 0.05192 to 0.15779 ETH — a <b>3.039× liquidity multiplier from X</b> — is, net of the
+    growth from 0.051922968585348276 to 0.157791715097253640 ETH — a <b>3.039× liquidity multiplier from X</b> — is, net of the
     few sells, accumulated buyer ETH. Price multiplier (9.15×) says what enthusiasm claims; the ETH leg
     says what it deposited.</li>
     <li><b>The 1% auto-liquidity fee (protocol-native).</b> Of LUV's 5% trade fee, one point accrues as

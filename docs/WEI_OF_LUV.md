@@ -108,7 +108,7 @@ The price *ratio* is the single number underneath the whole table: **price(ETH) 
 Two grounding comparisons:
 
 - **Gas in LUV.** A plain ETH transfer (21,000 gas) at a 1-gwei gas price costs 21,000 gwei = 2.1 × 10⁻⁵ ETH ≈ **229.5 billion LUV** — more than two "a lot of LUV" gestures just to move ETH once. Wallet-to-wallet LUV transfers, by contrast, carry **0% token fee** by design.
-- **The mid-price caveat.** "1 ETH buys 10.93 quadrillion LUV" is the *ratio*, not an executable trade: the pool holds only 1.72 quadrillion LUV, and Uniswap's constant-product curve means large orders move the price against the trader. Real fills also bear the 0.3% LP fee and LUV's 5% transfer fee — hence the standing ~10% slippage guidance.
+- **The mid-price caveat.** "1 ETH buys 10.93 quadrillion LUV" is the *ratio*, not an executable trade: the pool holds only 1,724,567,606,433,016.948103192730427491 LUV (~1.72 quadrillion — the actual reserve, all 18 decimals), and Uniswap's constant-product curve means large orders move the price against the trader. Real fills also bear the 0.3% LP fee and LUV's 5% transfer fee — hence the standing ~10% slippage guidance.
 
 ---
 
@@ -116,9 +116,9 @@ Two grounding comparisons:
 
 Where does the ETH side of LUV's market come from? Four sources — one genesis, two continuous, one prospective:
 
-**1. The genesis seed (verified on-chain).** The pool was created by a single `addLiquidityETH` transaction ([`0x9f8e0bf6…ff13`](https://etherscan.io/tx/0x9f8e0bf6e566e809ca78eb18730b8f4305534e755a98a78f7924794757d4ff13), block 25620950) pairing **0.051922968585348276 ETH** from the treasury against **2¹¹²−1 LUV-wei ≈ 5.19 quadrillion LUV** — the absolute maximum a Uniswap V2 pair can hold, since V2 stores reserves as `uint112` and reverts above it (`'UniswapV2: OVERFLOW'`, [UniswapV2Pair.sol](https://github.com/Uniswap/v2-core/blob/master/contracts/UniswapV2Pair.sol)). The seed arithmetic is exact: (2¹¹²−1) × 10⁻¹⁷ ETH/LUV ÷ 10¹⁸ = 0.05192296858… ETH — the ETH leg *is* the LUV leg times ten wei.
+**1. The genesis seed (verified on-chain).** The pool was created by a single `addLiquidityETH` transaction ([`0x9f8e0bf6…ff13`](https://etherscan.io/tx/0x9f8e0bf6e566e809ca78eb18730b8f4305534e755a98a78f7924794757d4ff13), block 25620950) pairing **0.051922968585348276 ETH** from the treasury against **2¹¹²−1 LUV-wei = exactly 5,192,296,858,534,827.628530496329220095 LUV** (~5.19 quadrillion; exact because an integer count of LUV-wei terminates at 18 decimals) — the absolute maximum a Uniswap V2 pair can hold, since V2 stores reserves as `uint112` and reverts above it (`'UniswapV2: OVERFLOW'`, [UniswapV2Pair.sol](https://github.com/Uniswap/v2-core/blob/master/contracts/UniswapV2Pair.sol)). The seed arithmetic is exact: (2¹¹²−1) × 10⁻¹⁷ ETH/LUV ÷ 10¹⁸ = 0.05192296858… ETH — the ETH leg *is* the LUV leg times ten wei.
 
-**2. Buys (continuous).** Every purchase deposits WETH into the pair and withdraws LUV. The ETH reserve's growth from 0.05192 to 0.15779 ETH — a **3.039× liquidity multiplier from X** — is, net of the few sells, accumulated buyer ETH. In a young pool, the liquidity multiplier is the honest counterpart to the price multiplier (9.15×): price says what enthusiasm claims, the ETH leg says what it deposited.
+**2. Buys (continuous).** Every purchase deposits WETH into the pair and withdraws LUV. The ETH reserve's growth from 0.051922968585348276 to 0.157791715097253640 ETH — a **3.039× liquidity multiplier from X** — is, net of the few sells, accumulated buyer ETH. In a young pool, the liquidity multiplier is the honest counterpart to the price multiplier (9.15×): price says what enthusiasm claims, the ETH leg says what it deposited.
 
 **3. The 1% auto-liquidity fee (continuous, protocol-native).** Of LUV's 5% trade fee, one percentage point accrues as LUV inside the token contract and is swapped to ETH via `processFees()` toward the liquidity wallet — a protocol-level ETH stream earmarked for deepening the pool. (A further 1% funds incentives; 3% reflects to holders. Fee flushes are public: anyone may call `processFees()`.)
 
