@@ -13,8 +13,45 @@
 <meta property="og:description" content="Phase three begins with the engine's first organ: the pulse at 60 bpm — exactly 1 Hz — one rhythm held in common by every heart on every page, owned by no one.">
 <meta property="og:url" content="https://luv.pythai.net/engine.html">
 <meta property="og:image" content="https://luv.pythai.net/gfx/logo.png">
-<meta name="twitter:card" content="summary">
+<meta property="og:image:alt" content="SHAMBA LUV — the gradient heart">
+<meta property="article:published_time" content="2026-08-03T00:00:00Z">
+<meta property="article:author" content="SHAMBA LUV">
+<meta property="article:section" content="Emotonomics">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The LUV Engine: An Engine from Emotonomics">
+<meta name="twitter:description" content="LUV creates its own engine from the field. The derivation rule, the two denominations (1 luv = 0.000000000000000001 LUV), the cypherpunk4096 standard, and the green-checkmark verification doctrine.">
 <meta name="twitter:image" content="https://luv.pythai.net/gfx/logo.png">
+<meta name="twitter:image:alt" content="SHAMBA LUV — the gradient heart">
+<meta name="keywords" content="LUV engine, emotonomics, SHAMBA LUV, luv denomination, wei of LUV, 18 decimals, cypherpunk4096, cypherpunk2048, proof of gesture, LUVdrip, reflection token, attention economy, verification doctrine, green checkmark, Uniswap V2 liquidity, luv.pythai.net">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+<meta name="theme-color" content="#160a0f">
+<link rel="alternate" type="text/markdown" href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/LUV_ENGINE.md">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"ScholarlyArticle",
+"headline":"The LUV Engine: An Engine from Emotonomics",
+"name":"THE LUV ENGINE — an engine from emotonomics",
+"description":"LUV creates its own engine from emotonomics. The derivation rule (form follows field), the first organ (the pulse at 60 bpm = exactly 1 Hz), the two denominations (1 luv = 0.000000000000000001 LUV), the cypherpunk2048 to cypherpunk4096 standard, and the green-checkmark verification doctrine.",
+"url":"https://luv.pythai.net/engine.html",
+"mainEntityOfPage":{"@type":"WebPage","@id":"https://luv.pythai.net/engine.html"},
+"author":{"@type":"Organization","name":"SHAMBA LUV","url":"https://luv.pythai.net/"},
+"publisher":{"@type":"Organization","name":"SHAMBA LUV","url":"https://luv.pythai.net/","logo":{"@type":"ImageObject","url":"https://luv.pythai.net/gfx/logo.png"}},
+"image":"https://luv.pythai.net/gfx/logo.png",
+"datePublished":"2026-08-03","inLanguage":"en",
+"license":"https://github.com/SHAMBA-LUV/LUV",
+"isBasedOn":"https://github.com/SHAMBA-LUV/LUV/blob/main/docs/LUV_ENGINE.md",
+"keywords":"LUV engine, emotonomics, luv denomination, wei of LUV, cypherpunk4096, proof of gesture, verification doctrine",
+"citation":[
+{"@type":"CreativeWork","name":"A Cypherpunk's Manifesto","author":"Eric Hughes","datePublished":"1993","url":"https://www.activism.net/cypherpunk/manifesto.html"},
+{"@type":"CreativeWork","name":"Bitcoin: A Peer-to-Peer Electronic Cash System","author":"Satoshi Nakamoto","datePublished":"2008","url":"https://bitcoin.org/bitcoin.pdf"},
+{"@type":"CreativeWork","name":"Formalizing and Securing Relationships on Public Networks","author":"Nick Szabo","datePublished":"1997","url":"https://firstmonday.org/ojs/index.php/fm/article/view/548"},
+{"@type":"CreativeWork","name":"The Attention Economy and the Net","author":"Michael H. Goldhaber","datePublished":"1997","url":"https://firstmonday.org/ojs/index.php/fm/article/view/519"},
+{"@type":"CreativeWork","name":"The Use of Knowledge in Society","author":"F. A. Hayek","datePublished":"1945","url":"https://www.econlib.org/library/Essays/hykKnw.html"},
+{"@type":"CreativeWork","name":"The Theory of Moral Sentiments","author":"Adam Smith","datePublished":"1759","url":"https://www.econlib.org/library/Smith/smMS.html"}],
+"isPartOf":{"@type":"CreativeWorkSeries","name":"The SHAMBA LUV papers","url":"https://luv.pythai.net/"},
+"hasPart":{"@type":"DefinedTermSet","name":"LUV denominations","hasDefinedTerm":[
+{"@type":"DefinedTerm","name":"LUV","description":"The unit. 1 LUV = 1 LUV exactly, wallet to wallet, no fee and no minimum."},
+{"@type":"DefinedTerm","name":"luv","description":"The atom. 1 luv = 0.000000000000000001 LUV = 10^-18 LUV. 1 LUV = 1,000,000,000,000,000,000 luv."}]}}
+</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E">
 <style>
 :root{
@@ -68,6 +105,10 @@ h1{margin:52px 0 6px;text-align:center;font-size:clamp(30px,5.6vw,46px);font-wei
 .paper .refs{list-style:none;margin:14px 0 0;columns:1}
 .paper .refs li{font-size:13px;color:var(--dim);margin-bottom:9px;padding-left:16px;text-indent:-16px}
 .paper .refs li em{color:var(--blush);font-style:italic}
+.paper .refs a{color:var(--cream);text-decoration:none;border-bottom:1px solid rgba(255,77,109,.42)}
+.paper .refs a:hover{color:var(--rose);border-bottom-color:var(--rose)}
+.paper .refs a em{color:inherit}
+.paper .refs .src{font-size:11px;color:var(--dim);letter-spacing:.04em;white-space:nowrap}
 .paper hr{border:0;border-top:1px solid var(--seam);margin:38px 0}
 /* the beating heart of the paper — driven by luv-pulse (--luv-pulse), CSS fallback */
 .pulseheart{display:inline-block;color:var(--rose)}
@@ -193,6 +234,37 @@ footer .brandmark:hover img{opacity:1}
     as the graphic standard, 2ⁿ ladders for shading and scale, decimal precision carried at full width
     (18 decimals; one trillion LUV named exactly). Approximation is a display decision, never a storage
     decision.</li>
+  </ul>
+
+  <div class="axiom"><div class="t">The two denominations: LUV and luv</div>
+  <p>Precision without approximation needs a name for the smallest thing. The engine carries exactly two
+  denominations, and the case distinguishes them:</p>
+  <p style="font-family:var(--mono);font-size:14px;line-height:2;margin:10px 0"><b>LUV</b> — the unit.
+  1 LUV = 1 LUV, exactly, wallet to wallet, with no fee and no minimum.<br>
+  <b>luv</b> — the atom. 1 luv = <b>0.000000000000000001 LUV</b> = 10<sup>−18</sup> LUV.<br>
+  1 LUV = 1,000,000,000,000,000,000 luv.</p>
+  <p>The <b>luv</b> is the wei of LUV: the smallest indivisible quantity the contract can move, and the
+  unit every balance is <em>actually</em> stored in. LUV is what a person says; luv is what the chain
+  counts. Neither is a rounding of the other — an amount written in luv is the amount, and an amount
+  written in LUV is that same integer with the decimal point moved eighteen places. Because the engine
+  refuses approximation, both denominations are always available and the conversion is never lossy:
+  reserves, drips, gestures and rewards are all integers of luv before they are decimals of LUV.</p>
+  <p>The denomination is also what forces an architectural decision. The LUVdrip pays 1,000,000 LUV a
+  day — 10<sup>24</sup> luv — and a day is 86,400 seconds. Those do not divide: 86,400 = 2<sup>7</sup> ·
+  3<sup>3</sup> · 5<sup>2</sup>, and the factor 3<sup>3</sup> never divides a power of ten, so the exact
+  rate is the non-terminating fraction 312500000000000000000⁄27 — <b>11,574,074,074,074,074,074.074… luv
+  per second</b>. A per-second on-chain mint would therefore have to round, and rounding is exactly what
+  the standard forbids; floored, it would quietly discard 6,400 luv every day. So the drip does not mint
+  per second at all: it <em>meters</em> continuously in the client and settles once, on collect, as a
+  single integer of luv. The doctrine chose the architecture. This is the same reason one trillion LUV is
+  named exactly rather than rounded, and why the pool's reserve is published as
+  1,668,424,837,337,945.895306572258654730 LUV rather than "about 1.67 quadrillion". The
+  arithmetic is set out in full in <a href="wei.html">the WEI paper</a>
+  (<a href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/WEI_OF_LUV.md" target="_blank" rel="noopener">docs/WEI_OF_LUV.md</a>),
+  and the live price is expressed in both denominations — LUV and luv, to the last place — at
+  <a href="LUV.html">LUV.html</a>.</p></div>
+
+  <ul class="points">
     <li><b>Verification over trust</b> <span class="cite">(Szabo 1997; Nakamoto 2008)</span>: §IV.</li>
   </ul>
   <p>The standard has a reference implementation beyond LUV — the CP2048-OVL-1 credential and gatekeeper
@@ -263,19 +335,22 @@ footer .brandmark:hover img{opacity:1}
 
   <h2 id="refs">References</h2>
   <ul class="refs">
-    <li>Durkheim, É. (1912). <em>Les formes élémentaires de la vie religieuse</em>. Alcan.</li>
-    <li>Goldhaber, M. H. (1997). "The Attention Economy and the Net." <em>First Monday</em> 2(4).</li>
-    <li>Hayek, F. A. (1945). "The Use of Knowledge in Society." <em>American Economic Review</em> 35(4): 519–530.</li>
-    <li>Hughes, E. (1993). "A Cypherpunk's Manifesto." March 9, 1993.</li>
-    <li>Huygens, C. (1665). Letters to R. Moray, February 1665, on the "odd sympathy" of coupled pendulum clocks. In <em>Œuvres complètes de Christiaan Huygens</em>, vol. 5. Martinus Nijhoff, 1893.</li>
-    <li>May, T. C. (1988). "The Crypto Anarchist Manifesto."</li>
-    <li>McNeill, W. H. (1995). <em>Keeping Together in Time: Dance and Drill in Human History</em>. Harvard University Press.</li>
-    <li>Nakamoto, S. (2008). "Bitcoin: A Peer-to-Peer Electronic Cash System." Whitepaper.</li>
-    <li>Simon, H. A. (1971). "Designing Organizations for an Information-Rich World." In M. Greenberger (ed.), <em>Computers, Communications, and the Public Interest</em>. Johns Hopkins Press.</li>
-    <li>Smith, A. (1759). <em>The Theory of Moral Sentiments</em>. A. Millar.</li>
-    <li>Smith, A. (1776). <em>An Inquiry into the Nature and Causes of the Wealth of Nations</em>. W. Strahan &amp; T. Cadell.</li>
-    <li>Szabo, N. (1997). "Formalizing and Securing Relationships on Public Networks." <em>First Monday</em> 2(9).</li>
+    <li>Durkheim, É. (1912). <a href="https://archive.org/details/Les_Formes_elementaires_de_la_vie_religieuse" target="_blank" rel="noopener"><em>Les formes élémentaires de la vie religieuse</em></a>. Alcan. <span class="src">archive.org</span></li>
+    <li>Goldhaber, M. H. (1997). <a href="https://firstmonday.org/ojs/index.php/fm/article/view/519" target="_blank" rel="noopener">"The Attention Economy and the Net."</a> <em>First Monday</em> 2(4). <span class="src">doi:10.5210/fm.v2i4.519</span></li>
+    <li>Hayek, F. A. (1945). <a href="https://www.econlib.org/library/Essays/hykKnw.html" target="_blank" rel="noopener">"The Use of Knowledge in Society."</a> <em>American Economic Review</em> 35(4): 519–530. <span class="src">econlib</span></li>
+    <li>Hughes, E. (1993). <a href="https://www.activism.net/cypherpunk/manifesto.html" target="_blank" rel="noopener">"A Cypherpunk's Manifesto."</a> March 9, 1993. <span class="src">activism.net</span></li>
+    <li>Huygens, C. (1665). Letters to R. Moray, February 1665, on the "odd sympathy" of coupled pendulum clocks. In <a href="https://www.dbnl.org/tekst/huyg003oeuv05_01/" target="_blank" rel="noopener"><em>Œuvres complètes de Christiaan Huygens</em>, vol. 5</a>. Martinus Nijhoff, 1893. <span class="src">dbnl</span></li>
+    <li>May, T. C. (1988). <a href="https://www.activism.net/cypherpunk/crypto-anarchy.html" target="_blank" rel="noopener">"The Crypto Anarchist Manifesto."</a> <span class="src">activism.net</span></li>
+    <li>McNeill, W. H. (1995). <a href="https://www.hup.harvard.edu/books/9780674502307" target="_blank" rel="noopener"><em>Keeping Together in Time: Dance and Drill in Human History</em></a>. Harvard University Press. <span class="src">publisher</span></li>
+    <li>Nakamoto, S. (2008). <a href="https://bitcoin.org/bitcoin.pdf" target="_blank" rel="noopener">"Bitcoin: A Peer-to-Peer Electronic Cash System."</a> Whitepaper. <span class="src">bitcoin.org</span></li>
+    <li>Simon, H. A. (1971). <a href="https://gwern.net/doc/design/1971-simon.pdf" target="_blank" rel="noopener">"Designing Organizations for an Information-Rich World."</a> In M. Greenberger (ed.), <em>Computers, Communications, and the Public Interest</em>. Johns Hopkins Press. <span class="src">pdf</span></li>
+    <li>Smith, A. (1759). <a href="https://www.econlib.org/library/Smith/smMS.html" target="_blank" rel="noopener"><em>The Theory of Moral Sentiments</em></a>. A. Millar. <span class="src">econlib</span></li>
+    <li>Smith, A. (1776). <a href="https://www.gutenberg.org/ebooks/3300" target="_blank" rel="noopener"><em>An Inquiry into the Nature and Causes of the Wealth of Nations</em></a>. W. Strahan &amp; T. Cadell. <span class="src">gutenberg</span></li>
+    <li>Szabo, N. (1997). <a href="https://firstmonday.org/ojs/index.php/fm/article/view/548" target="_blank" rel="noopener">"Formalizing and Securing Relationships on Public Networks."</a> <em>First Monday</em> 2(9). <span class="src">doi:10.5210/fm.v2i9.548</span></li>
   </ul>
+  <p style="font-size:12px;color:var(--dim);margin-top:14px">Every reference above is hotlinked to an
+  open-access source — no paywall, no login, no institutional affiliation required. Verification is a
+  public act or it is not verification.</p>
 
   <div class="readmore">
     <a class="btn" href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/LUV_ENGINE.md" rel="noopener">📄 this paper on GitHub</a>
@@ -284,6 +359,7 @@ footer .brandmark:hover img{opacity:1}
     <a class="btn" href="sentiment.html">🎭 SENTIMENT — the measurement paper</a>
     <a class="btn" href="wei.html">🔢 WEI — the arithmetic paper</a>
     <a class="btn" href="exabyte.html">💾 THE EXABYTE — the identity paper</a>
+    <a class="btn" href="LUV.html">❤ LUV.html — the price in LUV and luv</a>
     <a class="btn" href="view.html">📈 the live market</a>
   </div>
 </main>
