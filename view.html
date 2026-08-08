@@ -187,6 +187,21 @@ h2.gold{color:var(--gold)}
 .tok-eth{color:#627EEA}   /* Ethereum blue — the mark Ethereum itself uses */
 .tok-btc{color:#F7931A}   /* Bitcoin orange */
 .tok-luv{color:#ff006e;border-color:rgba(255,0,110,.85)}
+/* the header marks are live pairs: hover lifts them and emits hearts, click opens the swap */
+.feelcap a.tok{text-decoration:none;cursor:pointer;
+  transition:transform .18s ease,box-shadow .28s ease,background .28s ease}
+.feelcap a.tok:hover{transform:translateY(-2px);background:rgba(255,255,255,.04);
+  box-shadow:0 0 14px -2px currentColor}
+.feelcap a.tok:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+.feelcap .tokbtn{display:inline-flex;align-items:center;gap:7px;cursor:pointer;background:transparent;
+  border:1px solid rgba(255,0,110,.55);color:var(--cream);border-radius:999px;padding:6px 14px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.06em;line-height:normal;
+  transition:transform .18s ease,border-color .25s ease,background .25s ease}
+.feelcap .tokbtn:hover{transform:translateY(-2px);border-color:var(--rose);background:rgba(255,0,110,.10)}
+.feelcap .tokbtn img{display:block;border-radius:50%}
+.feelcap .pairhint{flex-basis:100%;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--gold);opacity:.85;margin-bottom:-2px}
+
 .ctarow{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;margin:26px 0 8px}
 .uni-cta{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:15px;color:var(--cream);text-decoration:none;
   border:1px solid #FF007A;border-radius:999px;padding:12px 24px;transition:background .15s}
@@ -261,9 +276,13 @@ footer .brandmark:hover img{opacity:1}
   <div class="feelband">
     <div data-luvfeel style="height:132px"></div>
     <div class="feelcap">
-      <span class="tok tok-eth" title="Ethereum">Ξ</span>
-      <span class="tok tok-btc" title="Bitcoin">₿</span>
-      <span class="tok tok-luv" title="SHAMBA LUV"><img src="gfx/heart-512.png" alt="" aria-hidden="true"></span>
+      <span class="pairhint">the pairs — hover, then click to buy LUV · the wallet switches to Ethereum for you</span>
+      <a class="tok tok-eth" data-luv-emit href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=ETH&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="ETH / LUV — buy LUV with ETH on Uniswap">Ξ</a>
+      <a class="tok tok-btc" data-luv-emit href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="BTC / LUV — buy LUV with WBTC on Uniswap">₿</a>
+      <a class="tok tok-luv" data-luv-emit href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="USDC / LUV — buy LUV with USDC on Uniswap"><img src="gfx/heart-512.png" alt="" aria-hidden="true"></a>
+      <button type="button" class="tokbtn" data-luv-watchasset>
+        <img src="gfx/heart-512.png" alt="" height="14" aria-hidden="true"> add LUV to MetaMask
+      </button>
       <span>every heart on every page beats in the same phase — 60 bpm, exactly 1 Hz.
       each beat sheds a band; the bands carry the partials, so a pulse reads as a spectrum.</span>
     </div>
@@ -419,6 +438,6 @@ footer .brandmark:hover img{opacity:1}
 <script src="substrate/luv-pulse.js?v=1"></script>
 <script src="substrate/luv-frame.js?v=5"></script>
 <script src="substrate/luv-wei.js?v=1"></script>
-<script src="substrate/luv-engine.js?v=5"></script>
+<script src="substrate/luv-engine.js?v=6"></script>
 </body>
 </html>

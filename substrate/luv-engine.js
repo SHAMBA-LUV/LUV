@@ -28,7 +28,7 @@
 (function (global) {
   'use strict';
 
-  var VERSION = '1.4.0';
+  var VERSION = '1.5.0';
   var SEAM = '#4a1f30', ROSE = '#ff4d6d', GOLD = '#e3b25f', DIM = '#b98da0', CREAM = '#f6e7eb';
 
   // The organs, in the order the engine grew them. `global` is the window symbol the
@@ -186,6 +186,20 @@
     try { return new URL(path, global.location.href).href; } catch (e) { return path; }
   }
 
+  var ETH_MAINNET = '0x1';
+  // Ethereum mainnet is present in every wallet, so a switch is enough — no addChain
+  // fallback needed. Resolves false if the user declines; we then say so rather than
+  // adding LUV to whatever network happened to be selected.
+  function ensureEthereum(eth) {
+    return eth.request({ method: 'eth_chainId' }).then(function (id) {
+      if (String(id).toLowerCase() === ETH_MAINNET) return true;
+      return eth.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: ETH_MAINNET }]
+      }).then(function () { return true; }, function () { return false; });
+    }, function () { return false; });
+  }
+
   function watchAsset(btn) {
     var eth = global.ethereum;
     var say = function (msg) {
@@ -199,18 +213,21 @@
       say('no wallet detected ↗');
       return Promise.resolve(false);
     }
-    return eth.request({
-      method: 'wallet_watchAsset',
-      params: {
-        type: 'ERC20',
-        options: {
-          address: TOKEN.address, symbol: TOKEN.symbol,
-          decimals: TOKEN.decimals, image: absolute(TOKEN.image)
+    return ensureEthereum(eth).then(function (onEth) {
+      if (!onEth) { say('switch to Ethereum first'); return false; }
+      return eth.request({
+        method: 'wallet_watchAsset',
+        params: {
+          type: 'ERC20',
+          options: {
+            address: TOKEN.address, symbol: TOKEN.symbol,
+            decimals: TOKEN.decimals, image: absolute(TOKEN.image)
+          }
         }
-      }
-    }).then(function (ok) {
-      say(ok ? '❤ LUV added' : 'not added');
-      return !!ok;
+      }).then(function (ok) {
+        say(ok ? '❤ LUV added' : 'not added');
+        return !!ok;
+      });
     }).catch(function () { say('not added'); return false; });
   }
 
@@ -438,7 +455,7 @@
 
   global.DVLuvEngine = {
     version: VERSION, organs: organs, status: status, present: present, count: count,
-    render: render, token: TOKEN, watchAsset: watchAsset, Feel: Feel,
+    render: render, token: TOKEN, watchAsset: watchAsset, ensureEthereum: ensureEthereum, Feel: Feel,
     lineage: function () { return LINEAGE.map(function (l) { return l; }); },
     emit: emitHeart
   };
