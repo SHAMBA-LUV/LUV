@@ -13,6 +13,10 @@
 <meta property="og:description" content="Phase three begins with the engine's first organ: the pulse at 60 bpm — exactly 1 Hz — one rhythm held in common by every heart on every page, owned by no one.">
 <meta property="og:url" content="https://luv.pythai.net/engine.html">
 <meta property="og:image" content="https://luv.pythai.net/gfx/logo.png">
+<meta property="og:image:secure_url" content="https://luv.pythai.net/gfx/logo.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
 <meta property="og:image:alt" content="SHAMBA LUV — the gradient heart">
 <meta property="article:published_time" content="2026-08-03T00:00:00Z">
 <meta property="article:author" content="SHAMBA LUV">
@@ -112,6 +116,26 @@ h1{margin:52px 0 6px;text-align:center;font-size:clamp(30px,5.6vw,46px);font-wei
 .paper hr{border:0;border-top:1px solid var(--seam);margin:38px 0}
 /* the beating heart of the paper — driven by luv-pulse (--luv-pulse), CSS fallback */
 .pulseheart{display:inline-block;color:var(--rose)}
+/* ── the action bar: buy · add to wallet · the contract, top and bottom ── */
+.actionbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;
+  border:1px solid var(--seam);border-radius:16px;background:rgba(0,0,0,.22);padding:20px 18px;margin:26px 0 8px}
+.buybtn{display:inline-flex;align-items:center;gap:10px;padding:15px 28px;border-radius:999px;text-decoration:none;
+  font-weight:800;font-size:15px;color:#fff;background:linear-gradient(100deg,var(--pink),var(--purple));
+  box-shadow:0 12px 30px -12px rgba(255,0,110,.9);transition:transform .18s ease,box-shadow .3s ease}
+.buybtn:hover{transform:translateY(-2px);box-shadow:0 18px 42px -12px rgba(255,0,110,1);color:#fff}
+.buybtn img{display:block}
+.mmbtn{display:inline-flex;align-items:center;gap:9px;padding:14px 22px;border-radius:999px;cursor:pointer;
+  font-family:inherit;font-weight:700;font-size:14px;color:var(--cream);background:transparent;
+  border:1px solid var(--seam);transition:border-color .25s ease,background .25s ease,transform .18s ease}
+.mmbtn:hover{border-color:var(--rose);background:rgba(255,77,109,.09);transform:translateY(-2px)}
+.mmbtn img{display:block;border-radius:50%}
+.cabtn{display:inline-flex;align-items:center;gap:9px;flex-wrap:wrap;justify-content:center;padding:11px 18px;
+  border-radius:12px;text-decoration:none;border:1px solid var(--seam);background:rgba(0,0,0,.25);transition:border-color .25s ease}
+.cabtn:hover{border-color:var(--rose)}
+.cabtn code{font-family:var(--mono);font-size:12px;color:var(--blush);word-break:break-all}
+.cabtn .ca-k{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.cabtn .ca-v{font-size:12px}
+.slipnote-sm{flex-basis:100%;text-align:center;font-size:12px;color:var(--dim)}
 .readmore{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:44px 0 8px}
 .btn{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--blush);text-decoration:none;
   border:1px solid var(--seam);border-radius:999px;padding:8px 18px;transition:color .15s,border-color .15s}
@@ -142,6 +166,23 @@ footer .brandmark:hover img{opacity:1}
   <h1>THE LUV ENGINE</h1>
   <div class="sub">An Engine from Emotonomics</div>
   <div class="paperkind">the engine paper · phase three · the pulse at 60 bpm <span class="pulseheart" data-luvpulse data-luvpulse-audio title="tap to hear the heartbeat — consent-only, tap again to stop">❤</span></div>
+
+  <div class="actionbar">
+    <a class="buybtn" href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=ETH&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254&amp;exactField=output&amp;exactAmount=1000000000000" target="_blank" rel="noopener">
+      <img src="gfx/brand/uniswap_icon_white.svg" alt="" height="20" aria-hidden="true">
+      <span>Buy 1,000,000,000,000 LUV with ETH ❤</span>
+    </a>
+    <button type="button" class="mmbtn" data-luv-watchasset>
+      <img src="gfx/heart-512.png" alt="" height="18" aria-hidden="true">
+      <span>add LUV to MetaMask</span>
+    </button>
+    <a class="cabtn" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254#code" target="_blank" rel="noopener" title="verified means the green checkmark: source verified on Etherscan">
+      <span class="ca-k">contract</span>
+      <code>0x2711111111683B8708cb9a48cBf36a51315F8254</code>
+      <span class="ca-v">✅</span>
+    </a>
+    <div class="slipnote-sm">set slippage to ~10% — LUV carries a 5% reflection fee · one trillion LUV preset as the output</div>
+  </div>
 
   <div class="preface"><b>Preface.</b> Emotonomics defined the field
   (<a href="emotonomics.html">the field paper</a>). This document states what LUV builds
@@ -363,6 +404,31 @@ footer .brandmark:hover img{opacity:1}
   open-access source — no paywall, no login, no institutional affiliation required. Verification is a
   public act or it is not verification.</p>
 
+  <h2 id="organs">The engine, as it stands</h2>
+  <p>The registry below is the derivation rule made machine-readable: every organ carries
+  the commitment it implements, and the page reports which of them it has actually loaded —
+  probed live, not asserted. A commitment with no organ is a gap in the engine; an organ
+  with no commitment does not belong in it. Read it from any page with
+  <code>DVLuvEngine.status()</code>.</p>
+  <div data-luvengine></div>
+
+  <div class="actionbar">
+    <a class="buybtn" href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=ETH&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254&amp;exactField=output&amp;exactAmount=1000000000000" target="_blank" rel="noopener">
+      <img src="gfx/brand/uniswap_icon_white.svg" alt="" height="20" aria-hidden="true">
+      <span>Buy 1,000,000,000,000 LUV with ETH ❤</span>
+    </a>
+    <button type="button" class="mmbtn" data-luv-watchasset>
+      <img src="gfx/heart-512.png" alt="" height="18" aria-hidden="true">
+      <span>add LUV to MetaMask</span>
+    </button>
+    <a class="cabtn" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254#code" target="_blank" rel="noopener" title="verified means the green checkmark: source verified on Etherscan">
+      <span class="ca-k">contract</span>
+      <code>0x2711111111683B8708cb9a48cBf36a51315F8254</code>
+      <span class="ca-v">✅</span>
+    </a>
+    <div class="slipnote-sm">set slippage to ~10% — LUV carries a 5% reflection fee · HOLD LUV to earn LUV</div>
+  </div>
+
   <div class="readmore">
     <a class="btn" href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/LUV_ENGINE.md" rel="noopener">📄 this paper on GitHub</a>
     <a class="btn" href="https://github.com/cypherpunk4096/engine" rel="noopener">⟁ published to cypherpunk4096</a>
@@ -395,5 +461,6 @@ footer .brandmark:hover img{opacity:1}
 
 <script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
+<script src="substrate/luv-engine.js?v=1"></script>
 </body>
 </html>

@@ -22,18 +22,35 @@
   'use strict';
 
   var SEAM = '#4a1f30', ROSE = '#ff4d6d', GOLD = '#e3b25f', PINK = '#ff006e';
+  // Candle mode (opt-in: <body data-luvframe="candles">). The boundary keeps the market's
+  // own tempo — four green candles then one red, a five-beat cycle at the pulse's 1 Hz.
+  // Not a prediction and not read from price: it is the rhythm of a market that mostly
+  // rises and periodically doesn't. Phase comes from the wall clock, so every visitor's
+  // frame turns red on the same second — the same shared-phase rule the pulse obeys.
+  var CANDLE_GREEN = '#0ecb81', CANDLE_RED = '#ff2e4c';
+  var CANDLE_CYCLE = 5, CANDLE_RED_AT = 4;
   var INSET = 8;            // 2^3 — the boundary stands off the true edge
   var CHAMFER_BIG = 32;     // 2^5 — corner cut on full viewports
   var CHAMFER_SMALL = 16;   // 2^4 — under 2^9 px
   var SMALL_W = 512;        // 2^9
   var FPS_MS = 33;          // draw gate ~30fps; the pulse is 1 Hz, this is plenty
 
-  function Frame() {
+  function Frame(opts) {
     this.canvas = null;
     this.ctx = null;
     this.raf = 0;
     this.last = 0;
     this.reduced = false;
+    // Candle mode is opt-in per page: <body data-luvframe="candles">. Pages that say
+    // nothing keep the rose hairline exactly as before.
+    this.candles = !!(opts && opts.candles);
+    if (!opts) {
+      try {
+        var host = document.body || document.documentElement;
+        var want = host && host.getAttribute && host.getAttribute('data-luvframe');
+        this.candles = /(^|\s)candles(\s|$)/i.test(want || '');
+      } catch (e) { /* no DOM yet */ }
+    }
     try {
       this.reduced = global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches;
     } catch (e) { /* older engines */ }
@@ -116,11 +133,17 @@
     ctx.stroke();
 
     // inner hairline — the living edge, breathing with the pulse (2px standoff)
+    var edge = ROSE, glow = PINK;
+    if (this.candles) {
+      // reduced motion: hold the resting colour rather than freeze on a random beat
+      var red = !this.reduced && (Math.floor(Date.now() / 1000) % CANDLE_CYCLE) === CANDLE_RED_AT;
+      edge = glow = red ? CANDLE_RED : CANDLE_GREEN;
+    }
     octPath(ctx, m + 3, m + 3, w - m - 3, h - m - 3, Math.max(ch - 3, 4));
     ctx.lineWidth = 1;
-    ctx.strokeStyle = ROSE;
+    ctx.strokeStyle = edge;
     ctx.globalAlpha = 0.22 + 0.5 * v;
-    ctx.shadowColor = PINK;
+    ctx.shadowColor = glow;
     ctx.shadowBlur = 6 * v;
     ctx.stroke();
     ctx.shadowBlur = 0;
