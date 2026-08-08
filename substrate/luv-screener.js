@@ -317,7 +317,9 @@
     Promise.all([
       fetch('market.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
       fetch('market-trades.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
-      fetch('market-holders.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+      // The holders list is published at the source (the Etherscan holders tab), so this only
+      // fetches when a page actually mounts #luvholders — no request for data nothing renders.
+      HOLDERS_MOUNT ? fetch('market-holders.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }) : null,
     ]).then(function (res) {
       if (res[0]) state.market = res[0];
       if (res[1]) state.trades = res[1];

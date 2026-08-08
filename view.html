@@ -148,9 +148,11 @@ h2.gold{color:var(--gold)}
 .scr-foot a:hover{color:var(--rose)}
 .scr-gold{color:var(--gold)}
 .scr-num{text-align:right;font-variant-numeric:tabular-nums}
-#luvholders{font-family:var(--mono)}
-#luvholders .scr-table{min-width:520px}
-#luvholders .scr-table td:nth-child(3),#luvholders .scr-table td:nth-child(4){text-align:right}
+.holderslink{display:inline-flex;align-items:center;gap:12px;padding:14px 22px;margin-top:6px;border:1px solid var(--seam);border-radius:12px;background:rgba(0,0,0,.22);text-decoration:none;transition:border-color .25s ease,background .25s ease,transform .18s ease}
+.holderslink:hover{border-color:var(--rose);background:rgba(255,77,109,.09);transform:translateY(-1px)}
+.holderslink img{display:block;opacity:.92}
+.holderslink .hl-t{font-family:var(--mono);font-size:13px;letter-spacing:.04em;color:var(--cream)}
+.holderslink:hover .hl-t{color:var(--rose)}
 
 /* ── verified contract / ledger ── */
 .panel{border:1px solid var(--seam);border-radius:14px;background:var(--wine);padding:24px 26px;margin-bottom:14px}
@@ -340,18 +342,14 @@ footer .brandmark:hover img{opacity:1}
     </div>
 
     <div class="panel">
-      <div class="k gold">the holders — while the list is short</div>
-      <p>Every LUV balance on mainnet, read <b>live</b> from <code style="font-size:12px">balanceOf</code>
-      (reflections included) — the same truth the
-      <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254#balances" target="_blank" rel="noopener">Etherscan holders tab</a>
-      expresses, refreshed same-origin every minute. Some LUV was <b>sent to
-      <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0x000000000000000000000000000000000000dEaD" target="_blank" rel="noopener">0x…dEaD</a></b> —
-      burned forever, <b>reflection-excluded</b>, and out of circulation: the reported market cap fell by
-      exactly that share, and every remaining holder's slice of the reflections grew.
-      <b class="g">Membership has its privileges</b>: holding LUV is <b>recognized participation</b> —
-      every holder on this list is a recognized participant member, and 3% of every trade reflects
-      to the membership automatically. HOLD LUV to earn LUV.</p>
-      <div id="luvholders"><div style="font-family:var(--mono);font-size:12px;color:var(--dim);padding:8px 0">reading the holders from the chain…</div></div>
+      <div class="k gold">the holders</div>
+      <p>Holding LUV is <b>recognized participation</b> — 3% of every trade reflects to the membership
+      automatically. <b>HOLD LUV to earn LUV.</b> The holder list is the chain's to publish, not ours:
+      read it at the source.</p>
+      <a class="holderslink" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254#balances" target="_blank" rel="noopener" title="verified means the green checkmark: source code verified on Etherscan · Powered by Etherscan.io APIs">
+        <img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="18">
+        <span class="hl-t">the LUV holders ↗</span>
+      </a>
     </div>
 
     <div class="slipnote" style="margin-top:26px">LUV grows when you hold LUV — 3% of every trade reflects to every
@@ -383,7 +381,7 @@ footer .brandmark:hover img{opacity:1}
 <!-- ?v= busts the immutable .js cache — bump on every change -->
 <script src="substrate/d3.min.js?v=1"></script>
 <script src="substrate/luv-market.js?v=17"></script>
-<script src="substrate/luv-screener.js?v=4"></script>
+<script src="substrate/luv-screener.js?v=5"></script>
 <script src="substrate/luv-share.js?v=3"></script>
 <script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
