@@ -28,7 +28,7 @@
 (function (global) {
   'use strict';
 
-  var VERSION = '1.3.0';
+  var VERSION = '1.4.0';
   var SEAM = '#4a1f30', ROSE = '#ff4d6d', GOLD = '#e3b25f', DIM = '#b98da0', CREAM = '#f6e7eb';
 
   // The organs, in the order the engine grew them. `global` is the window symbol the
@@ -310,6 +310,111 @@
     }
   }
 
+  // ── the feeling of LUV: the pulse as expanding bands of frequency ──────────────────
+  // The heart organ gives a single glow at 1 Hz. This widens it: every beat sheds a BAND
+  // that expands outward and thins as it goes, and each band carries harmonics (the
+  // fundamental and its 1/2 and 1/3 partials) so a pulse reads as a spectrum rather than
+  // a ring. Phase is borrowed from --luv-pulse when luv-pulse.js is present, so the
+  // feeling beats in the same phase as every other visitor's; absent it, it keeps its own
+  // wall-clock 1 Hz. Canvas only — no fetch, no deps, nothing injected into the page CSS.
+  // prefers-reduced-motion: one still band, structure without motion.
+  var BAND_LIFE = 2600;          // ms for a band to cross the field and fade out
+  var HARMONICS = [1, 0.5, 0.333333333333];   // fundamental + partials = the width
+  function Feel(mount) {
+    this.mount = mount; this.canvas = null; this.ctx = null;
+    this.raf = 0; this.bands = []; this.lastBeat = -1; this.dpr = 1;
+    this.reduced = false;
+    try { this.reduced = global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+    catch (e) { /* older engines */ }
+  }
+  Feel.prototype.phase = function () {
+    var v = NaN;
+    try { v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--luv-pulse')); }
+    catch (e) { /* no style engine */ }
+    if (v >= 0 && v <= 1) return v;
+    var ms = Date.now() % 1000;
+    return 0.5 - 0.5 * Math.cos(ms / 1000 * 2 * Math.PI);
+  };
+  Feel.prototype.fit = function () {
+    var r = this.mount.getBoundingClientRect();
+    this.dpr = Math.min(global.devicePixelRatio || 1, 2);
+    this.w = Math.max(120, Math.floor(r.width));
+    this.h = Math.max(60, Math.floor(r.height || 132));
+    this.canvas.width = this.w * this.dpr;
+    this.canvas.height = this.h * this.dpr;
+    this.canvas.style.width = '100%';
+    this.canvas.style.height = this.h + 'px';
+    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+  };
+  Feel.prototype.start = function () {
+    if (this.canvas) return this;
+    this.canvas = document.createElement('canvas');
+    this.canvas.setAttribute('aria-hidden', 'true');
+    this.canvas.setAttribute('style', 'display:block;width:100%;border-radius:14px');
+    this.mount.appendChild(this.canvas);
+    this.ctx = this.canvas.getContext('2d');
+    var self = this;
+    this.fit();
+    this._onResize = function () { self.fit(); if (self.reduced) self.draw(0.5); };
+    global.addEventListener('resize', this._onResize);
+    if (this.reduced) { this.bands.push({ t0: Date.now() - BAND_LIFE * 0.45 }); this.draw(0.5); return this; }
+    var tick = function () { self.raf = global.requestAnimationFrame(tick); self.draw(self.phase()); };
+    this.raf = global.requestAnimationFrame(tick);
+    return this;
+  };
+  Feel.prototype.draw = function (v) {
+    var ctx = this.ctx, w = this.w, h = this.h, now = Date.now();
+    if (!ctx) return;
+    ctx.clearRect(0, 0, w, h);
+
+    // a beat is the falling edge of the envelope — one band per heartbeat
+    var beat = Math.floor(now / 1000);
+    if (!this.reduced && beat !== this.lastBeat) { this.lastBeat = beat; this.bands.push({ t0: now }); }
+    while (this.bands.length > 6) this.bands.shift();
+
+    var cx = w / 2, cy = h / 2, maxR = Math.sqrt(cx * cx + cy * cy);
+
+    // the core glow — the heartbeat itself, breathing with the envelope
+    var glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 26 + 30 * v);
+    glow.addColorStop(0, 'rgba(255,0,110,' + (0.34 + 0.34 * v).toFixed(3) + ')');
+    glow.addColorStop(1, 'rgba(255,0,110,0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(cx, cy, 26 + 30 * v, 0, Math.PI * 2); ctx.fill();
+
+    // the bands — each beat expands outward, widening and thinning as it travels
+    for (var i = 0; i < this.bands.length; i++) {
+      var age = (now - this.bands[i].t0) / BAND_LIFE;
+      if (age >= 1) continue;
+      var ease = 1 - Math.pow(1 - age, 2);              // fast out, slow settle
+      for (var k = 0; k < HARMONICS.length; k++) {
+        var r = maxR * ease * HARMONICS[k];
+        if (r < 2) continue;
+        var alpha = (1 - age) * (0.40 - k * 0.09) * (0.55 + 0.45 * v);
+        if (alpha <= 0) continue;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, r * 1.9, r, 0, 0, Math.PI * 2);   // wide bands, not circles
+        ctx.lineWidth = 1 + 5 * age * (1 - k * 0.25);          // widens as it travels
+        ctx.strokeStyle = (k === 0)
+          ? 'rgba(255,0,110,' + alpha.toFixed(3) + ')'
+          : (k === 1 ? 'rgba(179,59,214,' + alpha.toFixed(3) + ')'
+                     : 'rgba(131,56,236,' + alpha.toFixed(3) + ')');
+        ctx.stroke();
+      }
+    }
+  };
+  Feel.prototype.stop = function () {
+    if (this.raf) global.cancelAnimationFrame(this.raf);
+    if (this._onResize) global.removeEventListener('resize', this._onResize);
+  };
+  function wireFeel() {
+    var mounts = document.querySelectorAll('[data-luvfeel]');
+    for (var i = 0; i < mounts.length; i++) {
+      try { new Feel(mounts[i]).start(); } catch (e) {
+        try { (global.console && global.console.warn)('[luv-engine] feel failed:', e); } catch (_) {}
+      }
+    }
+  }
+
   function boot() {
     if (global.__luvEngineBooted) return;
     global.__luvEngineBooted = true;
@@ -326,13 +431,14 @@
     try { wireWatchAsset(); } catch (e) { /* a wallet-less page still renders */ }
     try { wireEmitters(); } catch (e) { /* motion is a courtesy, never a requirement */ }
     try { wireCopy(); } catch (e) { /* copy is a courtesy too */ }
+    try { wireFeel(); } catch (e) { /* feeling is never a requirement */ }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
 
   global.DVLuvEngine = {
     version: VERSION, organs: organs, status: status, present: present, count: count,
-    render: render, token: TOKEN, watchAsset: watchAsset,
+    render: render, token: TOKEN, watchAsset: watchAsset, Feel: Feel,
     lineage: function () { return LINEAGE.map(function (l) { return l; }); },
     emit: emitHeart
   };

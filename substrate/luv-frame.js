@@ -29,6 +29,25 @@
   // frame turns red on the same second — the same shared-phase rule the pulse obeys.
   var CANDLE_GREEN = '#0ecb81', CANDLE_RED = '#ff2e4c';
   var CANDLE_CYCLE = 5, CANDLE_RED_AT = 4;
+  // At rest the bias does not shout green or red — it BLENDS toward Bitcoin orange.
+  // Four beats lean green-orange, the fifth leans red-orange, and the whole thing reads
+  // as #F7931A: encouraging rather than alarming, and the colour Bitcoin already owns.
+  // An ACTUAL swap still lands as pure green or pure red — the truth is never blended,
+  // only the resting mood is.
+  var BTC_ORANGE = '#f7931a', BLEND = 0.68;
+  function hex(c) {
+    return [parseInt(c.substr(1, 2), 16), parseInt(c.substr(3, 2), 16), parseInt(c.substr(5, 2), 16)];
+  }
+  function mix(a, b, t) {
+    var x = hex(a), y = hex(b), o = '#';
+    for (var i = 0; i < 3; i++) {
+      var v = Math.round(x[i] + (y[i] - x[i]) * t).toString(16);
+      o += (v.length < 2 ? '0' : '') + v;
+    }
+    return o;
+  }
+  var REST_GREEN = mix(CANDLE_GREEN, BTC_ORANGE, BLEND);
+  var REST_RED = mix(CANDLE_RED, BTC_ORANGE, BLEND);
   // An ACTUAL trade overrides the bias for four pulses — green on a buy, red on a sell —
   // then the boundary falls back to the resting 4-green/1-red bias. The frame never
   // fetches anything (it imports nothing, by commitment): whoever already reads the swap
@@ -159,10 +178,11 @@
         // an actual swap, straight from the pair's own log — this is not a bias
         edge = glow = (this.flashSide === 's') ? CANDLE_RED : CANDLE_GREEN;
       } else {
-        // resting bias: four green then one red. reduced motion holds the resting colour
+        // resting bias: still four-then-one, but blended toward Bitcoin orange so the
+        // boundary encourages rather than alarms. reduced motion holds the resting hue
         // rather than freezing on whichever beat the page happened to load on.
         var red = !this.reduced && (Math.floor(Date.now() / 1000) % CANDLE_CYCLE) === CANDLE_RED_AT;
-        edge = glow = red ? CANDLE_RED : CANDLE_GREEN;
+        edge = glow = red ? REST_RED : REST_GREEN;
       }
     }
     octPath(ctx, m + 3, m + 3, w - m - 3, h - m - 3, Math.max(ch - 3, 4));

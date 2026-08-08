@@ -173,6 +173,20 @@ h2.gold{color:var(--gold)}
 .btn{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--blush);text-decoration:none;
   border:1px solid var(--seam);border-radius:999px;padding:8px 18px;transition:color .15s,border-color .15s;background:none;cursor:pointer}
 .btn:hover{color:var(--rose);border-color:var(--rose)}
+
+/* ── the feeling of LUV + brand marks on transparent ground ── */
+.feelband{border:1px solid var(--seam);border-radius:16px;background:rgba(0,0,0,.18);
+  padding:10px 12px 12px;margin:0 0 26px;overflow:hidden}
+.feelcap{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-top:8px;
+  font-family:var(--mono);font-size:11.5px;line-height:1.6;color:var(--dim)}
+.feelcap span:last-child{flex:1 1 260px;min-width:220px}
+/* token marks: brand colour on a TRANSPARENT ground — the page shows through, no plate */
+.tok{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:13px;line-height:1;background:transparent;border:1px solid currentColor;flex:0 0 auto}
+.tok img{width:17px;height:17px;display:block}
+.tok-eth{color:#627EEA}   /* Ethereum blue — the mark Ethereum itself uses */
+.tok-btc{color:#F7931A}   /* Bitcoin orange */
+.tok-luv{color:#ff006e;border-color:rgba(255,0,110,.85)}
 .ctarow{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;margin:26px 0 8px}
 .uni-cta{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:15px;color:var(--cream);text-decoration:none;
   border:1px solid #FF007A;border-radius:999px;padding:12px 24px;transition:background .15s}
@@ -242,6 +256,18 @@ footer .brandmark:hover img{opacity:1}
 <main class="wrap">
   <h1>LIVE VIEW</h1>
   <div class="sub">✨ the LUV/ETH market, in real time ✨</div>
+
+  <!-- the feeling of LUV: the pulse widened into bands of frequency -->
+  <div class="feelband">
+    <div data-luvfeel style="height:132px"></div>
+    <div class="feelcap">
+      <span class="tok tok-eth" title="Ethereum">Ξ</span>
+      <span class="tok tok-btc" title="Bitcoin">₿</span>
+      <span class="tok tok-luv" title="SHAMBA LUV"><img src="gfx/heart-512.png" alt="" aria-hidden="true"></span>
+      <span>every heart on every page beats in the same phase — 60 bpm, exactly 1 Hz.
+      each beat sheds a band; the bands carry the partials, so a pulse reads as a spectrum.</span>
+    </div>
+  </div>
 
   <!-- ═══ Phase 2 — complete ═══ -->
   <div class="phaseband narrow">
@@ -391,8 +417,8 @@ footer .brandmark:hover img{opacity:1}
 <script src="substrate/luv-share.js?v=4"></script>
 <script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
-<script src="substrate/luv-frame.js?v=3"></script>
+<script src="substrate/luv-frame.js?v=4"></script>
 <script src="substrate/luv-wei.js?v=1"></script>
-<script src="substrate/luv-engine.js?v=4"></script>
+<script src="substrate/luv-engine.js?v=5"></script>
 </body>
 </html>
