@@ -330,8 +330,13 @@
     pts.forEach(function (p) {
       var k = Math.floor(p[0] / BUCKET) * BUCKET;
       var v = V(p);
-      var b = buckets[k] || (buckets[k] = { t: k, o: v, h: v, l: v, c: v });
-      b.h = Math.max(b.h, v); b.l = Math.min(b.l, v); b.c = v;
+      // `cu` is the CANONICAL close (price in USD), carried alongside the unit-converted
+      // OHLC. The axis may express the price in any unit — including LUV/ETH, which is
+      // the RECIPROCAL of price — but momentum is a property of the asset, not of the
+      // unit it is quoted in. Indicators read `cu`; only the drawn candles read `v`.
+      var cu = Number(p[1]);
+      var b = buckets[k] || (buckets[k] = { t: k, o: v, h: v, l: v, c: v, cu: cu });
+      b.h = Math.max(b.h, v); b.l = Math.min(b.l, v); b.c = v; b.cu = cu;
     });
     var candles = Object.keys(buckets).sort().map(function (k) { return buckets[k]; });
     // keep the candles thick and defined: show the most recent ones that fit at full width
@@ -349,6 +354,8 @@
     }
     // sub-panes (RSI + MACD) render once there are enough 5m closes to mean anything
     var closes = candles.map(function (c) { return c.c; });
+    // unit-independent closes for RSI/MACD — see the note on `cu` above
+    var closesPrice = candles.map(function (c) { return c.cu; });
     var showPanes = candleMode && closes.length >= 16;
     var PANE_GAP = 10, RSI_H = 54, MACD_H = 66;
     var H = HM + (showPanes ? PANE_GAP + RSI_H + PANE_GAP + MACD_H : 0);
@@ -512,7 +519,7 @@
       // RSI
       var rsiTop = HM + PANE_GAP;
       paneBox(rsiTop, RSI_H);
-      var rsi = rsiSeries(closes, 14);
+      var rsi = rsiSeries(closesPrice, 14);
       var ry = d3.scaleLinear().domain([0, 100]).range([rsiTop + RSI_H - 4, rsiTop + 4]);
       [30, 50, 70].forEach(function (g) {
         svg.append('line').attr('x1', m.left).attr('x2', W - m.right).attr('y1', ry(g)).attr('y2', ry(g))
@@ -534,7 +541,7 @@
       // MACD
       var mcTop = rsiTop + RSI_H + PANE_GAP;
       paneBox(mcTop, MACD_H);
-      var mc = macdSeries(closes);
+      var mc = macdSeries(closesPrice);
       var mvals = [];
       mc.macd.forEach(function (v, i) {
         if (v !== null) { mvals.push(Math.abs(v)); if (mc.signal[i] !== null) mvals.push(Math.abs(v - mc.signal[i])); }
