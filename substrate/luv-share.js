@@ -59,7 +59,7 @@
     row.appendChild(copy);
 
     var note = document.createElement('div'); note.className = 'shr-note';
-    note.textContent = 'phase 3 is live — sharing is caring: every post about LUV on X earns 50 billion LUV, up to 3 a day (1-hour timer between posts)';
+    note.textContent = 'phase 3 is live — sharing is caring: posting about LUV on X earns LUV. The rate, the cooldown and the daily limit are whatever the on-chain action registry says they are — it is the final word, and it is retuned as LUV appreciates.';
     this.root.appendChild(row); this.root.appendChild(note);
     return this;
   };

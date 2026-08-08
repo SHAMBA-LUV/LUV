@@ -178,6 +178,8 @@ h2.gold{color:var(--gold)}
   border:1px solid #FF007A;border-radius:999px;padding:12px 24px;transition:background .15s}
 .uni-cta:hover{background:rgba(255,0,122,.12);color:var(--cream)}
 .uni-cta img{height:18px;width:auto}
+.mmbtn{display:inline-flex;align-items:center;gap:7px;cursor:pointer;background:transparent;font-family:var(--mono);line-height:normal}
+.mmbtn img{display:block;border-radius:50%}
 .slipnote{text-align:center;font-size:13px;color:var(--dim);margin-bottom:8px}
 .slipnote b{color:var(--gold)}
 
@@ -253,7 +255,8 @@ footer .brandmark:hover img{opacity:1}
     — the gesture has met the market at the protocol's own ceiling, and <b>locking the liquidity
     into LUVLocker</b> is the standing priority.
     Now live: <a href="#luvshare" class="g"><b class="g">Phase 3 — Sharing is Caring</b></a> —
-    every post about LUV on X earns <b>50 billion LUV</b>, up to 3 a day.</div>
+    posting about LUV on X earns LUV; the current rate and daily limit are set by the
+    on-chain action registry, which is the final word.</div>
     <div class="phasetrack">
       <span class="done">Phase 1 · LUV is Priceless</span>
       <span class="done">Phase 2 · The Value of LUV</span>
@@ -296,9 +299,10 @@ footer .brandmark:hover img{opacity:1}
   </div>
 
   <div class="ctarow">
-    <a class="uni-cta" href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">
+    <a class="uni-cta" data-luv-emit href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">
       <img src="gfx/brand/uniswap_horizontal_white.svg" alt="Uniswap"> <span>Trade LUV LIVE <span class="beat">❤</span></span>
     </a>
+    <button type="button" class="btn mmbtn" data-luv-watchasset><img src="gfx/heart-512.png" alt="" height="14" aria-hidden="true"> add LUV to MetaMask</button>
     <a class="btn" href="faq.html#contracts">📜 full contract ledger</a>
   </div>
   <div class="slipnote">set slippage to <b>~10%</b> — LUV carries a 5% reflection fee, so a lower tolerance will bounce the swap</div>
@@ -382,10 +386,11 @@ footer .brandmark:hover img{opacity:1}
 <script src="substrate/d3.min.js?v=1"></script>
 <script src="substrate/luv-market.js?v=18"></script>
 <script src="substrate/luv-screener.js?v=6"></script>
-<script src="substrate/luv-share.js?v=3"></script>
+<script src="substrate/luv-share.js?v=4"></script>
 <script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
 <script src="substrate/luv-frame.js?v=3"></script>
 <script src="substrate/luv-wei.js?v=1"></script>
+<script src="substrate/luv-engine.js?v=3"></script>
 </body>
 </html>

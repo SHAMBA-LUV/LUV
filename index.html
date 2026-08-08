@@ -337,6 +337,8 @@ details.festwrap>summary.topfest .cue::before{content:"▶"}
 .uni-cta:hover{background:rgba(255,0,122,.12);color:var(--cream)}
 .uni-cta .uni-mark{color:#FF007A;font-weight:800}
 .uni-cta b{color:var(--rose)}
+.mmbtn{display:inline-flex;align-items:center;gap:7px;cursor:pointer;background:transparent;font-family:var(--mono);line-height:normal}
+.mmbtn img{display:block;border-radius:50%}
 .uni-cta .soon{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(227,178,95,.5);border-radius:999px;padding:2px 9px}
 .taskmsg.ok{color:var(--rose)}
 .subs .sub{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;border-top:1px solid var(--seam);padding:10px 0;font-family:var(--mono);font-size:12px}
@@ -511,7 +513,8 @@ the live deployment landed · <b>launch successful</b> ·
         <span>Trade the LUV/ETH pair directly. Set slippage to <b>~8–12%</b> — LUV carries a 5% reflection fee, so a lower tolerance will bounce the swap.</span>
       </div>
       <div class="row" style="margin-top:12px">
-        <a class="uni-cta" href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img class="uni-logo" src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap"> · buy &amp; sell <b>LUV</b> live</a>
+        <a class="uni-cta" data-luv-emit href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img class="uni-logo" src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap"> · buy &amp; sell <b>LUV</b> live</a>
+      <button type="button" class="btn mmbtn" data-luv-watchasset><img src="gfx/heart-512.png" alt="" height="14" aria-hidden="true"> add LUV to MetaMask</button>
         <a class="btn" href="view.html">📈 live chart</a>
       </div>
     </div>
@@ -562,7 +565,7 @@ the live deployment landed · <b>launch successful</b> ·
       trillion has found its home</b>. Thank you to everyone who joined. ❤ Phase 2 opens the market: <b>buy and
       sell LUV on Uniswap</b>. Already claimed? Sign in any time to your wallet — send, receive, and hold LUV.</p>
       <div class="gesturebtns" id="providers">
-        <a class="uni-cta" href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img class="uni-logo" src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap"> · buy &amp; sell <b>LUV</b> live</a>
+        <a class="uni-cta" data-luv-emit href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img class="uni-logo" src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap"> · buy &amp; sell <b>LUV</b> live</a>
         <button type="button" data-open-login>sign in to your wallet ❤</button>
       </div>
       <div class="fineprint">Redeemed is redeemed • trading live on Uniswap • set slippage ~8–12% (5% reflection fee)</div>
@@ -690,7 +693,7 @@ the live deployment landed · <b>launch successful</b> ·
 
   <div class="landing-only" style="text-align:center;margin-top:44px">
     <div class="claimed-count" id="claimed-count">🎁 <b>MAX</b> LUVdrops received</div>
-    <a class="uni-cta" href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">
+    <a class="uni-cta" data-luv-emit href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">
       <img class="uni-logo" src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap"> · buy &amp; sell <b>LUV</b> <span class="soon" style="color:#FF007A;border-color:#FF007A">live now</span>
     </a>
   </div>
@@ -840,5 +843,6 @@ the live deployment landed · <b>launch successful</b> ·
 <script src="substrate/luv-pulse.js?v=1"></script>
 <script src="substrate/emotonomic.js?v=1"></script>
 <script src="substrate/luv-wei.js?v=1"></script>
+<script src="substrate/luv-engine.js?v=3"></script>
 </body>
 </html>
