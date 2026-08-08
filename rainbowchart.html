@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rainbow chart — the reference form — SHAMBA LUV</title>
+<meta name="description" content="The Bitcoin rainbow chart in its reference form: a logarithmic regression on 5,836 daily closes, nine bands 0.3 wide in natural log, drawn in the browser with no network calls. Refit through 2026-08-08.">
+<meta name="author" content="SHAMBA LUV">
+<link rel="canonical" href="https://luv.pythai.net/rainbowchart.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SHAMBA LUV">
+<meta property="og:title" content="Rainbow chart — the reference form">
+<meta property="og:description" content="Nine logarithmic-regression bands on linear time and a log price axis. Refit on 5,836 daily closes through 2026-08-08. Renders offline.">
+<meta property="og:url" content="https://luv.pythai.net/rainbowchart.html">
+<meta property="og:image" content="https://luv.pythai.net/gfx/logo.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://luv.pythai.net/gfx/logo.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --ink:#160a0f;--wine:#2b111c;--seam:#4a1f30;--rose:#ff4d6d;--pink:#ff006e;--purple:#8338ec;
+  --blush:#ffb3c1;--cream:#f6e7eb;--dim:#b98da0;--gold:#e3b25f;
+  --mono:ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--ink);color:var(--cream);font-family:var(--sans);line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:var(--blush)}
+a:hover{color:var(--rose)}
+:focus-visible{outline:2px solid var(--rose);outline-offset:3px;border-radius:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 24px}
+header{border-bottom:1px solid var(--seam)}
+.bar{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:18px 0}
+.brand{font-family:var(--mono);font-size:15px;letter-spacing:.14em;color:var(--cream);text-decoration:none}
+.bar a.back{font-family:var(--mono);font-size:12px;text-decoration:none;color:var(--dim)}
+.bar a.back:hover{color:var(--rose)}
+
+h1{font-family:var(--mono);font-weight:800;font-size:clamp(24px,4.4vw,40px);letter-spacing:-.01em;margin:36px 0 10px}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--rose);margin-top:34px}
+.lede{color:var(--dim);max-width:70ch;margin-bottom:26px}
+h2{font-family:var(--mono);font-size:15px;letter-spacing:.06em;margin:36px 0 12px;color:var(--cream)}
+p{max-width:74ch;margin-bottom:14px}
+.small{font-size:14px;color:var(--dim)}
+
+.chart{background:var(--wine);border:1px solid var(--seam);border-radius:10px;padding:10px;margin:8px 0 6px;overflow-x:auto}
+.chart svg{display:block;width:100%;height:auto;min-width:760px;border-radius:6px}
+.cap{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:30px}
+
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:1px;background:var(--seam);
+  border:1px solid var(--seam);border-radius:10px;overflow:hidden;margin:18px 0 8px}
+.cell{background:var(--wine);padding:14px 16px}
+.cell .k{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.cell .v{font-family:var(--mono);font-weight:800;font-size:19px;margin-top:5px;word-break:break-word}
+.cell .n{font-size:12px;color:var(--dim);margin-top:3px}
+
+.eqbox{background:var(--wine);border:1px solid var(--seam);border-left:3px solid var(--rose);border-radius:8px;
+  padding:16px 18px;margin:14px 0 20px;overflow-x:auto}
+.eqbox code{font-family:var(--mono);font-size:14px;color:var(--cream);white-space:pre}
+
+table{width:100%;border-collapse:collapse;margin:12px 0 22px;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--seam)}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:400}
+td.num{font-family:var(--mono);text-align:right}
+.sw{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:9px;vertical-align:-1px}
+
+.note{background:var(--wine);border:1px solid var(--seam);border-left:3px solid var(--gold);border-radius:8px;
+  padding:15px 18px;margin:18px 0}
+.note .t{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:7px}
+.note p{margin-bottom:8px;font-size:14.5px}
+.note p:last-child{margin-bottom:0}
+
+footer{border-top:1px solid var(--seam);margin-top:52px;padding:24px 0 44px;color:var(--dim);font-size:13px}
+footer a{color:var(--dim);text-decoration:underline}
+footer a:hover{color:var(--rose)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="./">SHAMBA&nbsp;LUV</a>
+    <a class="back" href="./view.html">← the LUV indicator</a>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="kicker">the reference form</div>
+  <h1>The rainbow chart</h1>
+  <p class="lede">
+    A logarithmic regression through every daily Bitcoin close since 2010, with nine colour bands
+    stacked around it. It is a picture of one idea: that price has spent sixteen years oscillating
+    around a slowly-bending log curve, and that where it sits <em>relative to that curve</em> says
+    more than the number itself.
+  </p>
+
+  <div class="chart"><div data-luvrainbowchart data-height="600"></div></div>
+  <p class="cap" id="cap">Nine bands, linear time, log price — the fit bends, and the bend is the arc.
+    Left axis is price; the right axis prices the same gridlines as market cap at the 21,000,000
+    terminal supply. Solid white verticals are the four halvings that have happened; dashed are
+    scheduled. The window runs nine months past the last close, as the reference draws it.</p>
+
+  <div class="readout" id="readout"></div>
+  <p class="small" id="standing"></p>
+
+  <h2>The fit</h2>
+  <p>
+    The regression is a log curve on the <em>day index</em> of the series — day 1 is the first
+    priced day, 2010-08-16 — fitted against the natural log of price:
+  </p>
+  <div class="eqbox"><code id="eq"></code></div>
+  <p class="small" id="fitmeta"></p>
+
+  <h2>The nine bands</h2>
+  <p>
+    Each band is <strong>0.3 wide in natural log</strong> — a constant multiple of about 1.35× —
+    and the ladder is offset so the fit line falls inside band&nbsp;2. That offset is what makes the
+    scale <strong>asymmetric</strong>: it reaches only 0.47× below the fit but 7.03× above, because
+    the chart was designed to have room for manias.
+  </p>
+  <table>
+    <thead><tr><th>Band</th><th>Name</th><th style="text-align:right">× the fit</th><th style="text-align:right">Today that is</th><th style="text-align:right">market cap</th></tr></thead>
+    <tbody id="bandrows"></tbody>
+  </table>
+  <p class="small">
+    The market-cap column is each band's price multiplied by the <strong>21,000,000 terminal
+    supply</strong> — the same rescale the chart's right axis draws, which is why a market-cap tick
+    sits on exactly the gridline of the price it belongs to. Market cap on a <em>past</em> day is a
+    different number: price times the supply actually mined by then, which the emission schedule
+    gives without a single network call.
+  </p>
+
+  <div class="note">
+    <div class="t">what this chart is not</div>
+    <p>
+      The bands are not a model of anything. They are a regression through past prices plus a
+      colour ramp chosen by eye — the fit is refitted every time new data arrives, so the curve
+      quietly moves to keep explaining whatever just happened. Its R² is high because
+      <em>any</em> smooth curve fits sixteen years of log-scaled exponential growth well.
+    </p>
+    <p>
+      Nor does history stay inside it: <strong id="insidepct">—</strong> of daily closes fall within
+      the painted range at all, and the rest sit above or below it. Read it as a mood ring, not a
+      price target.
+    </p>
+  </div>
+
+  <h2>Rainbow-weighted averaging</h2>
+  <p>
+    The strategy the chart is usually paired with: instead of buying a fixed amount on a fixed
+    schedule, scale each buy by which band the price is in — heavier in the blue bands, lighter or
+    nothing in the red. The idea is credited to Reddit's <span class="small">/u/pseudoHappyHippy</span>,
+    and the <a href="https://medium.com/coinmonks/using-python-to-analyze-rainbow-weighted-averaging-a-more-profitable-frequency-investment-12009a8c3617" rel="noopener">CoinMonks write-up</a>
+    reports it beating plain DCA 96.8% of the time by an average of 35.3% greater returns on
+    historical BTC data.
+  </p>
+  <div class="note">
+    <div class="t">read that number carefully</div>
+    <p>
+      That result is a backtest against the same price history the bands were fitted to. A rule
+      that buys more when price is far below a curve drawn through that price will, mechanically,
+      look good on it. Nothing here is advice, and no weights are published on this page because
+      the honest ones would have to be fitted out-of-sample.
+    </p>
+  </div>
+
+  <h2>Provenance</h2>
+  <p class="small">
+    Method and colour scale ported from
+    <a href="https://github.com/Professor-Codephreak/rainbow-chart" rel="noopener">Professor-Codephreak/rainbow-chart</a>
+    (a fork of <a href="https://github.com/StephanAkkerman/bitcoin-rainbow-chart" rel="noopener">StephanAkkerman/bitcoin-rainbow-chart</a>),
+    which renders it in matplotlib from Nasdaq Data Link plus Binance and takes its palette from
+    CoinGlass. This page is the same arithmetic in SVG: the coefficients above were re-fitted with
+    SciPy on the reference CSV extended with Binance BTC/USDT daily closes through 2026-08-08.
+  </p>
+  <p class="small">
+    The series is embedded — weekly closes, delta-encoded — so the chart draws identically with the
+    network unplugged. No CDN, no fetch, no <code>innerHTML</code>; the SVG is built node by node.
+    SHAMBA LUV also keeps a second rainbow organ, <code>luv-rainbow.js</code>, which plots the same
+    idea on <em>log-log</em> axes where the curve becomes a straight ruler — useful for judging a
+    long extrapolation, but it spends its width on the years nobody is asking about: on log time
+    2010–2011 takes a fifth of the canvas while 2020–2026 gets an eighth. The arc spends it the
+    other way round, which is why this page draws the arc.
+  </p>
+  <p class="small">
+    Both renderers — this one and the Python matplotlib original — are published at
+    <a href="https://github.com/Professor-Codephreak/rainbow-chart" rel="noopener">Professor-Codephreak/rainbow-chart</a>,
+    where a parity test runs the JavaScript under node and fails if the two implementations ever
+    disagree on the fit, the bands, the emission schedule or a single label.
+  </p>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    SHAMBA LUV · <a href="./">luv.pythai.net</a> · the chart is arithmetic, not advice
+  </div>
+</footer>
+
+<script src="./substrate/luv-rainbowchart.js?v=2"></script>
+<script src="./rainbowchart.js?v=2"></script>
+</body>
+</html>

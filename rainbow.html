@@ -152,6 +152,33 @@ footer .brandmark:hover img{opacity:1}
   <a href="https://www.cnn.com/markets/fear-and-greed" rel="noopener">Fear &amp; Greed Index</a> down
   to gesture velocity.</div>
 
+  <div class="hi"><div class="t">🌈 the arc — the reference rainbow, drawn in your browser</div>
+  <p><b>This is the rainbow chart in its reference form</b>, rendered live by
+  <b>DVLuvRainbowChart</b> (<a href="substrate/luv-rainbowchart.js" rel="noopener">readable
+  source</a>, zero dependencies, zero network calls, price series embedded). Nine bands on
+  <em>linear time</em> against a log price axis — and linear time is what bends the fit into an
+  <b>arc</b>. Left axis is BTC price; the right axis prices the same gridlines as
+  <b>market cap</b> at the 21,000,000 terminal supply. Ungated: the fit is public arithmetic and
+  so is the series it draws.</p></div>
+  <div class="chartbox"><div data-luvrainbowchart data-height="600"></div></div>
+  <p class="cap">The reference fit — <code>ln(price) = 5.0222935652 · ln(383.8277947247 + x) −
+  32.2162634088</code>, R² = 0.9612 over 5,836 daily closes, 2010-08-16 → 2026-08-08. Solid white
+  verticals are halvings that have happened; dashed are scheduled. The window runs nine months
+  past the last close, as the reference draws it. Full page:
+  <a href="rainbowchart.html">the rainbow chart</a> · both renderers, Python and JavaScript, are
+  published at <a href="https://github.com/Professor-Codephreak/rainbow-chart" rel="noopener">Professor-Codephreak/rainbow-chart</a>
+  with a parity test that fails if they ever disagree.</p>
+
+  <div class="hi"><div class="t">two fits, and why both are kept</div>
+  <p>The arc above is the <b>reference</b> fit — the method every other rainbow chart is drawn
+  from, kept verbatim so this one is comparable to them. The chart further down is the
+  <b>in-house</b> fit on log-log axes, where the same idea straightens into a ruler. That one is
+  the honest instrument for a long extrapolation, because nothing hides in curvature; it is the
+  wrong instrument for <em>where are we now</em>, because on log time the years 2010–2011 take a
+  fifth of the canvas while 2020–2026 get an eighth. The arc spends its width on the years you are
+  actually asking about. Neither is more true than the other — they answer different questions, so
+  the page draws both and says which is which.</p></div>
+
   <div class="hi" id="gate">
   <div class="t">🌈 delivered to wallets</div>
   <p><b>The rainbow is delivered on login.</b> CONNECT to COLLECT — sign in with your wallet
@@ -582,6 +609,7 @@ python3 -c "print((1050000-961239)*600/86400)"                     # next halvin
 </div>
 </footer>
 
+<script src="substrate/luv-rainbowchart.js?v=1" defer></script>
 <script src="substrate/luv-rainbow.js?v=3" defer></script>
 <script src="rainbow.js?v=3" defer></script>
 <script src="substrate/luv-pulse.js?v=1" defer></script>
