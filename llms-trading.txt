@@ -17,9 +17,10 @@ Pair:  `0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31` (Uniswap V2, LUV/WETH)
 ## 1. The unit of entry: one trillion LUV
 
 The basis for entry is **1,000,000,000,000 LUV — a million millions**. It is the
-protocol's standard position unit and the amount every buy link on the site presets as
-the *output* of the swap. Denominate the entry in LUV, not in fiat: you are acquiring a
-count, and the count is what earns.
+protocol's standard position unit — a convention for talking about size, not a figure
+wired into the swap links. The links preset the PAIR only; the amount is the buyer's.
+Denominate the entry in LUV, not in fiat: you are acquiring a count, and the count is
+what earns.
 
 Sub-unit for exact work: **1 luv = 0.000000000000000001 LUV** (10⁻¹⁸ LUV). All balances
 are integers of luv; decimals of LUV are a display form.
