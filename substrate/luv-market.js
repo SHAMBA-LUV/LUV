@@ -321,7 +321,9 @@
       return;
     }
 
-    var m = { top: 12, right: 16, bottom: 24, left: 58 };
+    // TradingView convention: the price axis lives on the RIGHT, hard against the
+    // newest candle, with the left edge given back to the plot.
+    var m = { top: 12, right: 66, bottom: 24, left: 10 };
     var plotW = W - m.left - m.right;
 
     // ── 5-minute OHLC candles from our minute samples ──
@@ -346,7 +348,9 @@
 
     var x, ext;
     if (candleMode) {
-      x = d3.scaleUtc().domain([candles[0].t, candles[candles.length - 1].t + BUCKET]).range([m.left, W - m.right]);
+      // two empty slots of right margin — the last candle should never touch the axis
+      x = d3.scaleUtc().domain([candles[0].t, candles[candles.length - 1].t + BUCKET * 3])
+            .range([m.left, W - m.right]);
       ext = [d3.min(candles, function (c) { return c.l; }), d3.max(candles, function (c) { return c.h; })];
     } else {
       x = d3.scaleUtc().domain(d3.extent(pts, function (p) { return p[0]; })).range([m.left, W - m.right]);
@@ -373,8 +377,33 @@
     });
     var ax = svg.append('g').attr('transform', 'translate(0,' + (HM - m.bottom) + ')')
       .call(d3.axisBottom(x).ticks(5).tickSize(0).tickPadding(8));
-    var ay = svg.append('g').attr('transform', 'translate(' + m.left + ',0)')
-      .call(d3.axisLeft(y).ticks(5).tickSize(0).tickPadding(6).tickFormat(function (v) { return U.axis(v, axDec); }));
+    var ay = svg.append('g').attr('transform', 'translate(' + (W - m.right) + ',0)')
+      .call(d3.axisRight(y).ticks(5).tickSize(0).tickPadding(7).tickFormat(function (v) { return U.axis(v, axDec); }));
+    // ── the last-price marker: dashed line across the plot + a tag on the right axis ──
+    // The single most conventional element a price chart has, and the one this chart was
+    // missing. Colour follows the candle it belongs to, so the level reads at a glance.
+    if (candleMode && candles.length) {
+      var lastC = candles[candles.length - 1];
+      var lastY = y(lastC.c);
+      var lastCol = lastC.up ? '#0ecb81' : '#ff2e4c';
+      svg.append('line')
+        .attr('x1', m.left).attr('x2', W - m.right)
+        .attr('y1', lastY).attr('y2', lastY)
+        .attr('stroke', lastCol).attr('stroke-width', 1)
+        .attr('stroke-dasharray', '4,4').attr('opacity', .85);
+      var tagTxt = U.axis(lastC.c, axDec);
+      var tagW = Math.max(34, tagTxt.length * 5.6 + 10);
+      svg.append('rect')
+        .attr('x', W - m.right + 1).attr('y', lastY - 8)
+        .attr('width', Math.min(tagW, m.right - 3)).attr('height', 16)
+        .attr('rx', 2).attr('fill', lastCol);
+      svg.append('text')
+        .attr('x', W - m.right + 5).attr('y', lastY + 3.5)
+        .attr('fill', '#0a0d14').attr('font-size', 9.5).attr('font-weight', 700)
+        .attr('font-family', "ui-monospace,'SF Mono',Menlo,monospace")
+        .text(tagTxt);
+    }
+
     [ax, ay].forEach(function (g) {
       g.select('.domain').remove();
       g.selectAll('text').attr('fill', '#b98da0').attr('font-size', 10)
@@ -390,7 +419,7 @@
         svg.append('line').attr('x1', m.left).attr('x2', W - m.right).attr('y1', yy).attr('y2', yy)
           .attr('stroke', '#e3b25f').attr('stroke-opacity', edge ? 0.35 : 0.22)
           .attr('stroke-dasharray', edge ? null : '3,4').attr('stroke-width', 1);
-        svg.append('text').attr('x', W - m.right - 2).attr('y', yy - 3).attr('text-anchor', 'end')
+        svg.append('text').attr('x', m.left + 2).attr('y', yy - 3).attr('text-anchor', 'start')
           .attr('fill', '#e3b25f').attr('fill-opacity', 0.6).attr('font-size', 8.5)
           .attr('font-family', "ui-monospace,'SF Mono',Menlo,monospace")
           .text('fib ' + f.toFixed(3).replace(/0+$/, '').replace(/\.$/, '.0'));
@@ -432,8 +461,9 @@
         rg.append('stop').attr('offset', '0%').attr('stop-color', BLOODS[0]);
         rg.append('stop').attr('offset', '100%').attr('stop-color', BLOODS[gi]);
       }
-      var slot = plotW / Math.max(candles.length, 1);
-      var bodyW = Math.max(5, Math.min(22, slot * 0.7));
+      // slot from the scale itself: the x domain carries right-margin, so plotW/count lies
+      var slot = (candles.length > 1) ? (x(candles[1].t) - x(candles[0].t)) : (plotW / 8);
+      var bodyW = Math.max(3, Math.min(22, slot * 0.62));
       var floorY = HM - m.bottom;
       candles.forEach(function (c) {
         var cx = x(c.t + BUCKET / 2);
@@ -525,7 +555,7 @@
         svg.append('line').attr('x1', m.left).attr('x2', W - m.right).attr('y1', ry(g)).attr('y2', ry(g))
           .attr('stroke', g === 50 ? 'rgba(246,231,235,.10)' : 'rgba(227,178,95,.28)')
           .attr('stroke-dasharray', '3,4').attr('stroke-width', 1);
-        svg.append('text').attr('x', W - m.right - 2).attr('y', ry(g) - 2).attr('text-anchor', 'end')
+        svg.append('text').attr('x', W - m.right + 3).attr('y', ry(g) + 3).attr('text-anchor', 'start')
           .attr('fill', '#b98da0').attr('fill-opacity', 0.7).attr('font-size', 8).text(g);
       });
       var rsiPts = [];
