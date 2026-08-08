@@ -8,6 +8,7 @@
  */
 
 const db = require('../db');
+const internalCalc = require('../internal/calculation');
 const { config } = require('../config');
 const { provisionWallet } = require('../wallet/provision');
 // Primary gesture path: WALLET-TO-WALLET (0 fee). The signature-gated contract relay in
@@ -44,7 +45,11 @@ async function upsertIdentity(profile) {
     [profile.provider, profile.providerUserId, identityKey, profile.email || null]
   );
   const isNew = res.rows[0] && res.rows[0].inserted === true;
-  return { identityKey, provider: profile.provider, isNew };
+  // internal.calculation — record LUV earned in the trailing 24h for this identity at the
+  // moment of a real sign-in. recordOnLogin never throws: a login must not fail because
+  // bookkeeping did.
+  const calculation = await internalCalc.recordOnLogin(identityKey, 'login');
+  return { identityKey, provider: profile.provider, isNew, calculation };
 }
 
 /**

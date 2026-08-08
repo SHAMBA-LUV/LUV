@@ -86,3 +86,22 @@ ALTER TABLE identities ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ;
 
 CREATE INDEX IF NOT EXISTS idx_airdrop_claims_status ON airdrop_claims (status);
 CREATE INDEX IF NOT EXISTS idx_wallets_address ON wallets (address);
+
+-- internal.calculation — LUV earned per identity over a trailing window, computed when the
+-- identity is processed at login and kept as an append-only record. Bookkeeping only: it
+-- moves nothing and is never authoritative over the chain or the on-chain action registry.
+-- luv_base_units is NUMERIC(78,0) — base units, 1 LUV = 10^18 — never a float.
+CREATE TABLE IF NOT EXISTS internal_calculations (
+    id              BIGSERIAL PRIMARY KEY,
+    identity_key    TEXT        NOT NULL
+                        REFERENCES identities (identity_key) ON DELETE CASCADE,
+    kind            TEXT        NOT NULL,             -- 'internal.calculation'
+    trigger         TEXT        NOT NULL,             -- what caused it: 'login' | ...
+    window_label    TEXT        NOT NULL,             -- '24 hours'
+    luv_base_units  NUMERIC(78, 0) NOT NULL,          -- earned in the window, base units
+    entries         INT         NOT NULL DEFAULT 0,   -- rows counted
+    detail          JSONB,                            -- by_action / by_status breakdown
+    computed_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_internal_calc_identity ON internal_calculations (identity_key, computed_at DESC);
+CREATE INDEX IF NOT EXISTS idx_internal_calc_kind ON internal_calculations (kind, computed_at DESC);
