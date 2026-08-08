@@ -62,6 +62,19 @@ h1{margin:52px 0 6px;text-align:center;font-size:clamp(32px,6vw,52px);font-weigh
 .tbtn:hover{color:var(--blush);border-color:var(--rose)}
 .tbtn.active{color:#fff;background:linear-gradient(100deg,var(--pink),var(--purple));border-color:transparent;font-weight:700}
 .convline{font-family:var(--mono);font-size:12px;color:var(--gold);text-align:center;margin:-6px 0 20px;overflow-wrap:anywhere}
+
+/* ── the daily summary ── */
+.daily{border:1px solid var(--seam);border-radius:16px;background:var(--wine);padding:20px 22px;margin:0 0 26px}
+.daily .d-k{font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:14px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.daily .d-sub{color:var(--dim);letter-spacing:.08em;font-size:10px;text-transform:none}
+.daily .d-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+.daily .d-cell{background:rgba(0,0,0,.22);border:1px solid var(--seam);border-radius:11px;padding:11px 13px}
+.daily .d-l{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:5px}
+.daily .d-v{font-family:var(--mono);font-size:16px;font-weight:800;color:var(--cream);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.daily .d-v.sm{font-size:12.5px}
+.daily .d-n{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:4px}
+.daily .d-foot{margin-top:13px;font-size:12px;color:var(--dim);line-height:1.6}
 .diag{font-family:var(--mono);font-size:13px}
 .drow{display:flex;gap:14px;padding:7px 0;border-top:1px solid rgba(74,31,48,.6);align-items:baseline}
 .drow:first-child{border-top:0}
@@ -128,6 +141,26 @@ footer .brandmark img{height:14px;width:auto;display:block;opacity:.85}
   </div>
 
   <div class="usdline" id="lp-usdline">≈ <b id="lp-usd">…</b> · the same trillion, in USDC</div>
+
+  <!-- the daily summary: price now, the day's change, and averages computed from samples -->
+  <div class="daily">
+    <div class="d-k">the day <span class="d-sub" id="lp-d-block">—</span></div>
+    <div class="d-grid">
+      <div class="d-cell"><div class="d-l">1T LUV now</div><div class="d-v" id="lp-d-price">—</div></div>
+      <div class="d-cell"><div class="d-l">24h change</div><div class="d-v" id="lp-d-chg">—</div></div>
+      <div class="d-cell"><div class="d-l">daily average</div><div class="d-v" id="lp-d-avg">—</div>
+        <div class="d-n" id="lp-d-samples">—</div></div>
+      <div class="d-cell"><div class="d-l">daily range</div><div class="d-v sm" id="lp-d-range">—</div></div>
+      <div class="d-cell"><div class="d-l">24h volume</div><div class="d-v" id="lp-d-vol">—</div>
+        <div class="d-n" id="lp-d-tx">—</div></div>
+      <div class="d-cell"><div class="d-l">pool depth</div><div class="d-v" id="lp-d-liq">—</div></div>
+      <div class="d-cell"><div class="d-l">market cap</div><div class="d-v" id="lp-d-mcap">—</div></div>
+    </div>
+    <div class="d-foot">Averages are reduced from the minute samples over the trailing 24 hours —
+    a snapshot is not an average, so when there are no samples this says so rather than
+    reprinting the spot price. Everything here is read from the pair;
+    <a href="view.html">the live view</a> carries the chart.</div>
+  </div>
 
   <!-- expression 2: the smallest-unit inverse — WEI/LUV, or LUV/USDC -->
   <div class="expr">
@@ -204,7 +237,7 @@ footer .brandmark img{height:14px;width:auto;display:block;opacity:.85}
 </div>
 </footer>
 
-<script src="substrate/luv-price.js?v=6"></script>
+<script src="substrate/luv-price.js?v=7"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
 <script src="substrate/luv-frame.js?v=5"></script>
 <script src="substrate/luv-engine.js?v=6"></script>

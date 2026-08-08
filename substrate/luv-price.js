@@ -170,15 +170,84 @@
     render();
   }
 
+  // ── the daily summary ──────────────────────────────────────────────────────────
+  // market.json is a SNAPSHOT: it carries the price now and a 24h change, but no
+  // average. An average has to be computed from the samples, so the history file is
+  // read once per full refresh and reduced over the trailing 24h. If history is
+  // unavailable the averages simply say so rather than borrowing the spot price and
+  // calling it a mean — a snapshot is not an average and must never be printed as one.
+  var DAY_MS = 86400000;
+  function fmtUsd(v, dp) {
+    if (v === null || v === undefined || isNaN(v)) return '—';
+    return '$' + Number(v).toFixed(dp === undefined ? 6 : dp);
+  }
+  function renderDaily(mkt, hist) {
+    if (!el('lp-d-price')) return;
+    var oneT = mkt && Number(mkt.oneTrillionUsd);
+    set('lp-d-price', isFinite(oneT) ? fmtUsd(oneT) : '—');
+
+    var h24 = mkt && mkt.priceChange && mkt.priceChange.h24;
+    var chgEl = el('lp-d-chg');
+    if (chgEl) {
+      var n = Number(h24);
+      chgEl.textContent = (h24 === undefined || h24 === null || isNaN(n)) ? '—'
+        : (n > 0 ? '▲ +' : n < 0 ? '▼ ' : '· ') + n.toFixed(2) + '%';
+      chgEl.style.color = !isFinite(n) || n === 0 ? 'var(--dim)' : (n > 0 ? '#7ee2a0' : 'var(--rose)');
+    }
+
+    // daily average + daily range, reduced over the trailing 24h of samples
+    var avg = null, lo = null, hi = null, n = 0;
+    if (hist && hist.points && hist.points.length) {
+      var cut = hist.points[hist.points.length - 1][0] - DAY_MS, sum = 0;
+      for (var i = hist.points.length - 1; i >= 0; i--) {
+        var p = hist.points[i];
+        if (p[0] < cut) break;
+        var v = Number(p[1]);
+        if (!isFinite(v)) continue;
+        sum += v; n++;
+        if (lo === null || v < lo) lo = v;
+        if (hi === null || v > hi) hi = v;
+      }
+      if (n) avg = sum / n;
+    }
+    var T = 1e12;
+    set('lp-d-avg', avg === null ? 'no samples' : fmtUsd(avg * T));
+    set('lp-d-range', (lo === null || hi === null) ? '—' : fmtUsd(lo * T) + ' – ' + fmtUsd(hi * T));
+    set('lp-d-samples', n ? n + ' samples · ' + (n >= 1400 ? 'full day' : '~' + Math.round(n / 60) + 'h') : '—');
+
+    var vol = mkt && mkt.volume && mkt.volume.h24;
+    set('lp-d-vol', (vol === undefined || vol === null) ? '—' : '$' + Number(vol).toFixed(2));
+    var tx = (mkt && mkt.txns && mkt.txns.h24) || {};
+    var buys = Number(tx.buys || 0), sells = Number(tx.sells || 0);
+    set('lp-d-tx', (buys + sells) + ' (' + buys + ' buy / ' + sells + ' sell)');
+    var liq = mkt && mkt.liquidity && mkt.liquidity.usd;
+    set('lp-d-liq', (liq === undefined || liq === null) ? '—' : '$' + Number(liq).toFixed(2));
+    set('lp-d-mcap', (mkt && isFinite(Number(mkt.marketCap))) ? '$' + Number(mkt.marketCap).toFixed(0) : '—');
+    var blk = mkt && mkt.chronos && mkt.chronos.block_number;
+    set('lp-d-block', blk ? 'block ' + blk : '—');
+  }
+
   function tick() {
     fetch('market.json?v=' + Date.now(), { cache: 'no-store' })
       .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (m) { if (m) { lastMarket = m; render(); } })
+      .then(function (m) { if (m) { lastMarket = m; render(); renderDaily(m, lastHistory); } })
       .catch(function () { /* keep the last good frame */ });
+  }
+
+  var lastHistory = null;
+  function tickHistory() {
+    // history is the biggest same-origin payload on this page, so it is read on the
+    // FULL refresh only — never on the minute price tick.
+    fetch('market-history.json', { cache: 'no-cache' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (h) { if (h) { lastHistory = h; renderDaily(lastMarket, h); } })
+      .catch(function () { /* averages degrade to "no samples", nothing else breaks */ });
   }
 
   function boot() {
     if (!el('lp-eth')) return;
+    tickHistory();
+    try { global.setInterval(tickHistory, 5 * 60 * 1000); } catch (e) { /* no timers */ }
     set('lp-luv', ONE_TRILLION_LUV + ' LUV');
     MODE_BTNS.forEach(function (bm) {
       var b = el(bm[0]);
