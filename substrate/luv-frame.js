@@ -52,6 +52,23 @@
   // then the boundary falls back to the resting 4-green/1-red bias. The frame never
   // fetches anything (it imports nothing, by commitment): whoever already reads the swap
   // log calls DVLuvFrame.flash('b'|'s'). No trades, no override; the bias is the default.
+  // ROYGBIV mode (opt-in: <body data-luvframe="rainbow">). Seven anchors, swept
+  // CONTINUOUSLY: the hue at any instant is interpolated between the two anchors it sits
+  // between, and violet wraps back into red, so the loop closes with no seam and there is
+  // never a discrete jump. Phase is wall-clock, so — like the pulse and the candle bias —
+  // every visitor's boundary is the same colour at the same moment.
+  var ROYGBIV = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#9400d3'];
+  var RAINBOW_MS = 14000;   // 2s per band across the seven — slow enough to read as a drift
+  function roygbiv(now) {
+    var span = RAINBOW_MS / ROYGBIV.length;
+    var pos = (now % RAINBOW_MS) / span;
+    var i = Math.floor(pos) % ROYGBIV.length;
+    var t = pos - Math.floor(pos);
+    // smoothstep across each pair so the arrival at every anchor eases instead of sliding
+    var e = t * t * (3 - 2 * t);
+    return mix(ROYGBIV[i], ROYGBIV[(i + 1) % ROYGBIV.length], e);
+  }
+
   var FLASH_MS = 4000;      // four pulses at the pulse organ's 1 Hz
   var INSET = 8;            // 2^3 — the boundary stands off the true edge
   var CHAMFER_BIG = 32;     // 2^5 — corner cut on full viewports
@@ -68,11 +85,13 @@
     // Candle mode is opt-in per page: <body data-luvframe="candles">. Pages that say
     // nothing keep the rose hairline exactly as before.
     this.candles = !!(opts && opts.candles);
+    this.rainbow = !!(opts && opts.rainbow);
     if (!opts) {
       try {
         var host = document.body || document.documentElement;
         var want = host && host.getAttribute && host.getAttribute('data-luvframe');
         this.candles = /(^|\s)candles(\s|$)/i.test(want || '');
+        this.rainbow = /(^|\s)rainbow(\s|$)/i.test(want || '');
       } catch (e) { /* no DOM yet */ }
     }
     try {
@@ -173,7 +192,10 @@
 
     // inner hairline — the living edge, breathing with the pulse (2px standoff)
     var edge = ROSE, glow = PINK;
-    if (this.candles) {
+    if (this.rainbow) {
+      // reduced motion: hold one colour rather than freeze mid-sweep at random
+      edge = glow = this.reduced ? ROYGBIV[3] : roygbiv(Date.now());
+    } else if (this.candles) {
       if (this.flashUntil && Date.now() < this.flashUntil) {
         // an actual swap, straight from the pair's own log — this is not a bias
         edge = glow = (this.flashSide === 's') ? CANDLE_RED : CANDLE_GREEN;
