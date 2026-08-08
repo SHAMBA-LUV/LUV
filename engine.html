@@ -168,7 +168,7 @@ footer .brandmark:hover img{opacity:1}
   <div class="paperkind">the engine paper · phase three · the pulse at 60 bpm <span class="pulseheart" data-luvpulse data-luvpulse-audio title="tap to hear the heartbeat — consent-only, tap again to stop">❤</span></div>
 
   <div class="actionbar">
-    <a class="buybtn" href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=ETH&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">
+    <a class="buybtn" data-luv-emit href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=ETH&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">
       <img src="gfx/brand/uniswap_icon_white.svg" alt="" height="20" aria-hidden="true">
       <span>Buy LUV with ETH ❤</span>
     </a>
@@ -410,10 +410,34 @@ footer .brandmark:hover img{opacity:1}
   probed live, not asserted. A commitment with no organ is a gap in the engine; an organ
   with no commitment does not belong in it. Read it from any page with
   <code>DVLuvEngine.status()</code>.</p>
-  <div data-luvengine></div>
+  <p>The substrate is itself an evolution, and says so. DeltaVerse's
+  <a href="https://github.com/SHAMBA-LUV/LUV" rel="noopener"><code>sane-substrate</code></a> builds the
+  world <em>inside</em> — point, line, triangle, stage. <code>luv-frame.js</code> inherited its axioms and
+  turned them outward, drawing the octagon world-edge as the page's own boundary: it answered
+  <em>where does the world end?</em> <code>luv-engine.js</code> is the next turn of the same discipline —
+  it looks <em>inward</em> and answers <em>what is the world made of, and which commitment does each part
+  discharge?</em> Frame bounded the world; engine itemises it.</p>
+  <p>The list below is rendered by the page itself, so it is readable with scripting disabled; when the
+  substrate loads it replaces the list with a live probe of what this page has actually loaded. The last
+  entry, <b>automindx</b>, is deliberately unbuilt — the cognition organ that would let an agentic reader
+  attend to the field the way mindX's automindx does. It is listed because the derivation rule cuts both
+  ways: a commitment without an organ is a gap, and a gap the engine hides is worse than one it names.</p>
+  <div data-luvengine>
+    <ul class="points" style="margin-top:12px">
+      <li><b>the pulse</b> <code>substrate/luv-pulse.js</code> — chronos-locked 1 Hz output, 60 bpm, phase-identical for every visitor · <em>a shared rhythm owned by no one</em></li>
+      <li><b>the heart</b> <code>substrate/heart.js</code> — the visual organ, created only on consent · <em>consent over default</em></li>
+      <li><b>the frame</b> <code>substrate/luv-frame.js</code> — the octagon world-edge worn as the page frame · <em>a boundary that contains, never intercepts</em></li>
+      <li><b>the drip</b> <code>substrate/luv-drip.js</code> — meters continuously, settles once as one integer of luv · <em>precision without approximation</em></li>
+      <li><b>the wei</b> <code>substrate/luv-wei.js</code> — the atom, 1 luv = 0.000000000000000001 LUV · <em>rounding is a display decision</em></li>
+      <li><b>the market</b> <code>substrate/luv-market.js</code> — reserves-first price, block-anchored · <em>the pair creates the price</em></li>
+      <li><b>the rainbow</b> <code>substrate/luv-rainbow.js</code> — drawn live from the published fit · <em>a fit anyone can redraw</em></li>
+      <li><b>the share</b> <code>substrate/luv-share.js</code> — the gesture outward, no trackers · <em>sharing is the marketing</em></li>
+      <li><b>automindx</b> <code>substrate/luv-automindx.js</code> — <b>not yet built</b>: the cognition organ, the agentic reader of the field · <em>an attending mind is an attending mind, whether neurons or weights</em></li>
+    </ul>
+  </div>
 
   <div class="actionbar">
-    <a class="buybtn" href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=ETH&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">
+    <a class="buybtn" data-luv-emit href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=ETH&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">
       <img src="gfx/brand/uniswap_icon_white.svg" alt="" height="20" aria-hidden="true">
       <span>Buy LUV with ETH ❤</span>
     </a>
@@ -461,6 +485,6 @@ footer .brandmark:hover img{opacity:1}
 
 <script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
-<script src="substrate/luv-engine.js?v=2"></script>
+<script src="substrate/luv-engine.js?v=3"></script>
 </body>
 </html>

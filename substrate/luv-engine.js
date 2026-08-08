@@ -28,7 +28,7 @@
 (function (global) {
   'use strict';
 
-  var VERSION = '1.0.0';
+  var VERSION = '1.1.0';
   var SEAM = '#4a1f30', ROSE = '#ff4d6d', GOLD = '#e3b25f', DIM = '#b98da0', CREAM = '#f6e7eb';
 
   // The organs, in the order the engine grew them. `global` is the window symbol the
@@ -57,7 +57,23 @@
       role: 'the in-house rainbow drawn live from the fit — zero calls, zero deps' },
     { key: 'share',   name: 'the share',      file: 'substrate/luv-share.js',   sym: 'DVLuvShare',
       commitment: 'sharing is the marketing',
-      role: 'the gesture outward — share intents, no trackers' }
+      role: 'the gesture outward — share intents, no trackers' },
+    { key: 'automindx', name: 'automindx',    file: 'substrate/luv-automindx.js', sym: 'DVLuvAutoMindX',
+      commitment: 'an attending mind is an attending mind, whether neurons or weights',
+      role: 'the cognition organ — the agentic reader of the field (mindX automindx). NOT YET BUILT: '
+          + 'listed because a commitment without an organ is a gap the engine should show, not hide' }
+  ];
+
+  // Lineage — the engine substrate is an evolution, and says so:
+  //   DeltaVerse engine/sane-substrate.js   builds the world INSIDE  (point -> line -> stage)
+  //     -> substrate/luv-frame.js           draws the boundary AROUND (the octagon world-edge)
+  //       -> substrate/luv-engine.js        looks INWARD and names what the engine is made of
+  // Frame answered "where does the world end?". Engine answers "what is the world made of, and
+  // which commitment does each part discharge?" — the same octagon discipline turned on itself.
+  var LINEAGE = [
+    { file: 'engine/sane-substrate.js', where: 'DeltaVerse', role: 'builds the world inside' },
+    { file: 'substrate/luv-frame.js',   where: 'SHAMBA LUV', role: 'draws the boundary around' },
+    { file: 'substrate/luv-engine.js',  where: 'SHAMBA LUV', role: 'names what the engine is made of' }
   ];
 
   function probe(sym) {
@@ -96,8 +112,6 @@
     var reduced = false;
     try { reduced = global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches; }
     catch (e) { /* older engines */ }
-
-    while (mount.firstChild) mount.removeChild(mount.firstChild);
 
     var box = el('div', 'border:1px solid ' + SEAM + ';border-radius:14px;overflow:hidden;margin:18px 0');
     var head = el('div', 'display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;padding:13px 16px;' +
@@ -138,6 +152,9 @@
     foot.appendChild(document.createTextNode(
       'DVLuvEngine v' + VERSION + ' — an organ enters the engine only as the implementation of a stated commitment.'));
     box.appendChild(foot);
+    // swap only now — everything above could have thrown, and the page-rendered
+    // fallback inside the mount is better than an empty div
+    while (mount.firstChild) mount.removeChild(mount.firstChild);
     mount.appendChild(box);
 
     // the tally dot breathes with the pulse when the pulse organ is present
@@ -206,20 +223,81 @@
     }
   }
 
+  // ── hearts, emitted on hover ──────────────────────────────────────────────────────
+  // Wired to [data-luv-emit]. rAF only — no CSS keyframes, no injected stylesheet, so it
+  // survives any style-src policy. Respects prefers-reduced-motion by simply not emitting.
+  var HEART = 'gfx/heart.svg';
+  function emitHeart(host) {
+    var r;
+    try { r = host.getBoundingClientRect(); } catch (e) { return; }
+    var img = document.createElement('img');
+    img.src = absolute(HEART);
+    img.alt = '';
+    img.setAttribute('aria-hidden', 'true');
+    var size = 12 + Math.floor(((r.width || 100) % 7)) + (heartSeed++ % 9);
+    var x0 = r.left + r.width * (0.15 + ((heartSeed * 37) % 70) / 100);
+    var y0 = r.top + r.height * 0.55;
+    var drift = (((heartSeed * 53) % 40) - 20);
+    img.setAttribute('style',
+      'position:fixed;left:' + x0 + 'px;top:' + y0 + 'px;width:' + size + 'px;height:' + size +
+      'px;pointer-events:none;z-index:9999;opacity:.95;will-change:transform,opacity');
+    document.body.appendChild(img);
+    var t0 = null, LIFE = 1100;
+    function step(t) {
+      if (t0 === null) t0 = t;
+      var k = (t - t0) / LIFE;
+      if (k >= 1) { if (img.parentNode) img.parentNode.removeChild(img); return; }
+      img.style.transform = 'translate(' + (drift * k) + 'px,' + (-70 * k) + 'px) scale(' + (1 - 0.35 * k) + ')';
+      img.style.opacity = String(0.95 * (1 - k));
+      global.requestAnimationFrame(step);
+    }
+    global.requestAnimationFrame(step);
+  }
+  var heartSeed = 1;
+  function wireEmitters() {
+    var reduced = false;
+    try { reduced = global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+    catch (e) { /* older engines */ }
+    if (reduced || !global.requestAnimationFrame) return;
+    var hosts = document.querySelectorAll('[data-luv-emit]');
+    for (var i = 0; i < hosts.length; i++) {
+      (function (h) {
+        var timer = 0;
+        h.addEventListener('mouseenter', function () {
+          if (timer) return;
+          heartSeed++; emitHeart(h);
+          timer = global.setInterval(function () { heartSeed++; emitHeart(h); }, 190);
+        });
+        h.addEventListener('mouseleave', function () {
+          if (timer) { global.clearInterval(timer); timer = 0; }
+        });
+      })(hosts[i]);
+    }
+  }
+
   function boot() {
     if (global.__luvEngineBooted) return;
     global.__luvEngineBooted = true;
     var mounts = document.querySelectorAll('[data-luvengine]');
     for (var i = 0; i < mounts.length; i++) {
-      try { render(mounts[i]); } catch (e) { /* one bad mount never breaks the page */ }
+      try { render(mounts[i]); }
+      catch (e) {
+        // A silent catch here once hid a non-rendering mount for an entire session.
+        // One bad mount still never breaks the page — but it never hides either.
+        try { (global.console && global.console.warn)('[luv-engine] render failed:', e); } catch (_) {}
+        // the mount still holds its server-rendered list — nothing to restore
+      }
     }
     try { wireWatchAsset(); } catch (e) { /* a wallet-less page still renders */ }
+    try { wireEmitters(); } catch (e) { /* motion is a courtesy, never a requirement */ }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
 
   global.DVLuvEngine = {
     version: VERSION, organs: organs, status: status, present: present, count: count,
-    render: render, token: TOKEN, watchAsset: watchAsset
+    render: render, token: TOKEN, watchAsset: watchAsset,
+    lineage: function () { return LINEAGE.map(function (l) { return l; }); },
+    emit: emitHeart
   };
 })(typeof window !== 'undefined' ? window : this);

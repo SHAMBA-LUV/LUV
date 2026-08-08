@@ -74,6 +74,8 @@ h1{margin:52px 0 6px;text-align:center;font-size:clamp(32px,6vw,52px);font-weigh
   border:1px solid var(--seam);border-radius:999px;padding:8px 18px;transition:color .15s,border-color .15s}
 .btn:hover{color:var(--rose);border-color:var(--rose)}
 button.btn{background:transparent;cursor:pointer;font-family:var(--mono);font-size:12px;line-height:normal}
+.mmbtn{display:inline-flex;align-items:center;gap:7px}
+.mmbtn img{display:block;border-radius:50%}
 .uni-cta{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:15px;color:var(--cream);text-decoration:none;
   border:1px solid #FF007A;border-radius:999px;padding:12px 24px;transition:background .15s}
 .uni-cta:hover{background:rgba(255,0,122,.12);color:var(--cream)}
@@ -172,11 +174,11 @@ footer .brandmark img{height:14px;width:auto;display:block;opacity:.85}
   <div class="fineline" id="lp-at"></div>
 
   <div class="ctarow">
-    <a class="uni-cta" href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">
+    <a class="uni-cta" data-luv-emit href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">
       <img src="gfx/brand/uniswap_horizontal_white.svg" alt="Uniswap"> <span>Buy LUV with USDC ❤</span>
     </a>
     <a class="btn" href="https://app.uniswap.org/swap?chain=ethereum&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">Ξ or buy LUV with ETH</a>
-    <button type="button" class="btn" data-luv-watchasset>❤ add LUV to MetaMask</button>
+    <button type="button" class="btn mmbtn" data-luv-watchasset><img src="gfx/heart-512.png" alt="" height="14" aria-hidden="true"> add LUV to MetaMask</button>
     <a class="btn" href="view.html">📈 live view — candles, RSI, MACD</a>
     <a class="btn" href="emotonomics.html">🎓 the field paper</a>
   </div>
@@ -203,6 +205,6 @@ footer .brandmark img{height:14px;width:auto;display:block;opacity:.85}
 <script src="substrate/luv-price.js?v=6"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
 <script src="substrate/luv-frame.js?v=3"></script>
-<script src="substrate/luv-engine.js?v=2"></script>
+<script src="substrate/luv-engine.js?v=3"></script>
 </body>
 </html>
