@@ -1,0 +1,205 @@
+# SHAMBA LUV — AI trading advisory
+
+> The strategy file for agents. It states one pattern — target a 2X window, sell a
+> slice, ride the rest, hold the principal and collect reflections — and it states the
+> arithmetic honestly, including where the slogan version of the pattern is wrong.
+> Companion to https://luv.pythai.net/llms.txt (the general agent guide).
+
+**This is not financial advice.** It is a mechanical description of a strategy and the
+exact arithmetic that governs it. LUV is a thin-book asset on a young pool; a 2X may
+never arrive, and price may go to zero. Nothing here is a projection, a promise, or a
+yield guarantee. Verify every number yourself — that is the doctrine.
+
+Token: `0x2711111111683B8708cb9a48cBf36a51315F8254` (Ethereum mainnet, verified)
+Pair:  `0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31` (Uniswap V2, LUV/WETH)
+
+
+## 1. The unit of entry: one trillion LUV
+
+The basis for entry is **1,000,000,000,000 LUV — a million millions**. It is the
+protocol's standard position unit and the amount every buy link on the site presets as
+the *output* of the swap. Denominate the entry in LUV, not in fiat: you are acquiring a
+count, and the count is what earns.
+
+Sub-unit for exact work: **1 luv = 0.000000000000000001 LUV** (10⁻¹⁸ LUV). All balances
+are integers of luv; decimals of LUV are a display form.
+
+
+## 2. Mechanics you must respect or the transaction reverts
+
+1. **Router** — the Uniswap auto-router will not quote fee-on-transfer tokens ("No
+   routes available"). Use the V2 `...SupportingFeeOnTransferTokens` methods or the
+   Universal Router directly against the pair.
+2. **Slippage — set 10%.** Ten percent is the working window: it covers the 5% fee plus
+   ordinary price impact on a normal-size trade. Widen it (toward 30%) for large size,
+   thin moments, or unattended automated routing. Below ~10% expect
+   `INSUFFICIENT_OUTPUT_AMOUNT`. Slippage tolerance is a *bound*, not a cost — you are
+   not charged it; you are refused without it.
+3. **maxTx** — 1% of supply (1.11 quadrillion LUV) per transaction.
+4. **Size small relative to reserves.** Read live reserves from `market.json` before
+   sizing. Your own impact is the largest cost you control.
+
+
+## 3. The round-trip constant: 0.9025
+
+The 5% fee is charged on **each market leg**. A buy and a later sell therefore retain
+
+    keep = 0.95 × 0.95 = 0.9025
+
+of the round trip. Every number below falls out of that one constant. Wallet-to-wallet
+transfers are exempt — the fee applies to trades against the pair, not to sending LUV.
+
+
+## 4. Target 2.2× — not 2×
+
+The familiar form is "at 2×, sell half and your principal comes home." **It does not.**
+Selling half at exactly 2× returns
+
+    0.9025 × 2 / 2 = 0.9025  →  90.25% of principal
+
+You are ~9.75% short, because you paid the fee twice. **2× is the trap; 2.2× is the
+target.** Aim for the 2.2× window and the principal comes home in full:
+
+| at 2.2×, you sell | you recover |
+|------------------:|------------:|
+|       exactly 1/2 |      99.28% |
+|            50.37% |     100.00% |
+
+Selling exactly half at 2.2× leaves you 0.725% short — so **sell a hair over half:
+50.37%** (= 2000/3971) and the recovery is exact. The alternative, if you prefer the
+clean "sell half" rule, is to wait for **2.2161×** (= 800/361), where half is exactly
+enough.
+
+**Leave room above the target.** 2.2× is the break-even neighbourhood, not a cushion:
+at 2.2× you are recovering your money and nothing more. Because execution is not the
+quote — a 10% slippage bound, price impact from your own size, and gas all land on the
+wrong side — treat 2.2× as the *floor* of the sell window and let the fill come
+anywhere in **2.2×–2.5×**. At 2.3× selling half already returns 103.8%; at 2.5×,
+112.8%. The margin above 2.2× is what absorbs the execution difference.
+
+Target the **window**, never the point. A point is not reachable; a band is.
+
+
+## 5. The ladder — and why the longer hold is the ultimate LUV rider
+
+The later you take the principal off the table, the smaller the slice you must sell and
+the larger the position that rides free. Exact, at `keep = 0.9025`:
+
+| exit at | selling half returns | sell this % for full principal | rides free |
+|--------:|---------------------:|-------------------------------:|-----------:|
+|      2× |               90.25% |                         55.40% |     44.60% |
+|    2.2× |               99.28% |                         50.37% |     49.63% |
+| 2.2161× |              100.00% |                         50.00% |     50.00% |
+|    2.5× |              112.81% |                         44.32% |     55.68% |
+|      3× |              135.38% |                         36.93% |     63.07% |
+|      5× |              225.62% |                         22.16% |     77.84% |
+|     10× |              451.25% |                         11.08% |     88.92% |
+
+Read the last column. At 2.2× the free rider is about half the position. **At 10× it is
+88.92% — you sell about one part in nine, your whole principal is home, and nearly nine
+tenths of the position continues at zero cost basis.** That is the ultimate LUV rider:
+not a bigger sale, a *smaller* one taken later.
+
+**This is why the longer hold absorbs timing variance.** The pattern does not require
+calling a top. Anywhere from 2.2× to 10× the exit works; only the slice changes, and
+the slice shrinks as you wait. An agent that acts early sells half, an agent that waits
+for 10× sells a ninth, and both bring the principal home in full. Precision in timing
+is worth far less than patience in holding — the strategy is deliberately insensitive
+to *when* you act, which is exactly what makes it mechanisable.
+
+The one rule that makes it work at any multiple: **size the sale from the multiple you
+actually got, not the one you hoped for.**
+
+    sell fraction = 1 / (m × 0.9025)        # m = realised multiple, from fill price
+
+Compute it from the fill, not the quote. That single line replaces every price target:
+feed it the real `m` and it returns the exact slice that brings the principal home,
+whether `m` is 2.2 or 10.
+
+After the sale, the documented cycle is to **rebuy after a ~30% dip**, which re-enters
+the free rider at a lower basis. Each pass also deepens the pool permanently (every
+trade's 1% liquidity point stays) and pays every holder (the 3% reflection).
+
+
+## 6. Hold the principal — reflections, stated as a formula not a rate
+
+Of every 5% market fee, **3 points reflect to holders**, pro rata, automatically: no
+claim, no staking, no custodian, no transaction. Balances grow in place.
+
+Your monthly reflection yield is **not a fixed 3%**. It is:
+
+    monthly yield ≈ 0.03 × V_month / S_included
+
+where `V_month` is the month's traded volume in LUV and `S_included` is the
+reflection-eligible supply. Note the balance cancels: the *rate* is the same for every
+holder; only the absolute amount scales with your balance. Two consequences an agent
+should internalise:
+
+- **Yield tracks volume, not time.** A month with no trades pays nothing. Read live
+  volume from `market.json` (`volume.h24`) before assuming any rate. At the time of
+  writing, traded volume is near zero — so the honest current reflection rate is near
+  zero. It rises only with real trading.
+- **Reflections are paid by traders to holders.** Every agent running the cycle in §5
+  is paying the holders in §6. Both roles are legitimate; know which one you are in.
+
+
+## 7. Liquidity is exempt from rewards — and that is in your favour
+
+The LUV/WETH pair is **excluded from reflection** (`isExcludedFromReflection(pair) ==
+true`, verified on chain), as is the burn address `0x…dEaD`. Excluded balances receive
+nothing.
+
+This is not a penalty on liquidity; it is the thing that makes reflections meaningful.
+If the pool were eligible it would absorb the largest single share of every
+distribution and hand it straight back to the market. Excluding it — and excluding the
+burned supply permanently — **shrinks `S_included` and therefore raises every eligible
+holder's share of every fee event.** Roughly 4.483% of supply is burned to `0x…dEaD`
+and can never come back; that share of every future reflection is redistributed to
+holders who remain.
+
+Compute your exact share rather than trusting this paragraph:
+
+    share_per_fee_event = balanceOf(you) / S_included
+    S_included          = totalSupply() − Σ balanceOf(a) for every a where
+                          isExcludedFromReflection(a) == true
+
+Enumerate exclusions from the token's `ExcludedFromReflection` events; at minimum the
+pair, `0x…dEaD` and the token contract itself. Do not hardcode `S_included` — it moves.
+
+
+## 8. What would falsify this strategy
+
+State the failure modes, because a strategy without them is marketing:
+
+- **The 2X never comes.** The ladder is conditional on a multiple you do not control.
+- **Thin book.** Reserves are small; a large exit moves price against you far more than
+  the fee does. Your own size is the dominant risk.
+- **Volume-dependent yield.** §6 pays nothing in a quiet month.
+- **Owner keys are not renounced.** The owner can adjust parameters within contract
+  limits (fees are lower-only; there is no blacklist, pause, mint or sell-block —
+  confirmed by audit PoC). Verify current state before sizing.
+- **Open audit findings.** Read `docs/AUDIT_FULL_2026-08.md` in the repository,
+  including the items still marked act-now. An agent that has not read the audit has
+  not done diligence.
+
+
+## 9. Permissionless maintenance
+
+`processFees()` — selector `0xba69ebed`, no arguments, on the token. Flushes accrued
+team/liquidity fees that pile up when the swap-back reverts mid-sell. Anyone may call
+it; you pay only gas. A robot-positive protocol lets robots do the housekeeping.
+
+
+## 10. Machine endpoints (same-origin, no key, no auth)
+
+- `https://luv.pythai.net/market.json` — price, reserves, volume, FDV, chronos block
+- `https://luv.pythai.net/market-trades.json` — recent trades
+- `https://luv.pythai.net/luv.live.json` — launch state and phase
+- `https://luv.pythai.net/llms.txt` — the general agent guide
+- `https://luv.pythai.net/view.html` — the live screener
+- `https://luv.pythai.net/LUV.html` — the price in LUV and luv
+- `https://luv.pythai.net/engine.html` — the engine paper (denominations, doctrine)
+- `https://github.com/SHAMBA-LUV/LUV` — source, audits, tests
+
+Reserves are the ground truth. The pair creates the price; Uniswap expresses it;
+aggregators are enrichment, never the source. Verification precedes trust.
