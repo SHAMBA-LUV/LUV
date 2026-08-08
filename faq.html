@@ -55,6 +55,14 @@ footer .brandmark:hover img{opacity:1}
 a.exlink img,.marketrow img{height:16px;width:auto;vertical-align:-4px}
 .marketrow{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-top:6px}
 .marketrow a{display:inline-flex;align-items:center;gap:7px;color:var(--blush)}
+
+.mmoffer{display:flex;flex-wrap:wrap;gap:12px;align-items:center;border:1px solid var(--seam);
+  border-radius:12px;background:rgba(0,0,0,.18);padding:14px 16px;margin:4px 0 14px}
+.mmoffer span{flex:1 1 260px;min-width:220px;font-size:12.5px;color:var(--dim);line-height:1.6}
+.mmbtn{display:inline-flex;align-items:center;gap:8px;cursor:pointer;background:transparent;
+  font-family:var(--mono);line-height:normal}
+.mmbtn img{display:block;border-radius:50%}
+
 </style>
 </head>
 <body>
@@ -101,33 +109,110 @@ a.exlink img,.marketrow img{height:16px;width:auto;vertical-align:-4px}
 
   <details>
     <summary>What is the circulating supply — is there real liquidity?</summary>
-    <div class="a"><p>The <b>circulating supply is <b class="g">100 quadrillion LUV</b></b> — about
-    <b>90% of the total supply</b> — placed in the public <b>liquidity pool, paired with ETH</b> on
-    the DEX. That pool IS the open market: permissionless depth where anyone can buy or sell LUV
-    against ETH at any time, at a price set purely by the pool — no allowlists, no market-maker
-    gatekeeping.</p>
-    <p>The ETH pairing matters three ways. It's the <b>price anchor</b>: LUV's value is measured in
-    hard ETH terms, and the multichain design routes every chain back to this single deep pool rather
-    than fragmenting liquidity. It's the <b>fee engine</b>: the pool is the trading counterparty, so
-    buys and sells against it are exactly where the 5% (3% reflections · 1% liquidity · 1% development)
-    applies — and the 1% auto-liquidity share continuously deepens this same pool. And it's the
-    <b>reflection source</b>: every trade through the pool feeds the reflections that all holders earn.</p>
-    <p>The remaining <b class="g">11.1 quadrillion</b> is the <b>team / founder startup
-    allocation</b>, split <b>evenly four ways</b> — exactly:</p>
+    <div class="a"><p><b>Total supply is <b class="g">111.111 quadrillion LUV</b></b>, minted once at
+    genesis with no mint function. Of that, <b>100 quadrillion — exactly 90.0000%</b> — is held by the
+    <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0x10f7Ee226B16bea7f365Dc1eDEF159Fc1957D169" rel="noopener">treasury</a>,
+    and the remaining <b class="g">11.1 quadrillion</b> is the team / founder startup allocation.
+    Every figure on this page is a balance you can read from the chain yourself; the links go to it.</p>
+
+    <p><b>The 100 quadrillion is NOT in the liquidity pool</b>, and it cannot be. A Uniswap V2 pair
+    stores each reserve in a <code>uint112</code>, so the most LUV a pool can ever hold is
+    <b>2<sup>112</sup>−1 wei ≈ 5.192 quadrillion</b>. The pool was seeded at exactly that ceiling — the
+    Uniswap maximum for a liquidity addition — which is why the plan changed: the rest could not go in
+    if we wanted it to. This page said otherwise for a while. It was wrong, and the chain says so.</p>
+
+    <p><b>Every balance below was read from the chain</b> — <code>balanceOf</code> on the verified
+    token contract, at block <b>25,706,861</b> (2026-08-08 01:06 UTC). Each row links to the live
+    balance so you never have to take this page's word for it, and the last row is the
+    <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254#balances" rel="noopener">full
+    holders list</a> on Etherscan.</p>
+    <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:13px;margin:10px 0 16px">
+    <thead><tr style="text-align:left;border-bottom:1px solid var(--seam)">
+      <th style="padding:7px 8px">holder</th><th style="padding:7px 8px">LUV</th>
+      <th style="padding:7px 8px">% of supply</th><th style="padding:7px 8px">verify</th></tr></thead>
+    <tbody style="font-family:var(--mono)">
+    <tr style="border-bottom:1px solid rgba(74,31,48,.6)"><td style="padding:7px 8px">treasury</td>
+      <td style="padding:7px 8px">100,000,000,000,000,000</td><td style="padding:7px 8px">90.0000%</td>
+      <td style="padding:7px 8px"><a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0x10f7Ee226B16bea7f365Dc1eDEF159Fc1957D169" rel="noopener">0x10f7…D169 ↗</a></td></tr>
+    <tr style="border-bottom:1px solid rgba(74,31,48,.6)"><td style="padding:7px 8px">🔥 burned (dEaD)</td>
+      <td style="padding:7px 8px">4,980,559,643,425,539</td><td style="padding:7px 8px">4.4825%</td>
+      <td style="padding:7px 8px"><a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0x000000000000000000000000000000000000dEaD" rel="noopener">0x…dEaD ↗</a></td></tr>
+    <tr style="border-bottom:1px solid rgba(74,31,48,.6)"><td style="padding:7px 8px">LUV/WETH pair</td>
+      <td style="padding:7px 8px">1,590,658,735,764,078</td><td style="padding:7px 8px">1.4316%</td>
+      <td style="padding:7px 8px"><a href="https://etherscan.io/address/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31" rel="noopener">0x57D2…8a31 ↗</a></td></tr>
+    <tr style="border-bottom:1px solid rgba(74,31,48,.6)"><td style="padding:7px 8px">gesture pool (airdrop)</td>
+      <td style="padding:7px 8px">1,023,939,221,122,842</td><td style="padding:7px 8px">0.9215%</td>
+      <td style="padding:7px 8px"><a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0xdf2C1836550c5711EF9c021cB0de86241dc1DEf3" rel="noopener">0xdf2C…DEf3 ↗</a></td></tr>
+    <tr style="border-bottom:1px solid rgba(74,31,48,.6)"><td style="padding:7px 8px">LUVlocker</td>
+      <td style="padding:7px 8px"><b>0</b></td><td style="padding:7px 8px">0.0000%</td>
+      <td style="padding:7px 8px"><a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0xe07ACAde4bE2bbc264EA702880ed988EBae9B898" rel="noopener">0xe07A…B898 ↗</a></td></tr>
+    <tr><td style="padding:7px 8px">IncentiveDistributor</td>
+      <td style="padding:7px 8px"><b>0</b></td><td style="padding:7px 8px">0.0000%</td>
+      <td style="padding:7px 8px"><a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0x607E477AB12406A3294A7Ba63817103f92D8f806" rel="noopener">0x607E…f806 ↗</a></td></tr>
+    </tbody></table></div>
+    <div class="mmoffer">
+      <button type="button" class="btn mmbtn" data-luv-watchasset>
+        <img src="gfx/heart-512.png" alt="" height="16" aria-hidden="true"> add LUV to MetaMask
+      </button>
+      <span>One click adds the verified contract <b>and</b> the LUV logo to your wallet, so LUV shows up
+      by name and face instead of as an unknown address. Nothing is signed, nothing is spent — it only
+      teaches your wallet what LUV is. The icon is served from this origin, not a third party.</span>
+    </div>
+
+    <p style="font-size:12.5px;color:var(--dim)">Balances move; the method does not. The
+    <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254#balances" rel="noopener">Etherscan
+    holders tab</a> is authoritative over this table — if the two ever disagree, the chain is right and
+    this page is stale.</p>
+
+    <p>What the pool actually holds, live:
+    <a href="https://etherscan.io/address/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31" rel="noopener">the
+    LUV/WETH pair</a> — see <a href="view.html">the live view</a> for the current figure to the wei.
+    That pool IS the open market: permissionless depth, anyone may buy or sell against ETH at any time,
+    at a price set purely by the pool — no allowlists, no market-maker gatekeeping.</p>
+
+    <p>The ETH pairing matters three ways. It's the <b>price anchor</b>: LUV's value is measured in hard
+    ETH terms. It's the <b>fee engine</b>: the pool is the trading counterparty, so buys and sells
+    against it are exactly where the 5% applies — <b>3% reflections · 1% liquidity · 1% team</b>, the
+    team point governed by the DAIO in three equal components (marketing, community, development) with
+    2-of-3 consensus before any spend. And it's the <b>reflection source</b>: every trade through the
+    pool feeds the reflections every holder earns.</p>
+
+    <p><b>Liquidity distribution follows value and price, across chains.</b> LUV deploys to the same
+    deterministic address on every chain, and the pool is deepened where the market actually is rather
+    than pre-fragmented across venues. <b>Polygon was the first deployment, and every holder on the
+    Polygon contract will be honoured</b> — that commitment stands and carries forward as the deployment
+    continues across chains.</p>
+
+    <p>The startup allocation, split evenly four ways:</p>
     <p><b>Founders</b> — 2.777 quadrillion — <b class="g">sold to raise the launch liquidity, with 100%
-    of the proceeds going straight into the 100-quadrillion circulating pool</b> (the ETH paired against
-    LUV). The founders took <b>nothing off the table</b>: every wei raised became public, permissionless
-    liquidity that the whole community trades against. Skin in the game, all in.<br>
-    <b>Treasury</b> — 2.777 quadrillion · liquid (working capital — funds the 1-quadrillion
-    free-gesture campaign, 1,000 airdrops of 1 trillion)<br>
-    <b>Marketing</b> — 2.777 quadrillion · <b>locked</b> in the LUVlocker<br>
-    <b>Community</b> — <b class="g">2.778 quadrillion</b> · <b>locked</b> — the split's indivisible
-    rounding remainder is deliberately given to the community: sharing is caring, down to the last
-    wei ❤</p>
-    <p>The supply is <b>fixed</b> — minted once at genesis with no mint function, so the pool plus the
-    startup allocation is the entire economy, forever. Wallet-to-wallet transfers never touch the pool
-    and stay 0%. (The front page shows the <b>100-quadrillion circulating supply</b>; the 111-quadrillion
-    total lives here in the FAQ.)</p></div>
+    of the proceeds going into the pool</b> as the ETH paired against LUV. The founders took <b>nothing
+    off the table</b>: every wei raised became public, permissionless liquidity the whole community
+    trades against.<br>
+    <b>Treasury</b> — 2.777 quadrillion · liquid working capital<br>
+    <b>Marketing</b> — 2.777 quadrillion · <b>earmarked for the LUVlocker</b><br>
+    <b>Community</b> — <b class="g">2.778 quadrillion</b> · <b>earmarked for the LUVlocker</b> — the
+    split's indivisible rounding remainder is deliberately given to the community: sharing is caring,
+    down to the last wei ❤</p>
+
+    <p><b>The lock is not set yet, and we will not say it is.</b> The
+    <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0xe07ACAde4bE2bbc264EA702880ed988EBae9B898" rel="noopener">LUVlocker</a>
+    holds <b>zero LUV</b> today — check it. The marketing and community allocations are <em>earmarked</em>,
+    not locked, and this page previously called them locked. <b>Liquidity gets locked first</b>; the
+    supply lock follows. A lock is a transaction anyone can verify, so until that transaction exists the
+    honest word is "earmarked".</p>
+
+    <p><b>The 1-trillion drop is shut down — the model is now work for LUV.</b> LUV is earned, not
+    handed out: <b>1,000,000 LUV a day for signing in</b> (the LUVdrip — a million a day, metered
+    continuously and settled when you collect), plus the earn rail for real contribution. The
+    <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0xdf2C1836550c5711EF9c021cB0de86241dc1DEf3" rel="noopener">gesture
+    pool</a> still holds its <b>~1.024 quadrillion LUV</b> from the free-gesture campaign; the campaign
+    that spent it is closed. Rates and limits are whatever the on-chain action registry says — it is the
+    final word.</p>
+
+    <p>The supply is <b>fixed</b> — no mint function — so the pool, the treasury and the startup
+    allocation are the entire economy, forever. Wallet-to-wallet transfers never touch the pool and cost
+    <b>0%</b>: 1 LUV is 1 LUV.</p></div>
   </details>
 
   <details>
@@ -572,5 +657,6 @@ a.exlink img,.marketrow img{height:16px;width:auto;vertical-align:-4px}
 
 <script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
+<script src="substrate/luv-engine.js?v=5"></script>
 </body>
 </html>
