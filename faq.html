@@ -63,6 +63,16 @@ a.exlink img,.marketrow img{height:16px;width:auto;vertical-align:-4px}
   font-family:var(--mono);line-height:normal}
 .mmbtn img{display:block;border-radius:50%}
 
+
+.brandrow{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:center;
+  border:1px solid var(--seam);border-radius:12px;background:rgba(0,0,0,.14);padding:13px 16px;margin:6px 0 12px}
+.brandrow .brandmark{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:var(--dim);
+  font-family:var(--mono);font-size:11px;letter-spacing:.08em}
+.brandrow .brandmark img{display:block;opacity:.95}
+.brandrow .luvmark img{border-radius:50%}
+.brandrow a.brandmark:hover{color:var(--rose)}
+.brandrow .bsep{color:var(--seam)}
+
 </style>
 </head>
 <body>
@@ -151,6 +161,18 @@ a.exlink img,.marketrow img{height:16px;width:auto;vertical-align:-4px}
       <td style="padding:7px 8px"><b>0</b></td><td style="padding:7px 8px">0.0000%</td>
       <td style="padding:7px 8px"><a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0x607E477AB12406A3294A7Ba63817103f92D8f806" rel="noopener">0x607E…f806 ↗</a></td></tr>
     </tbody></table></div>
+    <div class="brandrow">
+      <a class="brandmark" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254#code" target="_blank" rel="noopener" title="verified means the green checkmark: source verified on Etherscan · Powered by Etherscan.io APIs">
+        <img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="18"><span>verified ✅</span>
+      </a>
+      <span class="bsep">·</span>
+      <span class="brandmark luvmark"><img src="gfx/heart-512.png" alt="SHAMBA LUV" height="20"><span>SHAMBA LUV</span></span>
+      <span class="bsep">·</span>
+      <a class="brandmark" data-luv-emit href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="trade LUV on Uniswap">
+        <img src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap" height="18"><span>the DEX ↗</span>
+      </a>
+    </div>
+
     <div class="mmoffer">
       <button type="button" class="btn mmbtn" data-luv-watchasset>
         <img src="gfx/heart-512.png" alt="" height="16" aria-hidden="true"> add LUV to MetaMask
@@ -650,6 +672,9 @@ a.exlink img,.marketrow img{height:16px;width:auto;vertical-align:-4px}
       <span>Powered by Etherscan.io APIs</span>
     </a>
     <span>SHAMBA © 2026 LUV</span>
+    <span style="flex-basis:100%;font-size:10.5px;line-height:1.6;opacity:.8">The Uniswap and Etherscan
+    names and marks belong to their respective owners (Uniswap Labs; Etherscan) and are used here for
+    identification, with attribution.</span>
   <style>.fieldnav{border-top:1px solid var(--seam);margin-top:22px;padding-top:16px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em}.fieldnav .fn-k{color:var(--gold);text-transform:uppercase;letter-spacing:.18em;font-size:10px;width:100%;margin-bottom:2px}.fieldnav a{color:var(--dim);text-decoration:none;border-bottom:1px solid transparent}.fieldnav a:hover{color:var(--rose);border-bottom-color:var(--rose)}</style>
 <nav class="fieldnav" aria-label="the field"><span class="fn-k">the field</span><a href="/">the doorway</a><a href="view.html">live view</a><a href="LUV.html">the price</a><a href="engine.html">the engine</a><a href="emotonomics.html">emotonomics</a><a href="sentiment.html">sentiment</a><a href="wei.html">wei</a><a href="exabyte.html">exabyte</a><a href="rainbow.html">rainbow</a><a href="luvbus.html">LUVbus</a><a href="docs.html">docs</a></nav>
 </div>
