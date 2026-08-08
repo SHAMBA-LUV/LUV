@@ -28,7 +28,7 @@
 (function (global) {
   'use strict';
 
-  var VERSION = '1.1.0';
+  var VERSION = '1.3.0';
   var SEAM = '#4a1f30', ROSE = '#ff4d6d', GOLD = '#e3b25f', DIM = '#b98da0', CREAM = '#f6e7eb';
 
   // The organs, in the order the engine grew them. `global` is the window symbol the
@@ -60,8 +60,8 @@
       role: 'the gesture outward — share intents, no trackers' },
     { key: 'automindx', name: 'automindx',    file: 'substrate/luv-automindx.js', sym: 'DVLuvAutoMindX',
       commitment: 'an attending mind is an attending mind, whether neurons or weights',
-      role: 'the cognition organ — the agentic reader of the field (mindX automindx). NOT YET BUILT: '
-          + 'listed because a commitment without an organ is a gap the engine should show, not hide' }
+      role: 'the cognition organ — keeper of the persona and the A2A capability card; a capability is '
+          + 'claimed only if the organ implementing it is loaded (after mindX AutoMINDX)' }
   ];
 
   // Lineage — the engine substrate is an evolution, and says so:
@@ -275,6 +275,41 @@
     }
   }
 
+  // ── copy a URL to the clipboard ────────────────────────────────────────────────────
+  // Wired to [data-luv-copy]; the attribute's value is the URL (relative is resolved
+  // against this origin). Falls back to a hidden textarea + execCommand where the async
+  // clipboard API is unavailable or refused. The label reports what happened.
+  function wireCopy() {
+    var els = document.querySelectorAll('[data-luv-copy]');
+    for (var i = 0; i < els.length; i++) {
+      (function (b) {
+        var url = absolute(b.getAttribute('data-luv-copy') || '');
+        b.addEventListener('click', function (e) {
+          e.preventDefault();
+          var prev = b.getAttribute('data-luv-label') || b.textContent;
+          b.setAttribute('data-luv-label', prev);
+          var done = function (ok) {
+            b.textContent = ok ? '\u2705 link copied' : url;
+            global.setTimeout(function () { b.textContent = prev; }, 2600);
+          };
+          if (global.navigator && global.navigator.clipboard && global.navigator.clipboard.writeText) {
+            global.navigator.clipboard.writeText(url).then(function () { done(true); },
+                                                          function () { done(false); });
+            return;
+          }
+          try {
+            var t = document.createElement('textarea');
+            t.value = url; t.setAttribute('readonly', '');
+            t.setAttribute('style', 'position:absolute;left:-9999px');
+            document.body.appendChild(t); t.select();
+            done(document.execCommand('copy'));
+            document.body.removeChild(t);
+          } catch (err) { done(false); }
+        });
+      })(els[i]);
+    }
+  }
+
   function boot() {
     if (global.__luvEngineBooted) return;
     global.__luvEngineBooted = true;
@@ -290,6 +325,7 @@
     }
     try { wireWatchAsset(); } catch (e) { /* a wallet-less page still renders */ }
     try { wireEmitters(); } catch (e) { /* motion is a courtesy, never a requirement */ }
+    try { wireCopy(); } catch (e) { /* copy is a courtesy too */ }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
