@@ -312,6 +312,27 @@
   // Reasonable for lingering clients: no-cache revalidates against the server ETag
   // (unchanged data = a 304), the vhost's 30s max-age absorbs same-window refetches,
   // and a hidden tab doesn't poll at all — it catches up the moment it's seen again.
+  // ── the boundary reacts to ACTUAL swaps ───────────────────────────────────────────
+  // A trade row is [ts, _, side, luv, weth, usd, _, maker, hash]; side is 'b' or 's'.
+  // The first poll only records where the log stands — it must not flash a page-load's
+  // worth of history. After that, a genuinely new tx hash paints the frame green (buy)
+  // or red (sell) for four pulses; the frame handles the timing and the fallback to its
+  // resting bias. The frame itself never fetches — this reader already has the log.
+  var lastSwapHash = null, swapsSeen = false;
+  function signalNewSwaps(doc) {
+    var rows = (doc && doc.trades) || [];
+    if (!rows.length) return;
+    var newest = rows[rows.length - 1];
+    var hash = newest && newest[8];
+    if (!hash) return;
+    if (!swapsSeen) { swapsSeen = true; lastSwapHash = hash; return; }  // baseline only
+    if (hash === lastSwapHash) return;
+    lastSwapHash = hash;
+    try {
+      if (window.DVLuvFrame && window.DVLuvFrame.flash) window.DVLuvFrame.flash(newest[2]);
+    } catch (e) { /* no frame on this page */ }
+  }
+
   function refresh() {
     if (document.hidden) return;
     Promise.all([
@@ -322,7 +343,7 @@
       HOLDERS_MOUNT ? fetch('market-holders.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }) : null,
     ]).then(function (res) {
       if (res[0]) state.market = res[0];
-      if (res[1]) state.trades = res[1];
+      if (res[1]) { state.trades = res[1]; signalNewSwaps(res[1]); }
       if (res[2]) state.holders = res[2];
       render();
       renderHolders();

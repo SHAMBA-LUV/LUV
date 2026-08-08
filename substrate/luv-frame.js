@@ -29,6 +29,11 @@
   // frame turns red on the same second — the same shared-phase rule the pulse obeys.
   var CANDLE_GREEN = '#0ecb81', CANDLE_RED = '#ff2e4c';
   var CANDLE_CYCLE = 5, CANDLE_RED_AT = 4;
+  // An ACTUAL trade overrides the bias for four pulses — green on a buy, red on a sell —
+  // then the boundary falls back to the resting 4-green/1-red bias. The frame never
+  // fetches anything (it imports nothing, by commitment): whoever already reads the swap
+  // log calls DVLuvFrame.flash('b'|'s'). No trades, no override; the bias is the default.
+  var FLASH_MS = 4000;      // four pulses at the pulse organ's 1 Hz
   var INSET = 8;            // 2^3 — the boundary stands off the true edge
   var CHAMFER_BIG = 32;     // 2^5 — corner cut on full viewports
   var CHAMFER_SMALL = 16;   // 2^4 — under 2^9 px
@@ -76,6 +81,21 @@
       self.draw(self.pulse());
     };
     this.raf = global.requestAnimationFrame(tick);
+    return this;
+  };
+
+  // An actual swap paints the boundary for four pulses, then the bias resumes.
+  // side: 'b'/'buy' → green, 's'/'sell' → red. Ignored unless the page opted into candles.
+  Frame.prototype.flash = function (side) {
+    if (!this.candles) return this;
+    this.flashSide = (side === 's' || side === 'sell') ? 's' : 'b';
+    this.flashUntil = Date.now() + FLASH_MS;
+    // reduced motion runs no loop, so paint the override once and once again at its end
+    if (this.reduced && this.ctx) {
+      var self = this;
+      this.draw(0);
+      global.setTimeout(function () { self.draw(0); }, FLASH_MS + 40);
+    }
     return this;
   };
 
@@ -135,9 +155,15 @@
     // inner hairline — the living edge, breathing with the pulse (2px standoff)
     var edge = ROSE, glow = PINK;
     if (this.candles) {
-      // reduced motion: hold the resting colour rather than freeze on a random beat
-      var red = !this.reduced && (Math.floor(Date.now() / 1000) % CANDLE_CYCLE) === CANDLE_RED_AT;
-      edge = glow = red ? CANDLE_RED : CANDLE_GREEN;
+      if (this.flashUntil && Date.now() < this.flashUntil) {
+        // an actual swap, straight from the pair's own log — this is not a bias
+        edge = glow = (this.flashSide === 's') ? CANDLE_RED : CANDLE_GREEN;
+      } else {
+        // resting bias: four green then one red. reduced motion holds the resting colour
+        // rather than freezing on whichever beat the page happened to load on.
+        var red = !this.reduced && (Math.floor(Date.now() / 1000) % CANDLE_CYCLE) === CANDLE_RED_AT;
+        edge = glow = red ? CANDLE_RED : CANDLE_GREEN;
+      }
     }
     octPath(ctx, m + 3, m + 3, w - m - 3, h - m - 3, Math.max(ch - 3, 4));
     ctx.lineWidth = 1;
@@ -190,5 +216,12 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
 
-  global.DVLuvFrame = { Frame: Frame };
+  global.DVLuvFrame = {
+    Frame: Frame,
+    // the seam the swap-log reader calls; a no-op on pages without candle mode
+    flash: function (side) {
+      if (global.__luvFrame && global.__luvFrame.flash) global.__luvFrame.flash(side);
+      return global.__luvFrame || null;
+    }
+  };
 })(typeof window !== 'undefined' ? window : this);
