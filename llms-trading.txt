@@ -178,9 +178,11 @@ State the failure modes, because a strategy without them is marketing:
 - **Owner keys are not renounced.** The owner can adjust parameters within contract
   limits (fees are lower-only; there is no blacklist, pause, mint or sell-block —
   confirmed by audit PoC). Verify current state before sizing.
-- **Open audit findings.** Read `docs/AUDIT_FULL_2026-08.md` in the repository,
-  including the items still marked act-now. An agent that has not read the audit has
-  not done diligence.
+- **Open audit findings exist.** The contracts have been audited and not every finding is
+  remediated. Detailed findings are not published while they are live and unfixed —
+  responsible disclosure, not security theatre. Public posture and the green test suite:
+  https://luv.pythai.net/SECURITY.md and `docs/passed.md`. Size accordingly, and treat
+  the absence of published detail as a reason for caution, not comfort.
 
 
 ## 9. Permissionless maintenance

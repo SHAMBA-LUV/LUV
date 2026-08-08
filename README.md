@@ -29,7 +29,7 @@ hard-test harness.
   exactly the 1000-wei `MINIMUM_LIQUIDITY`. **The LP is not yet locked. Locking the liquidity and
   the LUVlocker supply-lock are the standing priority**, targeting
   [`LUVLocker 0xe07A…B898`](https://etherscan.io/address/0xe07ACAde4bE2bbc264EA702880ed988EBae9B898)
-  — see [`docs/AUDIT_FULL_2026-08.md`](docs/AUDIT_FULL_2026-08.md) (the supply-lock routes through
+  — see [SECURITY.md](SECURITY.md) (the supply-lock routes through
   the fixed vault; the LP-lock is the lower-risk first move).
 - **Allocation (actual → next):** the non-circulating remainder is held by the treasury today; the
   **marketing · development · community allocation wallets are being made actual next** — each
@@ -51,7 +51,7 @@ hard-test harness.
 - Unified **10-trillion payout**: reflection + team + liquidity distribute in one transaction.
 
 Full details in [`LUV.md`](LUV.md) (every function + complete Node.js interaction). The full
-security review of the live contract is in [`AUDIT.md`](AUDIT.md).
+security posture, disclosure policy and the green test suite are in [SECURITY.md](SECURITY.md); detailed findings are held under OVERLORD access while they remain live and unfixed.
 
 ## Layout
 ```
@@ -65,7 +65,7 @@ contracts/   ShambaLuv.sol (corrected RFI token) · ShambaLuvAirdrop.sol (signat
 test/        19 forge tests (self-contained, no forge-std)
 deploy/      anvil deploy + a 29-check live hard-test (deploy-and-test-anvil.mjs)
 auth/        self-hosted social login → sovereign wallet → wallet-to-wallet 1T-LUV gesture
-LUV.md       complete contract guide   ·   AUDIT.md   full audit + remediation
+LUV.md       complete contract guide   ·   SECURITY.md  posture + disclosure
 ```
 
 ## The gesture (the 1-Quadrillion campaign)

@@ -6,7 +6,7 @@ Generated from `forge test` (Foundry, solc 0.8.24, evmVersion cancun, optimizer 
 the in-house contract suite in `~/DeltaVerse/shambaluv/`. Every ✅ below is a test that **passed**.
 This is the **curated, committed** suite: the 158 original unit tests plus the **16 adversarial
 scenario tests** added during the 2026-08 full security audit. (Exploratory audit probe contracts
-run in scratchpad — `docs/AUDIT_FULL_2026-08.md` covers findings; this file documents the green suite.)
+run in scratchpad — findings are held under OVERLORD access; this file documents the green suite.)
 
 > The green suite is a statement about **behaviour that is asserted and holds**, not a clean bill of
 > health. Several audit findings concern paths the suite does **not** yet cover (e.g. the merkle-proof
@@ -268,7 +268,7 @@ cap, nonce replay protection, and two-step ownership.
 ## 14. `MerkleDropTest` — ✅ 4/4
 
 Merkle campaign distribution (not deployed): campaign lifecycle, reuse rejection, budget floor.
-*(Audit note: branch coverage here is low — see `docs/AUDIT_FULL_2026-08.md` finding C-1.)*
+*(Audit note: branch coverage here is low; tracked under OVERLORD access.)*
 
 - ✅ **PASSED** `test_CreateCampaign()`
 - ✅ **PASSED** `test_createCampaign_rejects_reuse()`
@@ -318,4 +318,4 @@ suite.
 ---
 
 *Reproduce:* `cd ~/DeltaVerse/shambaluv && forge test`  ·  *Generated 2026-08-05 during the full
-security audit. Companion: `docs/AUDIT_FULL_2026-08.md` (findings + new-test backlog).*
+security audit. Findings and the new-test backlog are held under OVERLORD access.*

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CONTRACT AUDIT — OVERLORD only — SHAMBA LUV</title>
+<meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+<meta name="referrer" content="no-referrer">
+<meta name="description" content="OVERLORD-gated audit room for SHAMBA LUV.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%F0%9F%9B%A1%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --ink:#160a0f;--wine:#2b111c;--seam:#4a1f30;--rose:#ff4d6d;--pink:#ff006e;--purple:#8338ec;
+  --blush:#ffb3c1;--cream:#f6e7eb;--dim:#b98da0;--gold:#e3b25f;--green:#0ecb81;--red:#ff2e4c;
+  --mono:ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--ink);color:var(--cream);font-family:var(--sans);line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--blush)}a:hover{color:var(--rose)}
+.wrap{max-width:900px;margin:0 auto;padding:0 24px}
+header{border-bottom:1px solid var(--seam)}
+.bar{display:flex;align-items:center;gap:14px;padding:16px 0}
+.brand{font-family:var(--mono);font-size:15px;letter-spacing:.14em;color:var(--cream);text-decoration:none}
+.brand b{color:var(--rose)}
+.bar .spacer{flex:1}
+.bar a.back{font-family:var(--mono);font-size:12px;text-decoration:none;color:var(--dim)}
+h1{margin:46px 0 6px;text-align:center;font-size:clamp(28px,5vw,44px);font-weight:800;
+  background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{text-align:center;color:var(--dim);margin-bottom:14px}
+.stamp{display:block;width:max-content;margin:0 auto 34px;font-family:var(--mono);font-size:11px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--gold);border:1px solid rgba(227,178,95,.5);border-radius:999px;padding:5px 16px}
+h2{font-family:var(--mono);font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:var(--rose);margin:40px 0 12px}
+.panel{border:1px solid var(--seam);border-radius:14px;background:var(--wine);padding:22px 24px;margin-bottom:14px}
+.panel p+p{margin-top:11px}
+.warn{border-left:3px solid var(--red);background:rgba(255,46,76,.08);border-radius:0 12px 12px 0;padding:16px 20px;margin:18px 0}
+.warn b{color:#fff}
+code{font-family:var(--mono);font-size:12.5px;background:rgba(131,56,236,.14);border:1px solid rgba(131,56,236,.24);
+  border-radius:6px;padding:.1em .4em;color:#dcc9ff;overflow-wrap:anywhere}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin:6px 0 4px}
+.stat{background:rgba(0,0,0,.25);border:1px solid var(--seam);border-radius:12px;padding:14px 16px}
+.stat .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:5px}
+.stat .v{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
+.stat .v.g{color:var(--green)}
+.stat .v.r{color:var(--red)}
+ul{margin:8px 0 0;padding-left:1.2em}li{margin:.35em 0}
+.dim{color:var(--dim)}
+footer{border-top:1px solid var(--seam);margin-top:52px;padding:24px 0 44px;color:var(--dim);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="/">❤ SHAMBA <b>LUV</b></a>
+    <span class="spacer"></span>
+    <a class="back" href="/">← the doorway</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1>THE AUDIT ROOM</h1>
+  <div class="sub">contract security — OVERLORD access</div>
+  <span class="stamp">🛡 bankon.eth only</span>
+
+  <div class="warn">
+    <b>This page deliberately contains no findings.</b> A wallet gate running in your
+    browser is obfuscation, not access control — anything written into this file is
+    readable by anyone who fetches it, gate or no gate. So the findings are not written
+    into it. They are held off the web root entirely, on the host, readable only by the
+    operator account. Ask for them over a channel that authenticates; do not request that
+    they be pasted into a served page.
+  </div>
+
+  <h2>Where the documents are</h2>
+  <div class="panel">
+    <p>Four documents were withdrawn from the public repository on 2026-08-08 and preserved
+    at <code>/home/luv/private/audit/</code> on the host — mode <code>0700</code>, owner
+    <code>luv</code>, outside the Apache document root and outside git:</p>
+    <ul>
+      <li><code>AUDIT_FULL_2026-08.md</code> — the severity-ranked full audit</li>
+      <li><code>AUDIT_LUVLOCKER.md</code> — the locker review</li>
+      <li><code>AUDIT.md</code> — the earlier token review</li>
+      <li><code>LOCK_THE_LP.md</code> — the LP-lock runbook (derived from the above)</li>
+    </ul>
+    <p class="dim">They were removed from the default branch because several findings
+    describe <b>deployed, funded contracts that are not yet remediated</b>. Publishing a
+    reproducible route into a live contract holding value is not transparency.</p>
+  </div>
+
+  <h2>What remains public — and should</h2>
+  <div class="panel">
+    <p>Nothing that helps a holder was withdrawn. The source stays verified and readable,
+    the test suite stays published, and the build profile stays reproducible:</p>
+    <div class="grid">
+      <div class="stat"><div class="k">curated tests</div><div class="v g">174 / 174</div></div>
+      <div class="stat"><div class="k">green suite</div><div class="v"><a href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/passed.md" rel="noopener">passed.md ↗</a></div></div>
+      <div class="stat"><div class="k">token source</div><div class="v"><a href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254#code" rel="noopener">verified ✅</a></div></div>
+      <div class="stat"><div class="k">policy</div><div class="v"><a href="https://github.com/SHAMBA-LUV/LUV/blob/main/SECURITY.md" rel="noopener">SECURITY.md ↗</a></div></div>
+    </div>
+    <p>Build profile, so the bytecode is reproducible by anyone: <b>solc 0.8.24</b>,
+    optimizer on at <b>200 runs</b>, <code>viaIR</code> off, EVM version <em>cancun</em>.</p>
+  </div>
+
+  <h2>How the audit was actually conducted</h2>
+  <div class="panel">
+    <p>Method, stated so the result can be weighed rather than trusted: four parallel
+    deep-audit passes over the token, distributor, locker and periphery, each required to
+    back a claim with a proof-of-concept against an isolated copy; <b>slither</b> static
+    analysis (99 results, headline detectors triaged); and <b>live-state verification on
+    chain</b> of every finding claimed to affect a deployed contract — because a finding
+    that is true of the source and false of the deployment is not a finding.</p>
+    <p>That last step matters both ways. It demoted at least one high-severity item to
+    moot against the live configuration, and it confirmed others as real. Severity here
+    reflects real-world impact after that check, not textbook classification.</p>
+  </div>
+
+  <h2>Standing instruction</h2>
+  <div class="panel">
+    <p>Withdrawal is mitigation, not remediation. Removing a document from the default
+    branch does not remove it from git history, from forks, or from anything that already
+    mirrored it — and it changes nothing on chain. <b>Assume the withdrawn contents are
+    known.</b> The only durable fix is to change the state of the contracts themselves.</p>
+    <p>The act-now items, the ordering, and the calldata are in the withdrawn runbook.
+    Execute from there, over an authenticated channel — not from this page.</p>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    SHAMBA © 2026 LUV · <a href="/">luv.pythai.net</a> · disclosure: luv@pythai.net<br>
+    OVERLORD access · not indexed · no findings served
+  </div>
+</footer>
+
+<script src="substrate/luv-lockgate.js?v=1"></script>
+</body>
+</html>
