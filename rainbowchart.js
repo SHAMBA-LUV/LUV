@@ -112,6 +112,42 @@
     }
   }
 
+  // ── the forward window ──
+  // The fit does not stop at the edge of the record, so the page lets you walk it out. The
+  // magnitudes are worth seeing: the curve crosses $1M/coin around 2035, $100M around 2075 and
+  // $1B around 2113, and the market-cap axis follows it into the quadrillions. That is not a
+  // forecast — it is the arithmetic confessing that a log-time regression describes one era and
+  // not the next eleven, which is easier to believe once you have watched it happen.
+  var WINDOWS = [
+    { to: 0,    label: '+9 months', note: 'the reference window' },
+    { to: 2040, label: '2040',      note: '' },
+    { to: 2060, label: '2060',      note: '' },
+    { to: 2100, label: '2100',      note: '' },
+    { to: 2140, label: '2140',      note: 'end of emission — all 32 halvings' }
+  ];
+  var winrow = document.getElementById('winrow');
+  var mount = document.querySelector('[data-luvrainbowchart]');
+  if (winrow && mount) {
+    var lab = document.createElement('span');
+    lab.className = 'lab'; lab.textContent = 'window';
+    winrow.appendChild(lab);
+
+    var buttons = [];
+    WINDOWS.forEach(function (w, idx) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = w.label;
+      if (w.note) b.title = w.note;
+      b.setAttribute('aria-pressed', idx === 0 ? 'true' : 'false');
+      b.addEventListener('click', function () {
+        R.render(mount, { to: w.to || 0, height: 600 });
+        buttons.forEach(function (o, j) { o.setAttribute('aria-pressed', j === idx ? 'true' : 'false'); });
+      });
+      buttons.push(b);
+      winrow.appendChild(b);
+    });
+  }
+
   // ── how much of history the painted range actually holds ──
   // Counted here from the embedded series rather than quoted, so the claim cannot go stale.
   var inside = 0;

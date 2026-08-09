@@ -46,6 +46,13 @@ p{max-width:74ch;margin-bottom:14px}
 .chart svg{display:block;width:100%;height:auto;min-width:760px;border-radius:6px}
 .cap{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:30px}
 
+.winrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}
+.winrow .lab{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-right:4px}
+.winrow button{font-family:var(--mono);font-size:12px;background:var(--wine);color:var(--cream);
+  border:1px solid var(--seam);border-radius:7px;padding:6px 12px;cursor:pointer}
+.winrow button:hover{border-color:var(--rose);color:var(--rose)}
+.winrow button[aria-pressed="true"]{border-color:var(--rose);color:var(--rose);background:#3a1622}
+
 .readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:1px;background:var(--seam);
   border:1px solid var(--seam);border-radius:10px;overflow:hidden;margin:18px 0 8px}
 .cell{background:var(--wine);padding:14px 16px}
@@ -95,6 +102,7 @@ footer a:hover{color:var(--rose)}
   </p>
 
   <div class="chart"><div data-luvrainbowchart data-height="600"></div></div>
+  <div class="winrow" id="winrow"></div>
   <p class="cap" id="cap">Nine bands, linear time, log price — the fit bends, and the bend is the arc.
     Left axis is price; the right axis prices the same gridlines as market cap at the 21,000,000
     terminal supply. Solid white verticals are the four halvings that have happened; dashed are
@@ -197,7 +205,7 @@ footer a:hover{color:var(--rose)}
   </div>
 </footer>
 
-<script src="./substrate/luv-rainbowchart.js?v=2"></script>
-<script src="./rainbowchart.js?v=2"></script>
+<script src="./substrate/luv-rainbowchart.js?v=3"></script>
+<script src="./rainbowchart.js?v=3"></script>
 </body>
 </html>
