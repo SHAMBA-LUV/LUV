@@ -67,6 +67,28 @@
   var HALVINGS = [Date.UTC(2012, 10, 28), Date.UTC(2016, 6, 9), Date.UTC(2020, 4, 11), Date.UTC(2024, 3, 20)];
   var HALVING_STEP_MS = 1458.33 * 86400e3;
 
+  // ── the end of mining, computed and then checked against the chain ──
+  // The subsidy is 50 BTC = 5,000,000,000 sat, right-shifted once per halving. After 33 shifts it
+  // is 0, so the last coin is mined at block 210,000 x 33 = 6,930,000.
+  //
+  // "2140" is that block at the protocol's 600-second target. The chain has never kept it: across
+  // genesis to the fourth halving it has averaged 574.6 s/block, about 4% fast, and 600s is
+  // already 247 days late against the halving that has actually happened. Carrying the observed
+  // pace forward instead moves the end of mining to ~2135. Both are drawn, because the gap between
+  // them IS the accuracy of the estimate — five years of it.
+  var END_BLOCK = 210000 * 33;
+  function observedSecPerBlock() { return (HALVINGS[HALVINGS.length - 1] - GENESIS) / 1000 / (210000 * HALVINGS.length); }
+  function endOfMining() {
+    var obs = observedSecPerBlock();
+    return {
+      block: END_BLOCK,
+      targetMs: GENESIS + END_BLOCK * 600 * 1000,
+      observedMs: GENESIS + END_BLOCK * obs * 1000,
+      secPerBlock: obs,
+      fastPct: (600 - obs) / 600 * 100
+    };
+  }
+
   function daysSinceGenesis(ms) { return (ms - GENESIS) / 86400e3; }
   function centerLog(days) { return FIT.slope * Math.log10(days) + FIT.intercept; }
   function el(name, attrs, text) {
@@ -97,6 +119,22 @@
     return new Date(GENESIS + days * 86400e3).getUTCFullYear();
   }
 
+  /// The measured close on a date, from the series the arc organ embeds — interpolated in log
+  /// space between its weekly points. null once the record runs out, which is where the fitted
+  /// curve takes over.
+  function seriesPriceAt(ms) {
+    var RC = global.DVLuvRainbowChart;
+    if (!RC || !RC.SERIES || !RC.SERIES.length) return null;
+    var x = RC.xOf(ms);
+    if (x < 1 || x > RC.SERIES_LAST_X) return null;
+    var i = Math.floor((x - 1) / RC.SERIES_STEP);
+    if (i < 0) i = 0;
+    if (i >= RC.SERIES.length - 1) return Math.pow(10, RC.SERIES[RC.SERIES.length - 1]);
+    var xa = RC.seriesX(i), xb = RC.seriesX(i + 1);
+    var t = xb === xa ? 0 : (x - xa) / (xb - xa);
+    return Math.pow(10, RC.SERIES[i] + (RC.SERIES[i + 1] - RC.SERIES[i]) * t);
+  }
+
   function render(mount, opts) {
     opts = opts || {};
     var fromYear = opts.from || 2010, toYear = opts.to || 2140;
@@ -120,6 +158,7 @@
     svg.appendChild(el('rect', { width: W, height: H, fill: '#160a0f' }));
 
     var i, d;
+    var fromMs0 = Date.UTC(fromYear, 0, 1), toMs0 = Date.UTC(toYear, 0, 1);
 
     // ── price decades on the left ──
     for (d = Math.ceil(yLo); d <= Math.floor(yHi); d++) {
@@ -224,6 +263,32 @@
       stroke: '#f6e7eb', 'stroke-width': 1.2, 'stroke-dasharray': '6 4', 'stroke-opacity': 0.85
     }));
 
+    // ── the measured price path, inside the rainbow ──
+    // The same embedded series the arc chart draws, borrowed from DVLuvRainbowChart rather than
+    // duplicated here: one copy of the history, two renderers. Its x is a ROW INDEX from the first
+    // priced day, so each point is converted through that organ's own calendar before being placed
+    // on this chart's days-since-genesis axis. If the arc organ is not on the page, the ribbon and
+    // the fit still draw and only the path is missing.
+    var RC = global.DVLuvRainbowChart;
+    if (RC && RC.SERIES && RC.SERIES.length) {
+      var ppts = [], pi, plast = null;
+      for (pi = 0; pi < RC.SERIES.length; pi++) {
+        var pms = RC.msOf(RC.seriesX(pi));
+        if (pms < fromMs0 || pms > toMs0) continue;
+        var plg = Math.log10(daysSinceGenesis(pms));
+        if (plg < x0 || plg > x1) continue;
+        var pxx = X(plg), pyy = Y(RC.SERIES[pi]);
+        ppts.push(pxx + ',' + pyy);
+        plast = { x: pxx, y: pyy };
+      }
+      if (ppts.length > 1) {
+        svg.appendChild(el('polyline', {
+          points: ppts.join(' '), fill: 'none', stroke: '#ffffff',
+          'stroke-width': 1.6, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'
+        }));
+      }
+    }
+
     // ── the trajectory, made prominent ──
     // The centre line is drawn twice from the $30,000 mark onward: a wide soft underlay and a
     // bright line on top, so the forward run reads as the subject of the chart rather than as one
@@ -241,10 +306,15 @@
     }
 
     // the milestones on that run — the last one is where the subsidy ends
+    var eom = endOfMining();
+    var eomY = new Date(eom.observedMs).getUTCFullYear();
+    var tgtY = new Date(eom.targetMs).getUTCFullYear();
     var MILES = [
       { year: 2035, note: '' },
       { year: 2050, note: '' },
-      { year: 2140, note: 'last coin mined \u00b7 miners on fees alone' }
+      { year: eomY, note: 'last coin mined \u00b7 miners on fees alone',
+        note2: 'block ' + END_BLOCK.toLocaleString('en-US') + ' at the observed ' +
+               eom.secPerBlock.toFixed(1) + 's/block \u00b7 ' + tgtY + ' at the 600s target' }
     ];
     for (i = 0; i < MILES.length; i++) {
       var mi = MILES[i];
@@ -253,13 +323,14 @@
       var mxp = Xdate(mms), mpr = Math.pow(10, centerLog(daysSinceGenesis(mms))), myp = Y(Math.log10(mpr));
       if (mxp < L || mxp > W - R) continue;
       var txt = mi.year + '  ' + usd(mpr) + '  \u00b7  ' + usd(mpr * TERMINAL_SUPPLY) + ' cap';
-      var fs2 = 10, tw = Math.max(txt.length, mi.note.length) * fs2 * 0.6 + 16;
+      var fs2 = 10, tw = Math.max(txt.length, mi.note.length, (mi.note2 || '').length) * fs2 * 0.6 + 16;
       var lx = Math.min(mxp + 10, W - R - tw), ly = myp + 46;
       svg.appendChild(el('line', { x1: mxp, y1: myp, x2: mxp, y2: ly - 12, stroke: '#ffd479', 'stroke-width': 0.9, 'stroke-dasharray': '2 3', 'stroke-opacity': 0.8 }));
       svg.appendChild(el('circle', { cx: mxp, cy: myp, r: 4, fill: '#ffd479', stroke: '#160a0f', 'stroke-width': 1.2 }));
-      svg.appendChild(el('rect', { x: lx - 8, y: ly - 12 - fs2, width: tw, height: (mi.note ? fs2 * 2 + 16 : fs2 + 14), rx: 5, fill: '#160a0f', 'fill-opacity': 0.92, stroke: '#ffd479', 'stroke-opacity': 0.45 }));
+      svg.appendChild(el('rect', { x: lx - 8, y: ly - 12 - fs2, width: tw, height: (mi.note2 ? fs2 * 3 + 24 : mi.note ? fs2 * 2 + 16 : fs2 + 14), rx: 5, fill: '#160a0f', 'fill-opacity': 0.92, stroke: '#ffd479', 'stroke-opacity': 0.45 }));
       svg.appendChild(el('text', { x: lx, y: ly - 2, fill: '#ffe9b0', 'font-size': fs2, 'font-family': 'monospace', 'font-weight': 'bold' }, txt));
       if (mi.note) svg.appendChild(el('text', { x: lx, y: ly + 12, fill: '#b98da0', 'font-size': 9, 'font-family': 'monospace' }, mi.note));
+      if (mi.note2) svg.appendChild(el('text', { x: lx, y: ly + 24, fill: '#7d5d6c', 'font-size': 8.5, 'font-family': 'monospace' }, mi.note2));
     }
 
     // ── the magnitudes the estimate is measured against ──
@@ -398,12 +469,19 @@
         if (sx < L || sx > W - R || sy < T || sy > H - B) { hg.setAttribute('visibility', 'hidden'); return; }
         hg.setAttribute('visibility', 'visible');
 
+        // The readout RIDES THE CHART: only the pointer's x is used. The price is the one the
+        // chart actually holds at that date — the measured close where the record reaches, the
+        // fitted curve beyond it — so the dot travels along the line inside the rainbow instead of
+        // floating wherever the cursor happens to sit, and every reading is a real point.
         var lgD = x0 + (sx - L) / (W - L - R) * (x1 - x0);
         var days = Math.pow(10, lgD);
         var when = new Date(GENESIS + days * 86400e3);
-        var lgP = yHi - (sy - T) / (H - T - B) * (yHi - yLo);
-        var price = Math.pow(10, lgP);
         var fitP = Math.pow(10, centerLog(days));
+        var measured = seriesPriceAt(when.getTime());
+        var price = measured != null ? measured : fitP;
+        var src = measured != null ? 'measured close' : 'the fitted curve';
+        var lgP = Math.log10(price);
+        sy = Y(lgP);
         var resid = lgP - centerLog(days);
         var bi = Math.floor((resid + 0.7) / STEP);
         var bname = bi < 0 ? 'below the scale' : bi > 8 ? 'above the scale' : BANDS[bi].name;
@@ -423,7 +501,7 @@
           when.getUTCFullYear() + '-' + ('0' + (when.getUTCMonth() + 1)).slice(-2),
           usd(price),
           usd(price * TERMINAL_SUPPLY) + ' market cap',
-          'the fit here: ' + usd(fitP),
+          src + (measured != null ? '  \u00b7 fit ' + usd(fitP) : ''),
           bname
         ];
         var ry = py + 18;

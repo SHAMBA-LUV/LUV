@@ -255,6 +255,18 @@
     return 200;
   }
 
+  /// The measured close at day index x, interpolated in log space between the weekly points.
+  /// null past the end of the record, where the fitted curve takes over.
+  function seriesPriceAtX(x) {
+    if (x < 1 || x > SERIES_LAST_X) return null;
+    var i = Math.floor((x - 1) / SERIES_STEP);
+    if (i < 0) i = 0;
+    if (i >= SERIES.length - 1) return Math.pow(10, SERIES[SERIES.length - 1]);
+    var xa = seriesX(i), xb = seriesX(i + 1);
+    var t = xb === xa ? 0 : (x - xa) / (xb - xa);
+    return Math.pow(10, SERIES[i] + (SERIES[i + 1] - SERIES[i]) * t);
+  }
+
   function render(mount, opts) {
     opts = opts || {};
     var theme = THEME;
@@ -435,6 +447,75 @@
       svg.appendChild(el('circle', {
         cx: dx, cy: dy2, r: 4.5, fill: theme.dot, stroke: theme.bg, 'stroke-width': 1.4
       }));
+    }
+
+    // ── the hover readout, riding the chart ──
+    // Only the pointer's x is read. The price is the one the chart actually holds at that date —
+    // the measured close inside the record, the fitted curve past it — so the dot travels ALONG
+    // the white line inside the rainbow and every reading is a real point rather than wherever the
+    // cursor happened to sit. Built as SVG in the same document: no HTML overlay, no inline style.
+    if (svg.addEventListener) {
+      var hg = el('g', { 'pointer-events': 'none', visibility: 'hidden' });
+      var hvx = el('line', { stroke: '#f6e7eb', 'stroke-width': 0.7, 'stroke-dasharray': '3 3', 'stroke-opacity': 0.6 });
+      var hdot = el('circle', { r: 4.5, fill: theme.dot, stroke: '#ffffff', 'stroke-width': 1.4 });
+      var hplate = el('rect', { rx: 6, fill: theme.bg, 'fill-opacity': 0.95, stroke: theme.dot, 'stroke-opacity': 0.55 });
+      hg.appendChild(hvx); hg.appendChild(hplate); hg.appendChild(hdot);
+      var HL = [], hi2;
+      for (hi2 = 0; hi2 < 5; hi2++) {
+        HL.push(el('text', {
+          'font-family': 'monospace', 'font-size': hi2 === 1 ? 14 : 10,
+          'font-weight': hi2 === 1 ? 'bold' : 'normal',
+          fill: hi2 === 1 ? theme.ink : theme.dim
+        }));
+        hg.appendChild(HL[hi2]);
+      }
+      svg.appendChild(hg);
+
+      var PLW = 208, PLH = 94;
+      svg.addEventListener('mousemove', function (ev) {
+        var r = svg.getBoundingClientRect();
+        if (!r.width) return;
+        var sx = (ev.clientX - r.left) * (W / r.width);
+        var sy = (ev.clientY - r.top) * (H / r.height);
+        if (sx < L || sx > W - R || sy < T || sy > H - B) { hg.setAttribute('visibility', 'hidden'); return; }
+        hg.setAttribute('visibility', 'visible');
+
+        var xh = xStart + (sx - L) / (W - L - R) * (xEnd - xStart);
+        var measured = seriesPriceAtX(xh);
+        var fitP = fit(xh);
+        var price = measured != null ? measured : fitP;
+        var dy3 = Y(Math.log10(price));
+        var when = new Date(msOf(Math.round(xh)));
+        var bnd = bandOf(price, xh);
+        var bname = bnd < 0 ? 'below the scale' : bnd > 8 ? 'above the scale' : BANDS[bnd].name;
+        var bcol = bnd < 0 || bnd > 8 ? theme.dim : BANDS[bnd].col;
+
+        hvx.setAttribute('x1', sx); hvx.setAttribute('y1', T); hvx.setAttribute('x2', sx); hvx.setAttribute('y2', H - B);
+        hdot.setAttribute('cx', sx); hdot.setAttribute('cy', dy3);
+
+        var px = sx + 16 + PLW > W - R ? sx - 16 - PLW : sx + 16;
+        var py = dy3 + 14 + PLH > H - B ? dy3 - 14 - PLH : dy3 + 14;
+        hplate.setAttribute('x', px); hplate.setAttribute('y', py);
+        hplate.setAttribute('width', PLW); hplate.setAttribute('height', PLH);
+
+        var rows = [
+          when.toISOString().slice(0, 10),
+          '$' + Math.round(price).toLocaleString('en-US'),
+          usdLabel(marketcapAt(price, msOf(Math.round(xh)))) + ' market cap',
+          (measured != null ? 'measured close' : 'the fitted curve') + ' \u00b7 ' +
+            (price / fitP).toFixed(2) + '\u00d7 the fit',
+          bname
+        ];
+        var ry = py + 19;
+        for (hi2 = 0; hi2 < HL.length; hi2++) {
+          HL[hi2].setAttribute('x', px + 11);
+          HL[hi2].setAttribute('y', ry);
+          HL[hi2].textContent = rows[hi2];
+          if (hi2 === 4) HL[hi2].setAttribute('fill', bcol);
+          ry += hi2 === 1 ? 20 : 15;
+        }
+      });
+      svg.addEventListener('mouseleave', function () { hg.setAttribute('visibility', 'hidden'); });
     }
 
     while (mount.firstChild) mount.removeChild(mount.firstChild);
