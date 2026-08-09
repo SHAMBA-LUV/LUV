@@ -74,19 +74,35 @@
                     [2026, 345]];
   var DEBT_CAGR = Math.pow(345 / 210, 1 / 16) - 1;      // 3.15%/yr, measured not assumed
 
-  /// Total world debt in USD at a decimal year — interpolated inside the record, compounded past it.
-  function worldDebtAt(year) {
-    var last = WORLD_DEBT[WORLD_DEBT.length - 1];
-    if (year >= last[0]) return last[1] * 1e12 * Math.pow(1 + DEBT_CAGR, year - last[0]);
-    if (year <= WORLD_DEBT[0][0]) return WORLD_DEBT[0][1] * 1e12;
+  // The anchor is DATED, not a calendar year: $345T is the figure as of 2026-08-09, so "now" is
+  // that figure compounded to this instant rather than to the start of some year. Global debt
+  // grows about $10.9T a year at this rate — roughly $346,000 every second — which is enough drift
+  // that a stale anchor shows visibly wrong within months.
+  var DEBT_ANCHOR_MS = Date.UTC(2026, 7, 9);
+  var DEBT_ANCHOR_USD = 345e12;
+  var YEAR_MS = 365.2425 * 86400e3;
+
+  /// Total world debt in USD at a moment — interpolated inside the published record, compounded
+  /// continuously from the dated anchor past it. Pass Date.now() for the live figure.
+  function worldDebtAt(ms) {
+    if (ms >= DEBT_ANCHOR_MS) {
+      return DEBT_ANCHOR_USD * Math.pow(1 + DEBT_CAGR, (ms - DEBT_ANCHOR_MS) / YEAR_MS);
+    }
+    var y = 1970 + ms / YEAR_MS;                       // decimal year, good enough for the anchors
+    if (y <= WORLD_DEBT[0][0]) return WORLD_DEBT[0][1] * 1e12;
     for (var i = 0; i < WORLD_DEBT.length - 1; i++) {
       var a = WORLD_DEBT[i], b = WORLD_DEBT[i + 1];
-      if (year >= a[0] && year <= b[0]) {
-        var t = (year - a[0]) / (b[0] - a[0]);
-        return (a[1] + (b[1] - a[1]) * t) * 1e12;
+      if (y >= a[0] && y <= b[0]) {
+        return (a[1] + (b[1] - a[1]) * (y - a[0]) / (b[0] - a[0])) * 1e12;
       }
     }
-    return last[1] * 1e12;
+    return DEBT_ANCHOR_USD;
+  }
+
+  /// What the debt is growing by, per second, at the current rate — the reason the anchor is dated.
+  function worldDebtPerSecond() {
+    var now = Date.now();
+    return (worldDebtAt(now + 1000) - worldDebtAt(now)) / 1;
   }
 
   // the four actual halvings; the schedule then steps 210,000 blocks ≈ 1458.33 days
@@ -203,7 +219,11 @@
     // which skips every line and leaves the tracker untouched — the whole lattice silently absent.
     var lastLineY = -Infinity, lastLabelY = -Infinity;
     for (var dd = Math.floor(yHi); dd >= Math.floor(yLo); dd--) {
+      // The ladder the operator reads Bitcoin on: $1,000 steps up to $100k, $10,000 to $1M,
+      // $100k above that — which is 10^(d-1) inside decade 10^d, with a $1,000 floor so the
+      // $1k-$10k stretch steps by a thousand rather than by a hundred.
       var stepv = Math.pow(10, dd - 1);
+      if (Math.pow(10, dd) >= 1000) stepv = Math.max(stepv, 1000);
       for (var mult = 99; mult >= 11; mult--) {          // 1.1x .. 9.9x of the decade
         var v = stepv * mult, lgK = Math.log10(v);
         if (lgK <= yLo || lgK >= yHi) continue;
@@ -326,7 +346,7 @@
         var dms = Date.UTC(Math.floor(dyr), Math.round((dyr % 1) * 12), 1);
         var dlg = Math.log10(daysSinceGenesis(dms));
         if (dlg < x0 || dlg > x1) continue;
-        var dEq = worldDebtAt(dyr) / TERMINAL_SUPPLY;          // debt as a price per coin
+        var dEq = worldDebtAt(dms) / TERMINAL_SUPPLY;          // debt as a price per coin
         dpts.push(X(dlg) + ',' + Y(Math.log10(dEq)));
         if (dcross === null && Math.pow(10, centerLog(daysSinceGenesis(dms))) >= dEq) dcross = Math.floor(dyr);
       }
@@ -345,7 +365,9 @@
           if (dqd < dBestD) { dBestD = dqd; dBest = dpts[dq]; }
         }
         var dmid = dBest.split(',');
-        var dlabel = 'total world debt' + (dcross ? '  \u00b7  the fit overtakes it ' + dcross : '');
+        var dnow = worldDebtAt(Date.now());
+        var dlabel = 'total world debt \u00b7 ' + usd(dnow) + ' now' +
+                     (dcross ? '  \u00b7  the fit overtakes it ' + dcross : '');
         var dlw = dlabel.length * 6 + 12;
         // clear of the key block when the line runs level with it
         var dkb = keyBox(L, T);
@@ -666,6 +688,7 @@
     version: '1.4.0', SCALES: SCALES, SCALE_LABELS: SCALE_LABELS,
     center: function (days) { return Math.pow(10, centerLog(days)); },
     yearAtPrice: yearAtPrice, usd: usd, worldDebtAt: worldDebtAt, WORLD_DEBT: WORLD_DEBT,
+    worldDebtPerSecond: worldDebtPerSecond, DEBT_CAGR: DEBT_CAGR,
     render: render
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = DVLuvRainbow;
