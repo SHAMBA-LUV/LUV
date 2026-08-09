@@ -549,7 +549,12 @@
         var fitP = Math.pow(10, centerLog(days));
         var measured = seriesPriceAt(when.getTime());
         var price = measured != null ? measured : fitP;
-        var src = measured != null ? 'measured close' : 'the fitted curve';
+        // The series stores weekly closes; between two of them this is an interpolation, which is a
+        // different claim from a close and is labelled as one.
+        var RCq = global.DVLuvRainbowChart;
+        var onPoint = !RCq || ((RCq.xOf(when.getTime()) - 1) % RCq.SERIES_STEP) === 0;
+        var src = measured == null ? 'the fitted curve'
+                : onPoint ? 'weekly close' : 'between weekly closes';
         var lgP = Math.log10(price);
         sy = Y(lgP);
         var resid = lgP - centerLog(days);

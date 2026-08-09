@@ -498,12 +498,18 @@
         hplate.setAttribute('x', px); hplate.setAttribute('y', py);
         hplate.setAttribute('width', PLW); hplate.setAttribute('height', PLH);
 
+        // Say which kind of number this is. The series stores WEEKLY closes: on one of them the
+        // reading is the close itself (audited against an independent feed: median 0.25% off,
+        // worst 2.95%); between two it is a log-space interpolation, which smooths a volatile week
+        // (median 2.8%, worst 12%). Calling both "measured" would overstate the second.
+        var onPoint = ((Math.round(xh) - 1) % SERIES_STEP) === 0 || Math.round(xh) === SERIES_LAST_X;
+        var kind = measured == null ? 'the fitted curve'
+                 : onPoint ? 'weekly close' : 'between weekly closes';
         var rows = [
           when.toISOString().slice(0, 10),
           '$' + Math.round(price).toLocaleString('en-US'),
           usdLabel(marketcapAt(price, msOf(Math.round(xh)))) + ' market cap',
-          (measured != null ? 'measured close' : 'the fitted curve') + ' \u00b7 ' +
-            (price / fitP).toFixed(2) + '\u00d7 the fit',
+          kind + ' \u00b7 ' + (price / fitP).toFixed(2) + '\u00d7 the fit',
           bname
         ];
         var ry = py + 19;
