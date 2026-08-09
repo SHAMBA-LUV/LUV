@@ -59,8 +59,33 @@ h1{margin:52px 0 6px;text-align:center;font-size:clamp(30px,5.6vw,46px);font-wei
 .paper .hi .t{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
 .paper .hi p{margin:0;font-size:14.5px}
 /* the rainbow deserves the whole sky: the chart breaks out of the reading column */
-.chartbox{border:1px solid var(--seam);border-radius:12px;background:var(--wine);padding:10px;margin:0 0 16px;overflow-x:auto;
-  width:min(1360px,calc(100vw - 32px));position:relative;left:50%;transform:translateX(-50%)}
+/* The frame is the chart's own nine bands, and it BEATS: the glow is driven by --luv-pulse, the
+   0..1 lub-dub envelope luv-pulse.js publishes on :root every frame from the chronos-corrected
+   clock. No second timer, no animation of its own — the border is a consumer of the engine's
+   fundamental, so every heart on every page beats it in the same phase. 60 bpm is exactly 1 Hz,
+   well under the 3 Hz flash threshold, so this stays WCAG 2.3.1-safe.
+   The colour ramp is mirrored (blue -> red -> blue) so the drift tiles seamlessly.
+   Glow is box-shadow rather than a ::before halo on purpose: overflow-x:auto would clip a
+   pseudo-element reaching outside the box, but never the box's own shadow. */
+.chartbox{border:2px solid transparent;border-radius:12px;padding:10px;margin:0 0 16px;overflow-x:auto;
+  width:min(1360px,calc(100vw - 32px));position:relative;left:50%;transform:translateX(-50%);
+  background:
+    linear-gradient(var(--wine),var(--wine)) padding-box,
+    linear-gradient(90deg,#4472c4,#54989f,#63be7b,#b1d580,#feeb84,#f6b45a,#ed7d31,#d64018,#c00200,
+                          #d64018,#ed7d31,#f6b45a,#feeb84,#b1d580,#63be7b,#54989f,#4472c4) border-box;
+  background-size:auto,200% 100%;
+  background-repeat:no-repeat,repeat;
+  animation:luvrainbowdrift 16s linear infinite;
+  box-shadow:
+    0 0 calc(3px + 13px*var(--luv-pulse,.28)) rgba(99,190,123,calc(.10 + .30*var(--luv-pulse,.28))),
+    0 0 calc(8px + 32px*var(--luv-pulse,.28)) rgba(246,180,90,calc(.07 + .22*var(--luv-pulse,.28))),
+    0 0 calc(14px + 52px*var(--luv-pulse,.28)) rgba(192,2,0,calc(.05 + .18*var(--luv-pulse,.28)))}
+@keyframes luvrainbowdrift{from{background-position:0 0,0 0}to{background-position:0 0,200% 0}}
+@media (prefers-reduced-motion:reduce){
+  /* the signal still runs; the frame simply stops moving with it */
+  .chartbox{animation:none;
+    box-shadow:0 0 10px rgba(99,190,123,.22),0 0 26px rgba(246,180,90,.14)}
+}
 .chartbox svg{display:block;width:100%;height:auto;min-width:760px}
 /* +/− zoom (rainbow.js drives it; the svg widens inside the scrolling box) */
 .zoomrow{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin:0 0 8px;font-family:var(--mono)}
@@ -70,39 +95,58 @@ h1{margin:52px 0 6px;text-align:center;font-size:clamp(30px,5.6vw,46px);font-wei
 .zoomrow button:disabled{opacity:.4;cursor:default}
 .zoomrow .zoomlvl{font-size:11px;color:var(--dim);min-width:44px;text-align:center}
 .readmore{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;align-items:center;margin:44px 0 8px}
-/* ── the outer ring, massively — a gradient halo around every button ── */
-.btn{position:relative;display:inline-block;font-family:var(--mono);font-size:12.5px;letter-spacing:.06em;color:var(--blush);
+/* ── the outer ring, massively — a gradient halo around every button ──
+   RULE FOR EVERY BUTTON ON THIS PAGE: hover may change colour, shadow, and transform.
+   It may NOT change anything that reflows — no font-size, no letter-spacing, no
+   text-transform, no swapped label. Those resize the element, which reflows the flex
+   row, which makes every neighbouring button jump under the cursor. Transform and
+   box-shadow are composited; they move nothing else on the page. */
+.btn{position:relative;display:inline-flex;align-items:center;gap:2px;
+  font-family:var(--mono);font-size:12.5px;letter-spacing:.06em;color:var(--blush);
   text-decoration:none;border:2px solid transparent;border-radius:999px;padding:11px 24px;
   background:linear-gradient(var(--wine),var(--wine)) padding-box,
              linear-gradient(100deg,var(--pink),var(--purple),var(--gold)) border-box;
   box-shadow:0 0 18px -6px rgba(255,0,110,.55),0 0 34px -14px rgba(131,56,236,.6);
-  transition:transform .15s,box-shadow .15s,color .15s}
+  transition:transform .18s cubic-bezier(.2,.8,.3,1),box-shadow .18s ease,color .18s ease}
+/* the sheen — a light sweep that crosses on hover; inset:0 so it never needs clipping */
+.btn::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.18) 50%,transparent 62%);
+  background-size:250% 100%;background-position:135% 0;
+  transition:background-position .6s cubic-bezier(.3,.7,.3,1)}
+.btn:hover::before,.btn:focus-visible::before{background-position:-45% 0}
 .btn::after{content:'';position:absolute;inset:-7px;border-radius:999px;border:1px solid rgba(255,0,110,.28);
-  pointer-events:none;transition:inset .15s,border-color .15s}
-.btn:hover{color:var(--cream);transform:translateY(-2px);
+  pointer-events:none;transition:inset .18s ease,border-color .18s ease}
+.btn:hover,.btn:focus-visible{color:var(--cream);transform:translateY(-2px);
   box-shadow:0 0 26px -4px rgba(255,0,110,.8),0 0 54px -12px rgba(131,56,236,.85)}
-.btn:hover::after{inset:-10px;border-color:rgba(227,178,95,.5)}
+.btn:hover::after,.btn:focus-visible::after{inset:-10px;border-color:rgba(227,178,95,.5)}
+.btn:focus-visible{outline:none;border-radius:999px}
+.btn:focus-visible::after{border-color:var(--rose);border-width:2px}
+/* the press — a real one, so the button answers the click */
+.btn:active{transform:translateY(0) scale(.985);
+  box-shadow:0 0 14px -6px rgba(255,0,110,.7),0 0 26px -14px rgba(131,56,236,.7)}
+
 /* ── the cypherpunk4096 button: mouseover crosses into POST-2048 TECHNOLOGY ──
    the wine-and-rose present gives way to the 2¹² interface — terminal green on
-   near-black, electric sweep border, scanlines, the label itself upgrades.
-   exceptional, loud, proud; pure CSS, and still only ever a link. */
-.btn.cp4096 .post{display:none}
-.btn.cp4096:hover{color:#0aff9d;
+   near-black, electric sweep border, scanlines. The label is fixed at
+   "cypherpunk4096" and never changes: it used to swap to a much longer string on
+   hover, which resized the button and shoved the whole row sideways. The interface
+   still crosses over; only the geometry now holds still. */
+.btn.cp4096:hover,.btn.cp4096:focus-visible{color:#0aff9d;
   background:linear-gradient(#02120b,#02120b) padding-box,
              linear-gradient(120deg,#0aff9d,#00e5ff,#8338ec,#0aff9d) border-box;
   background-size:100% 100%,300% 100%;
   animation:cp4096sweep 2.2s linear infinite;
   box-shadow:0 0 34px -4px rgba(10,255,157,.95),0 0 90px -10px rgba(0,229,255,.85);
   text-shadow:0 0 9px rgba(10,255,157,.85);
-  letter-spacing:.16em;text-transform:uppercase;font-weight:800;
-  transform:translateY(-3px) scale(1.06)}
-.btn.cp4096:hover .now{display:none}
-.btn.cp4096:hover .post{display:inline}
-.btn.cp4096:hover::after{inset:-12px;border:1px dashed rgba(0,229,255,.65)}
-.btn.cp4096:hover::before{content:'';position:absolute;inset:0;border-radius:999px;pointer-events:none;
-  background:repeating-linear-gradient(0deg,rgba(10,255,157,.09) 0 1px,transparent 1px 3px)}
+  transform:translateY(-3px) scale(1.04)}
+.btn.cp4096:hover::after,.btn.cp4096:focus-visible::after{inset:-12px;border:1px dashed rgba(0,229,255,.65)}
+/* scanlines replace the sheen — this button has its own idiom */
+.btn.cp4096:hover::before,.btn.cp4096:focus-visible::before{
+  background:repeating-linear-gradient(0deg,rgba(10,255,157,.09) 0 1px,transparent 1px 3px);
+  background-size:auto;background-position:0 0;transition:none}
 @keyframes cp4096sweep{to{background-position:0 0,-300% 0}}
-@media (prefers-reduced-motion:reduce){.btn.cp4096:hover{animation:none}}
+/* reduced-motion overrides live at the END of the button rules on purpose: a media query
+   adds no specificity, so an override placed above the rule it cancels simply loses. */
 
 /* the offering — the Uniswap button leads the row, unmistakably */
 .uni-cta{position:relative;display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:16px;color:#fff;
@@ -110,10 +154,43 @@ h1{margin:52px 0 6px;text-align:center;font-size:clamp(30px,5.6vw,46px);font-wei
   background:linear-gradient(100deg,#FF007A,var(--purple));
   box-shadow:0 0 30px -6px rgba(255,0,122,.85),0 0 70px -18px rgba(131,56,236,.9);
   transition:transform .15s,box-shadow .15s}
-.uni-cta::after{content:'';position:absolute;inset:-8px;border-radius:999px;border:1px solid rgba(255,0,122,.45);pointer-events:none}
-.uni-cta:hover{color:#fff;transform:translateY(-2px) scale(1.02);
+.uni-cta::after{content:'';position:absolute;inset:-8px;border-radius:999px;border:1px solid rgba(255,0,122,.45);
+  pointer-events:none;transition:inset .18s ease,border-color .18s ease}
+.uni-cta::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.24) 50%,transparent 62%);
+  background-size:250% 100%;background-position:135% 0;
+  transition:background-position .6s cubic-bezier(.3,.7,.3,1)}
+.uni-cta:hover::before,.uni-cta:focus-visible::before{background-position:-45% 0}
+.uni-cta:hover,.uni-cta:focus-visible{color:#fff;transform:translateY(-2px) scale(1.02);
   box-shadow:0 0 44px -4px rgba(255,0,122,1),0 0 90px -16px rgba(131,56,236,1)}
+.uni-cta:hover::after,.uni-cta:focus-visible::after{inset:-11px;border-color:rgba(255,0,122,.85)}
+.uni-cta:focus-visible{outline:none}
+.uni-cta:focus-visible::after{border-color:#fff;border-width:2px}
+.uni-cta:active{transform:translateY(0) scale(.99);
+  box-shadow:0 0 22px -6px rgba(255,0,122,.9),0 0 44px -18px rgba(131,56,236,.9)}
 .uni-cta img{height:20px;width:auto}
+
+/* the zoom + window controls answer the same way the pills do */
+.zoomrow button,.winrow button{transition:transform .15s cubic-bezier(.2,.8,.3,1),
+  color .15s ease,border-color .15s ease,box-shadow .15s ease}
+.zoomrow button:hover:not(:disabled),.zoomrow button:focus-visible:not(:disabled){
+  transform:translateY(-1px);box-shadow:0 0 16px -6px rgba(255,77,109,.8)}
+.zoomrow button:active:not(:disabled){transform:translateY(0) scale(.94)}
+.zoomrow button:disabled{transform:none;box-shadow:none}
+
+/* ── one reduced-motion switch for every button, last so it always wins ── */
+@media (prefers-reduced-motion:reduce){
+  .btn,.btn::before,.btn::after,.uni-cta,.uni-cta::before,.uni-cta::after,
+  .zoomrow button,.winrow button{transition:none}
+  .btn.cp4096:hover,.btn.cp4096:focus-visible{animation:none}
+  .btn:hover,.btn:focus-visible,.btn:active,
+  .btn.cp4096:hover,.btn.cp4096:focus-visible,
+  .uni-cta:hover,.uni-cta:focus-visible,.uni-cta:active,
+  .zoomrow button:hover:not(:disabled),.zoomrow button:active:not(:disabled){transform:none}
+  .btn:hover::before,.btn:focus-visible::before,
+  .uni-cta:hover::before,.uni-cta:focus-visible::before{background-position:135% 0}
+  .chartbox{animation:none}
+}
 footer{margin-top:64px;border-top:1px solid var(--seam);padding:26px 0 44px}
 footer .wrap{max-width:1180px;display:flex;flex-wrap:wrap;gap:18px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--dim)}
 footer a{text-decoration:none}
@@ -578,9 +655,7 @@ python3 -c "print((1050000-961239)*600/86400)"                     # next halvin
   <div class="readmore">
     <a class="btn" href="sentiment.html">🎭 SENTIMENT — the measurement paper</a>
     <a class="btn cp4096" href="https://github.com/cypherpunk4096/sentiment" rel="noopener"
-       title="cypherpunk4096 — the 2¹² standard: determinism as identity · zero dependencies · the green checkmark · precision without approximation · quantum compliance">
-      <span class="now">⟁ published to cypherpunk4096</span>
-      <span class="post">⟁ 2¹² POST-2048 TECH ▸ QUANTUM-READY · ZERO-DEP · DETERMINISTIC</span></a>
+       title="cypherpunk4096 — the 2¹² standard: determinism as identity · zero dependencies · the green checkmark · precision without approximation · quantum compliance">⟁ cypherpunk4096</a>
     <a class="btn" href="wei.html">⚖️ the WEI of LUV</a>
     <a class="btn" href="exabyte.html">💾 THE EXABYTE — the identity paper</a>
     <a class="btn" href="view.html">📈 the live LUV market</a>
