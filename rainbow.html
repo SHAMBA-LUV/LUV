@@ -99,6 +99,10 @@ h1{margin:52px 0 6px;text-align:center;font-size:clamp(30px,5.6vw,46px);font-wei
 .zoomrow button:hover{color:var(--rose);border-color:var(--rose)}
 .zoomrow button:disabled{opacity:.4;cursor:default}
 .zoomrow .zoomlvl{font-size:11px;color:var(--dim);min-width:44px;text-align:center}
+.zoomrow .debtbtn{font-size:11px;font-weight:700;letter-spacing:.04em;margin-right:auto;padding:6px 12px;color:var(--dim)}
+.zoomrow .debtbtn:hover{color:#7ad7ff;border-color:#7ad7ff}
+.zoomrow .debtbtn[aria-pressed="true"]{color:#7ad7ff;border-color:#7ad7ff;background:#10222b;
+  box-shadow:0 0 14px -5px rgba(122,215,255,.85)}
 .readmore{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;align-items:center;margin:44px 0 8px}
 /* ── the outer ring, massively — a gradient halo around every button ──
    RULE FOR EVERY BUTTON ON THIS PAGE: hover may change colour, shadow, and transform.
@@ -489,8 +493,8 @@ python3 -c "print((1050000-961239)*600/86400)"                     # next halvin
 </footer>
 
 <script src="substrate/luv-rainbowchart.js?v=4" defer></script>
-<script src="substrate/luv-rainbow.js?v=5" defer></script>
-<script src="rainbow.js?v=3" defer></script>
+<script src="substrate/luv-rainbow.js?v=6" defer></script>
+<script src="rainbow.js?v=4" defer></script>
 <script src="substrate/luv-pulse.js?v=1" defer></script>
 <script src="substrate/luv-frame.js?v=5" defer></script>
 <script src="share.js?v=1" defer></script>

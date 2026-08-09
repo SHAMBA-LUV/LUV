@@ -56,10 +56,33 @@
     c.minus.addEventListener('click', function () { if (idx < RB.SCALES.length - 1) { idx++; apply(); } });
     apply();
   }
+  // world-debt overlay toggle — only for the substrate rainbow, which carries the market-cap
+  // reading the comparison needs. Re-renders through the organ from the mount's own options, so
+  // the toggle can never disagree with what is drawn.
+  function addDebtToggle(box, mount) {
+    var RB = window.DVLuvRainbow;
+    if (!RB) return;
+    var row = box.previousSibling;
+    if (!row || row.className !== 'zoomrow') return;
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'debtbtn';
+    b.textContent = 'world debt';
+    b.title = 'overlay total world debt on the market-cap scale (IIF aggregates, carried forward at 3.15%/yr)';
+    b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', function () {
+      var o = mount._rainbowOpts || {};
+      o.debt = !o.debt;
+      b.setAttribute('aria-pressed', o.debt ? 'true' : 'false');
+      RB.render(mount, o);
+    });
+    row.insertBefore(b, row.firstChild);
+  }
+
   function addZoom(box) {
     if (box.dataset.zoomed) return; box.dataset.zoomed = '1';
     var mount = box.querySelector('[data-luvrainbow]');
-    if (mount) addScaleZoom(box, mount); else addWidthZoom(box);
+    if (mount) { addScaleZoom(box, mount); addDebtToggle(box, mount); } else addWidthZoom(box);
   }
   function boot() {
     var boxes = document.querySelectorAll('.chartbox');

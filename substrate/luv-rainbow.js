@@ -63,6 +63,32 @@
     { cap: 1e15,   label: 'the quadrillion \u00b7 $1Q', key: true }
   ];
 
+  // ── total world debt, as published and then carried forward ──
+  // Approximate global debt from the IIF Global Debt Monitor, in USD trillions. These are
+  // headline aggregates rounded to the trillion, not a reconstructed series — they are here to
+  // give the trajectory something real to be measured against, and the overlay says so.
+  // Past the record the line grows at the rate the record itself kept: 3.15%/yr compounded,
+  // the 2010 -> 2026 CAGR.
+  var WORLD_DEBT = [[2000, 87], [2005, 120], [2010, 210], [2013, 235], [2016, 245], [2019, 255],
+                    [2020, 275], [2021, 303], [2022, 299], [2023, 313], [2024, 318], [2025, 338],
+                    [2026, 345]];
+  var DEBT_CAGR = Math.pow(345 / 210, 1 / 16) - 1;      // 3.15%/yr, measured not assumed
+
+  /// Total world debt in USD at a decimal year — interpolated inside the record, compounded past it.
+  function worldDebtAt(year) {
+    var last = WORLD_DEBT[WORLD_DEBT.length - 1];
+    if (year >= last[0]) return last[1] * 1e12 * Math.pow(1 + DEBT_CAGR, year - last[0]);
+    if (year <= WORLD_DEBT[0][0]) return WORLD_DEBT[0][1] * 1e12;
+    for (var i = 0; i < WORLD_DEBT.length - 1; i++) {
+      var a = WORLD_DEBT[i], b = WORLD_DEBT[i + 1];
+      if (year >= a[0] && year <= b[0]) {
+        var t = (year - a[0]) / (b[0] - a[0]);
+        return (a[1] + (b[1] - a[1]) * t) * 1e12;
+      }
+    }
+    return last[1] * 1e12;
+  }
+
   // the four actual halvings; the schedule then steps 210,000 blocks ≈ 1458.33 days
   var HALVINGS = [Date.UTC(2012, 10, 28), Date.UTC(2016, 6, 9), Date.UTC(2020, 4, 11), Date.UTC(2024, 3, 20)];
   var HALVING_STEP_MS = 1458.33 * 86400e3;
@@ -289,6 +315,47 @@
       }
     }
 
+    // ── world debt, overlaid on the market-cap reading (opt-in) ──
+    // Both quantities live on the same axis once price is read as market cap, so the comparison is
+    // a single line rather than a second chart. Drawing debt as GROWING is the honest form: frozen
+    // at today's $345T the fit appears to overtake it in 2052, but carried forward at the rate the
+    // aggregate has actually kept, the crossing is later.
+    if (opts.debt) {
+      var dpts = [], dyr, dcross = null;
+      for (dyr = fromYear; dyr <= toYear; dyr += 0.5) {
+        var dms = Date.UTC(Math.floor(dyr), Math.round((dyr % 1) * 12), 1);
+        var dlg = Math.log10(daysSinceGenesis(dms));
+        if (dlg < x0 || dlg > x1) continue;
+        var dEq = worldDebtAt(dyr) / TERMINAL_SUPPLY;          // debt as a price per coin
+        dpts.push(X(dlg) + ',' + Y(Math.log10(dEq)));
+        if (dcross === null && Math.pow(10, centerLog(daysSinceGenesis(dms))) >= dEq) dcross = Math.floor(dyr);
+      }
+      if (dpts.length > 1) {
+        svg.appendChild(el('polyline', { points: dpts.join(' '), fill: 'none', stroke: '#7ad7ff', 'stroke-width': 7, 'stroke-opacity': 0.14, 'stroke-linecap': 'round' }));
+        svg.appendChild(el('polyline', { points: dpts.join(' '), fill: 'none', stroke: '#7ad7ff', 'stroke-width': 1.8, 'stroke-dasharray': '8 4', 'stroke-opacity': 0.95 }));
+        // Label the line where it runs through open space — about a third along, well left of the
+        // milestone cards it would otherwise sit under at the right-hand end.
+        // Pick the label anchor by X POSITION, not array index: the array is even in years but
+        // the axis is log-time, so index 12% of the way through lands two thirds across the canvas
+        // — right on the ribbon. Target a quarter of the plot width, where the debt line still runs
+        // far above the rainbow.
+        var dTargetX = L + 0.25 * (W - L - R), dBest = dpts[0], dBestD = Infinity;
+        for (var dq = 0; dq < dpts.length; dq++) {
+          var dqx = +dpts[dq].split(',')[0], dqd = Math.abs(dqx - dTargetX);
+          if (dqd < dBestD) { dBestD = dqd; dBest = dpts[dq]; }
+        }
+        var dmid = dBest.split(',');
+        var dlabel = 'total world debt' + (dcross ? '  \u00b7  the fit overtakes it ' + dcross : '');
+        var dlw = dlabel.length * 6 + 12;
+        // clear of the key block when the line runs level with it
+        var dkb = keyBox(L, T);
+        var dOverKey = +dmid[1] > dkb.y - 6 && +dmid[1] < dkb.y + dkb.h + 6;
+        var dlx = Math.min(Math.max(+dmid[0], dOverKey ? dkb.x + dkb.w + 16 : L + 10), W - R - dlw - 8);
+        svg.appendChild(el('rect', { x: dlx - 6, y: +dmid[1] - 23, width: dlw, height: 17, rx: 4, fill: '#160a0f', 'fill-opacity': 0.92, stroke: '#7ad7ff', 'stroke-opacity': 0.4 }));
+        svg.appendChild(el('text', { x: dlx, y: +dmid[1] - 11, fill: '#7ad7ff', 'font-size': 10, 'font-family': 'monospace', 'font-weight': 'bold' }, dlabel));
+      }
+    }
+
     // ── the trajectory, made prominent ──
     // The centre line is drawn twice from the $30,000 mark onward: a wide soft underlay and a
     // bright line on top, so the forward run reads as the subject of the chart rather than as one
@@ -341,6 +408,9 @@
     for (i = 0; i < MACRO.length; i++) {
       var m = MACRO[i], lgP = Math.log10(m.cap / TERMINAL_SUPPLY);
       if (lgP <= yLo || lgP >= yHi) continue;
+      // With the overlay on, the frozen $345T mark is the same fact drawn worse — and its label
+      // sits on the overlay's. The growing line replaces it.
+      if (opts.debt && m.cap === 345e12) continue;
       var my = Y(lgP), cross = yearAtPrice(m.cap / TERMINAL_SUPPLY);
       svg.appendChild(el('line', {
         x1: L, y1: my, x2: W - R, y2: my, stroke: m.key ? '#e3b25f' : '#7d5d6c',
@@ -590,7 +660,7 @@
     FIT: FIT, BANDS: BANDS, GENESIS: GENESIS, MACRO: MACRO, TERMINAL_SUPPLY: TERMINAL_SUPPLY,
     version: '1.4.0', SCALES: SCALES, SCALE_LABELS: SCALE_LABELS,
     center: function (days) { return Math.pow(10, centerLog(days)); },
-    yearAtPrice: yearAtPrice, usd: usd,
+    yearAtPrice: yearAtPrice, usd: usd, worldDebtAt: worldDebtAt, WORLD_DEBT: WORLD_DEBT,
     render: render
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = DVLuvRainbow;
@@ -609,7 +679,8 @@
           height: m.dataset.height ? Number(m.dataset.height) : undefined,
           price: m.dataset.price ? Number(m.dataset.price) : undefined,
           dateMs: m.dataset.date ? Date.parse(m.dataset.date + 'T00:00:00Z') : undefined,
-          yMax: m.dataset.ymax ? Number(m.dataset.ymax) : undefined
+          yMax: m.dataset.ymax ? Number(m.dataset.ymax) : undefined,
+          debt: m.dataset.debt === '1'
         };
         m._rainbowOpts = o;   // the zoom ladder re-renders from these
         render(m, o);
