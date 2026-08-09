@@ -12,8 +12,13 @@
 <meta property="og:title" content="The Bitcoin rainbow — in-house">
 <meta property="og:description" content="Our own fit: log10(price) = 5.380917 log10(days) − 15.403007, R² 0.936. Nine bands, one dot: you are here.">
 <meta property="og:url" content="https://luv.pythai.net/rainbow.html">
-<meta property="og:image" content="https://luv.pythai.net/gfx/logo.png">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://luv.pythai.net/gfx/rainbow.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Bitcoin rainbow — an in-house log-log regression, nine bands, with today’s price marked">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://luv.pythai.net/gfx/rainbow.png">
+<meta name="twitter:image:alt" content="The Bitcoin rainbow — in-house fit with today’s price marked">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E">
 <style>
 :root{
@@ -211,6 +216,8 @@ footer .brandmark:hover img{opacity:1}
     <a class="back" href="wei.html">the arithmetic paper</a>
     <a class="back" href="view.html">live view</a>
     <a class="back" href="/">← back to the doorway</a>
+    <button class="shr" id="shrBtn" type="button" title="Share this chart">share</button>
+    <button class="shr" id="cpyBtn" type="button" title="Copy the link">copy link</button>
   </div>
 </header>
 
@@ -679,7 +686,20 @@ python3 -c "print((1050000-961239)*600/86400)"                     # next halvin
       <span>Powered by Etherscan.io APIs</span>
     </a>
     <span>SHAMBA © 2026 LUV</span>
-  <style>.fieldnav{border-top:1px solid var(--seam);margin-top:22px;padding-top:16px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em}.fieldnav .fn-k{color:var(--gold);text-transform:uppercase;letter-spacing:.18em;font-size:10px;width:100%;margin-bottom:2px}.fieldnav a{color:var(--dim);text-decoration:none;border-bottom:1px solid transparent}.fieldnav a:hover{color:var(--rose);border-bottom-color:var(--rose)}</style>
+  <style>.fieldnav{border-top:1px solid var(--seam);margin-top:22px;padding-top:16px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em}.fieldnav .fn-k{color:var(--gold);text-transform:uppercase;letter-spacing:.18em;font-size:10px;width:100%;margin-bottom:2px}.fieldnav a{color:var(--dim);text-decoration:none;border-bottom:1px solid transparent}.fieldnav a:hover{color:var(--rose);border-bottom-color:var(--rose)}
+/* share + copy — same weight as the nav links, so the chart stays the subject */
+.shr{background:transparent;border:1px solid var(--seam);color:var(--blush);
+  font:inherit;font-size:.82rem;letter-spacing:.02em;padding:.34em .8em;border-radius:7px;
+  cursor:pointer;margin-left:.5rem;transition:.16s;white-space:nowrap}
+.shr:hover,.shr:focus-visible{border-color:var(--rose);color:var(--cream);
+  transform:translateY(-1px);box-shadow:0 0 16px rgba(255,77,109,.32)}
+.shr:focus-visible{outline:none;box-shadow:0 0 0 2px var(--rose),0 0 16px rgba(255,77,109,.32)}
+.shr.done{border-color:var(--gold);color:var(--gold)}
+.shr:active{transform:translateY(0) scale(.96)}
+@media(prefers-reduced-motion:reduce){.shr{transition:none}
+  .shr:hover,.shr:focus-visible,.shr:active{transform:none}}
+@media(max-width:640px){.shr{margin-left:.35em;font-size:.76rem;padding:.3em .6em}}
+</style>
 <nav class="fieldnav" aria-label="the field"><span class="fn-k">the field</span><a href="/">the doorway</a><a href="view.html">live view</a><a href="LUV.html">the price</a><a href="engine.html">the engine</a><a href="emotonomics.html">emotonomics</a><a href="sentiment.html">sentiment</a><a href="wei.html">wei</a><a href="exabyte.html">exabyte</a><a href="luvbus.html">LUVbus</a><a href="faq.html">FAQ</a><a href="docs.html">docs</a></nav>
 </div>
 </footer>
@@ -689,5 +709,6 @@ python3 -c "print((1050000-961239)*600/86400)"                     # next halvin
 <script src="rainbow.js?v=3" defer></script>
 <script src="substrate/luv-pulse.js?v=1" defer></script>
 <script src="substrate/luv-frame.js?v=5" defer></script>
+<script src="share.js?v=1" defer></script>
 </body>
 </html>
