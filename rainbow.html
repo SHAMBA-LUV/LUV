@@ -273,13 +273,24 @@ footer .brandmark:hover img{opacity:1}
   </div>
   <div class="chartbox" id="chartbox" hidden></div>
 
-  <div class="hi"><div class="t">🌈 the rainbow substrate — drawn in your browser</div>
+  <div class="hi"><div class="t">🌈 the rainbow substrate — the whole estimate, to the last coin</div>
   <p><b>This rainbow is not an image.</b> It is rendered live by <b>DVLuvRainbow</b>, a DeltaVerse
   substrate (<a href="substrate/luv-rainbow.js" rel="noopener">readable source</a>, zero dependencies,
   zero network calls): the published fit and the nine bands, redrawn from the arithmetic every time
   the page opens. The fit is public — the <em>measured price path</em> above stays login-delivered.
-  The dot is the page's dated figure (BTC $64,482, 2026-08-05).</p></div>
-  <div class="chartbox"><div data-luvrainbow data-from="2010" data-to="2040" data-price="64482" data-date="2026-08-05"></div></div>
+  The dot is the page's dated figure (BTC $64,482, 2026-08-05).</p>
+  <p>Log-log axes, so the fit is a straight ruler and a long extrapolation hides nothing in
+  curvature. The nine names stand in a stack at the top-left, each pointing at the band it names.
+  The gold run is the <b>trajectory</b> — picked up at the $30,000 mark, carried through today and
+  out to <b>2035</b>, <b>2050</b> and the <b>last coin mined</b>, after which miners are paid by
+  transaction fees alone.</p>
+  <p>The right axis prices the same picture as <b>market cap</b>, one clean decade at a time —
+  $1B, $10B, $100B, $1T — with the year the fit reaches each. Two magnitudes are marked across it:
+  <b>world debt at ~$345T</b> and <b>the quadrillion</b>, where the derivatives economy sits. The
+  point those marks make is one of <em>capacity</em>, not prophecy: 21 million units divide into a
+  quadrillion without strain, so the arithmetic has room for the whole of it. The crossing years
+  are what the regression says, not what the market owes.</p></div>
+  <div class="chartbox"><div data-luvrainbow data-from="2010" data-to="2140" data-price="64482" data-date="2026-08-05"></div></div>
 
   <div class="hi gated" hidden><div class="t">you are here</div>
   <p><b>BTC $64,482 sits in the "accumulate" band</b> — 10<sup>−0.28</sup> below the center line.
@@ -705,7 +716,7 @@ python3 -c "print((1050000-961239)*600/86400)"                     # next halvin
 </footer>
 
 <script src="substrate/luv-rainbowchart.js?v=3" defer></script>
-<script src="substrate/luv-rainbow.js?v=3" defer></script>
+<script src="substrate/luv-rainbow.js?v=4" defer></script>
 <script src="rainbow.js?v=3" defer></script>
 <script src="substrate/luv-pulse.js?v=1" defer></script>
 <script src="substrate/luv-frame.js?v=5" defer></script>
