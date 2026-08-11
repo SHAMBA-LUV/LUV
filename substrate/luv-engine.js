@@ -28,7 +28,7 @@
 (function (global) {
   'use strict';
 
-  var VERSION = '1.6.0';
+  var VERSION = '1.7.0';
   var SEAM = '#4a1f30', ROSE = '#ff4d6d', GOLD = '#e3b25f', DIM = '#b98da0', CREAM = '#f6e7eb';
 
   // Where the organs are published. Each organ names its own file, so the inventory can
@@ -63,6 +63,9 @@
     { key: 'share',   name: 'the share',      file: 'substrate/luv-share.js',   sym: 'DVLuvShare',
       commitment: 'sharing is the marketing',
       role: 'the gesture outward — share intents, no trackers' },
+    { key: 'story',   name: 'the story',     file: 'substrate/luv-story.js',   sym: 'DVLuvStory',
+      commitment: 'a shared gesture arrives exactly where it was sent',
+      role: 'the card you were sent is the card that opens, and the card you read is the one in the address bar' },
     { key: 'automindx', name: 'automindx',    file: 'substrate/luv-automindx.js', sym: 'DVLuvAutoMindX',
       commitment: 'an attending mind is an attending mind, whether neurons or weights',
       role: 'the cognition organ — keeper of the persona and the A2A capability card; a capability is '

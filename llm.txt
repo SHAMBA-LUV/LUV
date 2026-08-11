@@ -111,6 +111,7 @@ published source — because an organ that cannot be read cannot be verified.
 - the market  https://luv.pythai.net/substrate/luv-market.js     — the pair creates the price
 - the rainbow https://luv.pythai.net/substrate/luv-rainbow.js    — a fit anyone can redraw
 - the share   https://luv.pythai.net/substrate/luv-share.js      — sharing is the marketing
+- the story   https://luv.pythai.net/substrate/luv-story.js       — a shared gesture arrives exactly where it was sent
 - automindx   https://luv.pythai.net/substrate/luv-automindx.js  — the cognition organ; the A2A capability card
 - inventory   https://luv.pythai.net/substrate/luv-engine.js     — the organ that names the organs
 

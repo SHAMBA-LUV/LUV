@@ -111,6 +111,21 @@ h1{margin:52px 0 6px;text-align:center;font-size:clamp(30px,5.6vw,46px);font-wei
 .swapcard .pair img{display:block}
 .swapcard .pair .arrow{color:var(--rose)}
 
+/* ── the story organ: the card you are reading, and the card you were sent ──
+   substrate/luv-story.js writes --luv-story-glow (0..1, the shared 1 Hz beat) onto the
+   current card and adds .is-current / .is-arrived. CSS decides what that looks like;
+   with scripting off the cards are simply cards, which is the correct fallback. */
+.storyprog{color:var(--dim);letter-spacing:.14em}
+.luvcard.is-current{border-color:rgba(255,77,109,calc(.30 + .45 * var(--luv-story-glow, 0)))}
+.luvcard.is-current .k{color:var(--rose)}
+.luvcard.is-arrived{border-color:var(--gold);
+  box-shadow:0 0 0 1px rgba(227,178,95,.45),0 18px 46px -22px rgba(227,178,95,calc(.35 + .5 * var(--luv-story-glow, 0)))}
+.luvcard.is-arrived .k::after{content:'← the card you were sent';color:var(--gold);letter-spacing:.1em}
+@media (prefers-reduced-motion:reduce){
+  .luvcard.is-current{border-color:rgba(255,77,109,.5)}
+  .luvcard.is-arrived{box-shadow:0 0 0 1px rgba(227,178,95,.45)}
+}
+
 /* ── the sign-off card, and the last word: the button ── */
 .thankscard{border-color:rgba(227,178,95,.5)}
 .thankscard h2{background:linear-gradient(100deg,var(--gold),var(--rose));-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -155,7 +170,7 @@ footer .brandmark:hover img{opacity:1}
 .fieldnav a:hover{color:var(--rose);border-bottom-color:var(--rose)}
 </style>
 </head>
-<body>
+<body data-luvframe>
 
 <header>
   <div class="wrap bar">
@@ -170,12 +185,12 @@ footer .brandmark:hover img{opacity:1}
 <main class="wrap">
   <h1>THE LUV STORY</h1>
   <div class="sub">card by card — and every card carries its own proof</div>
-  <div class="paperkind">the LUVcard · shareable · <span class="pulseheart" data-luvpulse data-luvpulse-audio title="tap to hear the heartbeat — consent-only, tap again to stop">❤</span></div>
+  <div class="paperkind">the LUVcard · shareable · <span data-luvstory-progress class="storyprog"></span> · <span class="pulseheart" data-luvpulse data-luvpulse-audio title="tap to hear the heartbeat — consent-only, tap again to stop">❤</span></div>
   <p class="lede">Nine chapters and one preset swap — ten cards, ten public checks. Share any one of
   them on its own: each card carries its own anchor, so what you send opens exactly where you left it.</p>
 
   <!-- ═══ the swap card — the logo IS the button, and the button is shareable ═══ -->
-  <section class="luvcard swapcard" id="swap">
+  <section class="luvcard swapcard" id="swap" data-luvcard>
     <a class="coin" data-luv-emit href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="Uniswap preset — USDC → LUV on Ethereum mainnet">
       <img src="gfx/logo.png" alt="SHAMBA LUV — the gold binary heart" width="118" height="118">
     </a>
@@ -201,7 +216,7 @@ footer .brandmark:hover img{opacity:1}
   </section>
 
   <!-- ═══ the story ═══ -->
-  <section class="luvcard" id="priceless">
+  <section class="luvcard" id="priceless" data-luvcard>
     <div class="k">chapter one · phase 1 <a class="anchor" href="#priceless">#priceless</a></div>
     <h2>LUV was priceless before it had a price</h2>
     <p>For one year anyone could sign in and receive <b>one trillion LUV</b>, free — one person, one
@@ -217,7 +232,7 @@ footer .brandmark:hover img{opacity:1}
       data-text="For one year, one trillion LUV was free to every real person — one person, one wallet, one trillion. Every trillion found a home. SHAMBA LUV ❤"></div>
   </section>
 
-  <section class="luvcard" id="supply">
+  <section class="luvcard" id="supply" data-luvcard>
     <div class="k">chapter two · the arithmetic <a class="anchor" href="#supply">#supply</a></div>
     <h2>A supply made only of ones</h2>
     <p>The total supply is a <b>repunit</b> — eighteen ones, a point, eighteen ones — fixed at genesis
@@ -236,7 +251,7 @@ footer .brandmark:hover img{opacity:1}
       data-text="LUV's supply is a repunit: 111,111,111,111,111,111.111111111111111111 LUV, fixed at genesis — and 4.4825% of it is burned to dEaD, forever. Exact, not approximate ❤"></div>
   </section>
 
-  <section class="luvcard" id="market">
+  <section class="luvcard" id="market" data-luvcard>
     <div class="k">chapter three · phase 2 <a class="anchor" href="#market">#market</a></div>
     <h2>The pair creates the price</h2>
     <p>LUV trades against WETH in a Uniswap V2 pool, and the price is read <b>from the pool's own
@@ -254,7 +269,7 @@ footer .brandmark:hover img{opacity:1}
       data-text="The pair creates the price: LUV is read from the pool's own reserves, block-anchored, never from an aggregator. 3% of every trade reflects to every holder ❤"></div>
   </section>
 
-  <section class="luvcard" id="drip">
+  <section class="luvcard" id="drip" data-luvcard>
     <div class="k">chapter four · the LUVdrip <a class="anchor" href="#drip">#drip</a></div>
     <h2>A million LUV a day, metered to the last atom</h2>
     <p>Signing in starts the <b>LUVdrip</b>: 1,000,000 LUV a day — <b>11.574 LUV every second</b> —
@@ -273,7 +288,7 @@ footer .brandmark:hover img{opacity:1}
       data-text="The LUVdrip: a million LUV a day — 11.574 LUV every second — accrued exactly, collected gas-free, redeemed on chain as one integer. Nothing rounded, only deferred ❤"></div>
   </section>
 
-  <section class="luvcard" id="pulse">
+  <section class="luvcard" id="pulse" data-luvcard>
     <div class="k">chapter five · phase 3 · the engine <a class="anchor" href="#pulse">#pulse</a></div>
     <h2>One heartbeat, everywhere, owned by no one</h2>
     <p>LUV built its own engine from the field rather than adopting one. Its first organ is a clock that
@@ -290,7 +305,7 @@ footer .brandmark:hover img{opacity:1}
       data-text="LUV's engine has a heartbeat: 60 bpm, exactly 1 Hz, phase-locked so every page on earth beats together. Consent first — it only sounds if you tap it ❤"></div>
   </section>
 
-  <section class="luvcard" id="polygon">
+  <section class="luvcard" id="polygon" data-luvcard>
     <div class="k">chapter six · the origin <a class="anchor" href="#polygon">#polygon</a></div>
     <h2>Where LUV began, LUV returns</h2>
     <p>Polygon was the first deployment. LUV deploys to the <b>same deterministic address on every
@@ -306,7 +321,7 @@ footer .brandmark:hover img{opacity:1}
       data-text="Polygon was the first deployment, and every Polygon holder will be honoured. LUV carries the same deterministic address on every chain — the initcode is the name ❤"></div>
   </section>
 
-  <section class="luvcard" id="verify">
+  <section class="luvcard" id="verify" data-luvcard>
     <div class="k">chapter seven · the doctrine <a class="anchor" href="#verify">#verify</a></div>
     <h2>Don't trust — verify</h2>
     <p>On every LUV surface the word <b>verified</b> is reserved for one thing: the <b>green
@@ -324,7 +339,7 @@ footer .brandmark:hover img{opacity:1}
       data-text="On LUV surfaces, 'verified' means one thing: the green checkmark — published source matched against deployed bytecode. Don't trust — verify ❤"></div>
   </section>
 
-  <section class="luvcard" id="share">
+  <section class="luvcard" id="share" data-luvcard>
     <div class="k">chapter eight · sharing is caring <a class="anchor" href="#share">#share</a></div>
     <h2>The gesture, passed on</h2>
     <p>Attention is the source of value, so passing it on is not marketing — it <em>is</em> the
@@ -340,7 +355,7 @@ footer .brandmark:hover img{opacity:1}
       data-text="THE LUV STORY, card by card: a free trillion to every real person, a supply made of ones, a price read from the reserves, a million LUV a day, and one heartbeat at exactly 1 Hz for every visitor on earth ❤"></div>
   </section>
 
-  <section class="luvcard thankscard" id="thanks">
+  <section class="luvcard thankscard" id="thanks" data-luvcard>
     <div class="k">chapter nine · the sign-off <a class="anchor" href="#thanks">#thanks</a></div>
     <h2>Thanks a million millions ❤</h2>
     <p><b>One trillion LUV is a million millions.</b> That is the measure of value here, and the
@@ -401,6 +416,8 @@ footer .brandmark:hover img{opacity:1}
 
 <script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
+<script src="substrate/luv-frame.js?v=5"></script>
 <script src="substrate/luv-share.js?v=5"></script>
+<script src="substrate/luv-story.js?v=1"></script>
 </body>
 </html>

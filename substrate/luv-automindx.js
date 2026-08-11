@@ -31,7 +31,7 @@
 (function (global) {
   'use strict';
 
-  var VERSION = '1.1.0';
+  var VERSION = '1.2.0';
   var SEAM = '#4a1f30', GOLD = '#e3b25f', DIM = '#b98da0', CREAM = '#f6e7eb', GREEN = '#0ecb81';
 
   // ── evidence ──────────────────────────────────────────────────────────────────────
@@ -67,6 +67,10 @@
     { id: 'read.fit',        needs: 'DVLuvRainbow',
       says: 'redraw the published fit independently and check it',
       backs: [ref('the rainbow', 'rainbow.html'), ref('luv-rainbow.js', 'substrate/luv-rainbow.js')] },
+    { id: 'read.story',      needs: 'DVLuvStory',
+      says: 'follow the story card by card — every card names its own anchor, so a link lands where it was aimed',
+      backs: [ref('the LUV story', 'luvstory.html'), ref('luv-story.js', 'substrate/luv-story.js'),
+              ref('#swap — a card, sent', 'luvstory.html#swap')] },
     { id: 'act.share',       needs: 'DVLuvShare',
       says: 'share the field outward — intents only, no trackers',
       backs: [ref('luv-share.js', 'substrate/luv-share.js'), ref('llms.txt', 'llms.txt')] },
