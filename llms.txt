@@ -127,6 +127,10 @@ if the organ implementing it is loaded. The card shrinks to the truth of the pag
   commons at https://github.com/cypherpunk4096/engine
 - https://luv.pythai.net/sentiment.html — SENTIMENT, the measurement paper
 - https://luv.pythai.net/wei.html — the WEI of LUV, the arithmetic paper
+- https://luv.pythai.net/luvstory.html — THE LUV STORY, the papers in their shortest form: nine
+  LUVcards (the free trillion · the repunit supply and the burn · the pair creates the price · the
+  LUVdrip · the pulse at 1 Hz · Polygon · the green checkmark · the swap, preset USDC → LUV). Every
+  card carries the check that proves it and shares on its own anchor (#swap, #supply, #verify …).
 - https://luv.pythai.net/faq.html — the FAQ
 - https://luv.pythai.net/docs.html — the complete docs map
 

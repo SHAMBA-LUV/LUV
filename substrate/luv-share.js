@@ -16,11 +16,17 @@
     'HOLD LUV to earn LUV: LUV grows when you hold LUV. ' +
     'SHAMBA LUV, live on Uniswap ❤ thanks a million millions https://luv.pythai.net';
 
+  // A rail shares ONE thing. By default that is the page it sits on, but a mount may name
+  // its own target — so a card can share itself (its own anchor) and the swap button can
+  // share the swap. data-url · data-text · data-label · data-note="off".
   function Rail(mount, opts) {
     this.root = typeof mount === 'string' ? document.querySelector(mount) : mount;
     opts = opts || {};
-    this.url = opts.url || (global.location && location.href) || 'https://luv.pythai.net/';
-    this.text = opts.text || (this.root && this.root.dataset.text) || DEFAULT_TEXT;
+    var d = (this.root && this.root.dataset) || {};
+    this.url = opts.url || d.url || (global.location && location.href) || 'https://luv.pythai.net/';
+    this.text = opts.text || d.text || DEFAULT_TEXT;
+    this.label = opts.label || d.label || null;
+    this.note = opts.note === false ? false : d.note !== 'off';
   }
 
   Rail.prototype._btn = function (label, title, onClick, href) {
@@ -37,7 +43,13 @@
     var u = encodeURIComponent(this.url), t = encodeURIComponent(this.text), self = this;
     var row = document.createElement('div'); row.className = 'shr-row';
     var lead = document.createElement('span'); lead.className = 'shr-lead';
-    lead.innerHTML = 'share the LUV <span class="beat">❤</span>';
+    if (this.label) {
+      lead.appendChild(document.createTextNode(this.label + ' '));
+      var h = document.createElement('span'); h.className = 'beat'; h.textContent = '❤';
+      lead.appendChild(h);
+    } else {
+      lead.innerHTML = 'share the LUV <span class="beat">❤</span>';
+    }
     row.appendChild(lead);
 
     if (global.navigator && navigator.share) {
@@ -58,13 +70,16 @@
     });
     row.appendChild(copy);
 
-    var note = document.createElement('div'); note.className = 'shr-note';
-    note.textContent = 'phase 3 is live — sharing is caring: posting about LUV on X earns LUV. The rate, the cooldown and the daily limit are whatever the on-chain action registry says they are — it is the final word, and it is retuned as LUV appreciates.';
-    this.root.appendChild(row); this.root.appendChild(note);
+    this.root.appendChild(row);
+    if (this.note) {
+      var note = document.createElement('div'); note.className = 'shr-note';
+      note.textContent = 'phase 3 is live — sharing is caring: posting about LUV on X earns LUV. The rate, the cooldown and the daily limit are whatever the on-chain action registry says they are — it is the final word, and it is retuned as LUV appreciates.';
+      this.root.appendChild(note);
+    }
     return this;
   };
 
-  var DVLuvShare = { Rail: Rail, DEFAULT_TEXT: DEFAULT_TEXT, version: '1.0.0' };
+  var DVLuvShare = { Rail: Rail, DEFAULT_TEXT: DEFAULT_TEXT, version: '1.1.0' };
   if (typeof module !== 'undefined' && module.exports) module.exports = DVLuvShare;
   global.DVLuvShare = DVLuvShare;
 
