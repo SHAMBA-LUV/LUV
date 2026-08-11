@@ -139,6 +139,9 @@ h1{margin:52px 0 6px;text-align:center;font-size:clamp(30px,5.6vw,46px);font-wei
 .paper td{padding:7px 10px;border-bottom:1px solid rgba(74,31,48,.5);color:var(--cream);vertical-align:top}
 .paper td:nth-child(2){color:var(--dim);font-family:var(--mono);font-size:11px;white-space:nowrap}
 /* ── the organ inventory: every organ links to itself ── */
+.paper ul.organs{list-style:none;margin-left:0}
+.paper ul.organs li{border-left:3px solid var(--oc,var(--seam));padding-left:12px;margin-bottom:12px}
+.paper ul.organs li b:first-child{color:var(--oc,var(--cream))}
 .paper ul.organs a{text-decoration:none;border-bottom:1px solid rgba(255,77,109,.32)}
 .paper ul.organs a code{font-family:var(--mono);font-size:11.5px;color:var(--dim)}
 .paper ul.organs a:hover code{color:var(--rose)}
@@ -649,17 +652,17 @@ footer .brandmark:hover img{opacity:1}
   <div data-luvautomindx></div>
   <div data-luvengine>
     <ul class="points organs" style="margin-top:12px">
-      <li><b>the pulse</b> <a href="substrate/luv-pulse.js"><code>substrate/luv-pulse.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-pulse.js" target="_blank" rel="noopener">source ↗</a> — chronos-locked 1 Hz output, 60 bpm, phase-identical for every visitor · <em>a shared rhythm owned by no one</em></li>
-      <li><b>the heart</b> <a href="substrate/heart.js"><code>substrate/heart.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/heart.js" target="_blank" rel="noopener">source ↗</a> — the visual organ, created only on consent · <em>consent over default</em></li>
-      <li><b>the frame</b> <a href="substrate/luv-frame.js"><code>substrate/luv-frame.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-frame.js" target="_blank" rel="noopener">source ↗</a> — the octagon world-edge worn as the page frame · <em>a boundary that contains, never intercepts</em></li>
-      <li><b>the drip</b> <a href="substrate/luv-drip.js"><code>substrate/luv-drip.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-drip.js" target="_blank" rel="noopener">source ↗</a> — meters continuously, settles once as one integer of luv · <em>precision without approximation</em></li>
-      <li><b>the wei</b> <a href="substrate/luv-wei.js"><code>substrate/luv-wei.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-wei.js" target="_blank" rel="noopener">source ↗</a> — the atom, 1 luv = 0.000000000000000001 LUV · <em>rounding is a display decision</em></li>
-      <li><b>the market</b> <a href="substrate/luv-market.js"><code>substrate/luv-market.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-market.js" target="_blank" rel="noopener">source ↗</a> — reserves-first price, block-anchored · <em>the pair creates the price</em></li>
-      <li><b>the rainbow</b> <a href="substrate/luv-rainbow.js"><code>substrate/luv-rainbow.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-rainbow.js" target="_blank" rel="noopener">source ↗</a> — drawn live from the published fit · <em>a fit anyone can redraw</em></li>
-      <li><b>the share</b> <a href="substrate/luv-share.js"><code>substrate/luv-share.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-share.js" target="_blank" rel="noopener">source ↗</a> — the gesture outward, no trackers · <em>sharing is the marketing</em></li>
-      <li><b>the story</b> <a href="substrate/luv-story.js"><code>substrate/luv-story.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-story.js" target="_blank" rel="noopener">source ↗</a> — the card you were sent is the card that opens; the card you read is the one in the address bar · <em>a shared gesture arrives exactly where it was sent</em></li>
-      <li><b>automindx</b> <a href="substrate/luv-automindx.js"><code>substrate/luv-automindx.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-automindx.js" target="_blank" rel="noopener">source ↗</a> — the cognition organ: keeper of the persona and the A2A capability card · <em>an attending mind is an attending mind, whether neurons or weights</em></li>
-      <li><b>the inventory</b> <a href="substrate/luv-engine.js"><code>substrate/luv-engine.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-engine.js" target="_blank" rel="noopener">source ↗</a> — the organ that names the organs, and probes which of them this page loaded · <em>a claim is made only if the thing claimed is present</em></li>
+      <li style="--oc:#ff4d6d"><b>the pulse</b> <a href="substrate/luv-pulse.js"><code>substrate/luv-pulse.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-pulse.js" target="_blank" rel="noopener">source ↗</a> — chronos-locked 1 Hz output, 60 bpm, phase-identical for every visitor · <em>a shared rhythm owned by no one</em></li>
+      <li style="--oc:#ff8fab"><b>the heart</b> <a href="substrate/heart.js"><code>substrate/heart.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/heart.js" target="_blank" rel="noopener">source ↗</a> — the visual organ, created only on consent · <em>consent over default</em></li>
+      <li style="--oc:#e3b25f"><b>the frame</b> <a href="substrate/luv-frame.js"><code>substrate/luv-frame.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-frame.js" target="_blank" rel="noopener">source ↗</a> — the octagon world-edge worn as the page frame · <em>a boundary that contains, never intercepts</em></li>
+      <li style="--oc:#34d3eb"><b>the drip</b> <a href="substrate/luv-drip.js"><code>substrate/luv-drip.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-drip.js" target="_blank" rel="noopener">source ↗</a> — meters continuously, settles once as one integer of luv · <em>precision without approximation</em></li>
+      <li style="--oc:#b6f36a"><b>the wei</b> <a href="substrate/luv-wei.js"><code>substrate/luv-wei.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-wei.js" target="_blank" rel="noopener">source ↗</a> — the atom, 1 luv = 0.000000000000000001 LUV · <em>rounding is a display decision</em></li>
+      <li style="--oc:#0ecb81"><b>the market</b> <a href="substrate/luv-market.js"><code>substrate/luv-market.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-market.js" target="_blank" rel="noopener">source ↗</a> — reserves-first price, block-anchored · <em>the pair creates the price</em></li>
+      <li style="--oc:#a06bff"><b>the rainbow</b> <a href="substrate/luv-rainbow.js"><code>substrate/luv-rainbow.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-rainbow.js" target="_blank" rel="noopener">source ↗</a> — drawn live from the published fit · <em>a fit anyone can redraw</em></li>
+      <li style="--oc:#58a6ff"><b>the share</b> <a href="substrate/luv-share.js"><code>substrate/luv-share.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-share.js" target="_blank" rel="noopener">source ↗</a> — the gesture outward, no trackers · <em>sharing is the marketing</em></li>
+      <li style="--oc:#ff5ec7"><b>the story</b> <a href="substrate/luv-story.js"><code>substrate/luv-story.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-story.js" target="_blank" rel="noopener">source ↗</a> — the card you were sent is the card that opens; the card you read is the one in the address bar · <em>a shared gesture arrives exactly where it was sent</em></li>
+      <li style="--oc:#c0b3ff"><b>automindx</b> <a href="substrate/luv-automindx.js"><code>substrate/luv-automindx.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-automindx.js" target="_blank" rel="noopener">source ↗</a> — the cognition organ: keeper of the persona and the A2A capability card · <em>an attending mind is an attending mind, whether neurons or weights</em></li>
+      <li style="--oc:#f7931a"><b>the engine</b> <a href="substrate/luv-engine.js"><code>substrate/luv-engine.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-engine.js" target="_blank" rel="noopener">source ↗</a> — the organ that names the organs, and probes which of them this page loaded · <em>a claim is made only if the thing claimed is present</em></li>
     </ul>
   </div>
 
@@ -779,7 +782,7 @@ footer .brandmark:hover img{opacity:1}
 
 <script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
-<script src="substrate/luv-engine.js?v=8"></script>
+<script src="substrate/luv-engine.js?v=9"></script>
 <script src="substrate/luv-automindx.js?v=3"></script>
 </body>
 </html>

@@ -28,13 +28,26 @@
 (function (global) {
   'use strict';
 
-  var VERSION = '1.7.0';
+  var VERSION = '1.8.0';
   var SEAM = '#4a1f30', ROSE = '#ff4d6d', GOLD = '#e3b25f', DIM = '#b98da0', CREAM = '#f6e7eb';
 
   // Where the organs are published. Each organ names its own file, so the inventory can
   // link every organ to itself — the copy running on this origin, and the source of record.
   // An organ that cannot be read cannot be verified, and the standard asks for no trust.
   var SRC = 'https://github.com/SHAMBA-LUV/LUV/blob/main/';
+
+  // A colour per organ. Eleven rows of the same colour read as one wall of text; eleven
+  // hues read as eleven things, and the eye finds the organ it came for. The pinned ones
+  // are not decorative — the pulse wears the heart's rose, the frame its own gold, the
+  // market the candle green, the rainbow its purple. The rest are spaced far enough apart
+  // to stay distinguishable on the ink, including for the common colour deficiencies:
+  // no judgement is ever carried by hue alone (presence is stated in words beside it).
+  var HUE = {
+    pulse: '#ff4d6d', heart: '#ff8fab', frame: '#e3b25f', drip: '#34d3eb', wei: '#b6f36a',
+    market: '#0ecb81', rainbow: '#a06bff', share: '#58a6ff', engine: '#f7931a',
+    story: '#ff5ec7', automindx: '#c0b3ff'
+  };
+  function hue(key) { return HUE[key] || CREAM; }
 
   // The organs, in the order the engine grew them. `global` is the window symbol the
   // organ publishes — presence of that symbol IS the proof the organ is loaded.
@@ -63,6 +76,9 @@
     { key: 'share',   name: 'the share',      file: 'substrate/luv-share.js',   sym: 'DVLuvShare',
       commitment: 'sharing is the marketing',
       role: 'the gesture outward — share intents, no trackers' },
+    { key: 'engine',  name: 'the engine',     file: 'substrate/luv-engine.js',  sym: 'DVLuvEngine',
+      commitment: 'nothing is claimed that is not present',
+      role: 'the inventory itself — names every organ and probes which of them this page loaded' },
     { key: 'story',   name: 'the story',     file: 'substrate/luv-story.js',   sym: 'DVLuvStory',
       commitment: 'a shared gesture arrives exactly where it was sent',
       role: 'the card you were sent is the card that opens, and the card you read is the one in the address bar' },
@@ -139,9 +155,17 @@
     box.appendChild(head);
 
     rows.forEach(function (o, i) {
-      var r = el('div', 'padding:13px 16px' + (i ? ';border-top:1px solid ' + SEAM : ''));
+      var col = hue(o.key);
+      // the spine: a 3px rule in the organ's colour down the left of its row, plus the
+      // name in the same colour. An absent organ keeps its identity and loses its weight.
+      var r = el('div', 'padding:13px 16px 13px 13px;border-left:3px solid ' + col +
+        ';opacity:' + (o.present ? '1' : '.62') + (i ? ';border-top:1px solid ' + SEAM : ''));
       var l1 = el('div', 'display:flex;flex-wrap:wrap;gap:9px;align-items:baseline');
-      l1.appendChild(el('span', 'font-weight:700;color:' + (o.present ? CREAM : DIM), o.name));
+      var chip = el('span', 'display:inline-block;width:8px;height:8px;border-radius:2px;background:' +
+        col + ';margin-right:2px');
+      chip.setAttribute('aria-hidden', 'true');
+      l1.appendChild(chip);
+      l1.appendChild(el('span', 'font-weight:700;color:' + col, o.name));
       // the organ's self-reference: the filename IS the link to the running file on this
       // origin, and `source ↗` is the published copy. Read either; they are the same bytes.
       var self = el('a', 'text-decoration:none;border-bottom:1px solid rgba(255,77,109,.32)');
@@ -471,13 +495,17 @@
     try { wireCopy(); } catch (e) { /* copy is a courtesy too */ }
     try { wireFeel(); } catch (e) { /* feeling is never a requirement */ }
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-  else boot();
-
+  // PUBLISH BEFORE BOOTING. The registry probes for the symbol each organ publishes —
+  // including its own — so if boot() ran first (any load where readyState is already past
+  // 'loading': defer, async, or an injected tag) the engine would render itself as "not on
+  // this page" and under-report by one. The inventory must be able to count itself.
   global.DVLuvEngine = {
     version: VERSION, organs: organs, status: status, present: present, count: count,
     render: render, token: TOKEN, watchAsset: watchAsset, ensureEthereum: ensureEthereum, Feel: Feel,
     lineage: function () { return LINEAGE.map(function (l) { return l; }); },
     emit: emitHeart
   };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
 })(typeof window !== 'undefined' ? window : this);
