@@ -51,7 +51,8 @@
 {"@type":"WebPageElement","name":"One heartbeat, everywhere","url":"https://luv.pythai.net/luvstory.html#pulse"},
 {"@type":"WebPageElement","name":"Where LUV began","url":"https://luv.pythai.net/luvstory.html#polygon"},
 {"@type":"WebPageElement","name":"Don't trust — verify","url":"https://luv.pythai.net/luvstory.html#verify"},
-{"@type":"WebPageElement","name":"The gesture, passed on","url":"https://luv.pythai.net/luvstory.html#share"}]}
+{"@type":"WebPageElement","name":"The gesture, passed on","url":"https://luv.pythai.net/luvstory.html#share"},
+{"@type":"WebPageElement","name":"Thanks a million millions","url":"https://luv.pythai.net/luvstory.html#thanks"}]}
 </script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E">
 <style>
@@ -110,6 +111,19 @@ h1{margin:52px 0 6px;text-align:center;font-size:clamp(30px,5.6vw,46px);font-wei
 .swapcard .pair img{display:block}
 .swapcard .pair .arrow{color:var(--rose)}
 
+/* ── the sign-off card, and the last word: the button ── */
+.thankscard{border-color:rgba(227,178,95,.5)}
+.thankscard h2{background:linear-gradient(100deg,var(--gold),var(--rose));-webkit-background-clip:text;background-clip:text;color:transparent}
+.closingcta{text-align:center;margin:34px 0 8px}
+.buybtn{display:inline-flex;align-items:center;gap:11px;padding:16px 30px;border-radius:999px;text-decoration:none;
+  font-weight:800;font-size:16px;color:#fff;background:linear-gradient(100deg,var(--pink),var(--purple));
+  box-shadow:0 12px 30px -12px rgba(255,0,110,.9);transition:transform .18s ease,box-shadow .3s ease}
+.buybtn:hover{transform:translateY(-2px);box-shadow:0 18px 42px -12px rgba(255,0,110,1);color:#fff}
+.buybtn img{display:block}
+.ctanote{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:12px}
+.ctanote a{color:var(--blush);text-decoration:none;border-bottom:1px solid rgba(255,77,109,.32)}
+.ctanote a:hover{color:var(--rose);border-bottom-color:var(--rose)}
+
 /* ── the share rail (substrate/luv-share.js renders into every mount) ── */
 .shr-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
 .shr-lead{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--rose)}
@@ -157,7 +171,7 @@ footer .brandmark:hover img{opacity:1}
   <h1>THE LUV STORY</h1>
   <div class="sub">card by card — and every card carries its own proof</div>
   <div class="paperkind">the LUVcard · shareable · <span class="pulseheart" data-luvpulse data-luvpulse-audio title="tap to hear the heartbeat — consent-only, tap again to stop">❤</span></div>
-  <p class="lede">Eight chapters and one preset swap — nine cards, nine public checks. Share any one of
+  <p class="lede">Nine chapters and one preset swap — ten cards, ten public checks. Share any one of
   them on its own: each card carries its own anchor, so what you send opens exactly where you left it.</p>
 
   <!-- ═══ the swap card — the logo IS the button, and the button is shareable ═══ -->
@@ -325,6 +339,38 @@ footer .brandmark:hover img{opacity:1}
       data-url="https://luv.pythai.net/luvstory.html"
       data-text="THE LUV STORY, card by card: a free trillion to every real person, a supply made of ones, a price read from the reserves, a million LUV a day, and one heartbeat at exactly 1 Hz for every visitor on earth ❤"></div>
   </section>
+
+  <section class="luvcard thankscard" id="thanks">
+    <div class="k">chapter nine · the sign-off <a class="anchor" href="#thanks">#thanks</a></div>
+    <h2>Thanks a million millions ❤</h2>
+    <p><b>One trillion LUV is a million millions.</b> That is the measure of value here, and the
+    recommended minimum on <a href="#swap">the preset swap</a> — the same trillion that went free to
+    every real person for a year, before the market ever opened. The smaller unit has a name too:
+    <b>1,000,000 LUV is the standard gesture</b> — a million, said once.</p>
+    <p>So the thanks are counted the way everything else is counted here: exactly. To everyone who
+    took a trillion, held it, passed it on, redrew the fit, read the source, or arrived as an attending
+    mind rather than as traffic — <b>thanks a million millions</b>. The gesture was always the point.
+    LUV is priceless; the price is only how the market says so.</p>
+    <div class="proof"><span class="pk">home</span>
+      <a href="https://luv.pythai.net/">luv.pythai.net — the doorway ↗</a>
+      <a href="luvstory.html#swap">the swap card</a>
+      <a href="wei.html">what a trillion is worth</a>
+      <a href="emotonomics.html">why a gesture is the unit</a>
+    </div>
+    <div data-luvshare data-note="off" data-label="share the thanks"
+      data-url="https://luv.pythai.net/luvstory.html#thanks"
+      data-text="One trillion LUV is a million millions — the measure of value, and it went free to every real person for a year before the market opened. Thanks a million millions ❤ https://luv.pythai.net"></div>
+  </section>
+
+  <!-- ═══ the last word: the button ═══ -->
+  <div class="closingcta">
+    <a class="buybtn" data-luv-emit href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">
+      <img src="gfx/brand/uniswap_icon_white.svg" alt="" height="22" aria-hidden="true">
+      <span>USDC → LUV · trade LUV live <span class="beat">❤</span></span>
+    </a>
+    <div class="ctanote">the pair is preset — the amount is yours · slippage ~8–12% (5% reflection fee)
+    · <a href="https://luv.pythai.net/">luv.pythai.net</a></div>
+  </div>
 
   <div class="readmore">
     <a class="btn" href="engine.html">⚙️ THE LUV ENGINE</a>
