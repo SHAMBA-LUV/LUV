@@ -243,6 +243,56 @@ signal as a common experience
 The pulse is common; the *response* to it is a distribution, and proposition V.4 must be
 measured as a distribution or not at all.
 
+**"Isn't the engine more than the sum of its parts?"** No, and the engine does not claim to
+be. A total is a sum; nothing is added by counting it twice. What coupling changes is not
+the quantity but the *arrangement*: a synchronised population has exactly the oscillators an
+unsynchronised one has, and the difference between them is phase relation, not an extra
+oscillator ([Kuramoto 1984](https://doi.org/10.1007/978-3-642-69689-3); §II). The engine is
+exactly its organs, arranged — no residue, no surplus, nothing that appears when you stop
+counting.
+
+None of which denies that the levels differ. A piston is not a motor, a motor is not a car,
+and a road full of cars is not a car — it is traffic. Yet each rung is exactly the rung below
+it, arranged: what arrangement confers is *function*, not substance, and no rung of that
+ladder needed an ingredient the one beneath it lacked. Traffic makes the point at its
+sharpest, because traffic has phenomena that live in no vehicle: a phantom jam has no crash
+and no bottleneck to blame, only the spacing between moving cars — which is not a metaphor
+but an experimental result, produced on a circular track with identical drivers asked only to
+keep a steady speed ([Sugiyama et al. 2008](https://doi.org/10.1088/1367-2630/10/3/033001)).
+The jam is real, it propagates backwards at its own velocity, and it is still exactly the
+cars.
+
+**This is the consequence of moving parts, once everything is wired.** A parts list does
+nothing; a static assembly does nothing either. Connection and motion are what produce
+consequences at the level above — and those consequences remain, at every level, exactly the
+parts. The engine's wiring is the shared signal rather than shared state (§I), and its motion
+is the pulse. One heart is a piston: by itself, one exact oscillation. A page's organs wired
+to it are the car — the frame breathes, the drip meters, the market and the wei carry a price
+that moves in time. Every page on earth beating in one phase is traffic, and the phase lock
+is a traffic-level fact: it lives in the relations between hearts, never inside any one of
+them, and it is still exactly the hearts. Calling the assembly an *engine* is therefore not a
+claim about quantity. It names the rung at which the thing has a function, and the rung is
+real without anything having been added to reach it.
+
+The refusal matters, because "more than the sum" is where doctrine usually smuggles in what
+it cannot show, and the standard forbids precisely that: quantities that can be exact are
+exact (§III), and a claim that cannot be counted may be called what it is, but never
+*verified* (§IV).
+
+What *is* claimable, and testable, is whether the arrangement is load-bearing. The engine's
+organ registry is built to answer that rather than assert it: it probes what a page has
+actually loaded instead of listing what exists, and every organ links to its own source, so
+the coupling can be read rather than believed. The test is ablation — remove one organ and
+measure the rest. If the frame stops breathing, the drip's tally stops metering, and
+automindx withdraws a capability it can no longer see, the arrangement was doing work; if
+nothing downstream moves, the organ was decoration and the list was longer than the engine.
+The same discipline binds the cognition organ's namesake: mindX's dream → train → imprint
+loop yields a model that recalls its own history — not because a surplus appears, but because
+the output of each stage is the input of the next, and freezing the corpus for one generation
+would show exactly how much of the result is the arrangement and how much is the training
+alone.
+
+
 ## VII. The digitization of value: where the engine stands
 
 The engine takes a position in a live argument about what happens to value when it is
@@ -309,6 +359,7 @@ competing claims about attention and value can be tested by anyone.
 - [Simon, H. A. 1971. "Designing Organizations for an Information-Rich World." In *Computers, Communications, and the Public Interest*, ed. M. Greenberger, 37–72. Baltimore: Johns Hopkins Press.](https://gwern.net/doc/design/1971-simon.pdf)
 - [Smith, A. 1759. *The Theory of Moral Sentiments*. London: A. Millar.](https://www.econlib.org/library/Smith/smMS.html)
 - [Smith, A. 1776. *An Inquiry into the Nature and Causes of the Wealth of Nations*. London: W. Strahan and T. Cadell.](https://www.econlib.org/library/Smith/smWN.html)
+- [Sugiyama, Y., Fukui, M., Kikuchi, M., Hasebe, K., Nakayama, A., Nishinari, K., Tadaki, S., & Yukawa, S. 2008. "Traffic Jams without Bottlenecks — Experimental Evidence for the Physical Mechanism of the Formation of a Jam." *New Journal of Physics* 10: 033001.](https://doi.org/10.1088/1367-2630/10/3/033001)
 - [Szabo, N. 1997. "Formalizing and Securing Relationships on Public Networks." *First Monday* 2(9).](https://firstmonday.org/ojs/index.php/fm/article/view/548)
 - [Terranova, T. 2000. "Free Labor: Producing Culture for the Digital Economy." *Social Text* 18(2): 33–58.](https://doi.org/10.1215/01642472-18-2_63-33)
 - [Thompson, V. A., Prowse Turner, J. A., & Pennycook, G. 2011. "Intuition, Reason, and Metacognition." *Cognitive Psychology* 63(3): 107–140.](https://doi.org/10.1016/j.cogpsych.2011.06.001)
