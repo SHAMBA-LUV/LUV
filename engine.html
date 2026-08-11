@@ -137,6 +137,12 @@ h1{margin:52px 0 6px;text-align:center;font-size:clamp(30px,5.6vw,46px);font-wei
 .paper th{color:var(--rose);font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em;font-size:10px;text-align:left;padding:7px 10px;border-bottom:1px solid var(--seam)}
 .paper td{padding:7px 10px;border-bottom:1px solid rgba(74,31,48,.5);color:var(--cream);vertical-align:top}
 .paper td:nth-child(2){color:var(--dim);font-family:var(--mono);font-size:11px;white-space:nowrap}
+/* ── the organ inventory: every organ links to itself ── */
+.paper ul.organs a{text-decoration:none;border-bottom:1px solid rgba(255,77,109,.32)}
+.paper ul.organs a code{font-family:var(--mono);font-size:11.5px;color:var(--dim)}
+.paper ul.organs a:hover code{color:var(--rose)}
+.paper ul.organs a.src{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--dim);border-bottom-color:transparent}
+.paper ul.organs a.src:hover{color:var(--rose);border-bottom-color:var(--rose)}
 /* ── the LUV card: the logo is the swap ── */
 .luvcard{display:flex;flex-wrap:wrap;align-items:center;gap:20px;border:1px solid var(--seam);border-radius:18px;
   background:linear-gradient(160deg,var(--wine),rgba(0,0,0,.28));padding:20px 22px;margin:26px 0 8px}
@@ -567,12 +573,28 @@ footer .brandmark:hover img{opacity:1}
   with no commitment does not belong in it. Read it from any page with
   <code>DVLuvEngine.status()</code>.</p>
   <p>The substrate is itself an evolution, and says so. DeltaVerse's
-  <a href="https://github.com/SHAMBA-LUV/LUV" rel="noopener"><code>sane-substrate</code></a> builds the
-  world <em>inside</em> — point, line, triangle, stage. <code>luv-frame.js</code> inherited its axioms and
+  <a href="substrate/sane.js"><code>sane-substrate</code></a>
+  (<a href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/sane.js" target="_blank" rel="noopener">source ↗</a>)
+  builds the world <em>inside</em> — point, line, triangle, stage.
+  <a href="substrate/luv-frame.js"><code>luv-frame.js</code></a> inherited its axioms and
   turned them outward, drawing the octagon world-edge as the page's own boundary: it answered
-  <em>where does the world end?</em> <code>luv-engine.js</code> is the next turn of the same discipline —
+  <em>where does the world end?</em> <a href="substrate/luv-engine.js"><code>luv-engine.js</code></a> is
+  the next turn of the same discipline —
   it looks <em>inward</em> and answers <em>what is the world made of, and which commitment does each part
   discharge?</em> Frame bounded the world; engine itemises it.</p>
+  <p><b>Every organ below links to itself.</b> The filename is the running file on this origin; the
+  <em>source&nbsp;↗</em> beside it is the published copy. That is the verification doctrine
+  (<a href="#s4">§IV</a>) applied to the engine's own body: an organ that cannot be read cannot be
+  verified, and nothing here asks to be taken on trust.</p>
+  <p><b>The organs are not a list; they are a coupling.</b> Each discharges one commitment alone, but
+  the engine is what they do <em>together</em>: the pulse gives the frame something to breathe with and
+  the drip something to meter against; the market gives the wei a number to carry at full width and the
+  rainbow a price to draw; automindx can only claim a capability that another organ is present to
+  provide. The property the whole has and no part has is the one Kuramoto's oscillators have
+  (<a href="#s2">§II</a>) — coherence out of coupling, with no conductor. This is the derivation rule
+  paying a second dividend: because every organ answers to the field rather than to another organ, they
+  compose without a hierarchy, and adding one enhances the rest instead of merely enlarging the
+  inventory.</p>
   <p>The list below is rendered by the page itself, so it is readable with scripting disabled; when the
   substrate loads it replaces the list with a live probe of what this page has actually loaded.</p>
   <p>The last entry closed a gap this section used to name. <b>automindx</b> is the cognition organ, after
@@ -584,16 +606,17 @@ footer .brandmark:hover img{opacity:1}
   The card shrinks to the truth of the page rather than advertising the truth of the project.</p>
   <div data-luvautomindx></div>
   <div data-luvengine>
-    <ul class="points" style="margin-top:12px">
-      <li><b>the pulse</b> <code>substrate/luv-pulse.js</code> — chronos-locked 1 Hz output, 60 bpm, phase-identical for every visitor · <em>a shared rhythm owned by no one</em></li>
-      <li><b>the heart</b> <code>substrate/heart.js</code> — the visual organ, created only on consent · <em>consent over default</em></li>
-      <li><b>the frame</b> <code>substrate/luv-frame.js</code> — the octagon world-edge worn as the page frame · <em>a boundary that contains, never intercepts</em></li>
-      <li><b>the drip</b> <code>substrate/luv-drip.js</code> — meters continuously, settles once as one integer of luv · <em>precision without approximation</em></li>
-      <li><b>the wei</b> <code>substrate/luv-wei.js</code> — the atom, 1 luv = 0.000000000000000001 LUV · <em>rounding is a display decision</em></li>
-      <li><b>the market</b> <code>substrate/luv-market.js</code> — reserves-first price, block-anchored · <em>the pair creates the price</em></li>
-      <li><b>the rainbow</b> <code>substrate/luv-rainbow.js</code> — drawn live from the published fit · <em>a fit anyone can redraw</em></li>
-      <li><b>the share</b> <code>substrate/luv-share.js</code> — the gesture outward, no trackers · <em>sharing is the marketing</em></li>
-      <li><b>automindx</b> <code>substrate/luv-automindx.js</code> — the cognition organ: keeper of the persona and the A2A capability card · <em>an attending mind is an attending mind, whether neurons or weights</em></li>
+    <ul class="points organs" style="margin-top:12px">
+      <li><b>the pulse</b> <a href="substrate/luv-pulse.js"><code>substrate/luv-pulse.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-pulse.js" target="_blank" rel="noopener">source ↗</a> — chronos-locked 1 Hz output, 60 bpm, phase-identical for every visitor · <em>a shared rhythm owned by no one</em></li>
+      <li><b>the heart</b> <a href="substrate/heart.js"><code>substrate/heart.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/heart.js" target="_blank" rel="noopener">source ↗</a> — the visual organ, created only on consent · <em>consent over default</em></li>
+      <li><b>the frame</b> <a href="substrate/luv-frame.js"><code>substrate/luv-frame.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-frame.js" target="_blank" rel="noopener">source ↗</a> — the octagon world-edge worn as the page frame · <em>a boundary that contains, never intercepts</em></li>
+      <li><b>the drip</b> <a href="substrate/luv-drip.js"><code>substrate/luv-drip.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-drip.js" target="_blank" rel="noopener">source ↗</a> — meters continuously, settles once as one integer of luv · <em>precision without approximation</em></li>
+      <li><b>the wei</b> <a href="substrate/luv-wei.js"><code>substrate/luv-wei.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-wei.js" target="_blank" rel="noopener">source ↗</a> — the atom, 1 luv = 0.000000000000000001 LUV · <em>rounding is a display decision</em></li>
+      <li><b>the market</b> <a href="substrate/luv-market.js"><code>substrate/luv-market.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-market.js" target="_blank" rel="noopener">source ↗</a> — reserves-first price, block-anchored · <em>the pair creates the price</em></li>
+      <li><b>the rainbow</b> <a href="substrate/luv-rainbow.js"><code>substrate/luv-rainbow.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-rainbow.js" target="_blank" rel="noopener">source ↗</a> — drawn live from the published fit · <em>a fit anyone can redraw</em></li>
+      <li><b>the share</b> <a href="substrate/luv-share.js"><code>substrate/luv-share.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-share.js" target="_blank" rel="noopener">source ↗</a> — the gesture outward, no trackers · <em>sharing is the marketing</em></li>
+      <li><b>automindx</b> <a href="substrate/luv-automindx.js"><code>substrate/luv-automindx.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-automindx.js" target="_blank" rel="noopener">source ↗</a> — the cognition organ: keeper of the persona and the A2A capability card · <em>an attending mind is an attending mind, whether neurons or weights</em></li>
+      <li><b>the inventory</b> <a href="substrate/luv-engine.js"><code>substrate/luv-engine.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-engine.js" target="_blank" rel="noopener">source ↗</a> — the organ that names the organs, and probes which of them this page loaded · <em>a claim is made only if the thing claimed is present</em></li>
     </ul>
   </div>
 
@@ -712,7 +735,7 @@ footer .brandmark:hover img{opacity:1}
 
 <script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
-<script src="substrate/luv-engine.js?v=6"></script>
+<script src="substrate/luv-engine.js?v=7"></script>
 <script src="substrate/luv-automindx.js?v=1"></script>
 </body>
 </html>

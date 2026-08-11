@@ -28,8 +28,13 @@
 (function (global) {
   'use strict';
 
-  var VERSION = '1.5.0';
+  var VERSION = '1.6.0';
   var SEAM = '#4a1f30', ROSE = '#ff4d6d', GOLD = '#e3b25f', DIM = '#b98da0', CREAM = '#f6e7eb';
+
+  // Where the organs are published. Each organ names its own file, so the inventory can
+  // link every organ to itself — the copy running on this origin, and the source of record.
+  // An organ that cannot be read cannot be verified, and the standard asks for no trust.
+  var SRC = 'https://github.com/SHAMBA-LUV/LUV/blob/main/';
 
   // The organs, in the order the engine grew them. `global` is the window symbol the
   // organ publishes — presence of that symbol IS the proof the organ is loaded.
@@ -134,7 +139,20 @@
       var r = el('div', 'padding:13px 16px' + (i ? ';border-top:1px solid ' + SEAM : ''));
       var l1 = el('div', 'display:flex;flex-wrap:wrap;gap:9px;align-items:baseline');
       l1.appendChild(el('span', 'font-weight:700;color:' + (o.present ? CREAM : DIM), o.name));
-      l1.appendChild(el('code', 'font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:' + DIM, o.file));
+      // the organ's self-reference: the filename IS the link to the running file on this
+      // origin, and `source ↗` is the published copy. Read either; they are the same bytes.
+      var self = el('a', 'text-decoration:none;border-bottom:1px solid rgba(255,77,109,.32)');
+      self.setAttribute('href', o.file);
+      self.setAttribute('title', 'read ' + o.file + ' as this page loads it');
+      self.appendChild(el('code', 'font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:' + DIM, o.file));
+      l1.appendChild(self);
+      var src = el('a', 'font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;letter-spacing:.1em;' +
+        'color:' + DIM + ';text-decoration:none;border-bottom:1px solid transparent', 'source ↗');
+      src.setAttribute('href', SRC + o.file);
+      src.setAttribute('target', '_blank');
+      src.setAttribute('rel', 'noopener');
+      src.setAttribute('title', 'the published source of ' + o.name);
+      l1.appendChild(src);
       l1.appendChild(el('span', 'flex:1'));
       l1.appendChild(el('span', 'font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;' +
         'letter-spacing:.12em;text-transform:uppercase;color:' + (o.present ? '#7ee2a0' : DIM),
