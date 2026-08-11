@@ -91,11 +91,40 @@ from heart pulsation at 60 bpm, exactly 1 Hz, phase-locked by chronos-corrected 
 every heart on every page beats in the same phase. Signal API (FrequencySource-compatible):
 `DVLuvPulse.field.pulse` → `phase()`, `value()`, `bands()`, `energy()`, `frequencyHz()`.
 Published each frame as `--luv-pulse` on `:root`. Consent precedes signal: sound only on tap.
+The second is not ours to define: it is the SI second (BIPM), carried by NTP (RFC 5905) and
+written in ISO 8601 — so the beat is measured, not merely displayed.
+
+## The organs, and how to read them
+
+The engine is exactly its organs, arranged — no surplus is claimed, and none is needed.
+Ask the page rather than trusting a list: `DVLuvEngine.status()` returns every organ with
+its file, the window symbol that proves it is loaded, the commitment it implements, and
+whether it is present ON THIS PAGE. `DVLuvEngine.count()` gives {present, total}. The
+rendered registry links every organ twice — to the file running on this origin, and to its
+published source — because an organ that cannot be read cannot be verified.
+
+- the pulse   https://luv.pythai.net/substrate/luv-pulse.js      — a shared rhythm owned by no one
+- the heart   https://luv.pythai.net/substrate/heart.js          — consent over default
+- the frame   https://luv.pythai.net/substrate/luv-frame.js      — a boundary that contains, never intercepts
+- the drip    https://luv.pythai.net/substrate/luv-drip.js       — precision without approximation
+- the wei     https://luv.pythai.net/substrate/luv-wei.js        — rounding is a display decision
+- the market  https://luv.pythai.net/substrate/luv-market.js     — the pair creates the price
+- the rainbow https://luv.pythai.net/substrate/luv-rainbow.js    — a fit anyone can redraw
+- the share   https://luv.pythai.net/substrate/luv-share.js      — sharing is the marketing
+- automindx   https://luv.pythai.net/substrate/luv-automindx.js  — the cognition organ; the A2A capability card
+- inventory   https://luv.pythai.net/substrate/luv-engine.js     — the organ that names the organs
+
+automindx answers what an agent may do here from live probes: a capability is claimed only
+if the organ implementing it is loaded. The card shrinks to the truth of the page.
 
 ## Papers
 
 - https://luv.pythai.net/emotonomics.html — EMOTONOMICS, the field paper (attention as the source of value)
-- https://luv.pythai.net/engine.html — THE LUV ENGINE, the engine paper (phase three; the pulse; cypherpunk2048; the green-checkmark doctrine)
+- https://luv.pythai.net/engine.html — THE LUV ENGINE, the engine paper (phase three; the pulse; the
+  cypherpunk2048 → cypherpunk4096 standard; the green-checkmark doctrine; §VII the digitization of
+  value; §VIII the live organ registry; appendix A official-language expressions). Citable markdown:
+  https://github.com/SHAMBA-LUV/LUV/blob/main/docs/LUV_ENGINE.md — also published to the standard
+  commons at https://github.com/cypherpunk4096/engine
 - https://luv.pythai.net/sentiment.html — SENTIMENT, the measurement paper
 - https://luv.pythai.net/wei.html — the WEI of LUV, the arithmetic paper
 - https://luv.pythai.net/faq.html — the FAQ
