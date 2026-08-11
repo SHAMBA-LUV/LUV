@@ -327,6 +327,9 @@ details.festwrap>summary.topfest .cue::before{content:"▶"}
 #luvdripmeter .drip-mode{color:var(--gold)}
 /* CLAIM/REDEEM live as the panel's own buttons wired to the backend rails;
    the Uniswap USDC→LUV preset stays visible — the offering rides with the flow */
+#luvdripmeter .drip-of{font-family:var(--mono);font-size:12px;color:var(--dim);font-weight:600;letter-spacing:.04em}
+#luvdripmeter .drip-tally{margin-top:8px;font-size:13px;color:var(--dim)}
+#luvdripmeter .drip-tally b{color:var(--rose)}
 #luvdripmeter .drip-actions{display:none}
 #luvdripmeter .drip-buy{display:inline-block;margin-top:10px;font-family:var(--mono);font-size:12px;color:var(--blush);
   text-decoration:none;border:1px solid #FF007A;border-radius:999px;padding:8px 16px;transition:color .15s,background .15s}
@@ -484,24 +487,25 @@ the live deployment landed · <b>launch successful</b> ·
       <div class="statusline" id="statusline">checking your gesture…</div>
     </div>
     <div class="panel" style="margin-top:16px" id="droppanel" hidden>
-      <div class="k">the daily LUVdrip — reward from login</div>
-      <div style="font-size:17px;margin:4px 0 2px">💧 <b id="dropreward" style="color:var(--rose)">1,000,000</b> LUV a day — flowing at <b style="color:var(--gold)">11.574 LUV/s</b> while you're signed in ❤</div>
-      <div style="color:var(--dim);font-size:13px">the LUVdrip activates for every <b style="color:var(--cream)">recognized participant</b> — signing in IS the action. A million per day, on your own 24-hour clock.</div>
+      <div class="k">the LUVdrip — a million a day, for logging in</div>
+      <div style="font-size:17px;margin:4px 0 2px">💧 <b id="dropreward" style="color:var(--rose)">1,000,000</b> LUV a day — dripping at <b style="color:var(--gold)">11.574 LUV/s</b> for a <b>full 24 hours</b> from your log in ❤</div>
+      <div style="color:var(--dim);font-size:13px"><b style="color:var(--cream)">Logging in earns the million.</b> Signing in starts a 24-hour drip that keeps running whether or not this tab is open — it flows until the whole <b>1,000,000 LUV</b> has landed. Then <b style="color:var(--cream)">the next million starts with your next log in</b>.</div>
       <div id="luvdripmeter" style="margin-top:12px"></div>
       <div id="dropclockrow" style="font-family:var(--mono);font-size:13px;color:var(--dim);margin-top:10px" hidden>
-        next LUVdrop in <b id="dropcount" style="color:var(--gold);font-size:18px;letter-spacing:.08em">--:--:--</b>
+        today's million completes in <b id="dropcount" style="color:var(--gold);font-size:18px;letter-spacing:.08em">--:--:--</b>
       </div>
       <div class="taskmsg" id="dropmsg">checking your LUVdrip…</div>
-      <div class="taskmsg ok" id="dropfull" hidden>🎁 <b>MAX LUVdrops received</b> — today's million is complete, saved to your pile · thanks a million ❤
-        <a href="https://twitter.com/intent/tweet?text=the%20LUVdrip%20is%20flowing%20%E2%80%94%20a%20million%20LUV%20a%20day%20%E2%9D%A4%20HOLD%20LUV%20to%20watch%20LUV%20grow%20%40shambaluv%20%23SHAMBALUV%20https%3A%2F%2Fluv.pythai.net" target="_blank" rel="noopener">𝕏 tweet to earn more LUV →</a></div>
+      <div class="taskmsg ok" id="dropfull" hidden>🎁 <b>today's 1,000,000 LUV is complete</b> — saved to your tally · <b>sign in again to start the next million</b> · thanks a million ❤
+        <a href="https://twitter.com/intent/tweet?text=the%20LUVdrip%20is%20flowing%20%E2%80%94%20a%20million%20LUV%20a%20day%20just%20for%20logging%20in%20%E2%9D%A4%20HOLD%20LUV%20to%20watch%20LUV%20grow%20%40shambaluv%20%23SHAMBALUV%20https%3A%2F%2Fluv.pythai.net" target="_blank" rel="noopener">𝕏 tweet to earn more LUV →</a></div>
       <div id="dropacc" style="margin-top:12px;border-top:1px dashed var(--seam);padding-top:12px" hidden>
-        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)">accumulated — the actual, counted server-side</div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)">your tally — accumulating, counted server-side</div>
         <div style="font-size:17px;margin:6px 0"><b id="accluv" style="color:var(--rose)">—</b> LUV <span id="accusd" style="color:var(--gold);font-family:var(--mono);font-size:14px"></span></div>
-        <div style="color:var(--dim);font-size:13px"><b style="color:var(--cream)">CLAIM</b> banks today's drop into your pile — <b>gas-free, always</b>. <b style="color:var(--cream)">REDEEM</b> delivers the whole pile on-chain — the only step that costs gas. Two choices, deliberately separate: claim every day, redeem when <b style="color:var(--cream)">you</b> say it's worth the gas.</div>
+        <div style="color:var(--dim);font-size:13px">Every day's drip <b style="color:var(--cream)">adds to this one number</b> — it keeps growing, costing nothing, until you deliver it. <b style="color:var(--cream)">REDEEM</b> is the one step that touches the chain, so it is the one step that costs <b>gas, paid in ETH</b>: send it yourself from a wallet holding ETH, or let the <b style="color:var(--cream)">LUV project sponsor the gas</b> for you. Your LUV arrives in your wallet either way.</div>
         <div style="color:var(--dim);font-size:13px;margin-top:6px;font-family:var(--mono)" id="accgas">estimating the redeem gas…</div>
+        <div class="taskmsg" id="accheld" hidden></div>
         <div class="row" style="margin-top:10px">
-          <button class="btn" id="claimdropbtn" type="button" disabled>💧 CLAIM today's drop — free</button>
-          <button class="btn" id="redeembtn" type="button" disabled>💎 REDEEM — deliver my LUV on-chain</button>
+          <button class="btn" id="redeemselfbtn" type="button" disabled>💎 REDEEM — I'll send it (my ETH)</button>
+          <button class="btn" id="redeemsponsorbtn" type="button" disabled>🎁 REDEEM — gas on the LUV project</button>
         </div>
         <div class="taskmsg" id="redeemmsg"></div>
       </div>
@@ -521,7 +525,7 @@ the live deployment landed · <b>launch successful</b> ·
     <div class="panel" style="margin-top:16px" id="taskspanel">
       <div class="k">share the LUV — earn more</div>
       <div class="comingsoon" style="border-color:rgba(126,226,160,.55)">✨ <b>Sharing is Caring</b> ❤
-        <span>Your daily <b>LUVdrip</b> flows above — a million LUV a day from login. Want more? <b>Tweet about LUV</b> — sharing IS the marketing, and the earn rail rewards it.</span>
+        <span>Your daily <b>LUVdrip</b> flows above — <b>a million LUV a day, earned by logging in</b>. Want more? <b>Tweet about LUV</b> — sharing IS the marketing, and the earn rail rewards it.</span>
       </div>
       <div class="row" style="margin-top:12px">
         <a class="btn" href="https://twitter.com/intent/tweet?text=the%20LUVdrip%20is%20flowing%20%E2%80%94%20a%20million%20LUV%20a%20day%20%E2%9D%A4%20HOLD%20LUV%20to%20watch%20LUV%20grow%20%40shambaluv%20%23SHAMBALUV%20https%3A%2F%2Fluv.pythai.net" target="_blank" rel="noopener">𝕏 tweet to earn LUV</a>
@@ -542,10 +546,12 @@ the live deployment landed · <b>launch successful</b> ·
       <span class="tag">💧 the LUVdrip is flowing</span>
       <div class="amt">1,000,000&nbsp;LUV&nbsp;/&nbsp;DAY</div>
       <div class="cap">The one-year <b>principal</b> airdrop has concluded — every trillion has found its home,
-      <b>thank you to everyone</b> who joined the gesture. ❤ Now LUV <b>accrues</b>: sign in and the
-      <b>LUVdrip</b> flows <b>a million LUV a day</b> — 11.574 LUV every second — to every
-      <b>recognized participant</b>. Claim daily, gas-free; redeem on-chain when you say so.
-      And LUV is <b>live on Uniswap</b>.
+      <b>thank you to everyone</b> who joined the gesture. ❤ Now LUV <b>accrues</b>:
+      <b>log in and earn a million LUV a day</b>. One sign-in starts <b>1,000,000 LUV</b> dripping at
+      11.574 LUV a second and it keeps dripping for the <b>whole 24 hours</b> — tab open or closed —
+      until the full million has landed. <b>The next million starts with your next log in.</b>
+      Your tally accumulates for free; delivering it on-chain is one transaction, whose gas you pay
+      in ETH — or the LUV project sponsors it for you. And LUV is <b>live on Uniswap</b>.
       To the original community: <b>LUV returns to POL</b> — the same deterministic contract address,
       deploying back to Polygon where LUV first lived — and <b>all LUV from the Polygon snapshot
       will be honoured</b> ❤</div>
@@ -558,12 +564,20 @@ the live deployment landed · <b>launch successful</b> ·
   <!-- The airdrop CTA (the classic card) -->
   <section id="gesture" class="landing-only">
     <div class="gesture">
-      <div class="sechead" style="margin-bottom:10px">🎉 airdrop sold out — thank you 🎉</div>
-      <h2>the free airdrop has <b>concluded</b> — LUV is now live on Uniswap</h2>
-      <p>For one year, anyone could sign in and receive a free <b>1 trillion LUV</b> — one person, one wallet, one
-      trillion, so the gesture reached real people, not wallet farms. That chapter is complete, and <b>every
-      trillion has found its home</b>. Thank you to everyone who joined. ❤ Phase 2 opens the market: <b>buy and
-      sell LUV on Uniswap</b>. Already claimed? Sign in any time to your wallet — send, receive, and hold LUV.</p>
+      <div class="sechead" style="margin-bottom:10px">🎉 stage one complete — thank you 🎉</div>
+      <h2>the LUV drop has <b>concluded</b> — stage two is <b>a million LUV a day, for logging in</b></h2>
+      <p><b>Stage one — the LUV drop — is finished.</b> For one year, anyone could sign in and receive a free
+      <b>1 trillion LUV</b> — one person, one wallet, one trillion, so the gesture reached real people, not wallet
+      farms. That chapter is complete, <b>every trillion has found its home</b>, and LUV now trades live on
+      Uniswap. Thank you to everyone who joined. ❤</p>
+      <p><b>Stage two is open now: 1,000,000 LUV for every daily login.</b> Sign in and a million LUV starts
+      dripping — 11.574 LUV a second, all the way through the next 24 hours, tab open or closed — until the whole
+      million has landed. The next million starts with your next log in. Your tally accumulates for free; you
+      deliver it on-chain when you say it's worth the gas, or we sponsor the gas for you.</p>
+      <p><b>Stage three: share the LUV.</b> The incentive distributor pays for real social sharing — tweet and post
+      about LUV and the earn rail rewards it, on-chain, on published terms. Sharing IS the marketing.</p>
+      <p>Already claimed in stage one? Sign in any time to your wallet — send, receive, hold LUV, and start your
+      daily million.</p>
       <div class="gesturebtns" id="providers">
         <a class="uni-cta" data-luv-emit href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img class="uni-logo" src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap"> · buy &amp; sell <b>LUV</b> live</a>
         <button type="button" data-open-login>sign in to your wallet ❤</button>
@@ -839,8 +853,8 @@ the live deployment landed · <b>launch successful</b> ·
 </div>
 
 <!-- ?v= busts the immutable .js cache — bump it whenever luv.app.js changes -->
-<script src="substrate/luv-drip.js?v=2"></script>
-<script src="luv.app.js?v=27"></script>
+<script src="substrate/luv-drip.js?v=3"></script>
+<script src="luv.app.js?v=28"></script>
 <script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
 <script src="substrate/emotonomic.js?v=1"></script>

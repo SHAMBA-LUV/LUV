@@ -9,6 +9,7 @@
 
 const db = require('../db');
 const internalCalc = require('../internal/calculation');
+const drip = require('../actions/drip');
 const { config } = require('../config');
 const { provisionWallet } = require('../wallet/provision');
 // Primary gesture path: WALLET-TO-WALLET (0 fee). The signature-gated contract relay in
@@ -45,6 +46,18 @@ async function upsertIdentity(profile) {
     [profile.provider, profile.providerUserId, identityKey, profile.email || null]
   );
   const isNew = res.rows[0] && res.rows[0].inserted === true;
+  // THE LOGIN ARMS A MILLION. This is the one place a REAL sign-in is known, so it is where
+  // the LUVdrip's 24-hour window opens: 1,000,000 LUV then drips for the full day, wall-clock,
+  // whether or not the tab stays open, and the next million waits for the next login. A login
+  // inside a still-flowing window changes nothing (armOnLogin settles and leaves it running).
+  // Social identities only — the Sybil unit is a social account, not a free-to-mint wallet.
+  // Never throws: a login must not fail because the drip ledger did.
+  if (profile.provider !== 'metamask') {
+    await drip.armOnLogin(identityKey).catch((err) => {
+      // eslint-disable-next-line no-console
+      console.error('[identity] drip arm error (non-fatal):', err.message);
+    });
+  }
   // internal.calculation — record LUV earned in the trailing 24h for this identity at the
   // moment of a real sign-in. recordOnLogin never throws: a login must not fail because
   // bookkeeping did.

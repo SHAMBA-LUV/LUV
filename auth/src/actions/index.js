@@ -39,11 +39,14 @@ const DIST_ABI = [
 // is live it ALWAYS wins; retune it with setAction("tweet", LUV, 5e28, 3, 3600,
 // false, true) from the owner so chain and policy agree.
 const SEED_ACTIONS = [
-  // welcome = the 1-billion signup bonus; return = the daily LUVdrop: 1 billion LUV every
-  // day you come back (operator, 2026-08-05). Owner retunes for chain/policy agreement:
-  // setAction("welcome", LUV, 1e27, 0, 0, true, true) + setAction("return", LUV, 1e27, 1, 86400, false, true).
-  { name: 'welcome', reward: (10n ** 27n).toString(), dailyLimit: 0, cooldown: 0, oneTime: true, active: true, completions: 0 },
-  { name: 'return', reward: (10n ** 27n).toString(), dailyLimit: 1, cooldown: 86400, oneTime: false, active: true, completions: 0 },
+  // THE MILLION (operator, 2026-08-11 — supersedes the 1-billion figures): welcome = the
+  // signup gesture, return = the day's LUVdrip, both 1,000,000 LUV = 1e24 wei. The drip no
+  // longer pays through these actions (it accrues in drip_state and settles through the
+  // REDEEM voucher rail), but they stay in the registry as the published daily figure.
+  // Owner retunes the chain to agree:
+  // setAction("welcome", LUV, 1e24, 0, 0, true, true) + setAction("return", LUV, 1e24, 1, 86400, false, true).
+  { name: 'welcome', reward: (10n ** 24n).toString(), dailyLimit: 0, cooldown: 0, oneTime: true, active: true, completions: 0 },
+  { name: 'return', reward: (10n ** 24n).toString(), dailyLimit: 1, cooldown: 86400, oneTime: false, active: true, completions: 0 },
   // Sliding-scale tweet incentive (operator, 2026-08-05): 3,333,333,333 LUV per tweet
   // (~$0.0006 at the $0.001≈5.7B mark), 8h between tweets (3 fit a UTC day). The scale
   // slides with price — the owner retunes the registry as LUV appreciates:
@@ -180,190 +183,12 @@ async function mySubmissions(identityKey) {
   return r.rows;
 }
 
-// ── presence claims: the signup bonus + the daily LUVdrop ──────────────────────
-// 'welcome' (once ever) and 'return' (1 billion LUV every day you come back) need no
-// proof URL — being here IS the action. SOCIAL identities only (the Sybil unit: a wallet
-// is free to mint endlessly, a social account is not). Rows enter 'approved' directly —
-// presence needs no review — and the payout worker relays them; the on-chain registry
-// still has the final word on amounts, cooldowns, and dedup.
-const RETURN_SPACING_S = 86400; // the 24h drop clock; mirrors the on-chain 'return' cooldown
-
-function presenceActionId(identityKey, action, dayBucket) {
-  const digest = crypto.createHash('sha256')
-    .update(`${identityKey}\n${action}\n${dayBucket || 'once'}`).digest('hex').slice(0, 32);
-  return `luv:${action}:${digest}`;
-}
-
-// When is this identity's next return drop? max(signup + 24h, last drop + 24h), epoch seconds.
-async function nextReturnAt(identityKey) {
-  const r = await db.query(
-    `SELECT EXTRACT(EPOCH FROM i.created_at)::bigint AS signup_at,
-            (SELECT EXTRACT(EPOCH FROM MAX(s.created_at))::bigint
-               FROM action_submissions s
-              WHERE s.identity_key = i.identity_key AND s.action = 'return'
-                AND s.status IN ('queued','approved','paid')) AS last_drop_at
-       FROM identities i WHERE i.identity_key = $1`,
-    [identityKey]
-  );
-  if (!r.rows[0]) return null;
-  const signupAt = Number(r.rows[0].signup_at);
-  const lastDropAt = r.rows[0].last_drop_at == null ? null : Number(r.rows[0].last_drop_at);
-  return Math.max(signupAt + RETURN_SPACING_S, lastDropAt ? lastDropAt + RETURN_SPACING_S : 0);
-}
-
-/**
- * Record a presence claim ('welcome' | 'return') for a SOCIAL identity. Idempotent:
- * a duplicate resolves to { ok, dedup } — never a double payment (DB unique + on-chain
- * actionId dedup + the contract cooldown all agree).
- */
-async function claimPresence(identityKey, provider, action) {
-  if (provider === 'metamask') return { error: 'social_only' };
-  if (action !== 'welcome' && action !== 'return') return { error: 'unknown_action' };
-  const { actions: list } = await registry();
-  const a = list.find((x) => x.name === action);
-  if (!a) return { error: 'unknown_action' };
-  if (!a.active) return { error: 'inactive_action' };
-
-  let dayBucket = null;
-  if (action === 'return') {
-    const nextAt = await nextReturnAt(identityKey);
-    if (nextAt == null) return { error: 'unknown_identity' };
-    const now = Math.floor(Date.now() / 1000);
-    if (now < nextAt) return { error: 'come_back_soon', nextAt };
-    dayBucket = new Date().toISOString().slice(0, 10); // UTC day — one drop row per day
-  }
-
-  const actionId = presenceActionId(identityKey, action, dayBucket);
-  const proofUrl = action === 'welcome' ? 'presence://welcome' : `presence://return/${dayBucket}`;
-  try {
-    // Presence rewards ACCRUE — no per-drop transaction (a 1B drop is worth far less than
-    // its gas). The participant REDEEMs the accumulated total in ONE distributeReward tx
-    // when they judge it worth the fee; the dashboard shows value vs gas so the judgment
-    // is informed. 'accrued' rows are invisible to the payout sweep ('approved' only).
-    const r = await db.query(
-      `INSERT INTO action_submissions (identity_key, action, action_id, proof_url, platform, amount, status)
-       VALUES ($1, $2, $3, $4, 'luv', $5, 'accrued')
-       RETURNING id, action, status, created_at`,
-      [identityKey, action, actionId, proofUrl, a.reward]
-    );
-    return { ok: true, submission: r.rows[0] };
-  } catch (err) {
-    if (err && err.code === '23505') return { ok: true, dedup: true };
-    throw err;
-  }
-}
-
-// The dashboard's drop panel: reward, per-participant 24h clock, today's delivery state.
-async function dropStatus(identityKey, provider) {
-  if (provider === 'metamask') return { eligible: false };
-  const { actions: list } = await registry();
-  const ret = list.find((x) => x.name === 'return') || { reward: (10n ** 27n).toString(), active: true };
-  const welcome = list.find((x) => x.name === 'welcome') || { reward: (10n ** 27n).toString() };
-  const nextAt = await nextReturnAt(identityKey);
-  if (nextAt == null) return { eligible: false };
-  const now = Math.floor(Date.now() / 1000);
-  const r = await db.query(
-    `SELECT action, status, tx_hash, created_at FROM action_submissions
-      WHERE identity_key = $1 AND action IN ('welcome','return')
-      ORDER BY id DESC LIMIT 10`,
-    [identityKey]
-  );
-  const lastReturn = r.rows.find((x) => x.action === 'return') || null;
-  const welcomeRow = r.rows.find((x) => x.action === 'welcome') || null;
-  // The accumulated (not-yet-redeemed) presence LUV — what REDEEM would deliver.
-  const acc = await db.query(
-    `SELECT COALESCE(SUM(amount), 0)::text AS total, COUNT(*)::int AS drops
-       FROM action_submissions
-      WHERE identity_key = $1 AND action IN ('welcome','return') AND status = 'accrued'`,
-    [identityKey]
-  );
-  return {
-    eligible: !!ret.active,
-    reward: ret.reward,
-    welcomeReward: welcome.reward,
-    nextAt,
-    claimable: now >= nextAt,
-    serverNow: now, // client clocks drift; count down against ours
-    accrued: acc.rows[0].total,
-    accruedDrops: acc.rows[0].drops,
-    lastDrop: lastReturn ? { status: lastReturn.status, txHash: lastReturn.tx_hash || null } : null,
-    welcome: welcomeRow ? { status: welcomeRow.status, txHash: welcomeRow.tx_hash || null } : null,
-  };
-}
-
-// ── REDEEM: deliver the accumulated presence LUV in ONE transaction ────────────
-// The relayer (a contract `distributor`) calls distributeReward(user, total) — arbitrary
-// amount, one tx, capped by the contract's maxRewardPerTx (1T = 1000 drops; the oldest
-// rows redeem first and any overflow stays accrued for the next redeem). Guardrails
-// mirror the sponsored-claim path: gas ceiling + relayer balance + static preflight.
-const MIN_REDEEM_WEI = 10n ** 27n; // one drop — never spend a tx on less
-
-async function redeemAccrued(identityKey) {
-  if (!config.incentiveDistributorAddress) return { error: 'redeem_not_open' };
-  if (!config.relayerPrivateKey) return { error: 'redeem_not_open' };
-
-  // Resolve the wallet exactly like payoutOne does.
-  const w = await db.query('SELECT address, smart_account FROM wallets WHERE identity_key = $1', [identityKey]);
-  let user = (w.rows[0] && (w.rows[0].smart_account || w.rows[0].address)) || null;
-  if (!user && identityKey.startsWith('metamask:')) user = ethers.getAddress(identityKey.split(':')[1]);
-  if (!user) return { error: 'no_wallet' };
-
-  // Pick the oldest accrued rows whose sum fits under maxRewardPerTx.
-  const rowsQ = await db.query(
-    `SELECT id, amount FROM action_submissions
-      WHERE identity_key = $1 AND action IN ('welcome','return') AND status = 'accrued'
-      ORDER BY id`,
-    [identityKey]
-  );
-  const relayer = new ethers.Wallet(config.relayerPrivateKey, provider());
-  const d = distributor(relayer);
-  let cap = 0n;
-  try { cap = BigInt(await d.getFunction('maxRewardPerTx')()); } catch (e) { cap = 0n; }
-  const ids = []; let total = 0n;
-  for (const row of rowsQ.rows) {
-    const amt = BigInt(row.amount);
-    if (cap !== 0n && total + amt > cap) break;
-    ids.push(row.id); total += amt;
-  }
-  if (total < MIN_REDEEM_WEI) return { error: 'nothing_to_redeem' };
-
-  // Gas guardrails (same shape as sponsored claims): ceiling + tank.
-  const fee = await provider().getFeeData();
-  const gp = fee.maxFeePerGas || fee.gasPrice || 0n;
-  const gwei = Number(gp) / 1e9;
-  if (gwei > config.sponsorMaxGwei) return { error: 'gas_too_high', gwei: Math.round(gwei * 1000) / 1000 };
-  const bal = await provider().getBalance(relayer.address);
-  if (bal < gp * 150000n) return { error: 'relayer_empty' };
-
-  // Claim the rows atomically, preflight, send. Any failure returns them to 'accrued'.
-  const claimed = await db.query(
-    `UPDATE action_submissions SET status='redeeming', updated_at=now()
-      WHERE id = ANY($1) AND status='accrued' RETURNING id`,
-    [ids]
-  );
-  if (claimed.rows.length !== ids.length) {
-    // a concurrent redeem raced us — put ours back and bail quietly
-    await db.query("UPDATE action_submissions SET status='accrued', updated_at=now() WHERE id = ANY($1) AND status='redeeming'", [ids]);
-    return { error: 'redeem_in_flight' };
-  }
-  try {
-    await d.getFunction('distributeReward').staticCall(user, total);
-    const tx = await d.getFunction('distributeReward')(user, total);
-    const rc = await tx.wait();
-    await db.query(
-      "UPDATE action_submissions SET status='paid', tx_hash=$2, updated_at=now() WHERE id = ANY($1)",
-      [ids, rc.hash || tx.hash]
-    );
-    return { ok: true, txHash: rc.hash || tx.hash, redeemed: total.toString(), drops: ids.length };
-  } catch (err) {
-    await db.query("UPDATE action_submissions SET status='accrued', updated_at=now() WHERE id = ANY($1)", [ids]);
-    const m = String((err && (err.shortMessage || err.message)) || err);
-    // eslint-disable-next-line no-console
-    console.warn(`[actions] redeem for ${identityKey} not clearable (${m})`);
-    // Role/config-stage reverts read as "not open yet"; anything else is a transient failure.
-    return { error: /NotDistributor|UnknownAction|InactiveAction|transfer|Paused/i.test(m) ? 'redeem_not_open' : 'redeem_failed' };
-  }
-}
+// ── the daily LUVdrip lives in drip.js ─────────────────────────────────────────
+// The presence lump ('welcome' / 'return' rows, claimed once a day and redeemed through
+// distributeReward) is SUPERSEDED. A login now arms a 24-hour window in which 1,000,000 LUV
+// drips continuously; the tally accumulates in drip_state and settles on-chain through the
+// redeem-voucher rail — self-paid by the participant, or sponsored by the project.
+// See actions/drip.js.
 
 // ── payout worker: approved → claimWithSignature (voucher signed in-house) ──
 async function payoutOne(row) {
@@ -432,4 +257,4 @@ function startPayoutWorker() {
 }
 function stopPayoutWorker() { if (_timer) { clearInterval(_timer); _timer = null; } }
 
-module.exports = { registry, userStats, submitAction, mySubmissions, claimPresence, dropStatus, redeemAccrued, payoutSweep, startPayoutWorker, stopPayoutWorker, detectPlatform };
+module.exports = { registry, userStats, submitAction, mySubmissions, payoutSweep, startPayoutWorker, stopPayoutWorker, detectPlatform };

@@ -10,7 +10,9 @@
     "start": "node src/server.js",
     "migrate": "node src/migrate.js",
     "selftest": "node test/voucher-selftest.mjs",
-    "selftest:batch": "node test/batch-selftest.mjs"
+    "selftest:batch": "node test/batch-selftest.mjs",
+    "selftest:drip": "node test/drip-selftest.mjs",
+    "selftest:drip-e2e": "node test/drip-e2e.mjs"
   },
   "engines": {
     "node": ">=18"
@@ -35,7 +37,7 @@
     "express-session": "^1.18.0"
   },
   "comments": {
-    "providers": "Google, Discord, GitHub wired concretely. Apple (passport-apple) and X/Twitter (OAuth2 PKCE strategy) are pluggable — add the dep + env vars, then uncomment in src/auth/strategies.js.",
+    "providers": "Google, Discord, GitHub wired concretely. Apple (passport-apple) and X/Twitter (OAuth2 PKCE strategy) are pluggable \u2014 add the dep + env vars, then uncomment in src/auth/strategies.js.",
     "ethers": "The dependency is declared for standalone installs, but at runtime src/ethers.js prefers the repo's vendored ../../../vendor/ethers.umd.min.js (clean-room, no CDN) and only falls back to this npm copy."
   }
 }

@@ -137,13 +137,29 @@ router.post('/actions/submit', writeLimiter, requireAuth, async (req, res) => {
   res.json(result);
 });
 
-// ── The daily LUVdrop (presence claims — NOT part of the closed airdrop) ───────────────
-// Signed in: my drop clock — reward, nextAt (epoch s), claimable, today's delivery state.
-// The frontend counts down against serverNow and calls POST /return when the clock hits zero.
+// ── The daily LUVdrop — DEPRECATED SHAPE, kept for cached frontends ────────────────────
+// There is no longer a daily lump to "claim": the million DRIPS across the whole 24 hours a
+// login arms (GET /drip is the live meter). This maps the drip onto the old field names so a
+// stale luv.app.js keeps working: `reward` = the day's million, `nextAt` = when this window's
+// million completes, `accrued` = the accumulated tally.
 router.get('/drop', requireAuth, async (req, res) => {
   res.set('Cache-Control', 'no-store');
   try {
-    res.json(await actions.dropStatus(req.identity.identityKey, req.identity.provider));
+    const d = await drip.status(req.identity.identityKey);
+    if (!d.eligible) return res.json({ eligible: false, deprecated: true });
+    res.json({
+      eligible: true,
+      deprecated: true,
+      reward: d.dailyWei,
+      welcomeReward: d.dailyWei,
+      nextAt: d.windowEndsAt,
+      claimable: false, // nothing to claim — it is already flowing
+      serverNow: d.serverNow,
+      accrued: d.accrued,
+      accruedDrops: d.windows,
+      lastDrop: null,
+      welcome: null,
+    });
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('[airdrop] drop status error:', err.message);
@@ -151,14 +167,52 @@ router.get('/drop', requireAuth, async (req, res) => {
   }
 });
 
-// Signed in: REDEEM — deliver ALL accumulated presence LUV in one distributeReward tx.
-// The participant decides when the accumulated value is worth a transaction; the frontend
-// shows value vs estimated gas so the decision is informed.
+// ── the LUVdrip: a million LUV a day, earned by logging in ─────────────────────────────
+// Signing in arms a 24-hour window in which 1,000,000 LUV drips continuously — wall-clock,
+// so it keeps flowing with the tab closed — until that million is complete; the next million
+// starts on the next login. The tally accumulates until it is delivered on-chain.
+const drip = require('../actions/drip');
+
+// Signed in: my meter. Settles on read, so the figure is always current.
+router.get('/drip', requireAuth, async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  try {
+    res.json(await drip.status(req.identity.identityKey));
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[airdrop] drip status error:', err.message);
+    res.status(500).json({ error: 'drip_unavailable' });
+  }
+});
+
+// Signed in: SELF-PAID REDEEM — get the signed transaction and send it YOURSELF.
+// Returns { to, data, chainId, voucher }: the participant's own wallet submits
+// IncentiveDistributor.redeemWithSignature() and spends their own ETH on the gas (their
+// wallet requires ETH). The amount is held out of the tally while the voucher is live and
+// returns to it untouched if the voucher expires unsent — nothing is ever lost by waiting.
+router.post('/drip/voucher', writeLimiter, requireAuth, async (req, res) => {
+  try {
+    const result = await drip.issueVoucher(req.identity.identityKey, { payer: 'self' });
+    if (result.error) {
+      const code = result.error === 'redeem_not_open' ? 503 : 400;
+      return res.status(code).json(result);
+    }
+    res.json(result);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[airdrop] drip voucher error:', err.message);
+    res.status(500).json({ error: 'voucher_failed' });
+  }
+});
+
+// Signed in: SPONSORED REDEEM — the project sends the same voucher and pays the gas, so the
+// participant needs no ETH at all. Subject to sponsorship being on, the gas ceiling, and the
+// relayer's tank; any guard failing returns 503 and the dashboard falls back to self-paid.
 router.post('/redeem', writeLimiter, requireAuth, async (req, res) => {
   try {
-    const result = await actions.redeemAccrued(req.identity.identityKey);
+    const result = await drip.sponsorOne(req.identity.identityKey);
     if (result.error) {
-      const code = result.error === 'gas_too_high' || result.error === 'relayer_empty' ? 503
+      const code = ['gas_too_high', 'relayer_empty', 'sponsor_off', 'no_relayer', 'redeem_not_open'].includes(result.error) ? 503
         : result.error === 'redeem_failed' ? 500 : 400;
       return res.status(code).json(result);
     }
@@ -170,16 +224,14 @@ router.post('/redeem', writeLimiter, requireAuth, async (req, res) => {
   }
 });
 
-// Signed in: collect today's return drop. Idempotent: dedup rows, on-chain actionId dedup,
-// and the contract's 24h cooldown all point the same way. Social identities only.
+// DEPRECATED: there is nothing to claim. The drip accrues on its own for the full 24 hours a
+// login arms, so this just settles the meter and answers with the current tally. Kept so a
+// cached dashboard's CLAIM button is a harmless no-op rather than an error.
 router.post('/return', writeLimiter, requireAuth, async (req, res) => {
   try {
-    const result = await actions.claimPresence(req.identity.identityKey, req.identity.provider, 'return');
-    if (result.error) {
-      const code = result.error === 'come_back_soon' ? 425 : 400;
-      return res.status(code).json(result);
-    }
-    res.json(result);
+    const d = await drip.status(req.identity.identityKey);
+    if (!d.eligible) return res.status(400).json({ error: 'no_drip' });
+    res.json({ ok: true, deprecated: true, accrued: d.accrued, note: 'the LUVdrip accrues by itself — nothing to claim' });
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('[airdrop] return claim error:', err.message);
@@ -354,7 +406,10 @@ router.post('/claim-sponsored', closedGuard, writeLimiter, requireAuth, async (r
 // The frontend refines the gas with the wallet's own eth_estimateGas at claim time; this is the
 // up-front figure. Cached 15s to spare the RPC.
 const CLAIM_GAS = 130000n; // typical ShambaLuvAirdrop.claim() gas (ecrecover + 2 replay SSTOREs + LUV transfer)
-const REDEEM_GAS = 100000n; // typical IncentiveDistributor.distributeReward() gas (stat SSTOREs + LUV transfer)
+// Typical IncentiveDistributor.redeemWithSignature() gas: ecrecover + the redemptionId replay
+// SSTORE + stat SSTOREs + the LUV transfer. This is what the PARTICIPANT pays when they send
+// the redeem themselves, and what the project pays per head when it sponsors one.
+const REDEEM_GAS = 125000n;
 const CHAINLINK_ETH_USD = '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419'; // mainnet ETH/USD
 let _gasCache = { t: 0, data: null };
 router.get('/gas', async (req, res) => {

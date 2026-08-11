@@ -242,12 +242,12 @@
         setBal(bal || fmtLuv(s.claim && s.claim.amount) || '1,000,000,000,000');
         if (balState) { balState.className = 'balstate claimed'; balState.innerHTML = '✅ <b>redeemed</b> — thank you ❤'; }
         if (balLine) balLine.textContent = 'hold LUV, earn LUV — reflections accrue automatically';
-        if (line) line.innerHTML = '❤ The airdrop has concluded — your LUV is home. <b>Thank you.</b> LUV now trades live on Uniswap.';
+        if (line) line.innerHTML = '❤ Stage one is complete — your LUV is home. <b>Thank you.</b> Stage two is live: <b>a million LUV a day, for logging in</b>.';
       } else {
         setBal(bal || '0');
-        if (balState) { balState.className = 'balstate'; balState.innerHTML = '🎉 <b>airdrop concluded</b> — thank you'; }
-        if (balLine) balLine.textContent = 'the free airdrop has ended — LUV is now live on Uniswap';
-        if (line) line.innerHTML = '🎉 The one-year airdrop is <b>sold out</b> — thank you for being part of it. LUV now trades live on Uniswap. ❤';
+        if (balState) { balState.className = 'balstate'; balState.innerHTML = '🎉 <b>stage one complete</b> — thank you'; }
+        if (balLine) balLine.textContent = 'stage two: a million LUV a day, for logging in — your drip is below';
+        if (line) line.innerHTML = '🎉 Stage one — the LUV drop — is <b>complete</b>; thank you for being part of it. Stage two is open: <b>1,000,000 LUV for every daily login</b>. ❤';
       }
       return;
     }
@@ -455,30 +455,22 @@
     }));
   }
 
-  // ── the daily LUVdrop (presence claims — 1B every day you return) ──────────
-  // GET /airdrop/drop gives nextAt + serverNow; we count down against the SERVER clock
-  // (client clocks drift) and collect automatically the moment the 24h window opens.
-  let dropTick = null; let dropNextAt = 0; let dropSkew = 0; let dropClaiming = false;
+  // ── the LUVdrip: A MILLION LUV A DAY, EARNED BY LOGGING IN ─────────────────
+  // Signing in armed a 24-hour window, and 1,000,000 LUV drips across ALL of it — wall-clock,
+  // so it keeps flowing with this tab closed and this session expired. When the million is
+  // complete the next one waits for the next login. GET /airdrop/drip is the ledger; the meter
+  // only re-reads the clock. The tally accumulates until it is delivered on-chain, and THAT
+  // step costs gas: send it yourself from a wallet holding ETH, or let the project sponsor it.
+  let dripMeter = null; let dripTick = null; let dripState = null;
   function fmtClock(s) {
     s = Math.max(0, Math.floor(s));
     const p = (n) => String(n).padStart(2, '0');
     return p(Math.floor(s / 3600)) + ':' + p(Math.floor((s % 3600) / 60)) + ':' + p(s % 60);
   }
-  async function collectDrop() {
-    if (dropClaiming) return; dropClaiming = true;
-    const msg = $('dropmsg');
-    if (msg) msg.textContent = 'claiming your drop — gas-free ❤';
-    try { await j('/airdrop/return', { method: 'POST' }); } catch (e) { /* clock not open / offline — loadDrop resyncs */ }
-    dropClaiming = false;
-    loadDrop();
-  }
-  // the LUVdrip meter — activates for the recognized participant the moment the
-  // wallet dashboard opens (login mode: flows only while signed in and the tab lives)
-  let dripMeter = null;
   function bootDrip(identity) {
     if (dripMeter || !window.DVLuvDrip) return;
     const mount = $('luvdripmeter'); if (!mount) return;
-    dripMeter = new DVLuvDrip.Drip({ mount, mode: 'login', identity: identity || 'participant', signedIn: true }).start();
+    dripMeter = new DVLuvDrip.Drip({ mount, identity: identity || 'participant' }).start();
   }
   // Express LUV amounts in USD via the oracle (market.json, same-origin): the participant
   // must SEE what the accumulated LUV is worth next to what the redeem transaction costs.
@@ -493,104 +485,179 @@
     try { return Number(BigInt(weiStr) / 10n ** 18n) / 1e12 * mkt.oneTrillionUsd; } catch (e) { return null; }
   }
   const REDEEM_ERR = {
-    nothing_to_redeem: 'nothing accumulated yet — come back tomorrow ❤',
-    gas_too_high: 'gas is spiking right now — try again when it settles',
-    relayer_empty: 'the gas tank is refueling — try again soon',
+    nothing_to_redeem: 'not a full day yet — your million is still dripping ❤',
+    no_drip: 'sign in to start your million',
+    gas_too_high: 'gas is spiking right now — try again when it settles, or send it yourself',
+    relayer_empty: 'the sponsorship tank is refueling — send it yourself, or try again soon',
+    sponsor_off: 'sponsored redeems are off right now — send it yourself from a wallet with ETH',
+    no_relayer: 'sponsored redeems are off right now — send it yourself from a wallet with ETH',
     redeem_not_open: 'the redeem desk opens shortly — your LUV keeps accumulating ❤',
-    redeem_in_flight: 'a redeem is already on its way',
+    voucher_failed: 'that didn’t go through — your LUV is safe, try again',
     redeem_failed: 'that didn’t go through — your LUV is safe, try again',
   };
-  async function loadDrop() {
+  async function loadDrip() {
     const panel = $('droppanel'); if (!panel) return;
-    let d; try { d = await j('/airdrop/drop'); } catch (e) { return; }
+    let d; try { d = await j('/airdrop/drip'); } catch (e) { return; }
     if (!d || d.eligible === false) { panel.hidden = true; return; }
     panel.hidden = false;
+    dripState = d;
     bootDrip(($('youwallet') || {}).textContent || 'participant');
-    // Value + gas expression (both best-effort; the clock never waits on them).
+    if (dripMeter) dripMeter.sync(d);
+
+    // Value + gas expression (both best-effort; the meter never waits on them).
     let mkt = null; let gas = null;
     try { mkt = await (await fetch('/market.json', { cache: 'no-store' })).json(); } catch (e) { /* oracle offline */ }
     try { gas = await j('/airdrop/gas'); } catch (e) { /* estimate unavailable */ }
-    const rewardUsd = luvWeiToUsd(d.reward, mkt);
-    $('dropreward').textContent = fmtReward(d.reward) + (rewardUsd != null ? ' (≈ ' + fmtUsd(rewardUsd) + ')' : '');
-    // ── accumulated + REDEEM ──
+
+    const dayUsd = luvWeiToUsd(d.dailyWei, mkt);
+    $('dropreward').textContent = Number(d.dailyLuv).toLocaleString('en-US')
+      + (dayUsd != null ? ' (≈ ' + fmtUsd(dayUsd) + ')' : '');
+
+    // ── the accumulated tally + the two ways to deliver it ──
     const accWei = d.accrued || '0';
     const accUsd = luvWeiToUsd(accWei, mkt);
     $('dropacc').hidden = false;
     $('accluv').textContent = fmtReward(accWei);
     $('accusd').textContent = accUsd != null ? '≈ ' + fmtUsd(accUsd) : '';
+    const held = $('accheld');
+    if (held) {
+      const hasHeld = (() => { try { return BigInt(d.heldWei || '0') > 0n; } catch (e) { return false; } })();
+      held.hidden = !hasHeld;
+      if (hasHeld) held.textContent = '📝 ' + fmtReward(d.heldWei) + ' LUV is waiting inside a signed redemption — '
+        + 'send it from your wallet to deliver it, or leave it and it returns to your tally.';
+    }
     const gasUsd = gas && gas.redeemFeeUsd != null ? gas.redeemFeeUsd : null;
     const accEl = $('accgas');
     if (gasUsd != null && accUsd != null) {
       if (accUsd >= gasUsd) {
-        accEl.textContent = 'worth it ✓ — value ' + fmtUsd(accUsd) + ' ≥ redeem gas ~' + fmtUsd(gasUsd) + ' (' + Number(gas.redeemFeeEth).toFixed(6) + ' ETH)';
+        accEl.textContent = 'worth it ✓ — value ' + fmtUsd(accUsd) + ' ≥ redeem gas ~' + fmtUsd(gasUsd)
+          + ' (' + Number(gas.redeemFeeEth).toFixed(6) + ' ETH)';
       } else {
         const pct = Math.max(0.1, Math.round(accUsd / gasUsd * 1000) / 10);
-        accEl.textContent = 'redeeming now costs ~' + fmtUsd(gasUsd) + ' in gas — your pile covers ' + pct + '% of that. check back to stack more LUV ❤';
+        accEl.textContent = 'redeeming now costs ~' + fmtUsd(gasUsd) + ' in gas — your pile covers ' + pct
+          + '% of that. keep logging in and stack more LUV ❤';
       }
     } else if (gasUsd != null) {
       accEl.textContent = 'redeem gas right now: ~' + fmtUsd(gasUsd) + ' (' + Number(gas.redeemFeeEth).toFixed(6) + ' ETH)';
     } else {
       accEl.textContent = 'gas estimate unavailable — the chain still awaits your call';
     }
-    $('redeembtn').disabled = !(BigInt(accWei) >= 10n ** 27n);
-    const nowS = Math.floor(Date.now() / 1000);
-    dropSkew = nowS - (d.serverNow || nowS);
-    dropNextAt = d.nextAt || 0;
+
+    let enough = false;
+    try { enough = BigInt(accWei) >= BigInt(d.minRedeemWei || '0'); } catch (e) { enough = false; }
+    const selfBtn = $('redeemselfbtn'); const sponsorBtn = $('redeemsponsorbtn');
+    if (selfBtn) {
+      selfBtn.disabled = !enough;
+      selfBtn.textContent = window.ethereum ? '💎 REDEEM — I’ll send it (my ETH)' : '💎 REDEEM — connect a wallet with ETH';
+    }
+    if (sponsorBtn) {
+      sponsorBtn.disabled = !enough || !(gas && gas.sponsorActive);
+      sponsorBtn.title = gas && gas.sponsorActive ? 'the LUV project pays this transaction’s gas'
+        : 'sponsorship is paused right now';
+    }
+
+    // ── the window clock: how long until this million is complete ──
+    const skew = Math.floor(Date.now() / 1000) - (d.serverNow || Math.floor(Date.now() / 1000));
     const msg = $('dropmsg');
-    const st = d.lastDrop && d.lastDrop.status;
-    // CLAIM is the participant's own explicit, gas-free act — deliberately separate
-    // from REDEEM (the on-chain delivery that costs gas). No auto-collect.
-    const claimBtn = $('claimdropbtn');
-    if (claimBtn) claimBtn.disabled = !d.claimable;
-    // 🎁 the end-of-period message: today's maximum landed — saved, and said so
-    const full = st === 'accrued' || st === 'redeeming' || st === 'paid';
     const df = $('dropfull');
+    const tick = () => {
+      const remain = (d.windowEndsAt || 0) - (Math.floor(Date.now() / 1000) - skew);
+      const row = $('dropclockrow');
+      if (row) row.hidden = remain <= 0;
+      const el = $('dropcount'); if (el) el.textContent = fmtClock(remain);
+      if (remain <= 0) {
+        if (dripTick) { clearInterval(dripTick); dripTick = null; }
+        if (df) df.hidden = false;
+        if (msg) msg.textContent = 'today’s million is complete ❤ sign in again to start your next 1,000,000';
+        loadDrip();
+      }
+    };
     if (df) {
-      df.hidden = !full;
-      if (full) { try { localStorage.setItem('luv-maxdrops', JSON.stringify({ t: Date.now(), status: st })); } catch (e) {} }
+      df.hidden = !d.full;
+      if (d.full) { try { localStorage.setItem('luv-maxdrops', JSON.stringify({ t: Date.now() })); } catch (e) {} }
     }
-    if (d.claimable) {
-      msg.textContent = 'your LUVdrop is ready — CLAIM your million, gas-free ❤';
-    } else if (st === 'accrued') {
-      msg.textContent = 'today’s LUVdrop landed in your pile ❤ come back tomorrow';
-    } else if (st === 'redeeming') {
-      msg.textContent = 'your redeem is on its way to the chain…';
-    } else if (st === 'paid') {
-      msg.textContent = 'delivered on-chain ❤ come back tomorrow';
-    } else {
-      msg.textContent = 'check back to stack more LUV — your next billion is already counting down';
+    if (msg) {
+      msg.textContent = d.full
+        ? 'today’s million is complete ❤ sign in again to start your next 1,000,000'
+        : 'your million is dripping — all day, whether or not you’re watching ❤';
     }
-    if (!dropTick) {
-      dropTick = setInterval(() => {
-        const remain = dropNextAt - (Math.floor(Date.now() / 1000) - dropSkew);
-        $('dropclockrow').hidden = remain <= 0;
-        $('dropcount').textContent = fmtClock(remain);
-        if (remain <= 0) { clearInterval(dropTick); dropTick = null; loadDrop(); }
-      }, 1000);
-    }
+    if (dripTick) { clearInterval(dripTick); dripTick = null; }
+    if (!d.full) { tick(); dripTick = setInterval(tick, 1000); }
   }
 
-  on('claimdropbtn', 'click', collectDrop);
-
-  on('redeembtn', 'click', async () => {
-    const btn = $('redeembtn'); const msg = $('redeemmsg');
+  // REDEEM, self-paid: the participant's OWN wallet sends the transaction and spends its ETH.
+  // The backend signs the redemption; the wallet pays the gas. The LUV lands on the wallet the
+  // voucher names, so paying from any wallet still delivers to the participant.
+  on('redeemselfbtn', 'click', async () => {
+    const btn = $('redeemselfbtn'); const msg = $('redeemmsg');
+    msg.className = 'taskmsg';
+    if (!window.ethereum) {
+      msg.textContent = 'to send it yourself you need a wallet with a little ETH for the gas — '
+        + 'or ask the LUV project to sponsor it with the button beside this one ❤';
+      return;
+    }
     btn.disabled = true;
-    msg.className = 'taskmsg'; msg.textContent = 'redeeming — one transaction, all of it…';
+    try {
+      const [from] = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      if (!(await ensureChain())) {
+        msg.textContent = 'switch your wallet to Ethereum mainnet to redeem (your LUV stays accumulated).';
+        btn.disabled = false; return;
+      }
+      msg.textContent = 'preparing your signed redemption…';
+      const v = await j('/airdrop/drip/voucher', { method: 'POST' });
+      // Precise fee: the wallet's own gas estimate for THIS tx × the live gas price.
+      let feeNote = '';
+      try {
+        const est = await window.ethereum.request({ method: 'eth_estimateGas', params: [{ from, to: v.to, data: v.data }] });
+        const gp = gasInfo && gasInfo.gasPriceWei ? BigInt(gasInfo.gasPriceWei) : null;
+        if (gp) {
+          const eth = Number(BigInt(est) * gp) / 1e18;
+          const usd = gasInfo.ethUsd ? ' (~$' + (eth * gasInfo.ethUsd).toFixed(2) + ')' : '';
+          feeNote = ' — network fee ≈ ' + fmtEth(eth) + ' ETH' + usd;
+        }
+      } catch (e) { /* best-effort; the wallet shows the exact fee anyway */ }
+      msg.textContent = 'confirm in your wallet' + feeNote + ' — the gas is paid in ETH, the LUV is yours…';
+      const txHash = await window.ethereum.request({
+        method: 'eth_sendTransaction', params: [{ from, to: v.to, data: v.data }],
+      });
+      msg.className = 'taskmsg ok';
+      msg.replaceChildren(
+        document.createTextNode('sent ❤ ' + fmtReward(v.amount || '0') + ' LUV on its way — '),
+        Object.assign(document.createElement('a'), { href: cfg.explorer + '/tx/' + txHash, rel: 'noopener', target: '_blank', textContent: 'view the tx ↗' })
+      );
+      setTimeout(() => { loadDrip(); refreshStatus(); }, 6000);
+    } catch (e) {
+      const code = String(e && e.code);
+      const m = String((e && e.message) || '');
+      msg.textContent = code === '4001'
+        ? 'redeem declined — no rush, your LUV stays accumulated ❤'
+        : /insufficient funds/i.test(m)
+          ? 'your wallet needs a little ETH to pay this transaction’s gas — top it up, or ask the project to sponsor it ❤'
+          : (REDEEM_ERR[(e && e.error) || ''] || 'that didn’t go through — your LUV is safe, try again');
+    } finally { btn.disabled = false; loadDrip(); }
+  });
+
+  // REDEEM, sponsored: the LUV project sends the SAME redemption and pays the gas, so the
+  // participant needs no ETH at all. Subject to sponsorship being on and gas being sane.
+  on('redeemsponsorbtn', 'click', async () => {
+    const btn = $('redeemsponsorbtn'); const msg = $('redeemmsg');
+    btn.disabled = true;
+    msg.className = 'taskmsg'; msg.textContent = 'asking the LUV project to cover the gas…';
     try {
       const r = await fetch('/airdrop/redeem', { method: 'POST', credentials: 'same-origin' });
       const body = await r.json().catch(() => ({}));
       if (r.ok) {
         msg.className = 'taskmsg ok';
         msg.replaceChildren(
-          document.createTextNode('delivered ❤ ' + fmtReward(body.redeemed || '0') + ' LUV on-chain — '),
-          Object.assign(document.createElement('a'), { href: cfg.explorer + '/tx/' + body.txHash, rel: 'noopener', textContent: 'view the tx ↗' })
+          document.createTextNode('delivered ❤ ' + fmtReward(body.redeemed || '0') + ' LUV on-chain, gas on us — '),
+          Object.assign(document.createElement('a'), { href: cfg.explorer + '/tx/' + body.txHash, rel: 'noopener', target: '_blank', textContent: 'view the tx ↗' })
         );
         refreshStatus();
       } else {
         msg.textContent = REDEEM_ERR[body.error] || REDEEM_ERR.redeem_failed;
       }
     } catch (e) { msg.textContent = REDEEM_ERR.redeem_failed; }
-    loadDrop();
+    loadDrip();
   });
 
   async function loadSession() {
@@ -613,7 +680,7 @@
     // brings its own key — nothing to reveal.
     if (myProvider !== 'metamask') { const pk = $('pkrow'); if (pk) pk.hidden = false; }
     await refreshStatus();
-    loadDrop(); // the daily LUVdrop clock (presence claims)
+    loadDrip(); // the LUVdrip meter + the accumulated tally
     // loadTasks() disabled — the earn/IncentiveDistributor rail is "coming soon" (Phase 3).
     // the old dashboard refreshed the balance every 30s while visible
     if (!balTimer) balTimer = setInterval(() => { if (!document.hidden) refreshStatus(); }, 30000);

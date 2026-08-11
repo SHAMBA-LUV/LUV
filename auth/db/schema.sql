@@ -105,3 +105,56 @@ CREATE TABLE IF NOT EXISTS internal_calculations (
 );
 CREATE INDEX IF NOT EXISTS idx_internal_calc_identity ON internal_calculations (identity_key, computed_at DESC);
 CREATE INDEX IF NOT EXISTS idx_internal_calc_kind ON internal_calculations (kind, computed_at DESC);
+
+-- ── the LUVdrip ledger ───────────────────────────────────────────────────────────────────
+-- A LOGIN ARMS A MILLION. Signing in opens a 24-hour window in which 1,000,000 LUV drips
+-- continuously against the wall clock — presence-free: the flow keeps running whether or not
+-- the tab is open — until that window's million is complete. The NEXT million starts on the
+-- NEXT login. Settled LUV accumulates in `banked_wei` and stays there, growing, until it is
+-- redeemed on-chain (see drip_redemptions).
+--
+-- `window_wei` is a PURE FUNCTION OF TIME: cap × elapsed(window) ÷ 24h, floored. Settling is
+-- therefore idempotent and drift-free — ticking often, rarely, or never gives the same answer.
+CREATE TABLE IF NOT EXISTS drip_state (
+    identity_key      TEXT PRIMARY KEY
+                          REFERENCES identities (identity_key) ON DELETE CASCADE,
+    window_started_at TIMESTAMPTZ    NOT NULL DEFAULT now(),  -- the login that armed this million
+    window_ends_at    TIMESTAMPTZ    NOT NULL,                -- window_started_at + 24h
+    window_wei        NUMERIC(78, 0) NOT NULL DEFAULT 0,      -- settled inside this window (≤ cap)
+    cap_wei           NUMERIC(78, 0) NOT NULL,                -- the window's million, in wei (1e24)
+    settled_at        TIMESTAMPTZ    NOT NULL DEFAULT now(),  -- last settlement tick
+    banked_wei        NUMERIC(78, 0) NOT NULL DEFAULT 0,      -- accumulated, not yet redeemed
+    held_wei          NUMERIC(78, 0) NOT NULL DEFAULT 0,      -- inside a live redemption voucher
+    redeemed_wei      NUMERIC(78, 0) NOT NULL DEFAULT 0,      -- lifetime delivered on-chain
+    windows           INT            NOT NULL DEFAULT 0,      -- how many millions have been armed
+    created_at        TIMESTAMPTZ    NOT NULL DEFAULT now(),
+    updated_at        TIMESTAMPTZ    NOT NULL DEFAULT now()
+);
+
+-- One row per redemption voucher (IncentiveDistributor.redeemWithSignature / redeemBatch).
+-- The amount leaves `banked_wei` for `held_wei` when the voucher is issued and returns if the
+-- voucher expires unspent, so a participant can never redeem the same LUV twice.
+--   payer  'self'    — the participant sends the transaction and spends their own ETH
+--          'sponsor' — the project sends it and pays the gas for them
+--   status 'pending' -> 'paid' (seen on-chain) | 'expired' (deadline passed, returned to banked)
+CREATE TABLE IF NOT EXISTS drip_redemptions (
+    id            BIGSERIAL PRIMARY KEY,
+    identity_key  TEXT           NOT NULL
+                      REFERENCES identities (identity_key) ON DELETE CASCADE,
+    redemption_id TEXT           NOT NULL UNIQUE,   -- bytes32 hex — the on-chain replay key
+    wallet        TEXT           NOT NULL,          -- recipient (the LUV lands here either way)
+    token         TEXT           NOT NULL,
+    amount_wei    NUMERIC(78, 0) NOT NULL,
+    deadline      BIGINT         NOT NULL,          -- epoch seconds; the voucher dies here
+    payer         TEXT           NOT NULL DEFAULT 'self',
+    status        TEXT           NOT NULL DEFAULT 'pending',
+    tx_hash       TEXT,
+    error         TEXT,
+    created_at    TIMESTAMPTZ    NOT NULL DEFAULT now(),
+    updated_at    TIMESTAMPTZ    NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_drip_redemptions_status ON drip_redemptions (status);
+CREATE INDEX IF NOT EXISTS idx_drip_redemptions_identity ON drip_redemptions (identity_key, id DESC);
+
+-- Idempotent upgrade for databases created before the drip ledger existed.
+ALTER TABLE drip_state ADD COLUMN IF NOT EXISTS held_wei NUMERIC(78, 0) NOT NULL DEFAULT 0;

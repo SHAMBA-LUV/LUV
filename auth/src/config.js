@@ -87,6 +87,28 @@ const config = {
   // the day's timer. Toggle with ACTIONS_DAILY_LOGIN_GATE=false.
   dailyLoginGate: bool('ACTIONS_DAILY_LOGIN_GATE', true),
 
+  // ── the LUVdrip: A MILLION LUV A DAY, EARNED BY LOGGING IN ──
+  // A real sign-in arms a 24-hour window in which DRIP_DAILY_LUV drips continuously against
+  // the wall clock (presence-free — the tab may be closed) until that window's million is
+  // complete; the next million starts on the next login. The tally accumulates until it is
+  // redeemed on-chain. 1,000,000 LUV is the standard gesture — thanks a million.
+  dripDailyLuv: BigInt(opt('DRIP_DAILY_LUV', '1000000')),
+  // Never spend a transaction on less than this (whole LUV). Default: one day's drip.
+  dripMinRedeemLuv: BigInt(opt('DRIP_MIN_REDEEM_LUV', '1000000')),
+  // How long a redemption voucher stays valid. Long enough that a participant can fund their
+  // wallet with ETH and send it themselves; expiry returns the LUV to the tally, never burns it.
+  dripVoucherTtlSeconds: parseInt(opt('DRIP_VOUCHER_TTL_SECONDS', '21600'), 10), // 6h
+  // Sponsorship: the project submits the participant's voucher and pays the gas itself, for
+  // everyone or for a selected set (activity rewards). OFF ⇒ redeeming is self-paid only.
+  dripSponsor: bool('DRIP_SPONSOR', true),
+  dripSponsorBatchSize: parseInt(opt('DRIP_SPONSOR_BATCH_SIZE', '100'), 10), // ≤200 (contract cap)
+  // A standing periodic sponsored pass (ms). 0 = OFF, the default: the project sponsors when
+  // the operator says so (`node src/actions/dripctl.js sponsor …`), not on a silent timer.
+  dripSponsorAutoIntervalMs: parseInt(opt('DRIP_SPONSOR_AUTO_INTERVAL_MS', '0'), 10),
+  // How often pending vouchers are reconciled against the chain (self-paid redemptions are
+  // sent by the participant, so the chain — not the browser — is what tells us they landed).
+  dripReconcileIntervalMs: parseInt(opt('DRIP_RECONCILE_INTERVAL_MS', '60000'), 10),
+
   // ── Voucher signer ── MUST equal ShambaLuvAirdrop.signer (a DEDICATED key, never bankon.eth).
   // PREFERRED: unlock it from a bankon-vault at runtime (key sealed AES-256-GCM at rest) —
   //   LUV_SIGNER_VAULT_FILE + LUV_SIGNER_VAULT_PASSPHRASE (or …_PASSPHRASE_FILE).

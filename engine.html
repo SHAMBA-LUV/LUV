@@ -416,16 +416,22 @@ footer .brandmark:hover img{opacity:1}
   rate is the non-terminating fraction 312500000000000000000⁄27 — <b>11,574,074,074,074,074,074.074… luv
   per second</b>. A per-second on-chain mint would therefore have to round, and rounding is exactly what
   the standard forbids; floored, it would quietly discard 6,400 luv every day. So the drip does not mint
-  per second at all. It separates the counting from the settling, in three stages:</p>
+  per second at all — and it does not even count per second. It separates the counting from the
+  settling, in three stages:</p>
   <p style="font-family:var(--mono);font-size:13px;line-height:1.95;margin:10px 0">
-  <b>DRIP</b> — accrues continuously at the exact rate. Nothing is written to the chain.<br>
-  <b>COLLECT</b> — <b>gas-free</b>. The amount is credited to the participant's running tally in the
-  database, keyed to the identity that earned it — the participant is recognised by their public key,
-  never by a session cookie.<br>
+  <b>LOG IN</b> — a real sign-in <b>arms a million</b>: a 24-hour window opens. Nothing is written to
+  the chain. The next million waits for the next login.<br>
+  <b>DRIP</b> — accrues continuously across the <b>whole</b> window, against the wall clock, whether
+  or not the participant is watching. What the window has earned is a pure function of elapsed time,
+  <code>cap × elapsed ÷ 24h</code>, so settling is idempotent and drift-free, and the tally grows as a
+  single exact integer of luv. Still nothing on chain.<br>
   <b>REDEEM</b> — <b>on chain</b>. The accumulated tally moves to the wallet in one
-  <code>distributeReward(user, total)</code> transaction. The participant pays the ETH gas, quoted up
-  front in <b>wei</b> — the integer, not a rounded decimal — so the choice to redeem is informed and
-  the participant's own.</p>
+  <code>redeemWithSignature(user, token, amount, redemptionId, deadline, signature)</code> transaction.
+  The backend signs it; <b>submitting it is permissionless, so whoever sends it pays its gas</b> —
+  the participant from their own wallet (which must hold ETH), quoted up front in <b>wei</b>, so the
+  choice is informed and their own; or the project, sponsoring the identical voucher (and a whole set
+  of them at once through <code>redeemBatch</code>) so a participant with no ETH is not excluded from
+  what they earned.</p>
   <p>The tally is therefore an exact integer of luv held off-chain until the participant decides it is
   worth the gas; the transfer, when it comes, is a single integer of luv. Nothing is ever rounded — only
   deferred. The doctrine chose the architecture. This is the same reason one trillion LUV is

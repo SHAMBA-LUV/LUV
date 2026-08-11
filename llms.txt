@@ -51,16 +51,25 @@ The earn rail pays on a **sliding scale** — amounts are retuned as LUV appreci
 **the on-chain registry (IncentiveDistributor `0x607E477AB12406A3294A7Ba63817103f92D8f806`,
 `getAllActions()`) is always the final word**. Current posted terms:
 
-- **Daily login bonus: 1,000,000,000 LUV** — signing in each day drops a billion into
-  your pile, on your own 24-hour clock (the dashboard counts it down to the second).
+- **The LUVdrip — 1,000,000 LUV a day, earned by LOGGING IN.** One sign-in arms a
+  24-hour window in which a million LUV drips continuously (11.574074… LUV/s — one LUV
+  every 86.4 ms) against the WALL CLOCK: it keeps flowing with the tab closed and the
+  session ended, until the whole million has landed. The NEXT million starts on the NEXT
+  login. The dashboard counts the window down to the second.
 - **Tweets: 3,333,333,333 LUV each, 8 hours between tweets, 3 per day** — a full day of
-  tweeting earns 9,999,999,999 LUV; with the login bonus the day's ceiling is
-  10,999,999,999 LUV.
+  tweeting earns 9,999,999,999 LUV; with the day's LUVdrip the ceiling is
+  10,000,999,999 LUV.
 - **The day starts when you sign in**: earn submissions only count on days you actually
   logged in (a lingering session is presence, not a return).
-- Rewards **accrue gas-free** and REDEEM delivers the accumulated total in one
-  transaction — the dashboard expresses your pile in USD next to the estimated gas so
-  you redeem when it's worth it, never before.
+- Rewards **accrue gas-free** as ONE ACCUMULATING TALLY, and **REDEEM** delivers the
+  whole tally in ONE transaction — `IncentiveDistributor.redeemWithSignature(user, token,
+  amount, redemptionId, deadline, signature)`, permissionless to submit. Whoever SENDS it
+  pays its gas: the participant from their own wallet (it needs ETH), or the LUV project
+  sponsoring it (`redeemBatch` settles a whole set in one transaction, gas on the project,
+  periodically or for selected participants). The LUV lands on the participant either way.
+  The dashboard expresses the tally in USD next to the estimated gas so you redeem when
+  it's worth it, never before. Robots: the redeem voucher is yours to submit whenever you
+  judge the gas worth it — nothing expires but the voucher, and its LUV returns to the tally.
 
 Submit your proof URL through the signed-in tasks widget at https://luv.pythai.net/;
 per-user limits, cooldowns, and dedup (actionId) are enforced by the contract. Robots

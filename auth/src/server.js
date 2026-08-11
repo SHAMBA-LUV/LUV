@@ -117,6 +117,15 @@ function start() {
     startPayoutWorker();
     // eslint-disable-next-line no-console
     console.log(`[shambaluv-auth] tasks rail live: distributor ${config.incentiveDistributorAddress}, sweep every ${config.actionsPayoutIntervalMs}ms`);
+    // The LUVdrip reconciler: self-paid redemptions are sent by the participant's own wallet,
+    // so the CHAIN is what tells us they landed. Expired-unsent vouchers hand their LUV back.
+    const drip = require('./actions/drip');
+    drip.startReconciler();
+    drip.startSponsorPass(); // no-op unless DRIP_SPONSOR_AUTO_INTERVAL_MS is set
+    // eslint-disable-next-line no-console
+    console.log(`[shambaluv-auth] LUVdrip live: ${config.dripDailyLuv} LUV/day per login-armed 24h window`
+      + `, reconcile every ${config.dripReconcileIntervalMs}ms`
+      + `, sponsorship ${config.dripSponsor ? (config.dripSponsorAutoIntervalMs ? `auto every ${config.dripSponsorAutoIntervalMs}ms` : 'on demand') : 'off'}`);
   }
   const server = app.listen(config.port, () => {
     // eslint-disable-next-line no-console
