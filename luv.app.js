@@ -545,15 +545,20 @@
 
     let enough = false;
     try { enough = BigInt(accWei) >= BigInt(d.minRedeemWei || '0'); } catch (e) { enough = false; }
+    // The redeem desk opens when the distributor carrying the rail is live; until then LUV keeps
+    // accruing and nothing is lost — the panel says so rather than offering a button that can't pay.
+    const open = d.redeemOpen !== false;
     const selfBtn = $('redeemselfbtn'); const sponsorBtn = $('redeemsponsorbtn');
     if (selfBtn) {
-      selfBtn.disabled = !enough;
-      selfBtn.textContent = window.ethereum ? '💎 REDEEM — I’ll send it (my ETH)' : '💎 REDEEM — connect a wallet with ETH';
+      selfBtn.disabled = !enough || !open;
+      selfBtn.textContent = !open ? '💎 REDEEM — opening shortly'
+        : window.ethereum ? '💎 REDEEM — I’ll send it (my ETH)' : '💎 REDEEM — connect a wallet with ETH';
     }
     if (sponsorBtn) {
-      sponsorBtn.disabled = !enough || !(gas && gas.sponsorActive);
-      sponsorBtn.title = gas && gas.sponsorActive ? 'the LUV project pays this transaction’s gas'
-        : 'sponsorship is paused right now';
+      sponsorBtn.disabled = !enough || !open || !(gas && gas.sponsorActive);
+      sponsorBtn.title = !open ? 'the redeem desk opens shortly — your LUV keeps accumulating'
+        : gas && gas.sponsorActive ? 'the LUV project pays this transaction’s gas'
+          : 'sponsorship is paused right now';
     }
 
     // ── the window clock: how long until this million is complete ──
@@ -576,7 +581,9 @@
       df.hidden = !d.full;
       if (d.full) { try { localStorage.setItem('luv-maxdrops', JSON.stringify({ t: Date.now() })); } catch (e) {} }
     }
-    if (msg) {
+    if (msg && !open) {
+      msg.textContent = 'your million is dripping and your tally is safe — the redeem desk opens shortly ❤';
+    } else if (msg) {
       msg.textContent = d.full
         ? 'today’s million is complete ❤ sign in again to start your next 1,000,000'
         : 'your million is dripping — all day, whether or not you’re watching ❤';

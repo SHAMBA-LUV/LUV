@@ -101,6 +101,27 @@ async function dailyWei() { return (await chainRate()).wei; }
 /** The asset the drip pays in (must be a registered asset on the distributor). */
 async function dripToken() { return (await chainRate()).token || config.luvTokenAddress; }
 
+/**
+ * Does the configured distributor carry the REDEEM rail? A deployment made before the drip has
+ * no redeemDigest, so no voucher it issued could ever be signed or submitted. Cached with the
+ * rate read: while this is false the drip still ACCRUES for everyone — only delivery waits.
+ */
+let _rail = { at: 0, ok: null };
+async function railPresent() {
+  if (_rail.ok !== null && Date.now() - _rail.at < 60_000) return _rail.ok;
+  const d = distributor();
+  if (!d) { _rail = { at: Date.now(), ok: false }; return false; }
+  try {
+    await d.getFunction('redeemDigest')(
+      '0x0000000000000000000000000000000000000001', config.luvTokenAddress, 1n, ethers.ZeroHash, 1n
+    );
+    _rail = { at: Date.now(), ok: true };
+  } catch (e) {
+    _rail = { at: Date.now(), ok: false };
+  }
+  return _rail.ok;
+}
+
 // ── the meter ────────────────────────────────────────────────────────────────
 
 /** LUV/s as a display number (11.574074…). The ledger never uses it. */
@@ -252,6 +273,9 @@ async function status(identityKey) {
     // when the next million needs a login: the moment this one completes
     needsLogin: s.full || now >= s.windowEndsAt,
     minRedeemWei: MIN_REDEEM_WEI.toString(),
+    // false while the configured distributor predates the REDEEM rail: the drip still accrues,
+    // only delivery waits on the deployment — the dashboard says exactly that.
+    redeemOpen: await railPresent(),
     voucher: live,
   };
 }
@@ -326,10 +350,21 @@ async function issueVoucher(identityKey, opts) {
   const payer = (opts && opts.payer) === 'sponsor' ? 'sponsor' : 'self';
   if (!config.incentiveDistributorAddress) return { error: 'redeem_not_open' };
 
+  // Is the REDEEM rail actually there? A distributor deployed before the drip carries no
+  // redeemDigest, so a voucher could never be signed — say so BEFORE holding anyone's LUV.
+  // The drip keeps accruing meanwhile; only delivery waits on the deployment.
+  if (!(await railPresent())) return { error: 'redeem_not_open' };
+
   // Re-offer a live voucher rather than stranding its LUV in a second one.
   const existing = await liveVoucher(identityKey);
   if (existing) {
-    const signature = await signVoucher(existing);
+    let signature;
+    try { signature = await signVoucher(existing); }
+    catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn(`[drip] could not sign the live voucher for ${identityKey}: ${e.shortMessage || e.message}`);
+      return { error: 'redeem_not_open' };
+    }
     return {
       ok: true, reoffered: true, payer: existing.payer,
       to: config.incentiveDistributorAddress, data: encodeRedeem(existing, signature), chainId: config.chainId,
@@ -376,7 +411,16 @@ async function issueVoucher(identityKey, opts) {
     redemptionId, recipient: wallet, token,
     amount: held.amount.toString(), deadline, payer,
   };
-  const signature = await signVoucher(voucher);
+  let signature;
+  try {
+    signature = await signVoucher(voucher);
+  } catch (e) {
+    // The hold must never outlive the failure that caused it: hand the LUV straight back.
+    await releaseExpired(redemptionId);
+    // eslint-disable-next-line no-console
+    console.warn(`[drip] voucher signing failed for ${identityKey} (${e.shortMessage || e.message}) — tally restored`);
+    return { error: 'redeem_not_open' };
+  }
   return {
     ok: true, payer,
     to: config.incentiveDistributorAddress,
@@ -608,7 +652,7 @@ function startSponsorPass() {
 function stopSponsorPass() { if (_sponsorTimer) { clearInterval(_sponsorTimer); _sponsorTimer = null; } }
 
 module.exports = {
-  DAILY_WEI, MIN_REDEEM_WEI, perSecond, windowEarned, dailyWei, dripToken,
+  DAILY_WEI, MIN_REDEEM_WEI, perSecond, windowEarned, dailyWei, dripToken, railPresent,
   armOnLogin, status, issueVoucher, liveVoucher,
   markPaid, releaseExpired, reconcile,
   sponsorCandidates, sponsorRedeem, sponsorOne,
