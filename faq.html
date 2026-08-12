@@ -246,19 +246,8 @@ a.exlink img,.marketrow img{height:16px;width:auto;vertical-align:-4px}
     deterministic address on every chain, and the pool is deepened where the market actually is rather
     than pre-fragmented across venues.</p>
 
-    <p><b>Polygon was the first deployment, and every holder on the Polygon contract will be
-    honoured.</b> That commitment stands. <b>The snapshot itself is being reconstructed</b>, and until
-    it is published there is no list — so we will not imply there is one. Honouring a list means three
-    things have to exist and be checkable: the original Polygon contract address, a holder→balance set
-    fixed at a named block height, and the rail by which a holder proves their address and receives.
-    None of the three is published yet.</p>
-
-    <p>What we will publish when it is done: the contract address, the block height the snapshot was
-    taken at, the full holder list, and a hash of that list — so the set is fixed at a moment anyone can
-    verify against Polygon themselves, and cannot drift afterwards. A snapshot that can be edited after
-    the fact is not a snapshot. Until then, treat this as a <em>commitment</em>, not an entitlement you
-    can already check — the same standard applied to the LUVlocker above: earmarked is not locked, and
-    promised is not proven.</p>
+    <p><b>Polygon holders will be honoured</b> — that is its own topic, with the state of it
+    written out plainly: see <a href="#polygon">honouring the Polygon contract</a> below.</p>
 
     <p>The startup allocation, split evenly four ways:</p>
     <p><b>Founders</b> — 2.777 quadrillion — <b class="g">sold to raise the launch liquidity, with 100%
@@ -649,6 +638,99 @@ a.exlink img,.marketrow img{height:16px;width:auto;vertical-align:-4px}
       <a href="https://github.com/cypherpunk4096/scientific" rel="noopener">SCIEN·TIFIC ↗</a>
     </div>
   </section>
+
+  <style>
+  .lede{color:var(--dim);font-size:14px;max-width:76ch;margin:2px 0 14px}
+  .lede b{color:var(--cream)}
+  #todo{scroll-margin-top:20px}
+  details#todo-distributor,details#todo-liqlocker,details#todo-luvlocker,details#polygon{
+    border-left:2px solid rgba(227,178,95,.55)}
+  details#todo-distributor summary,details#todo-liqlocker summary,details#todo-luvlocker summary,
+  details#polygon summary{color:var(--gold)}
+  </style>
+  <h2 class="gold" id="todo">what is not done yet — the open list</h2>
+  <p class="lede">Every item here is something this project has said it will do and has <b>not</b> done.
+  It sits in the FAQ rather than a roadmap slide because an open commitment is a question a reader is
+  entitled to ask, and because a list you can check is the only kind worth publishing. Each item states
+  what exists today <b>on chain</b>, what has to happen, and what will prove it.</p>
+
+  <details id="todo-distributor">
+    <summary>⏳ Deploy the IncentiveDistributor that can actually pay the LUVdrip</summary>
+    <div class="a"><p><b>Today:</b> the live distributor
+    <a href="https://etherscan.io/address/0x607E477AB12406A3294A7Ba63817103f92D8f806" rel="noopener">0x607E…f806</a>
+    holds <b>0 LUV</b> and predates the redeem rail — it has no
+    <code>redeemWithSignature</code>, so a signed redemption cannot be submitted to it at all. The
+    contract is deliberately <b>non-upgradeable</b> (no proxy, no admin backdoor), so it cannot gain
+    the function; a new deployment is the only honest route.</p>
+    <p><b>Meanwhile your LUV is safe.</b> The drip keeps accruing for every participant and the
+    dashboard says <em>"the redeem desk opens shortly"</em> rather than offering a button that cannot
+    pay. Nothing expires while you wait.</p>
+    <p><b>What has to happen:</b> deploy the current source, point the signer at the platform voucher
+    key, set the two blast-radius bounds (<code>maxRewardPerTx</code> and a per-day
+    <code>redeemBudgetPerDay</code>) <b>before</b> funding, publish the drip rate with
+    <code>setDrip</code>, then fund it last. <b>What proves it:</b> the contract verified on Etherscan
+    (the green checkmark), and two live redemptions — one paid by a participant's own ETH, one
+    sponsored, with the <code>Redeemed</code> event naming who paid the gas.</p></div>
+  </details>
+
+  <details id="todo-liqlocker">
+    <summary>⏳ Deploy the LIQlocker and lock the liquidity</summary>
+    <div class="a"><p><b>Today:</b> the treasury holds <b>100% of the circulating LP</b> of the LUV/WETH
+    pair and <b>none of it is locked</b> — the
+    <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0xe07ACAde4bE2bbc264EA702880ed988EBae9B898" rel="noopener">existing
+    LUVlocker</a> holds zero. This is the standing priority: an unlocked pool is what every scanner
+    flags, and rightly.</p>
+    <p><b>What it is:</b> an <b>ownerless</b> ERC-20 timelock — no pause, no rescue, no setter, and no
+    privileged address anywhere in the file. A lock is bound by <b>time</b>, by <b>block height</b>, or
+    by both, and opens only when the later passes; the default term is <b>90 days</b> and it can be
+    extended, a quarter at a time, to a <b>200-year</b> horizon. Nobody — including whoever deploys it —
+    can ever bring a maturity forward.</p>
+    <p><b>What proves it:</b> the <code>locked</code> event, and <code>balanceOf(locker)</code> on the
+    pair matching the position, both readable by anyone. A rehearsal with 0.001 LP goes first.</p>
+    <p><b>Honest status:</b> 113 tests pass, including 6 stateful invariants over 32,768 random calls
+    and a mainnet-fork rehearsal that locks the <b>real</b> LUV/WETH pair token. It has had <b>no
+    independent audit</b>, and that is written in its own audit file rather than glossed.</p></div>
+  </details>
+
+  <details id="todo-luvlocker">
+    <summary>⏳ Deploy the LUVlocker rewrite and lock the supply that is only earmarked</summary>
+    <div class="a"><p><b>Today:</b> the marketing and community allocations — and the treasury's
+    multichain-liquidity holding — are <b>earmarked, not locked</b>. The vault holds zero LUV.</p>
+    <p><b>Why it is not simply deposited into the existing vault:</b> a 2026-08-05 audit found a
+    <b>High-severity</b> defect in it. Deposits credit the measured balance delta, and LUV rebases
+    <em>upward</em> during a transfer, so a dust deposit timed to a fee flush could absorb other
+    depositors' reflections as its own principal. Depositing real supply into that is not something we
+    will do because a page said we would.</p>
+    <p><b>The rewrite</b> fixes exactly that (the credit is capped at the amount sent, and the surplus
+    goes to the index first), removes the owner entirely, and is regression-tested against a token that
+    reflects <em>during</em> a transfer — the case the original test mock structurally could not see.
+    <b>Still missing before mainnet:</b> stateful invariant fuzzing, a fork test against the real LUV
+    token with its exemptions applied, and an independent audit. Listed because it is not done.</p>
+    <p><b>What proves it:</b> a deposit transaction, the vault's balance, and the unlock time — all on
+    chain, all readable without asking us.</p></div>
+  </details>
+
+  <details id="polygon">
+    <summary>🟣 Honouring the Polygon contract — the original holders</summary>
+    <div class="a">    <p><b>Polygon was the first deployment, and every holder on the Polygon contract will be
+    honoured.</b> That commitment stands. <b>The snapshot itself is being reconstructed</b>, and until
+    it is published there is no list — so we will not imply there is one. Honouring a list means three
+    things have to exist and be checkable: the original Polygon contract address, a holder→balance set
+    fixed at a named block height, and the rail by which a holder proves their address and receives.
+    None of the three is published yet.</p>
+
+    <p>What we will publish when it is done: the contract address, the block height the snapshot was
+    taken at, the full holder list, and a hash of that list — so the set is fixed at a moment anyone can
+    verify against Polygon themselves, and cannot drift afterwards. A snapshot that can be edited after
+    the fact is not a snapshot. Until then, treat this as a <em>commitment</em>, not an entitlement you
+    can already check — the same standard applied to the LUVlocker above: earmarked is not locked, and
+    promised is not proven.</p>
+
+    <p><b>Why it is on this list:</b> a commitment with no published set is a promise, and this page
+    does not dress promises as entitlements. When the snapshot exists you will be able to check your own
+    address against it without asking anyone — that is the difference between honouring holders and
+    saying so.</p></div>
+  </details>
 
   <h2 class="gold">trust &amp; the contracts</h2>
 
