@@ -524,9 +524,17 @@
     // ── the accumulated tally + the two ways to deliver it ──
     const accWei = d.accrued || '0';
     const accUsd = luvWeiToUsd(accWei, mkt);
-    $('dropacc').hidden = false;
     $('accluv').textContent = fmtReward(accWei);
-    $('accusd').textContent = accUsd != null ? '≈ ' + fmtUsd(accUsd) : '';
+    $('accusd').textContent = accUsd != null ? 'worth ≈ ' + fmtUsd(accUsd) : '';
+    // the OTHER half of what they hold: the LUV already on chain, in their own wallet
+    try {
+      const st = await j('/airdrop/status');
+      const held = st && st.luvBalance;
+      $('holdluv').textContent = held ? fmtReward(held) : '0';
+      const heldUsd = held ? luvWeiToUsd(held, mkt) : null;
+      $('holdsub').textContent = heldUsd != null ? 'worth ≈ ' + fmtUsd(heldUsd) + ' · reflections accrue while you hold'
+        : 'reflections accrue automatically while you hold';
+    } catch (e) { /* the tally is the headline; a status hiccup must not blank the panel */ }
     const held = $('accheld');
     if (held) {
       const hasHeld = (() => { try { return BigInt(d.heldWei || '0') > 0n; } catch (e) { return false; } })();
@@ -557,9 +565,12 @@
       let collectable = 0n;
       try { collectable = BigInt(d.collectable || '0'); } catch (e) { collectable = 0n; }
       collectBtn.disabled = collectable < 10n ** 18n; // less than 1 LUV is not worth a press
-      collectBtn.textContent = collectable > 0n
-        ? '💧 COLLECT ' + fmtReward(d.collectable) + ' — bank it & restart the drip'
-        : '💧 COLLECT — bank it & restart the drip';
+      const csub = collectBtn.querySelector('small');
+      if (csub) {
+        csub.textContent = collectable >= 10n ** 18n
+          ? 'bank ' + fmtReward(d.collectable) + ' LUV now · free · restarts your million'
+          : 'bank the flow · free · restarts your million';
+      }
     }
 
     let enough = false;
@@ -570,8 +581,13 @@
     const selfBtn = $('redeemselfbtn'); const sponsorBtn = $('redeemsponsorbtn');
     if (selfBtn) {
       selfBtn.disabled = !enough || !open;
-      selfBtn.textContent = !open ? '💎 REDEEM — opening shortly'
-        : window.ethereum ? '💎 REDEEM — I’ll send it (my ETH)' : '💎 REDEEM — connect a wallet with ETH';
+      const sub = selfBtn.querySelector('small');
+      if (sub) {
+        sub.textContent = !open ? 'the redeem desk opens shortly — your LUV keeps accumulating'
+          : !enough ? 'a full day of drip unlocks this'
+            : window.ethereum ? 'deliver it on chain · you send it · gas in ETH'
+              : 'connect a wallet holding ETH to send it yourself';
+      }
     }
     if (sponsorBtn) {
       sponsorBtn.disabled = !enough || !open || !(gas && gas.sponsorActive);

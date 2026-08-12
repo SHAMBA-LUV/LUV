@@ -327,6 +327,29 @@ details.festwrap>summary.topfest .cue::before{content:"▶"}
 #luvdripmeter .drip-mode{color:var(--gold)}
 /* CLAIM/REDEEM live as the panel's own buttons wired to the backend rails;
    the Uniswap USDC→LUV preset stays visible — the offering rides with the flow */
+/* ── the participant's holdings, and the two acts, at the top of the panel ── */
+.holdrow{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0 4px}
+.holdcard{flex:1 1 220px;border:1px solid var(--seam);border-radius:12px;background:var(--ink);padding:14px 16px}
+.holdcard.lead{border-color:rgba(255,0,122,.45)}
+.holdcard .hk{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+.holdcard .hv{font-family:var(--mono);font-weight:800;font-size:clamp(22px,3.6vw,34px);color:var(--cream);
+  margin:6px 0 2px;overflow-wrap:break-word;line-height:1.1}
+.holdcard.lead .hv{color:var(--rose)}
+.holdcard .hu{font-size:.42em;color:var(--rose);white-space:nowrap}
+.holdcard.lead .hu{color:var(--cream)}
+.holdcard .hsub{font-family:var(--mono);font-size:11.5px;color:var(--gold)}
+.actrow{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 2px}
+.bigbtn{flex:1 1 260px;font-family:var(--mono);font-weight:700;font-size:15px;cursor:pointer;
+  padding:16px 18px;border-radius:12px;border:1px solid var(--seam);background:var(--ink);color:var(--cream);
+  transition:border-color .15s,color .15s,background .15s;text-align:center}
+.bigbtn:hover:not(:disabled){border-color:var(--gold);color:var(--gold)}
+.bigbtn:disabled{opacity:.4;cursor:not-allowed}
+.bigbtn.collect{border-color:rgba(126,226,160,.6);color:#7ee2a0}
+.bigbtn.collect:hover:not(:disabled){background:rgba(126,226,160,.1)}
+.bigbtn.redeem{border-color:rgba(255,0,122,.65);color:var(--rose)}
+.bigbtn.redeem:hover:not(:disabled){background:rgba(255,0,122,.12);color:#fff}
+.bigbtn small{display:block;font-weight:400;font-size:11.5px;color:var(--dim);margin-top:4px;letter-spacing:.02em}
+.sponsorline{margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--dim)}
 #luvdripmeter .drip-of{font-family:var(--mono);font-size:12px;color:var(--dim);font-weight:600;letter-spacing:.04em}
 #luvdripmeter .drip-tally{margin-top:8px;font-size:13px;color:var(--dim)}
 #luvdripmeter .drip-tally b{color:var(--rose)}
@@ -487,28 +510,42 @@ the live deployment landed · <b>launch successful</b> ·
       <div class="statusline" id="statusline">checking your gesture…</div>
     </div>
     <div class="panel" style="margin-top:16px" id="droppanel" hidden>
-      <div class="k">the LUVdrip — a million a day, for logging in</div>
-      <div style="font-size:17px;margin:4px 0 2px">💧 <b id="dropreward" style="color:var(--rose)">1,000,000</b> LUV a day — dripping at <b style="color:var(--gold)">11.574 LUV/s</b> for a <b>full 24 hours</b> from your log in ❤</div>
-      <div style="color:var(--dim);font-size:13px"><b style="color:var(--cream)">Logging in earns the million.</b> Signing in starts a 24-hour drip that keeps running whether or not this tab is open — it flows until the whole <b>1,000,000 LUV</b> has landed. Then <b style="color:var(--cream)">the next million starts with your next log in</b>.</div>
-      <div id="luvdripmeter" style="margin-top:12px"></div>
+      <div class="k">your LUV — collected, and in your wallet</div>
+
+      <div class="holdrow">
+        <div class="holdcard lead">
+          <div class="hk">collected — yours, waiting</div>
+          <div class="hv"><span id="accluv">—</span><span class="hu"> LUV</span></div>
+          <div class="hsub" id="accusd"></div>
+        </div>
+        <div class="holdcard">
+          <div class="hk">in your wallet — on chain</div>
+          <div class="hv"><span id="holdluv">—</span><span class="hu"> LUV</span></div>
+          <div class="hsub" id="holdsub">delivered and yours to hold</div>
+        </div>
+      </div>
+
+      <div class="actrow">
+        <button class="bigbtn collect" id="dripcollectbtn" type="button" disabled>💧 COLLECT
+          <small>bank the flow · free · restarts your million</small></button>
+        <button class="bigbtn redeem" id="redeemselfbtn" type="button" disabled>💎 REDEEM
+          <small>deliver it on chain · you send it · gas in ETH</small></button>
+      </div>
+      <div class="sponsorline">no ETH? <button class="btn" id="redeemsponsorbtn" type="button" disabled style="font-size:12px;padding:6px 12px">🎁 ask the LUV project to cover the gas</button></div>
+      <div class="taskmsg" id="redeemmsg"></div>
+      <div style="color:var(--dim);font-size:13px;margin-top:8px;font-family:var(--mono)" id="accgas">estimating the redeem gas…</div>
+      <div class="taskmsg" id="accheld" hidden></div>
+
+      <div style="margin-top:16px;border-top:1px dashed var(--seam);padding-top:14px">
+        <div style="font-size:15px;margin:2px 0"><b id="dropreward" style="color:var(--rose)">1,000,000</b> LUV a day — dripping at <b style="color:var(--gold)">11.574 LUV/s</b> for a <b>full 24 hours</b> from your log in ❤</div>
+        <div style="color:var(--dim);font-size:13px"><b style="color:var(--cream)">Logging in earns the million.</b> The drip keeps running whether or not this tab is open. <b style="color:var(--cream)">COLLECT</b> banks what has flowed and starts your million over from that moment — free, and yours to press whenever you like. <b style="color:var(--cream)">REDEEM</b> is the only step that touches the chain, so it is the only one that costs gas.</div>
+        <div id="luvdripmeter" style="margin-top:12px"></div>
       <div id="dropclockrow" style="font-family:var(--mono);font-size:13px;color:var(--dim);margin-top:10px" hidden>
         today's million completes in <b id="dropcount" style="color:var(--gold);font-size:18px;letter-spacing:.08em">--:--:--</b>
       </div>
       <div class="taskmsg" id="dropmsg">checking your LUVdrip…</div>
       <div class="taskmsg ok" id="dropfull" hidden>🎁 <b>today's 1,000,000 LUV is complete</b> — saved to your tally · <b>sign in again to start the next million</b> · thanks a million ❤
         <a href="https://twitter.com/intent/tweet?text=the%20LUVdrip%20is%20flowing%20%E2%80%94%20a%20million%20LUV%20a%20day%20just%20for%20logging%20in%20%E2%9D%A4%20HOLD%20LUV%20to%20watch%20LUV%20grow%20%40shambaluv%20%23SHAMBALUV%20https%3A%2F%2Fluv.pythai.net" target="_blank" rel="noopener">𝕏 tweet to earn more LUV →</a></div>
-      <div id="dropacc" style="margin-top:12px;border-top:1px dashed var(--seam);padding-top:12px" hidden>
-        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)">your tally — accumulating, counted server-side</div>
-        <div style="font-size:17px;margin:6px 0"><b id="accluv" style="color:var(--rose)">—</b> LUV <span id="accusd" style="color:var(--gold);font-family:var(--mono);font-size:14px"></span></div>
-        <div style="color:var(--dim);font-size:13px"><b style="color:var(--cream)">COLLECT</b> banks whatever has dripped so far into this number and <b>starts your million over from that moment</b> — free, instant, and yours to press whenever you like. The rate never changes, so collecting often earns exactly what collecting rarely does; what it buys is <b style="color:var(--cream)">control of the clock</b>. Every collection <b style="color:var(--cream)">adds to this one number</b>, which keeps growing at no cost until you deliver it. <b style="color:var(--cream)">REDEEM</b> is the one step that touches the chain, so it is the one step that costs <b>gas, paid in ETH</b>: send it yourself from a wallet holding ETH, or let the <b style="color:var(--cream)">LUV project sponsor the gas</b> for you. Your LUV arrives in your wallet either way.</div>
-        <div style="color:var(--dim);font-size:13px;margin-top:6px;font-family:var(--mono)" id="accgas">estimating the redeem gas…</div>
-        <div class="taskmsg" id="accheld" hidden></div>
-        <div class="row" style="margin-top:10px">
-          <button class="btn" id="dripcollectbtn" type="button" disabled>💧 COLLECT — bank it &amp; restart the drip</button>
-          <button class="btn" id="redeemselfbtn" type="button" disabled>💎 REDEEM — I'll send it (my ETH)</button>
-          <button class="btn" id="redeemsponsorbtn" type="button" disabled>🎁 REDEEM — gas on the LUV project</button>
-        </div>
-        <div class="taskmsg" id="redeemmsg"></div>
       </div>
       <div style="margin-top:10px;color:var(--dim);font-size:13px"><b style="color:var(--gold)">HOLD LUV to watch LUV grow</b> — 3% of every trade reflects to every holder, automatically ❤</div>
     </div>
@@ -855,7 +892,7 @@ the live deployment landed · <b>launch successful</b> ·
 
 <!-- ?v= busts the immutable .js cache — bump it whenever luv.app.js changes -->
 <script src="substrate/luv-drip.js?v=3"></script>
-<script src="luv.app.js?v=30"></script>
+<script src="luv.app.js?v=31"></script>
 <script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
 <script src="substrate/emotonomic.js?v=1"></script>
