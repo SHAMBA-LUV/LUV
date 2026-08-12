@@ -79,6 +79,40 @@ assert(drip.windowEarned(t0, CAP, t0 + DAY_MS) === last, 'the final settle match
 const twice = drip.windowEarned(t0, CAP, t0 + 12345678);
 assert(twice === drip.windowEarned(t0, CAP, t0 + 12345678), 'settlement is idempotent');
 
+// ── ON PAR: a million every 24 hours, measured hour by hour ─────────────────
+// The claim is not "about a million a day". It is 1,000,000 LUV per 24 hours exactly, so
+// this walks the day an hour at a time and checks the ledger's own function at each mark:
+// the cumulative must equal floor(cap x h / 24) to the wei, each hour must deliver its
+// 1/24 share to within the single wei that flooring can hide, and the 24 hourly deltas
+// must sum to exactly one million with nothing lost between them.
+const HOUR_MS = 3_600_000;
+let running = 0n;
+let minHour = null, maxHour = null;
+const rows = [];
+for (let h = 1; h <= 24; h++) {
+  const at = drip.windowEarned(t0, CAP, t0 + h * HOUR_MS);
+  const expected = (CAP * BigInt(h)) / 24n;          // the ledger's own arithmetic, independently
+  const delta = at - running;
+  running = at;
+  if (minHour === null || delta < minHour) minHour = delta;
+  if (maxHour === null || delta > maxHour) maxHour = delta;
+  rows.push([h, at, delta, at === expected]);
+}
+const perHour = CAP / 24n;
+assert(rows.every((r) => r[3]), 'every hour mark equals cap x h / 24 exactly, all 24 of them');
+assert(maxHour - minHour <= 1n, `every hour delivers the same share to within 1 wei (spread ${maxHour - minHour} wei)`);
+assert(minHour >= perHour - 1n && maxHour <= perHour + 1n,
+  `each hour is 41,666.666... LUV (${Number(minHour) / 1e18} .. ${Number(maxHour) / 1e18})`);
+assert(running === CAP, 'the 24 hourly deltas sum to EXACTLY 1,000,000 LUV — nothing lost between hours');
+assert(drip.windowEarned(t0, CAP, t0 + 24 * HOUR_MS) === 1_000_000n * LUV, 'and the 24-hour mark IS the million');
+
+console.log('\n    hour   cumulative LUV     this hour LUV        cumulative wei');
+for (const [h, at, delta] of rows) {
+  console.log('    ' + String(h).padStart(4) + '   ' + (Number(at) / 1e18).toFixed(2).padStart(13)
+    + '   ' + (Number(delta) / 1e18).toFixed(6).padStart(15) + '   ' + at.toString().padStart(24));
+}
+console.log('');
+
 // ── the redemption voucher: what we sign is what the contract verifies ───────
 // The contract builds its digest from
 //   keccak256("Redeem(address user,address token,uint256 amount,bytes32 redemptionId,uint256 deadline)")

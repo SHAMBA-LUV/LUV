@@ -408,6 +408,48 @@ async function main() {
   const twinB = await drip.status('github:twin-b');
   ok(twinB.eligible === false, 'a second account on the SAME mailbox arms nothing (case-insensitive)');
 
+  // ── 12. ON PAR, AGAINST THE DATABASE — measured every hour for 24 hours ──────
+  // The arithmetic is proven in the selftest; this proves the LEDGER agrees with it while
+  // being settled 24 separate times, which is the case that could drift and does not.
+  const hourIdk = 'github:e2e-hourly';
+  await upsertIdentity({ provider: 'github', providerUserId: 'e2e-hourly', email: null });
+  await db.query(
+    `INSERT INTO wallets (identity_key, address, enc_ciphertext, enc_iv, enc_tag)
+     VALUES ($1,$2,'x','x','x') ON CONFLICT (identity_key) DO NOTHING`,
+    [hourIdk, ethers.Wallet.createRandom().address]
+  );
+  await db.query('UPDATE drip_state SET banked_wei = 0, window_wei = 0 WHERE identity_key = $1', [hourIdk]);
+
+  // The harness itself takes real milliseconds per iteration, and the drip is honest about
+  // them — so a per-hour delta is "one hour PLUS however long this loop took". Measure that
+  // wall time and hold the deltas to it, rather than pretending the loop is instantaneous.
+  const loopStart = Date.now();
+  let prev = 0n; let spread = 0n; let everyHourExact = true;
+  for (let h = 1; h <= 24; h++) {
+    // move this identity's window back one hour and settle — 24 real settlements
+    await db.query(
+      `UPDATE drip_state SET window_started_at = window_started_at - interval '1 hour',
+              window_ends_at = window_ends_at - interval '1 hour'
+        WHERE identity_key = $1`, [hourIdk]
+    );
+    const st = await drip.status(hourIdk);
+    const cum = BigInt(st.accrued);
+    const want = (MILLION * BigInt(h)) / 24n;
+    if (!near(cum, want)) everyHourExact = false;
+    const delta = cum - prev;
+    const off = delta > MILLION / 24n ? delta - MILLION / 24n : MILLION / 24n - delta;
+    if (off > spread) spread = off;
+    prev = cum;
+  }
+  const loopSecs = (Date.now() - loopStart) / 1000;
+  const harnessDrip = BigInt(Math.ceil(loopSecs * 11.574074074074074)) * LUV + LUV; // what the loop itself earned
+  ok(everyHourExact, 'settled 24 separate times, every hour mark still lands on cap x h / 24');
+  ok(spread <= harnessDrip,
+    `every hourly delta is its 1/24 share plus only the ${loopSecs.toFixed(2)}s this loop itself took `
+    + `(worst ${(Number(spread) / 1e18).toFixed(3)} LUV, budget ${(Number(harnessDrip) / 1e18).toFixed(3)})`);
+  const dayTotal = BigInt((await drip.status(hourIdk)).accrued);
+  ok(dayTotal === MILLION, `24 hours of hourly settlement totals EXACTLY ${luv(dayTotal)} LUV`);
+
   // ── the one-way door: a voucher cannot be replayed ──────────────────────────
   try {
     await participant.sendTransaction({ to: v.to, data: v.data });
