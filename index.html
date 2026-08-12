@@ -416,6 +416,20 @@ footer .brandmark:hover{color:var(--cream)}
 footer .brandmark:hover img{opacity:1}
 /* official brand marks */
 .uni-cta .uni-logo{height:18px;width:auto;display:block}
+/* TRADE, at the foot of the page */
+.tradefoot{border-top:1px solid var(--seam);margin-top:34px;padding:26px 0 6px}
+.tradefoot .tf-k{font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;text-align:center}
+.tradefoot .tf-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.tradefoot .tf-row .uni-cta{flex:0 1 300px;justify-content:center}
+.tradefoot .tf-note{margin-top:12px;text-align:center;color:var(--dim);font-size:12.5px;line-height:1.9}
+.tradefoot .tf-note b{color:var(--cream)}
+.tf-scan{display:inline-flex;align-items:center;gap:6px;margin-left:12px;color:var(--dim);text-decoration:none;
+  border:1px solid var(--seam);border-radius:999px;padding:3px 11px;white-space:nowrap}
+.tf-scan:hover{border-color:var(--gold);color:var(--cream)}
+.tf-scan img{display:block;opacity:.85}
+/* Etherscan's mark on every link that goes there */
+.scanmark{display:inline-flex;align-items:center;gap:6px}
+.scanmark img{display:block;opacity:.9}
 .phasebanner .uni-ico,.topfest .uni-ico{height:15px;width:auto;vertical-align:-3px;margin:0 2px}
 
 @keyframes heartbeat{0%,100%{transform:scale(1)}12%{transform:scale(1.18)}24%{transform:scale(1)}36%{transform:scale(1.12)}48%{transform:scale(1)}}
@@ -476,7 +490,7 @@ the live deployment landed · <b>launch successful</b> ·
         </div>
         <div class="row">
           <button class="btn" id="copywallet" type="button">copy address</button>
-          <a class="btn" id="walletexplorer" href="#" rel="noopener">etherscan</a>
+          <a class="btn scanmark" id="walletexplorer" href="#" rel="noopener" title="your wallet on Etherscan"><img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="11"> wallet ↗</a>
         </div>
         <div class="aatag" id="aatag" hidden>ERC-4337 smart account · created for you</div>
         <div class="ownerline" id="ownerline" hidden></div>
@@ -687,7 +701,7 @@ the live deployment landed · <b>launch successful</b> ·
       <span class="badge live" id="statebadge">live on ethereum</span>
       <span class="addr" id="luvaddr">0x2711111111683B8708cb9a48cBf36a51315F8254</span>
       <button class="btn" id="copyaddr" type="button">copy</button>
-      <a class="btn" id="explorelink" href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254" rel="noopener">etherscan</a>
+      <a class="btn scanmark" id="explorelink" href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254" rel="noopener" title="the LUV contract on Etherscan"><img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="11"> contract ↗</a>
       <button class="btn" id="addtoken" type="button" hidden>add LUV to MetaMask</button>
       <span class="note">Ethereum first — and this address is deterministic: LUV lives here on <em>every</em> chain it opens on.</span>
     </div>
@@ -848,6 +862,29 @@ the live deployment landed · <b>launch successful</b> ·
   </div>
 </div>
 
+<!-- TRADE — the last thing on the page before the footer: both routes into LUV, preloaded,
+     under Uniswap's own mark. The pair is where the price is made; everything else is a mirror. -->
+<section class="tradefoot">
+  <div class="wrap">
+    <div class="tf-k">trade LUV — live on Uniswap</div>
+    <div class="tf-row">
+      <a class="uni-cta" data-luv-emit rel="noopener" target="_blank"
+         href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=ETH&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254">
+        <img class="uni-logo" src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap"> · <b>ETH → LUV</b></a>
+      <a class="uni-cta" data-luv-emit rel="noopener" target="_blank"
+         href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254">
+        <img class="uni-logo" src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap"> · <b>USDC → LUV</b></a>
+    </div>
+    <div class="tf-note">set slippage <b>~8–12%</b> — LUV carries a 5% reflection fee, and a tighter tolerance bounces the swap.
+      The auto-router does not quote fee-on-transfer tokens; the Universal Router does.
+      <a class="tf-scan" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"
+         title="the LUV token on Etherscan — verified source, the green checkmark"><img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="12"> the contract ↗</a>
+      <a class="tf-scan" href="https://etherscan.io/address/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31" target="_blank" rel="noopener"
+         title="the LUV/WETH Uniswap V2 pair on Etherscan"><img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="12"> the pair ↗</a>
+    </div>
+  </div>
+</section>
+
 <footer>
   <div class="wrap">
     <span>❤ LUV is priceless</span>
@@ -879,7 +916,7 @@ the live deployment landed · <b>launch successful</b> ·
     <div class="recv-addr" id="recv-addr">…</div>
     <div class="row" style="justify-content:center">
       <button class="btn" id="recv-copy" type="button">copy address</button>
-      <a class="btn" id="recv-explorer" href="#" target="_blank" rel="noopener">etherscan ↗</a>
+      <a class="btn scanmark" id="recv-explorer" href="#" target="_blank" rel="noopener" title="your wallet on Etherscan"><img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="11"> wallet ↗</a>
     </div>
     <button class="close" id="recv-close" type="button">close</button>
   </div>
@@ -902,7 +939,7 @@ the live deployment landed · <b>launch successful</b> ·
 
 <!-- ?v= busts the immutable .js cache — bump it whenever luv.app.js changes -->
 <script src="substrate/luv-drip.js?v=3"></script>
-<script src="luv.app.js?v=32"></script>
+<script src="luv.app.js?v=33"></script>
 <script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
 <script src="substrate/emotonomic.js?v=1"></script>
