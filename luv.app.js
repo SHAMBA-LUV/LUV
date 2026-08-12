@@ -242,7 +242,8 @@
         setBal(bal || fmtLuv(s.claim && s.claim.amount) || '1,000,000,000,000');
         if (balState) { balState.className = 'balstate claimed'; balState.innerHTML = '✅ <b>redeemed</b> — thank you ❤'; }
         if (balLine) balLine.textContent = 'hold LUV, earn LUV — reflections accrue automatically';
-        if (line) line.innerHTML = '❤ Stage one is complete — your LUV is home. <b>Thank you.</b> Stage two is live: <b>a million LUV a day, for logging in</b>.';
+        if (line) line.innerHTML = '❤ Stage one complete — your LUV is home. Stage two: <b>thanks a million LUV</b>. '
+          + 'Log in daily to collect a million LUV for the next <b>100 days</b>.';
       } else {
         setBal(bal || '0');
         if (balState) { balState.className = 'balstate'; balState.innerHTML = '🎉 <b>stage one complete</b> — thank you'; }
