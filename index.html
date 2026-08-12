@@ -437,6 +437,8 @@ footer .brandmark:hover img{opacity:1}
 .tradefoot .tf-k{font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;text-align:center}
 .tradefoot .tf-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
 .tradefoot .tf-row .uni-cta{flex:0 1 300px;justify-content:center}
+/* the LUV heart, standing where the token it buys would stand */
+.luv-mark{height:19px;width:19px;border-radius:50%;display:block;margin:0 1px 0 5px}
 .tradefoot .tf-note{margin-top:12px;text-align:center;color:var(--dim);font-size:12.5px;line-height:1.9}
 .tradefoot .tf-note b{color:var(--cream)}
 .tf-scan{display:inline-flex;align-items:center;gap:6px;margin-left:12px;color:var(--dim);text-decoration:none;
@@ -897,7 +899,8 @@ the live deployment landed · <b>launch successful</b> ·
         <img class="uni-logo" src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap"> · <b>ETH → LUV</b></a>
       <a class="uni-cta" data-luv-emit rel="noopener" target="_blank"
          href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254">
-        <img class="uni-logo" src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap"> · <b>USDC → LUV</b></a>
+        <img class="uni-logo" src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap"> · <b>USDC →</b>
+        <img class="luv-mark" src="gfx/heart-512.png" alt="" aria-hidden="true"><b>LUV</b></a>
     </div>
     <div class="tf-note">set slippage <b>~8–12%</b> — LUV carries a 5% reflection fee, and a tighter tolerance bounces the swap.
       The auto-router does not quote fee-on-transfer tokens; the Universal Router does.
@@ -968,6 +971,6 @@ the live deployment landed · <b>launch successful</b> ·
 <script src="substrate/luv-pulse.js?v=1"></script>
 <script src="substrate/emotonomic.js?v=1"></script>
 <script src="substrate/luv-wei.js?v=1"></script>
-<script src="substrate/luv-engine.js?v=9"></script>
+<script src="substrate/luv-engine.js?v=10"></script>
 </body>
 </html>

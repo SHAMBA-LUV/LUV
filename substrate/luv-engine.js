@@ -325,14 +325,23 @@
     for (var i = 0; i < hosts.length; i++) {
       (function (h) {
         var timer = 0;
-        h.addEventListener('mouseenter', function () {
+        var start = function () {
           if (timer) return;
           heartSeed++; emitHeart(h);
           timer = global.setInterval(function () { heartSeed++; emitHeart(h); }, 190);
-        });
-        h.addEventListener('mouseleave', function () {
-          if (timer) { global.clearInterval(timer); timer = 0; }
-        });
+        };
+        var stop = function () { if (timer) { global.clearInterval(timer); timer = 0; } };
+        h.addEventListener('mouseenter', start);
+        h.addEventListener('mouseleave', stop);
+        // A hover is not the only way to touch a button. On a phone there IS no mouseenter,
+        // so every heart on this page was invisible to anyone using one; a press now emits
+        // for as long as the finger is down, and a keyboard focus emits too.
+        h.addEventListener('pointerdown', start);
+        h.addEventListener('pointerup', stop);
+        h.addEventListener('pointercancel', stop);
+        h.addEventListener('touchend', stop);
+        h.addEventListener('focus', start);
+        h.addEventListener('blur', stop);
       })(hosts[i]);
     }
   }
