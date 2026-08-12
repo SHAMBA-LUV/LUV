@@ -509,9 +509,11 @@
     try { mkt = await (await fetch('/market.json', { cache: 'no-store' })).json(); } catch (e) { /* oracle offline */ }
     try { gas = await j('/airdrop/gas'); } catch (e) { /* estimate unavailable */ }
 
-    const dayUsd = luvWeiToUsd(d.dailyWei, mkt);
-    $('dropreward').textContent = Number(d.dailyLuv).toLocaleString('en-US')
-      + (dayUsd != null ? ' (≈ ' + fmtUsd(dayUsd) + ')' : '');
+    // The day's figure is stated in LUV and nothing else. Pricing the million at sign-in
+    // invites a comparison that is not the point: the drip is an acknowledgement, and a
+    // fiat figure beside it measures the wrong thing. The USD readout stays where it is
+    // actually a decision — the accumulated tally against the gas to deliver it.
+    $('dropreward').textContent = Number(d.dailyLuv).toLocaleString('en-US');
 
     // ── the accumulated tally + the two ways to deliver it ──
     const accWei = d.accrued || '0';
