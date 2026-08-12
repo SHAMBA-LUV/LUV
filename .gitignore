@@ -8,3 +8,7 @@ node_modules/
 market.json
 market-history.json
 auth/src.bak.prewiring/
+
+# never commit the local test symlink again
+auth/node_modules
+node_modules/
