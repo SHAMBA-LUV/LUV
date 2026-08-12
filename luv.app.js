@@ -493,10 +493,10 @@
   const REDEEM_ERR = {
     nothing_to_redeem: 'not a full day yet — your million is still dripping ❤',
     no_drip: 'sign in to start your million',
-    gas_too_high: 'gas is spiking right now — try again when it settles, or send it yourself',
-    relayer_empty: 'the sponsorship tank is refueling — send it yourself, or try again soon',
-    sponsor_off: 'sponsored redeems are off right now — send it yourself from a wallet with ETH',
-    no_relayer: 'sponsored redeems are off right now — send it yourself from a wallet with ETH',
+    gas_too_high: 'gas is spiking, so the bus is waiting it out — your LUV keeps accumulating',
+    relayer_empty: 'the LUVbus is refuelling — try again soon, or send it yourself',
+    sponsor_off: 'the LUVbus is between runs — your LUV is safe; ride it shortly, or send it yourself',
+    no_relayer: 'the LUVbus is between runs — your LUV is safe; ride it shortly, or send it yourself',
     redeem_not_open: 'the redeem desk opens shortly — your LUV keeps accumulating ❤',
     voucher_failed: 'that didn’t go through — your LUV is safe, try again',
     redeem_failed: 'that didn’t go through — your LUV is safe, try again',
@@ -580,20 +580,24 @@
     const open = d.redeemOpen !== false;
     const selfBtn = $('redeemselfbtn'); const sponsorBtn = $('redeemsponsorbtn');
     if (selfBtn) {
+      // the self-sovereign path, and the ONLY place ETH is ever mentioned to a participant
       selfBtn.disabled = !enough || !open;
-      const sub = selfBtn.querySelector('small');
-      if (sub) {
-        sub.textContent = !open ? 'the redeem desk opens shortly — your LUV keeps accumulating'
-          : !enough ? 'a full day of drip unlocks this'
-            : window.ethereum ? 'deliver it on chain · you send it · gas in ETH'
-              : 'connect a wallet holding ETH to send it yourself';
-      }
+      selfBtn.title = !open ? 'the redeem desk opens shortly — your LUV keeps accumulating'
+        : !enough ? 'a full day of drip unlocks this'
+          : window.ethereum ? 'you send the transaction and pay its gas in ETH'
+            : 'connect a wallet holding ETH to send it yourself';
     }
     if (sponsorBtn) {
-      sponsorBtn.disabled = !enough || !open || !(gas && gas.sponsorActive);
-      sponsorBtn.title = !open ? 'the redeem desk opens shortly — your LUV keeps accumulating'
-        : gas && gas.sponsorActive ? 'the LUV project pays this transaction’s gas'
-          : 'sponsorship is paused right now';
+      // THE LUVbus: nobody is asked for ETH to ride it. The bus pays for everyone aboard.
+      const running = !!(gas && gas.sponsorActive);
+      sponsorBtn.disabled = !enough || !open || !running;
+      const bsub = sponsorBtn.querySelector('small');
+      if (bsub) {
+        bsub.textContent = !open ? 'the depot opens shortly — your LUV keeps accumulating'
+          : !enough ? 'a full day of drip buys your seat'
+            : running ? 'deliver it on chain · no ETH needed · the bus pays the gas'
+              : 'the bus is between runs — try shortly, or send it yourself below';
+      }
     }
 
     // ── the window clock: how long until this million is complete ──
@@ -658,8 +662,8 @@
     const btn = $('redeemselfbtn'); const msg = $('redeemmsg');
     msg.className = 'taskmsg';
     if (!window.ethereum) {
-      msg.textContent = 'to send it yourself you need a wallet with a little ETH for the gas — '
-        + 'or ask the LUV project to sponsor it with the button beside this one ❤';
+      msg.textContent = 'sending it yourself needs a connected wallet holding ETH — '
+        + 'or ride the LUVbus above and pay nothing at all ❤';
       return;
     }
     btn.disabled = true;
@@ -698,7 +702,7 @@
       msg.textContent = code === '4001'
         ? 'redeem declined — no rush, your LUV stays accumulated ❤'
         : /insufficient funds/i.test(m)
-          ? 'your wallet needs a little ETH to pay this transaction’s gas — top it up, or ask the project to sponsor it ❤'
+          ? 'that wallet has no ETH for the gas — ride the LUVbus instead, it costs you nothing ❤'
           : (REDEEM_ERR[(e && e.error) || ''] || 'that didn’t go through — your LUV is safe, try again');
     } finally { btn.disabled = false; loadDrip(); }
   });
@@ -708,14 +712,14 @@
   on('redeemsponsorbtn', 'click', async () => {
     const btn = $('redeemsponsorbtn'); const msg = $('redeemmsg');
     btn.disabled = true;
-    msg.className = 'taskmsg'; msg.textContent = 'asking the LUV project to cover the gas…';
+    msg.className = 'taskmsg'; msg.textContent = 'boarding the LUVbus — the gas is on the bus…';
     try {
       const r = await fetch('/airdrop/redeem', { method: 'POST', credentials: 'same-origin' });
       const body = await r.json().catch(() => ({}));
       if (r.ok) {
         msg.className = 'taskmsg ok';
         msg.replaceChildren(
-          document.createTextNode('delivered ❤ ' + fmtReward(body.redeemed || '0') + ' LUV on-chain, gas on us — '),
+          document.createTextNode('delivered ❤ ' + fmtReward(body.redeemed || '0') + ' LUV on-chain, and it cost you nothing — '),
           Object.assign(document.createElement('a'), { href: cfg.explorer + '/tx/' + body.txHash, rel: 'noopener', target: '_blank', textContent: 'view the tx ↗' })
         );
         refreshStatus();

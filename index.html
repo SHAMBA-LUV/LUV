@@ -24,6 +24,10 @@
   --rose:#ff4d6d;       /* the heart */
   --pink:#ff006e;       /* legacy SHAMBA LUV brand pink */
   --purple:#8338ec;     /* legacy SHAMBA LUV brand purple */
+  --candle:#0ecb81;     /* CANDLE GREEN — the up-candle. Positive events, and only those:
+                           a hover that opens a market, a balance that arrived, a step that
+                           completed. Pink is the heart; green is the confirmation. */
+  --candle-dim:rgba(14,203,129,.14);
   --blush:#ffb3c1;      /* soft secondary */
   --cream:#f6e7eb;      /* body text */
   --dim:#b98da0;        /* muted text */
@@ -144,7 +148,7 @@ a.collect .uni-logo{height:20px}
 #logout:hover{background:rgba(255,77,109,.14);color:var(--rose)}
 /* add LUV to MetaMask — chart-candle green outline */
 #addtoken,#addtoken2{border:2px solid #0ecb81;color:#0ecb81}
-#addtoken:hover,#addtoken2:hover{background:rgba(14,203,129,.14);border-color:#0ecb81;color:#0ecb81}
+#addtoken:hover,#addtoken2:hover{background:var(--candle-dim);border-color:var(--candle);color:var(--candle)}
 
 /* ── sections ── */
 section{padding:52px 0 0}
@@ -351,8 +355,8 @@ details.festwrap>summary.topfest .cue::before{content:"▶"}
   transition:border-color .15s,color .15s,background .15s;text-align:center}
 .bigbtn:hover:not(:disabled){border-color:var(--gold);color:var(--gold)}
 .bigbtn:disabled{opacity:.4;cursor:not-allowed}
-.bigbtn.collect{border-color:rgba(126,226,160,.6);color:#7ee2a0}
-.bigbtn.collect:hover:not(:disabled){background:rgba(126,226,160,.1)}
+.bigbtn.collect{border-color:rgba(14,203,129,.6);color:var(--candle)}
+.bigbtn.collect:hover:not(:disabled){background:var(--candle-dim);border-color:var(--candle)}
 .bigbtn.redeem{border-color:rgba(255,0,122,.65);color:var(--rose)}
 .bigbtn.redeem:hover:not(:disabled){background:rgba(255,0,122,.12);color:#fff}
 .bigbtn small{display:block;font-weight:400;font-size:11.5px;color:var(--dim);margin-top:4px;letter-spacing:.02em}
@@ -367,13 +371,16 @@ details.festwrap>summary.topfest .cue::before{content:"▶"}
 .uni-cta{display:inline-flex;align-items:center;gap:9px;flex-wrap:wrap;justify-content:center;
   font-family:var(--mono);font-size:14px;color:var(--cream);text-decoration:none;
   border:1px solid #FF007A;border-radius:999px;padding:11px 20px}
-.uni-cta:hover{background:rgba(255,0,122,.12);color:var(--cream)}
+.uni-cta:hover{background:var(--candle-dim);color:var(--cream);border-color:var(--candle);
+  box-shadow:0 0 22px -10px rgba(14,203,129,.75)}
 .uni-cta .uni-mark{color:#FF007A;font-weight:800}
 .uni-cta b{color:var(--rose)}
 .mmbtn{display:inline-flex;align-items:center;gap:7px;cursor:pointer;background:transparent;font-family:var(--mono);line-height:normal}
+/* a hover that opens a market, adds the token, or shows the price is a POSITIVE event */
+.mmbtn:hover,.candlehover:hover{border-color:var(--candle);color:var(--candle);background:var(--candle-dim)}
 .mmbtn img{display:block;border-radius:50%}
 .uni-cta .soon{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(227,178,95,.5);border-radius:999px;padding:2px 9px}
-.taskmsg.ok{color:var(--rose)}
+.taskmsg.ok{color:var(--candle)}
 .subs .sub{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;border-top:1px solid var(--seam);padding:10px 0;font-family:var(--mono);font-size:12px}
 .subs .sub:first-child{border-top:0}
 .subs .sub .act{color:var(--cream);text-transform:uppercase;letter-spacing:.08em}
@@ -460,7 +467,7 @@ the live deployment landed · <b>launch successful</b> ·
     <span class="ctc"><button class="wordbtn" id="connectbtn" type="button">CONNECT</button><em>to</em><button class="wordbtn" id="collectword" type="button">COLLECT</button></span>
     <span class="spacer"></span>
     <span class="gastank" id="gastank" title="community gas tank — free claims we're sponsoring" hidden>⛽ <b id="gastankval">—</b></span>
-    <a class="liveview" href="view.html" title="the live market — price every minute, full refresh every 5">📈 LUV LIVE</a>
+    <a class="liveview candlehover" href="view.html" title="the live market — price every minute, full refresh every 5">📈 LUV LIVE</a>
     <span class="healthdot" id="healthdot" title="gesture desk status"></span>
     <small id="healthtext">checking…</small>
     <nav class="socials" aria-label="SHAMBA LUV socials">
@@ -564,9 +571,10 @@ the live deployment landed · <b>launch successful</b> ·
 
       <!-- and underneath it all: the one step that reaches the chain -->
       <div class="redeemfoot">
-        <button class="bigbtn redeem wide" id="redeemselfbtn" type="button" disabled>💎 REDEEM
-          <small>deliver it on chain · you send it · gas in ETH</small></button>
-        <div class="sponsorline">no ETH? <button class="btn" id="redeemsponsorbtn" type="button" disabled style="font-size:12px;padding:6px 12px">🎁 ask the LUV project to cover the gas</button></div>
+        <button class="bigbtn redeem wide" id="redeemsponsorbtn" type="button" disabled>🚌 RIDE THE LUVbus
+          <small>deliver it on chain · no ETH needed · the bus pays the gas</small></button>
+        <div class="sponsorline">or send it yourself, from a wallet that holds ETH:
+          <button class="btn" id="redeemselfbtn" type="button" disabled style="font-size:12px;padding:6px 12px">💎 REDEEM with my own ETH</button></div>
         <div style="color:var(--dim);font-size:13px;margin-top:8px;font-family:var(--mono)" id="accgas">estimating the redeem gas…</div>
         <div class="taskmsg" id="accheld" hidden></div>
         <div class="taskmsg" id="redeemmsg"></div>
@@ -581,7 +589,7 @@ the live deployment landed · <b>launch successful</b> ·
       <div class="row" style="margin-top:12px">
         <a class="uni-cta" data-luv-emit href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img class="uni-logo" src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap"> · buy &amp; sell <b>LUV</b> live</a>
       <button type="button" class="btn mmbtn" data-luv-watchasset><img src="gfx/heart-512.png" alt="" height="14" aria-hidden="true"> add LUV to MetaMask</button>
-        <a class="btn" href="view.html">📈 live chart</a>
+        <a class="btn candlehover" href="view.html">📈 live chart</a>
       </div>
     </div>
     <div class="panel" style="margin-top:16px" id="taskspanel">
@@ -939,7 +947,7 @@ the live deployment landed · <b>launch successful</b> ·
 
 <!-- ?v= busts the immutable .js cache — bump it whenever luv.app.js changes -->
 <script src="substrate/luv-drip.js?v=3"></script>
-<script src="luv.app.js?v=33"></script>
+<script src="luv.app.js?v=35"></script>
 <script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
 <script src="substrate/emotonomic.js?v=1"></script>
