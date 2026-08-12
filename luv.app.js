@@ -567,12 +567,16 @@
       let collectable = 0n;
       try { collectable = BigInt(d.collectable || '0'); } catch (e) { collectable = 0n; }
       collectBtn.disabled = collectable < 10n ** 18n; // less than 1 LUV is not worth a press
-      const csub = collectBtn.querySelector('small');
-      if (csub) {
-        csub.textContent = collectable >= 10n ** 18n
-          ? 'bank ' + fmtReward(d.collectable) + ' LUV now · free · restarts your million'
-          : 'bank the flow · free · restarts your million';
+      // the live figure lives BESIDE the button now, so the button stays the size of its words
+      const hint = $('collecthint');
+      if (hint) {
+        hint.textContent = collectable >= 10n ** 18n
+          ? 'press it to bank ' + fmtReward(d.collectable) + ' LUV — free, and your million restarts from that moment'
+          : 'free, and your million restarts the moment you press it';
       }
+      collectBtn.title = collectable >= 10n ** 18n
+        ? 'bank ' + fmtReward(d.collectable) + ' LUV and restart the 24-hour million'
+        : 'a LUV has to have dripped before there is anything to bank';
     }
 
     let enough = false;
@@ -597,7 +601,7 @@
       if (bsub) {
         bsub.textContent = !open ? 'the depot opens shortly — your LUV keeps accumulating'
           : !enough ? 'a full day of drip buys your seat'
-            : running ? 'deliver it on chain · no ETH needed · the bus pays the gas'
+            : running ? 'moves your LUV into your wallet · no ETH needed · the bus pays the gas'
               : 'the bus is between runs — try shortly, or send it yourself below';
       }
     }
@@ -655,7 +659,8 @@
       if (r.ok) {
         msg.className = 'taskmsg ok';
         msg.textContent = 'collected ' + fmtReward(body.collected || '0') + ' LUV ❤ your tally is '
-          + fmtReward(body.accrued || '0') + ' LUV — and a fresh million is dripping from right now';
+          + fmtReward(body.accrued || '0') + ' LUV, and a fresh million is dripping from right now — '
+          + 'REDEEM below when you want it moved into your wallet';
         if (dripMeter) dripMeter.stop();
         dripMeter = null; // re-sync the meter against the restarted window
         const mount = $('luvdripmeter'); if (mount) { mount.dataset.dripBooted = ''; mount.__drip = null; }
