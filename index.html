@@ -339,6 +339,13 @@ details.festwrap>summary.topfest .cue::before{content:"▶"}
 .holdcard.lead .hu{color:var(--cream)}
 .holdcard .hsub{font-family:var(--mono);font-size:11.5px;color:var(--gold)}
 .actrow{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 2px}
+/* the live meter and COLLECT, shoulder to shoulder — the button sits against the figure it banks */
+.flowrow{display:flex;gap:12px;align-items:stretch;flex-wrap:wrap;margin:10px 0 2px}
+.flowmeter{flex:1 1 320px;min-width:0}
+.flowrow .bigbtn{flex:0 1 240px;align-self:stretch}
+/* and the chain step, alone at the foot of the panel */
+.redeemfoot{margin-top:16px;border-top:1px dashed var(--seam);padding-top:14px}
+.bigbtn.wide{width:100%;flex:none}
 .bigbtn{flex:1 1 260px;font-family:var(--mono);font-weight:700;font-size:15px;cursor:pointer;
   padding:16px 18px;border-radius:12px;border:1px solid var(--seam);background:var(--ink);color:var(--cream);
   transition:border-color .15s,color .15s,background .15s;text-align:center}
@@ -510,7 +517,20 @@ the live deployment landed · <b>launch successful</b> ·
       <div class="statusline" id="statusline">checking your gesture…</div>
     </div>
     <div class="panel" style="margin-top:16px" id="droppanel" hidden>
-      <div class="k">your LUV — collected, and in your wallet</div>
+      <div class="k">the LUVdrip — flowing to you now</div>
+
+      <!-- the live flow, and the act that banks it, side by side: you collect what you watch -->
+      <div class="flowrow">
+        <div id="luvdripmeter" class="flowmeter"></div>
+        <button class="bigbtn collect" id="dripcollectbtn" type="button" disabled>💧 COLLECT
+          <small>bank the flow · free · restarts your million</small></button>
+      </div>
+      <div id="dropclockrow" style="font-family:var(--mono);font-size:13px;color:var(--dim);margin-top:10px" hidden>
+        today's million completes in <b id="dropcount" style="color:var(--gold);font-size:18px;letter-spacing:.08em">--:--:--</b>
+      </div>
+      <div class="taskmsg" id="dropmsg">checking your LUVdrip…</div>
+      <div class="taskmsg ok" id="dropfull" hidden>🎁 <b>today's 1,000,000 LUV is complete</b> — saved to your tally · <b>sign in again to start the next million</b> · thanks a million ❤
+        <a href="https://twitter.com/intent/tweet?text=the%20LUVdrip%20is%20flowing%20%E2%80%94%20a%20million%20LUV%20a%20day%20just%20for%20logging%20in%20%E2%9D%A4%20HOLD%20LUV%20to%20watch%20LUV%20grow%20%40shambaluv%20%23SHAMBALUV%20https%3A%2F%2Fluv.pythai.net" target="_blank" rel="noopener">𝕏 tweet to earn more LUV →</a></div>
 
       <div class="holdrow">
         <div class="holdcard lead">
@@ -525,27 +545,17 @@ the live deployment landed · <b>launch successful</b> ·
         </div>
       </div>
 
-      <div class="actrow">
-        <button class="bigbtn collect" id="dripcollectbtn" type="button" disabled>💧 COLLECT
-          <small>bank the flow · free · restarts your million</small></button>
-        <button class="bigbtn redeem" id="redeemselfbtn" type="button" disabled>💎 REDEEM
-          <small>deliver it on chain · you send it · gas in ETH</small></button>
-      </div>
-      <div class="sponsorline">no ETH? <button class="btn" id="redeemsponsorbtn" type="button" disabled style="font-size:12px;padding:6px 12px">🎁 ask the LUV project to cover the gas</button></div>
-      <div class="taskmsg" id="redeemmsg"></div>
-      <div style="color:var(--dim);font-size:13px;margin-top:8px;font-family:var(--mono)" id="accgas">estimating the redeem gas…</div>
-      <div class="taskmsg" id="accheld" hidden></div>
+      <div style="margin-top:12px;font-size:14px"><b id="dropreward" style="color:var(--rose)">1,000,000</b> LUV a day — dripping at <b style="color:var(--gold)">11.574 LUV/s</b> for a <b>full 24 hours</b> from your log in ❤</div>
+      <div style="color:var(--dim);font-size:13px"><b style="color:var(--cream)">Logging in earns the million.</b> The drip keeps running whether or not this tab is open. <b style="color:var(--cream)">COLLECT</b> banks what has flowed and starts your million over from that moment — free, and yours to press whenever you like. <b style="color:var(--cream)">REDEEM</b> is the only step that touches the chain, so it is the only one that costs gas.</div>
 
-      <div style="margin-top:16px;border-top:1px dashed var(--seam);padding-top:14px">
-        <div style="font-size:15px;margin:2px 0"><b id="dropreward" style="color:var(--rose)">1,000,000</b> LUV a day — dripping at <b style="color:var(--gold)">11.574 LUV/s</b> for a <b>full 24 hours</b> from your log in ❤</div>
-        <div style="color:var(--dim);font-size:13px"><b style="color:var(--cream)">Logging in earns the million.</b> The drip keeps running whether or not this tab is open. <b style="color:var(--cream)">COLLECT</b> banks what has flowed and starts your million over from that moment — free, and yours to press whenever you like. <b style="color:var(--cream)">REDEEM</b> is the only step that touches the chain, so it is the only one that costs gas.</div>
-        <div id="luvdripmeter" style="margin-top:12px"></div>
-      <div id="dropclockrow" style="font-family:var(--mono);font-size:13px;color:var(--dim);margin-top:10px" hidden>
-        today's million completes in <b id="dropcount" style="color:var(--gold);font-size:18px;letter-spacing:.08em">--:--:--</b>
-      </div>
-      <div class="taskmsg" id="dropmsg">checking your LUVdrip…</div>
-      <div class="taskmsg ok" id="dropfull" hidden>🎁 <b>today's 1,000,000 LUV is complete</b> — saved to your tally · <b>sign in again to start the next million</b> · thanks a million ❤
-        <a href="https://twitter.com/intent/tweet?text=the%20LUVdrip%20is%20flowing%20%E2%80%94%20a%20million%20LUV%20a%20day%20just%20for%20logging%20in%20%E2%9D%A4%20HOLD%20LUV%20to%20watch%20LUV%20grow%20%40shambaluv%20%23SHAMBALUV%20https%3A%2F%2Fluv.pythai.net" target="_blank" rel="noopener">𝕏 tweet to earn more LUV →</a></div>
+      <!-- and underneath it all: the one step that reaches the chain -->
+      <div class="redeemfoot">
+        <button class="bigbtn redeem wide" id="redeemselfbtn" type="button" disabled>💎 REDEEM
+          <small>deliver it on chain · you send it · gas in ETH</small></button>
+        <div class="sponsorline">no ETH? <button class="btn" id="redeemsponsorbtn" type="button" disabled style="font-size:12px;padding:6px 12px">🎁 ask the LUV project to cover the gas</button></div>
+        <div style="color:var(--dim);font-size:13px;margin-top:8px;font-family:var(--mono)" id="accgas">estimating the redeem gas…</div>
+        <div class="taskmsg" id="accheld" hidden></div>
+        <div class="taskmsg" id="redeemmsg"></div>
       </div>
       <div style="margin-top:10px;color:var(--dim);font-size:13px"><b style="color:var(--gold)">HOLD LUV to watch LUV grow</b> — 3% of every trade reflects to every holder, automatically ❤</div>
     </div>
@@ -892,7 +902,7 @@ the live deployment landed · <b>launch successful</b> ·
 
 <!-- ?v= busts the immutable .js cache — bump it whenever luv.app.js changes -->
 <script src="substrate/luv-drip.js?v=3"></script>
-<script src="luv.app.js?v=31"></script>
+<script src="luv.app.js?v=32"></script>
 <script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
 <script src="substrate/emotonomic.js?v=1"></script>
