@@ -119,11 +119,47 @@ a.exlink img,.marketrow img{height:16px;width:auto;vertical-align:-4px}
 
   <details>
     <summary>What is the circulating supply — is there real liquidity?</summary>
-    <div class="a"><p><b>Total supply is <b class="g">111.111 quadrillion LUV</b></b>, minted once at
-    genesis with no mint function. Of that, <b>100 quadrillion — exactly 90.0000%</b> — is held by the
+    <div class="a"><p><b>Total supply is <b class="g">111.111 quadrillion LUV</b></b> — precisely
+    111,111,111,111,111,111 — minted once at genesis with no mint function. <b>Total supply is not the
+    number that matters.</b> Subtract what has been burned and you get the figure every ratio here is
+    built from:</p>
+
+    <p style="font-family:var(--mono);font-size:13.5px;line-height:2;border-left:2px solid rgba(126,226,160,.5);padding-left:16px">
+      total supply &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;111,111,111,111,111,111<br>
+      − burned to <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0x000000000000000000000000000000000000dEaD" rel="noopener">0x…dEaD</a> &nbsp;<b>4,980,559,643,425,538</b> &nbsp;(4.4825%)<br>
+      <b class="g">= circulating &nbsp;&nbsp;106,130,551,467,685,572</b> &nbsp;(95.5175%)
+    </p>
+
+    <p>Those LUV are <b>gone</b>: <code>0x…dEaD</code> has no key, the address is excluded from
+    reflections, and nothing can ever move them again. So they are subtracted, not counted — and
+    <b>circulating supply is the metric</b> here. Market cap is derived from circulating; a ratio
+    measured against total supply is flattered by tokens that can never trade, and we will not publish
+    one. <b>0x0 holds nothing</b> (checked), so the burn is the dEaD balance alone.</p>
+
+    <p>Of the total, <b>100 quadrillion — exactly 90.0000%</b> — is held by the
     <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0x10f7Ee226B16bea7f365Dc1eDEF159Fc1957D169" rel="noopener">treasury</a>,
     and the remaining <b class="g">11.1 quadrillion</b> is the team / founder startup allocation.
     Every figure on this page is a balance you can read from the chain yourself; the links go to it.</p>
+
+    <p><b class="g">The treasury's 100 quadrillion is multichain liquidity, and it earns nothing.</b>
+    LUV deploys to the <b>same deterministic address on every chain</b>, and that allocation exists to
+    seed and deepen the pool wherever the market actually is — Polygon first, Ethereum now, others as
+    they earn it — rather than being pre-fragmented across venues or sold into the market.</p>
+
+    <p><b>It does not collect reflections.</b> The treasury address is
+    <b>excluded from reflection</b> on the token — <code>isExcludedFromReflection(0x10f7…D169)</code>
+    returns <b class="g">true</b>, which anyone can call on the verified contract. That is the whole
+    point: 90% of the supply takes <b>no share of the 3%</b>, so every reflection from every trade flows
+    to <b>circulating holders</b> instead of being absorbed by the largest balance on the chain. The
+    burn address and the pair are excluded for the same reason. <b>You are not diluted by the treasury.</b></p>
+
+    <p><b>Where it is going: the LUVlocker</b> — the treasury allocation is destined for the same
+    extend-only vault as the marketing and community allocations, so that "the treasury cannot dump" is
+    something you can check rather than something we say. <b>It is not there yet.</b> The
+    <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0xe07ACAde4bE2bbc264EA702880ed988EBae9B898" rel="noopener">LUVlocker</a>
+    holds <b>zero LUV today</b> — check it — and the treasury holds the 100 quadrillion at
+    <code>0x10f7…D169</code>. Earmarked is not locked, and a lock is a transaction anyone can verify.
+    When it exists, this page will link to it rather than describe it.</p>
 
     <p><b>The 100 quadrillion is NOT in the liquidity pool</b>, and it cannot be. A Uniswap V2 pair
     stores each reserve in a <code>uint112</code>, so the most LUV a pool can ever hold is
@@ -132,7 +168,7 @@ a.exlink img,.marketrow img{height:16px;width:auto;vertical-align:-4px}
     if we wanted it to. This page said otherwise for a while. It was wrong, and the chain says so.</p>
 
     <p><b>Every balance below was read from the chain</b> — <code>balanceOf</code> on the verified
-    token contract, at block <b>25,706,861</b> (2026-08-08 01:06 UTC). Each row links to the live
+    token contract, at block <b>25,741,158</b> (2026-08-12 19:58 UTC). Each row links to the live
     balance so you never have to take this page's word for it, and the last row is the
     <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254#balances" rel="noopener">full
     holders list</a> on Etherscan.</p>
@@ -160,7 +196,13 @@ a.exlink img,.marketrow img{height:16px;width:auto;vertical-align:-4px}
     <tr><td style="padding:7px 8px">IncentiveDistributor</td>
       <td style="padding:7px 8px"><b>0</b></td><td style="padding:7px 8px">0.0000%</td>
       <td style="padding:7px 8px"><a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0x607E477AB12406A3294A7Ba63817103f92D8f806" rel="noopener">0x607E…f806 ↗</a></td></tr>
-    </tbody></table></div>
+    </tbody>
+    <tfoot><tr style="border-top:1px solid rgba(126,226,160,.5)">
+      <td style="padding:9px 8px"><b class="g">circulating</b> <span style="color:var(--dim)">(total − burned)</span></td>
+      <td style="padding:9px 8px;font-family:var(--mono)"><b class="g">106,130,551,467,685,572</b></td>
+      <td style="padding:9px 8px;font-family:var(--mono)"><b class="g">95.5175%</b></td>
+      <td style="padding:9px 8px;font-size:12px;color:var(--dim)">every ratio here is built from this</td></tr></tfoot>
+    </table></div>
     <div class="brandrow">
       <a class="brandmark" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254#code" target="_blank" rel="noopener" title="verified means the green checkmark: source verified on Etherscan · Powered by Etherscan.io APIs">
         <img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="18"><span>verified ✅</span>
