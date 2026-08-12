@@ -49,11 +49,35 @@ terminate — which is precisely why nothing is ever minted or credited per seco
   yields one million, not three — the next million is the next login's to start.
 * Social identities only. The Sybil unit is a social account; a wallet is free to mint endlessly.
 
+## COLLECT — bank the flow, and start the million over
+
+The participant's own act, and the only thing that turns the clock over early:
+
+> **Press COLLECT and whatever has dripped is banked into your tally — then a fresh
+> 1,000,000 LUV begins dripping from that moment.** Free, instant, off-chain, and yours to
+> press whenever you like.
+
+**It cannot be farmed, because the rate never changes.** A window always pays 1,000,000 LUV
+across 24 hours, so collecting hourly and collecting daily earn exactly the same LUV per day —
+proven in the e2e: two half-day collections total one million, not two. What COLLECT buys is
+not more LUV, it is **control of the clock**: the flow no longer stops at the cap waiting for a
+login, and the participant decides when the meter turns over.
+
+Settlement is **continuous**, so the LUV was banked as it dripped rather than at the press. The
+`collected` figure a press returns is therefore a *report of what that window contributed*,
+never a second credit of the same LUV — the tally can only be counted once. A press below
+**one LUV** is refused rather than restarting the clock for dust (`minCollectWei`), which is
+also where the dashboard's button unlocks.
+
+```
+drip → COLLECT (free: banks it, clock restarts) → the tally grows → REDEEM (one tx, gas in ETH)
+```
+
 ## The tally
 
 Settled LUV accumulates in **one number** (`drip_state.banked_wei`) that keeps growing across
-windows, costs nothing to hold, and is never a queue of separate drops. It is delivered on-chain
-only when someone decides it is worth a transaction.
+windows and collections, costs nothing to hold, and is never a queue of separate drops. It is
+delivered on-chain only when someone decides it is worth a transaction.
 
 ## REDEEM — one transaction, two possible payers
 
@@ -187,13 +211,14 @@ and single-use `redemptionId`s. **Set a per-day budget before funding the distri
 ```
 GET  /airdrop/drip           → { dailyLuv, dailyWei, nextDailyWei, perSecond, windowStartedAt, windowEndsAt,
                                  windowWei, windowRemainingWei, capWei, flowing, full,
-                                 accrued, heldWei, redeemedWei, windows, needsLogin,
-                                 minRedeemWei, serverNow, voucher }
+                                 accrued, collectable, heldWei, redeemedWei, windows, needsLogin,
+                                 minRedeemWei, minCollectWei, serverNow, voucher }
+POST /airdrop/drip/collect   → { ok, collected, accrued, restarted } # bank the flow, restart the clock
 POST /airdrop/drip/voucher   → { to, data, chainId, voucher, amount }   # you send it, you pay
 POST /airdrop/redeem         → { ok, txHash, redeemed, payer:'sponsor' } # we send it, we pay
 GET  /airdrop/gas            → …, redeemGas, redeemFeeEth, redeemFeeUsd, sponsorActive
 GET  /airdrop/drop           → DEPRECATED alias mapping the drip onto the old field names
-POST /airdrop/return         → DEPRECATED no-op (there is nothing to claim)
+POST /airdrop/return         → DEPRECATED alias of /drip/collect (the old CLAIM button)
 ```
 
 ## Integration

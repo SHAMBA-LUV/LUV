@@ -269,6 +269,59 @@ async function main() {
   ok((await partnerC.balanceOf(DIST)) === 0n, 'and its remaining balance was swept out of the contract');
   ok((await dist.assets()).length === assetsBefore, 'the registry is back to what it was before');
 
+  // ── 8. COLLECT — bank the flow, and the million starts over from that moment ─
+  await upsertIdentity({ provider: 'github', providerUserId: 'e2e-participant', email: null });
+  await warp(6 * 3600); // six hours into a fresh window
+  let pre = await drip.status(IDK);
+  const beforeTally = BigInt(pre.accrued);
+  const meter = BigInt(pre.collectable);
+  ok(meter > 0n && near(meter, MILLION / 4n), `six hours in, the meter reads ${luv(meter)} LUV`);
+
+  const c = await drip.collect(IDK);
+  ok(c.ok === true, 'COLLECT banked the flow');
+  ok(BigInt(c.collected) >= meter, `it banked ${luv(c.collected)} LUV — what had dripped`);
+
+  let post = await drip.status(IDK);
+  // The tally ALREADY held this window's flow: settlement is continuous, so LUV is banked as
+  // it drips rather than at the press. COLLECT reports what the window had contributed and
+  // restarts the clock — it never credits the same LUV twice, which is what this asserts.
+  ok(near(BigInt(post.accrued), beforeTally),
+    `the tally holds ${luv(post.accrued)} LUV — the collected flow was already banked, not added twice`);
+  ok(BigInt(post.accrued) >= meter, 'and it contains what the meter had dripped');
+  ok(BigInt(post.collectable) < LUV, 'the meter restarted at zero');
+  ok(post.full === false && post.flowing === true, 'a fresh million is already dripping');
+  ok(post.windowEndsAt - post.windowStartedAt === 86400, 'the 24-hour clock started over on the press');
+  ok(post.windowStartedAt >= pre.windowStartedAt + 6 * 3600 - 5, 'the new window begins at the moment of the press');
+
+  // pressing again with nothing dripped is refused rather than wasting a write
+  const again = await drip.collect(IDK);
+  ok(again.error === 'nothing_to_collect', 'collecting a meter below one LUV is refused, not written');
+
+  // ── 8b. COLLECT is rate-neutral: the clock restarting is not a faster drip ───
+  await warp(12 * 3600);
+  const half = await drip.collect(IDK);
+  await warp(12 * 3600);
+  const otherHalf = await drip.collect(IDK);
+  const twoHalves = BigInt(half.collected) + BigInt(otherHalf.collected);
+  ok(near(twoHalves, MILLION), `two half-day collections total ${luv(twoHalves)} LUV — one day's million, not two`);
+
+  // ── 8c. and the collected balance is what REDEEM delivers ───────────────────
+  const post2 = await drip.status(IDK);
+  const v2 = await drip.issueVoucher(IDK, { payer: 'self' });
+  ok(v2.ok === true && BigInt(v2.amount) >= BigInt(post2.accrued) && near(BigInt(v2.amount), BigInt(post2.accrued)),
+    `the voucher carries the whole collected balance: ${luv(v2.amount)} LUV`);
+  const bal0 = await token.balanceOf(participant.address);
+  const tx2 = await participant.sendTransaction({
+    to: v2.to, data: v2.data, maxPriorityFeePerGas: 1_000_000_000n, maxFeePerGas: 5_000_000_000n,
+  });
+  const rc2 = await tx2.wait();
+  const eth0 = await provider.getBalance(participant.address, rc2.blockNumber - 1);
+  const eth1 = await provider.getBalance(participant.address, rc2.blockNumber);
+  ok((await token.balanceOf(participant.address)) - bal0 === BigInt(v2.amount),
+    'the collected balance arrived on-chain');
+  ok(eth0 - eth1 === rc2.gasUsed * rc2.gasPrice && eth0 - eth1 > 0n,
+    `and the participant paid the gas: ${ethers.formatEther(eth0 - eth1)} ETH`);
+
   // ── the one-way door: a voucher cannot be replayed ──────────────────────────
   try {
     await participant.sendTransaction({ to: v.to, data: v.data });

@@ -484,6 +484,12 @@
     if (!mkt || mkt.oneTrillionUsd == null) return null;
     try { return Number(BigInt(weiStr) / 10n ** 18n) / 1e12 * mkt.oneTrillionUsd; } catch (e) { return null; }
   }
+  const COLLECT_ERR = {
+    nothing_to_collect: 'nothing has dripped yet — give it a moment ❤',
+    no_drip: 'sign in to start your million',
+    drip_paused: 'the drip is paused right now — your tally is safe',
+    collect_failed: 'that didn’t go through — your LUV is safe, try again',
+  };
   const REDEEM_ERR = {
     nothing_to_redeem: 'not a full day yet — your million is still dripping ❤',
     no_drip: 'sign in to start your million',
@@ -545,6 +551,17 @@
       accEl.textContent = 'gas estimate unavailable — the chain still awaits your call';
     }
 
+    // COLLECT — what the live meter would bank this instant, and the clock restarts with it
+    const collectBtn = $('dripcollectbtn');
+    if (collectBtn) {
+      let collectable = 0n;
+      try { collectable = BigInt(d.collectable || '0'); } catch (e) { collectable = 0n; }
+      collectBtn.disabled = collectable < 10n ** 18n; // less than 1 LUV is not worth a press
+      collectBtn.textContent = collectable > 0n
+        ? '💧 COLLECT ' + fmtReward(d.collectable) + ' — bank it & restart the drip'
+        : '💧 COLLECT — bank it & restart the drip';
+    }
+
     let enough = false;
     try { enough = BigInt(accWei) >= BigInt(d.minRedeemWei || '0'); } catch (e) { enough = false; }
     // The redeem desk opens when the distributor carrying the rail is live; until then LUV keeps
@@ -593,6 +610,30 @@
     if (dripTick) { clearInterval(dripTick); dripTick = null; }
     if (!d.full) { tick(); dripTick = setInterval(tick, 1000); }
   }
+
+  // COLLECT — the participant's own act, off-chain and free: bank whatever has dripped into
+  // the accumulated tally, and start the million over from this moment. The rate is unchanged
+  // by pressing it, so this is control of the clock rather than a way to earn faster.
+  on('dripcollectbtn', 'click', async () => {
+    const btn = $('dripcollectbtn'); const msg = $('redeemmsg');
+    btn.disabled = true;
+    msg.className = 'taskmsg'; msg.textContent = 'collecting — banking your flow…';
+    try {
+      const r = await fetch('/airdrop/drip/collect', { method: 'POST', credentials: 'same-origin' });
+      const body = await r.json().catch(() => ({}));
+      if (r.ok) {
+        msg.className = 'taskmsg ok';
+        msg.textContent = 'collected ' + fmtReward(body.collected || '0') + ' LUV ❤ your tally is '
+          + fmtReward(body.accrued || '0') + ' LUV — and a fresh million is dripping from right now';
+        if (dripMeter) dripMeter.stop();
+        dripMeter = null; // re-sync the meter against the restarted window
+        const mount = $('luvdripmeter'); if (mount) { mount.dataset.dripBooted = ''; mount.__drip = null; }
+      } else {
+        msg.textContent = COLLECT_ERR[body.error] || COLLECT_ERR.collect_failed;
+      }
+    } catch (e) { msg.textContent = COLLECT_ERR.collect_failed; }
+    loadDrip();
+  });
 
   // REDEEM, self-paid: the participant's OWN wallet sends the transaction and spends its ETH.
   // The backend signs the redemption; the wallet pays the gas. The LUV lands on the wallet the

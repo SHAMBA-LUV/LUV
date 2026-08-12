@@ -500,10 +500,11 @@ the live deployment landed · <b>launch successful</b> ·
       <div id="dropacc" style="margin-top:12px;border-top:1px dashed var(--seam);padding-top:12px" hidden>
         <div style="font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)">your tally — accumulating, counted server-side</div>
         <div style="font-size:17px;margin:6px 0"><b id="accluv" style="color:var(--rose)">—</b> LUV <span id="accusd" style="color:var(--gold);font-family:var(--mono);font-size:14px"></span></div>
-        <div style="color:var(--dim);font-size:13px">Every day's drip <b style="color:var(--cream)">adds to this one number</b> — it keeps growing, costing nothing, until you deliver it. <b style="color:var(--cream)">REDEEM</b> is the one step that touches the chain, so it is the one step that costs <b>gas, paid in ETH</b>: send it yourself from a wallet holding ETH, or let the <b style="color:var(--cream)">LUV project sponsor the gas</b> for you. Your LUV arrives in your wallet either way.</div>
+        <div style="color:var(--dim);font-size:13px"><b style="color:var(--cream)">COLLECT</b> banks whatever has dripped so far into this number and <b>starts your million over from that moment</b> — free, instant, and yours to press whenever you like. The rate never changes, so collecting often earns exactly what collecting rarely does; what it buys is <b style="color:var(--cream)">control of the clock</b>. Every collection <b style="color:var(--cream)">adds to this one number</b>, which keeps growing at no cost until you deliver it. <b style="color:var(--cream)">REDEEM</b> is the one step that touches the chain, so it is the one step that costs <b>gas, paid in ETH</b>: send it yourself from a wallet holding ETH, or let the <b style="color:var(--cream)">LUV project sponsor the gas</b> for you. Your LUV arrives in your wallet either way.</div>
         <div style="color:var(--dim);font-size:13px;margin-top:6px;font-family:var(--mono)" id="accgas">estimating the redeem gas…</div>
         <div class="taskmsg" id="accheld" hidden></div>
         <div class="row" style="margin-top:10px">
+          <button class="btn" id="dripcollectbtn" type="button" disabled>💧 COLLECT — bank it &amp; restart the drip</button>
           <button class="btn" id="redeemselfbtn" type="button" disabled>💎 REDEEM — I'll send it (my ETH)</button>
           <button class="btn" id="redeemsponsorbtn" type="button" disabled>🎁 REDEEM — gas on the LUV project</button>
         </div>
@@ -854,7 +855,7 @@ the live deployment landed · <b>launch successful</b> ·
 
 <!-- ?v= busts the immutable .js cache — bump it whenever luv.app.js changes -->
 <script src="substrate/luv-drip.js?v=3"></script>
-<script src="luv.app.js?v=29"></script>
+<script src="luv.app.js?v=30"></script>
 <script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
 <script src="substrate/emotonomic.js?v=1"></script>

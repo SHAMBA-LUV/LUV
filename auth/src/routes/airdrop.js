@@ -185,6 +185,26 @@ router.get('/drip', requireAuth, async (req, res) => {
   }
 });
 
+// Signed in: COLLECT — bank the live flow and restart the million from this moment.
+// The participant's own act: whatever has dripped is settled into the accumulated tally,
+// and a fresh 24-hour million begins immediately rather than waiting for the next login.
+// Gas-free, off-chain, and rate-neutral — a window always pays 1,000,000 across 24 hours,
+// so collecting often earns exactly what collecting rarely does.
+router.post('/drip/collect', writeLimiter, requireAuth, async (req, res) => {
+  try {
+    const result = await drip.collect(req.identity.identityKey);
+    if (result.error) {
+      const code = result.error === 'drip_paused' ? 503 : 400;
+      return res.status(code).json(result);
+    }
+    res.json(result);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[airdrop] collect error:', err.message);
+    res.status(500).json({ error: 'collect_failed' });
+  }
+});
+
 // Signed in: SELF-PAID REDEEM — get the signed transaction and send it YOURSELF.
 // Returns { to, data, chainId, voucher }: the participant's own wallet submits
 // IncentiveDistributor.redeemWithSignature() and spends their own ETH on the gas (their
@@ -224,14 +244,18 @@ router.post('/redeem', writeLimiter, requireAuth, async (req, res) => {
   }
 });
 
-// DEPRECATED: there is nothing to claim. The drip accrues on its own for the full 24 hours a
-// login arms, so this just settles the meter and answers with the current tally. Kept so a
-// cached dashboard's CLAIM button is a harmless no-op rather than an error.
+// DEPRECATED ALIAS of /drip/collect. The old dashboard's CLAIM button lands here, and
+// collecting is exactly what it always meant: bank the flow, restart the clock.
 router.post('/return', writeLimiter, requireAuth, async (req, res) => {
   try {
-    const d = await drip.status(req.identity.identityKey);
-    if (!d.eligible) return res.status(400).json({ error: 'no_drip' });
-    res.json({ ok: true, deprecated: true, accrued: d.accrued, note: 'the LUVdrip accrues by itself — nothing to claim' });
+    const result = await drip.collect(req.identity.identityKey);
+    if (result.error) {
+      if (result.error === 'nothing_to_collect') {
+        return res.json({ ok: true, deprecated: true, collected: '0', note: 'nothing has dripped yet' });
+      }
+      return res.status(400).json(result);
+    }
+    res.json(Object.assign({ deprecated: true }, result));
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('[airdrop] return claim error:', err.message);

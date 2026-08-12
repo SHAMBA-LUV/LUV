@@ -233,6 +233,56 @@ async function armOnLogin(identityKey) {
   });
 }
 
+/**
+ * COLLECT — bank what has flowed, and start the million over from this moment.
+ *
+ * The participant's own act. Whatever the window has dripped so far is settled into the
+ * accumulated tally (where it waits for REDEEM), and a FRESH 24-hour million begins
+ * immediately — the clock restarts on the press, not on the next login.
+ *
+ * It cannot be farmed, because the rate never changes: a window always pays 1,000,000 LUV
+ * across 24 hours, so collecting hourly and collecting daily earn exactly the same LUV per
+ * day. What COLLECT buys is not more LUV, it is CONTROL — the flow no longer stops at the
+ * cap waiting for a login, and the participant decides when the meter turns over.
+ */
+async function collect(identityKey) {
+  const nowMs = Date.now();
+  const cap = await dailyWei(); // read the chain BEFORE opening the transaction
+  if (cap === 0n) return { error: 'drip_paused' };
+  return db.withTransaction(async (client) => {
+    // settleIn has already moved everything this window owes into banked_wei; what it
+    // credited is exactly this window's meter, which is what we report as collected.
+    const row = await settleIn(client, identityKey, nowMs);
+    if (!row) return { error: 'no_drip' };
+    const collected = BigInt(row.window_wei);
+    // A press must bank something worth a write. The meter is never truly empty — a
+    // millisecond after the last collect it already holds wei — so the floor is ONE LUV,
+    // which is also where the dashboard's button unlocks. Below that, pressing again is
+    // refused rather than restarting the clock for dust and costing the participant the
+    // fraction they had already earned.
+    if (collected < MIN_COLLECT_WEI) return { error: 'nothing_to_collect', collectable: collected.toString() };
+
+    await client.query(
+      `UPDATE drip_state
+          SET window_started_at = now(), window_ends_at = now() + make_interval(secs => $2),
+              window_wei = 0, cap_wei = $3::numeric, settled_at = now(),
+              windows = windows + 1, updated_at = now()
+        WHERE identity_key = $1`,
+      [identityKey, DAY_SEC, cap.toString()]
+    );
+    return {
+      ok: true,
+      // What THIS window had dripped when the button was pressed. It was already banked as
+      // it flowed — settlement is continuous — so this is a report of the window's
+      // contribution, never a second credit of the same LUV.
+      collected: collected.toString(),
+      accrued: row.banked_wei, // the whole tally, which already contains the above
+      restarted: true,
+      note: 'the clock restarts from this moment — a fresh million begins dripping',
+    };
+  });
+}
+
 /** Settle and read the meter. Safe to call on every dashboard poll. */
 async function status(identityKey) {
   const nowMs = Date.now();
@@ -261,6 +311,8 @@ async function status(identityKey) {
     windowStartedAt: s.windowStartedAt,
     windowEndsAt: s.windowEndsAt,
     windowWei: s.windowWei.toString(),
+    // what pressing COLLECT would bank this instant — the live meter, to the wei
+    collectable: s.windowWei.toString(),
     windowRemainingWei: s.windowRemainingWei.toString(),
     capWei: s.capWei.toString(),
     flowing: s.flowing,
@@ -273,6 +325,7 @@ async function status(identityKey) {
     // when the next million needs a login: the moment this one completes
     needsLogin: s.full || now >= s.windowEndsAt,
     minRedeemWei: MIN_REDEEM_WEI.toString(),
+    minCollectWei: MIN_COLLECT_WEI.toString(),
     // false while the configured distributor predates the REDEEM rail: the drip still accrues,
     // only delivery waits on the deployment — the dashboard says exactly that.
     redeemOpen: await railPresent(),
@@ -281,6 +334,9 @@ async function status(identityKey) {
 }
 
 // ── redemption: the voucher, and who pays for it ─────────────────────────────
+
+/** The smallest press worth a database write, and the button's unlock point: one LUV. */
+const MIN_COLLECT_WEI = 10n ** 18n;
 
 /** Never spend a transaction on less than this (default: one day's drip). */
 const MIN_REDEEM_WEI = BigInt(config.dripMinRedeemLuv) * 10n ** 18n;
@@ -652,8 +708,8 @@ function startSponsorPass() {
 function stopSponsorPass() { if (_sponsorTimer) { clearInterval(_sponsorTimer); _sponsorTimer = null; } }
 
 module.exports = {
-  DAILY_WEI, MIN_REDEEM_WEI, perSecond, windowEarned, dailyWei, dripToken, railPresent,
-  armOnLogin, status, issueVoucher, liveVoucher,
+  DAILY_WEI, MIN_REDEEM_WEI, MIN_COLLECT_WEI, perSecond, windowEarned, dailyWei, dripToken, railPresent,
+  armOnLogin, status, collect, issueVoucher, liveVoucher,
   markPaid, releaseExpired, reconcile,
   sponsorCandidates, sponsorRedeem, sponsorOne,
   startReconciler, stopReconciler, startSponsorPass, stopSponsorPass,
