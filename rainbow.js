@@ -56,6 +56,65 @@
     c.minus.addEventListener('click', function () { if (idx < RB.SCALES.length - 1) { idx++; apply(); } });
     apply();
   }
+
+  // ── the live price: every fifteen minutes, from the free tier ────────────────
+  // The rainbow's you-are-here dot was pinned to a dated figure, which is fine for a fit
+  // drawn in decades and wrong for a page someone opens today. market.json carries btcUsd,
+  // refreshed server-side at most every 15 minutes from DeFiLlama's keyless tier — the
+  // browser cannot fetch that itself (CSP: connect-src 'self'), so it arrives same-origin.
+  // We re-render on the same 15-minute cadence, and again whenever a hidden tab comes back,
+  // so a window left open overnight is never quietly stale.
+  var PRICE_TTL_MS = 15 * 60 * 1000;
+  var lastPriceAt = 0;
+
+  function fmtUsd(v) {
+    return '$' + Math.round(v).toLocaleString('en-US');
+  }
+
+  function paintCaption(mount, price, atMs, stale) {
+    var box = mount.parentNode;
+    if (!box) return;
+    var cap = box.nextSibling;
+    if (!cap || cap.className !== 'livecap') {
+      cap = document.createElement('div');
+      cap.className = 'livecap';
+      box.parentNode.insertBefore(cap, box.nextSibling);
+    }
+    var when = new Date(atMs).toISOString().slice(11, 16);
+    cap.textContent = '● BTC ' + fmtUsd(price) + ' — the dot, live. Read ' + when
+      + ' UTC from the free tier' + (stale ? ' (last good price — refetch failed)' : '')
+      + ', refreshed every 15 minutes.';
+  }
+
+  function applyPrice(price, atMs, stale) {
+    var RB = window.DVLuvRainbow;
+    var mounts = document.querySelectorAll('[data-luvrainbow]');
+    for (var i = 0; i < mounts.length; i++) {
+      var m = mounts[i];
+      // keep the attributes in step, so a zoom or debt toggle re-renders at the live price
+      m.dataset.price = String(price);
+      m.dataset.date = new Date(atMs).toISOString().slice(0, 10);
+      if (RB) {
+        var o = m._rainbowOpts || {};
+        o.price = price;
+        o.dateMs = atMs;
+        RB.render(m, o);
+      }
+      paintCaption(m, price, atMs, stale);
+    }
+  }
+
+  function refreshPrice(force) {
+    if (!force && Date.now() - lastPriceAt < PRICE_TTL_MS) return;
+    fetch('/market.json', { cache: 'no-store' }).then(function (r) {
+      return r.ok ? r.json() : null;
+    }).then(function (d) {
+      if (!d || !(d.btcUsd > 0)) return;         // no price is better than a wrong dot
+      lastPriceAt = Date.now();
+      applyPrice(d.btcUsd, d.btcUsdAt || Date.now(), /(stale)/.test(d.btcUsdSource || ''));
+    }).catch(function () { /* offline: the dated dot stands, and says its date */ });
+  }
+
   // world-debt overlay toggle — only for the substrate rainbow, which carries the market-cap
   // reading the comparison needs. Re-renders through the organ from the mount's own options, so
   // the toggle can never disagree with what is drawn.
@@ -87,6 +146,12 @@
   function boot() {
     var boxes = document.querySelectorAll('.chartbox');
     for (var i = 0; i < boxes.length; i++) addZoom(boxes[i]);
+    // the dot goes live, and stays live
+    refreshPrice(true);
+    setInterval(function () { refreshPrice(true); }, PRICE_TTL_MS);
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) refreshPrice(false); // a tab that comes back gets a fresh read
+    });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
   window.__rainbowZoomBoot = boot;

@@ -208,6 +208,7 @@ footer .brandmark{display:inline-flex;align-items:center;gap:7px;color:var(--dim
 footer .brandmark img{height:14px;width:auto;display:block;opacity:.85;transition:opacity .15s}
 footer .brandmark:hover{color:var(--cream)}
 footer .brandmark:hover img{opacity:1}
+.livecap{font-family:var(--mono);font-size:12px;color:#7ee2a0;margin:8px 0 2px;letter-spacing:.03em}
 </style>
 </head>
 <body data-luvframe="rainbow">
@@ -282,7 +283,10 @@ footer .brandmark:hover img{opacity:1}
   substrate (<a href="substrate/luv-rainbow.js" rel="noopener">readable source</a>, zero dependencies,
   zero network calls): the published fit and the nine bands, redrawn from the arithmetic every time
   the page opens. The fit is public — the <em>measured price path</em> above stays login-delivered.
-  The dot is the page's dated figure (BTC $64,482, 2026-08-05).</p>
+  The dot is <b>live</b>: BTC read from the free tier and refreshed every 15 minutes (the caption
+  under each chart carries the price and the minute it was read). The figures quoted in the prose
+  below stay pinned to the fit's reference date, <b>2026-08-05, BTC $64,482</b>, so the worked
+  arithmetic can be checked line by line — where the dot sits today is what the chart shows.</p>
   <p>Log-log axes, so the fit is a straight ruler and a long extrapolation hides nothing in
   curvature. The nine names stand in a stack at the top-left, each pointing at the band it names.
   The gold run is the <b>trajectory</b> — picked up at the $30,000 mark, carried through today and
@@ -297,7 +301,7 @@ footer .brandmark:hover img{opacity:1}
   <div class="chartbox"><div data-luvrainbow data-from="2010" data-to="2140" data-price="64482" data-date="2026-08-05"></div></div>
 
   <div class="hi gated" hidden><div class="t">you are here</div>
-  <p><b>BTC $64,482 sits in the "accumulate" band</b> — 10<sup>−0.28</sup> below the center line.
+  <p><b>At the reference date, BTC $64,482 sat in the "accumulate" band</b> — 10<sup>−0.28</sup> below the center line.
   The center line values today at $121,932; the dot is where the market disagrees with the curve, which
   is the only place a sentiment reading lives.</p></div>
 
@@ -494,7 +498,7 @@ python3 -c "print((1050000-961239)*600/86400)"                     # next halvin
 
 <script src="substrate/luv-rainbowchart.js?v=5" defer></script>
 <script src="substrate/luv-rainbow.js?v=8" defer></script>
-<script src="rainbow.js?v=4" defer></script>
+<script src="rainbow.js?v=5" defer></script>
 <script src="substrate/luv-pulse.js?v=1" defer></script>
 <script src="substrate/luv-frame.js?v=5" defer></script>
 <script src="share.js?v=1" defer></script>
