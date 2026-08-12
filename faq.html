@@ -273,7 +273,8 @@ a.exlink img,.marketrow img{height:16px;width:auto;vertical-align:-4px}
     has landed; the next million starts with your next log in), plus the earn rail for real contribution. The
     <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0xdf2C1836550c5711EF9c021cB0de86241dc1DEf3" rel="noopener">gesture
     pool</a> still holds its <b>~1.024 quadrillion LUV</b> from the free-gesture campaign; the campaign
-    that spent it is closed. Rates and limits are whatever the on-chain action registry says — it is the
+    that spent it is closed, and <b>that remainder is now being distributed through the
+    <a href="#luvdrip">LUVdrip</a></b> — a million a day at a time, to people who show up. Rates and limits are whatever the on-chain action registry says — it is the
     final word.</p>
 
     <p>The supply is <b>fixed</b> — no mint function — so the pool, the treasury and the startup
@@ -403,6 +404,95 @@ a.exlink img,.marketrow img{height:16px;width:auto;vertical-align:-4px}
     (no transaction, no gas) proving the wallet is yours. Your own address becomes your account here —
     balance, dashboard and earning actions included. Only the free airdrop requires a social sign-in
     (see above).</p></div>
+  </details>
+
+  <h2 class="gold" id="luvdrip">the LUVdrip — a million a day, for logging in</h2>
+
+  <details id="luvdrip-what" open>
+    <summary>What is the LUVdrip, and how much can I actually earn?</summary>
+    <div class="a"><p><b>Log in, and 1,000,000 LUV starts dripping.</b> One sign-in arms a 24-hour
+    window, and the million flows across the whole of it — <b>11.574074 LUV every second</b>, one LUV
+    every 86.4 milliseconds — against the wall clock. It keeps flowing with the tab closed, the browser
+    quit and the session expired. When that million has landed the drip stops, and <b>the next million
+    starts with your next log in</b>.</p>
+
+    <p style="font-family:var(--mono);font-size:14px;line-height:2;border-left:2px solid rgba(126,226,160,.5);padding-left:16px">
+      1,000,000 LUV &nbsp;×&nbsp; 100 days<br>
+      <b class="g">= 100,000,000 LUV</b> &nbsp;— one hundred million, for showing up
+    </p>
+
+    <p><b>Log in every day for the 100 days and you accumulate one hundred million LUV.</b> Miss a day
+    and you miss that day's million — nothing else changes, and nothing you already earned is affected.
+    There is no streak bonus and no penalty; the offer is exactly as arithmetic as it looks.</p>
+
+    <p>It is measured to the wei, and the measurement is published: at hour 1 the meter reads
+    41,666.67 LUV, at hour 12 exactly 500,000, and at hour 24 exactly 1,000,000.000000 — the 24 hourly
+    shares differ by a single wei across the whole day, which is flooring and nothing else. The ledger
+    never credits per second (1,000,000 ÷ 86,400 does not terminate, and rounding it would quietly
+    discard 6,400 LUV a day); it computes <code>cap × elapsed ÷ 24h</code> and reads the clock.</p></div>
+  </details>
+
+  <details id="luvdrip-source">
+    <summary>Where does the LUV come from? — the rest of the LUVdrop</summary>
+    <div class="a"><p><b>The LUVdrip is where the remainder of the LUVdrop goes.</b> The one-year free
+    airdrop is closed, and the
+    <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0xdf2C1836550c5711EF9c021cB0de86241dc1DEf3" rel="noopener">gesture
+    pool</a> that funded it still holds <b>~1.024 quadrillion LUV</b>. That remainder is not being
+    withdrawn to anyone — it is being <b>distributed through the drip</b>, a million a day at a time, to
+    people who show up rather than to whoever claimed fastest.</p>
+
+    <p>At a million a day that pool is <b>1,023,939,221 participant-days</b> — enough to honour
+    <b class="g">over 10.2 million</b> complete 100-day runs. The drip is not a promotion with a budget
+    that quietly runs out; the arithmetic is public and the balance is one <code>balanceOf</code> away.</p>
+
+    <p><b>What is true today:</b> the remainder still sits in the gesture pool at
+    <code>0xdf2C…DEf3</code>, and the distributor that pays redemptions holds <b>0 LUV</b>. Moving it is
+    an owner transaction that has not happened yet — it is on
+    <a href="#todo">the open list</a>, with everything else that is promised and not yet done. Your
+    drip accrues regardless; what waits is delivery, not earning.</p></div>
+  </details>
+
+  <details id="luvdrip-collect">
+    <summary>COLLECT and REDEEM — what is the difference?</summary>
+    <div class="a"><p>Two acts, deliberately separate, because they do different things.</p>
+    <p><b class="g">COLLECT</b> banks whatever has dripped into your tally and <b>restarts your million
+    from that moment</b>. It is free, instant, off-chain, and yours to press whenever you like — but it
+    <b>moves no tokens</b>. It cannot be farmed either: a window always pays a million across 24 hours,
+    so collecting hourly earns exactly what collecting daily earns. What it buys is control of the
+    clock, not more LUV.</p>
+    <p><b class="g">REDEEM</b> is the step that <b>moves the tokens into your wallet</b>, on chain,
+    where they are yours to send, hold or trade and where reflections start growing them. Because it
+    touches the chain it costs gas, in ETH — so there are two ways to do it: <b>ride the LUVbus</b>, where
+    the project sends the transaction and <b>you need no ETH at all</b>, or send it yourself from a
+    wallet that holds ETH. The LUV lands on you either way; only the payer differs.</p>
+    <p>Your tally costs nothing to hold and never expires. Collect for a week, a month, or the whole
+    season, and redeem once.</p></div>
+  </details>
+
+  <details id="luvdrip-fair">
+    <summary>What stops someone farming it with a hundred accounts?</summary>
+    <div class="a"><p>Three bindings, each enforced by the database rather than by a check that could be
+    raced: <b>one drip per identity</b>, <b>one drip per wallet</b> (a second identity can never aim its
+    drip at a wallet that is already earning, and a redemption for a shared wallet is refused before any
+    hold is taken), and <b>one drip per email</b> where the provider gives one.</p>
+    <p>And what is <em>not</em> claimed: none of this can see one person holding two unrelated social
+    accounts — nothing on-chain or in a session can. That is exactly why the <b>social account</b> is the
+    unit here and a wallet is not: a wallet is free to mint by the thousand, a social account costs
+    something to make and something to keep. The bindings raise the price of a farm; they do not pretend
+    to have abolished one.</p></div>
+  </details>
+
+  <details id="luvdrip-more">
+    <summary>What else can I earn — and when?</summary>
+    <div class="a"><p>The drip is the <b>first</b> incentive, not the only one. Others are added
+    <b>as they are complete</b> — working, tested, and paying — rather than announced as coming soon and
+    left hanging. Nothing appears on this page as an offer until it can actually pay.</p>
+    <p><b>Next: pay2tweet.</b> Tweet about LUV and the earn rail rewards it — sharing IS the marketing,
+    and the reward for it belongs on chain with everything else. Amounts, daily limits and cooldowns
+    live in the on-chain action registry, which is always the final word over any figure printed
+    here.</p>
+    <p>The pattern will hold for whatever follows: an incentive ships when it works, its terms are
+    readable from the contract, and this page tells you which of the two it is.</p></div>
   </details>
 
   <h2>earning more LUV</h2>
