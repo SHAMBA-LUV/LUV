@@ -158,3 +158,16 @@ CREATE INDEX IF NOT EXISTS idx_drip_redemptions_identity ON drip_redemptions (id
 
 -- Idempotent upgrade for databases created before the drip ledger existed.
 ALTER TABLE drip_state ADD COLUMN IF NOT EXISTS held_wei NUMERIC(78, 0) NOT NULL DEFAULT 0;
+
+-- ── the drip's Sybil bindings — one login, one participant ────────────────────────────────
+-- The ledger enforces uniqueness on every axis it can actually see:
+--   • ONE DRIP PER IDENTITY   — drip_state's primary key, structurally
+--   • ONE DRIP PER WALLET     — bound on first sight and unique thereafter, so a second
+--                               identity can never point its drip at a wallet that is
+--                               already earning. Partial index: NULL means "not yet bound".
+--   • ONE DRIP PER EMAIL      — where the provider gives one, checked at arming time
+-- What it cannot see is one human holding two unrelated social accounts; that is what makes
+-- the social account, not the wallet, the Sybil unit in the first place.
+ALTER TABLE drip_state ADD COLUMN IF NOT EXISTS wallet TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_drip_state_wallet ON drip_state (wallet) WHERE wallet IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_identities_email_lower ON identities (lower(email)) WHERE email IS NOT NULL;

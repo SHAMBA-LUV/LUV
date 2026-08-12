@@ -73,6 +73,45 @@ also where the dashboard's button unlocks.
 drip → COLLECT (free: banks it, clock restarts) → the tally grows → REDEEM (one tx, gas in ETH)
 ```
 
+## The season — 100 days, and then honouring outlives earning
+
+> **Log in daily to collect a million LUV for the next 100 days.** Day 1 is **2026-08-12**;
+> earning ends at **2026-11-20T00:00:00Z** (`DRIP_SEASON_END`).
+
+After that instant **no login arms a new million**. A window already armed **runs its full 24
+hours** — the login that opened it happened inside the season, and that login is what the offer
+was made to.
+
+**WE HONOUR ALL DRIPS.** The season bounds *earning* and nothing else. Every accrued tally stays
+exactly where it is and stays redeemable — self-paid or on the LUVbus — for as long as the rail
+exists. Nothing expires, nothing is swept, nothing must be claimed before a deadline.
+`GET /airdrop/drip` publishes `seasonEndsAt`, `seasonOver` and `seasonDaysLeft`; the dashboard
+counts the days down and, when they run out, says the tally is still yours.
+
+Belt and braces on-chain: `setDrip(token, 0)` from the distributor console pauses new windows
+there too, and equally leaves every tally redeemable.
+
+## One login, one participant — what stops a farm
+
+The drip is free value on a timer, so the only thing between it and a farm is how strictly a
+participant is defined. Three bindings, each enforced by the **database** rather than a check
+that can be raced:
+
+| binding | how | what it stops |
+|---|---|---|
+| **one drip per identity** | `drip_state.identity_key` is the primary key | a second drip for the same login |
+| **one drip per wallet** | `drip_state.wallet`, bound on first sight, partial UNIQUE index; `wallets.address` is UNIQUE too | many identities pooling into one address |
+| **one drip per email** | checked at arming, case-insensitive, where the provider gives one | a second account on the same mailbox |
+
+A voucher is refused outright (`wallet_shared`) for a wallet that already earns under another
+identity, checked **before** any hold is taken.
+
+**What is not claimed.** None of this can see one human holding two unrelated social accounts —
+nothing on-chain or in a session can. That is precisely why the **social account** is the Sybil
+unit here and a wallet is not: a wallet is free to mint by the thousand, a social account costs
+something to make and something to keep. These bindings raise the price of a farm; they do not
+pretend to have abolished one.
+
 ## The tally
 
 Settled LUV accumulates in **one number** (`drip_state.banked_wei`) that keeps growing across

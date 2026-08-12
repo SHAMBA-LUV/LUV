@@ -322,6 +322,92 @@ async function main() {
   ok(eth0 - eth1 === rc2.gasUsed * rc2.gasPrice && eth0 - eth1 > 0n,
     `and the participant paid the gas: ${ethers.formatEther(eth0 - eth1)} ETH`);
 
+  // ── 10. THE SEASON — earning ends, honouring does not ────────────────────────
+  const season = await drip.status(IDK);
+  ok(season.seasonEndsAt > 0, `the season ends ${new Date(season.seasonEndsAt * 1000).toISOString()}`);
+  ok(season.seasonOver === false && season.seasonDaysLeft > 0,
+    `${season.seasonDaysLeft} days of earning left`);
+
+  // wind the clock past the end by moving the season, not the machine
+  const realEnd = process.env.DRIP_SEASON_END;
+  const past = Math.floor(Date.now() / 1000) - 10;
+  const cfg = require('../src/config.js').config;
+  cfg.dripSeasonEnd = past; // the ledger reads config live
+
+  const armedAfter = await drip.armOnLogin(IDK);
+  ok(armedAfter.seasonOver === true && armedAfter.armed === false, 'after the season, a login arms NOTHING');
+  const postSeason = await drip.status(IDK);
+  ok(postSeason.seasonOver === true && postSeason.seasonDaysLeft === 0, 'the meter says the season is over');
+  ok(BigInt(postSeason.accrued) >= 0n, 'and the tally is still there');
+
+  // WE HONOUR ALL DRIPS: whatever was earned stays redeemable after the season ends.
+  // Settle the earlier self-paid voucher against the chain first, or issueVoucher correctly
+  // re-offers that still-pending one instead of writing a new one.
+  await drip.reconcile();
+  await db.query(`UPDATE drip_state SET banked_wei = $2::numeric WHERE identity_key = $1`, [IDK, (2n * MILLION).toString()]);
+  const vSeason = await drip.issueVoucher(IDK, { payer: 'self' });
+  ok(vSeason.ok === true && near(BigInt(vSeason.amount), 2n * MILLION),
+    `a tally earned in the season is still redeemable after it: ${luv(vSeason.amount)} LUV`);
+  const balS = await token.balanceOf(participant.address);
+  await new Promise((r) => setTimeout(r, 400)); // let the node settle this sender's nonce
+  const txS = await participant.sendTransaction({ to: vSeason.to, data: vSeason.data,
+    nonce: await provider.getTransactionCount(participant.address, 'pending'),
+    maxPriorityFeePerGas: 1_000_000_000n, maxFeePerGas: 5_000_000_000n });
+  await txS.wait();
+  ok((await token.balanceOf(participant.address)) - balS === BigInt(vSeason.amount),
+    'and it pays, in full, after the season is over');
+
+  cfg.dripSeasonEnd = realEnd ? Number(realEnd) : 1795132800; // restore
+
+  // ── 11. THE LEDGER CANNOT BE GAMED — one login, one participant ──────────────
+  // (a) one drip per identity: the primary key. A second arm is not a second drip.
+  const armsBefore = await drip.status(IDK);
+  await drip.armOnLogin(IDK);
+  await drip.armOnLogin(IDK);
+  const armsAfter = await drip.status(IDK);
+  ok(armsAfter.windows === armsBefore.windows, 'arming twice in one window creates no second drip');
+
+  // (b) one drip per WALLET: a second identity aiming at the same wallet cannot be paid
+  const farmIdk = 'github:e2e-farm';
+  await upsertIdentity({ provider: 'github', providerUserId: 'e2e-farm', email: null });
+
+  // the first participant's drip is bound to their wallet by now
+  await drip.status(IDK);
+  const boundRow = await db.query('SELECT wallet FROM drip_state WHERE identity_key = $1', [IDK]);
+  ok(boundRow.rows[0].wallet && boundRow.rows[0].wallet.toLowerCase() === participant.address.toLowerCase(),
+    'the drip is bound to the wallet it pays');
+
+  // a pooler tries to aim a second drip at that same wallet: the database refuses it
+  let refusedByIndex = false;
+  try {
+    await db.query('UPDATE drip_state SET wallet = $2 WHERE identity_key = $1', [farmIdk, participant.address]);
+  } catch (e) { refusedByIndex = /unique|duplicate/i.test(e.message); }
+  ok(refusedByIndex, 'a second drip CANNOT be bound to a wallet that is already earning');
+
+  // and the wallets table refuses the same address twice in the first place
+  let refusedByWallets = false;
+  try {
+    await db.query(
+      `INSERT INTO wallets (identity_key, address, enc_ciphertext, enc_iv, enc_tag) VALUES ($1,$2,'x','x','x')`,
+      [farmIdk, participant.address]
+    );
+  } catch (e) { refusedByWallets = /unique|duplicate/i.test(e.message); }
+  ok(refusedByWallets, 'and two identities cannot hold the same wallet at all');
+
+  // a drip with no wallet of its own is refused a voucher rather than paid to someone else's
+  await db.query('UPDATE drip_state SET banked_wei = $2::numeric WHERE identity_key = $1', [farmIdk, (5n * MILLION).toString()]);
+  const farmVoucher = await drip.issueVoucher(farmIdk, { payer: 'self' });
+  ok(farmVoucher.error === 'no_wallet' || farmVoucher.error === 'wallet_shared',
+    `an unbound second identity is refused a voucher (${farmVoucher.error})`);
+
+  // (c) one drip per EMAIL: a second account on the same mailbox arms nothing
+  await upsertIdentity({ provider: 'google', providerUserId: 'twin-a', email: 'twin@example.com' });
+  const twinA = await drip.status('google:twin-a');
+  ok(twinA.eligible === true, 'the first account on a mailbox earns');
+  await upsertIdentity({ provider: 'github', providerUserId: 'twin-b', email: 'TWIN@example.com' });
+  const twinB = await drip.status('github:twin-b');
+  ok(twinB.eligible === false, 'a second account on the SAME mailbox arms nothing (case-insensitive)');
+
   // ── the one-way door: a voucher cannot be replayed ──────────────────────────
   try {
     await participant.sendTransaction({ to: v.to, data: v.data });

@@ -622,6 +622,15 @@
       df.hidden = !d.full;
       if (d.full) { try { localStorage.setItem('luv-maxdrops', JSON.stringify({ t: Date.now() })); } catch (e) {} }
     }
+    // the season: how much earning time is left, and that honouring outlives it
+    const seasonEl = $('dropseason');
+    if (seasonEl && d.seasonEndsAt) {
+      const ends = new Date(d.seasonEndsAt * 1000).toISOString().slice(0, 10);
+      seasonEl.hidden = false;
+      seasonEl.innerHTML = d.seasonOver
+        ? '🏁 <b>the 100 days are complete</b> — no new millions start, and <b>every LUV you collected is still yours</b>, redeemable whenever you like ❤'
+        : '⏳ <b>' + d.seasonDaysLeft + ' day' + (d.seasonDaysLeft === 1 ? '' : 's') + '</b> of the 100 left — log in daily until <b>' + ends + '</b>. Whatever you collect stays yours after it ends ❤';
+    }
     if (msg && !open) {
       msg.textContent = 'your million is dripping and your tally is safe — the redeem desk opens shortly ❤';
     } else if (msg) {

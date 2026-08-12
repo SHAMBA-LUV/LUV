@@ -102,6 +102,21 @@ async function dailyWei() { return (await chainRate()).wei; }
 async function dripToken() { return (await chainRate()).token || config.luvTokenAddress; }
 
 /**
+ * THE SEASON — the published offer has an end, so the ledger has one.
+ *
+ * "Log in daily to collect a million LUV for the next 100 days" (operator, 2026-08-12). After
+ * `DRIP_SEASON_END` no login arms a new million. A window already armed RUNS ITS FULL 24
+ * HOURS — the login that opened it happened inside the season, and that login is what the
+ * offer was made to.
+ *
+ * WE HONOUR ALL DRIPS. The season bounds EARNING and nothing else: every accrued tally stays
+ * exactly where it is, redeemable for as long as the rail exists, self-paid or on the LUVbus.
+ * Nothing expires, nothing is swept, nothing needs claiming before a deadline.
+ */
+function seasonEnd() { return config.dripSeasonEnd || 0; }
+function seasonOver(nowSec) { const e = seasonEnd(); return e !== 0 && (nowSec || Math.floor(Date.now() / 1000)) >= e; }
+
+/**
  * Does the configured distributor carry the REDEEM rail? A deployment made before the drip has
  * no redeemDigest, so no voucher it issued could ever be signed or submitted. Cached with the
  * rate read: while this is false the drip still ACCRUES for everyone — only delivery waits.
@@ -120,6 +135,68 @@ async function railPresent() {
     _rail = { at: Date.now(), ok: false };
   }
   return _rail.ok;
+}
+
+/**
+ * ONE LOGIN, ONE PARTICIPANT — the anti-gaming bindings.
+ *
+ * The drip is free money on a timer, so the only thing standing between it and a farm is how
+ * strictly a "participant" is defined. Three bindings, each enforced by the database rather
+ * than by a check that can be raced:
+ *
+ *   1. ONE DRIP PER IDENTITY — `drip_state.identity_key` is the primary key. Structural.
+ *   2. ONE DRIP PER WALLET   — bound on first sight, then unique. Two identities can never
+ *                              aim their drips at the same address, so a farm cannot pool.
+ *   3. ONE DRIP PER EMAIL    — where the provider gives one. A second account on the same
+ *                              mailbox arms nothing.
+ *
+ * And what is NOT claimed: this cannot see one human holding two unrelated social accounts.
+ * Nothing on-chain or in a session can. That is precisely why the SOCIAL ACCOUNT is the Sybil
+ * unit here and a wallet is not — a wallet is free to mint by the thousand, a social account
+ * costs something to make and something to keep. The bindings raise the price of a farm; they
+ * do not pretend to have abolished one.
+ */
+async function emailTwin(client, identityKey) {
+  const r = await client.query(
+    `SELECT d.identity_key
+       FROM identities me
+       JOIN identities other
+         ON other.email IS NOT NULL AND me.email IS NOT NULL
+        AND lower(other.email) = lower(me.email)
+        AND other.identity_key <> me.identity_key
+       JOIN drip_state d ON d.identity_key = other.identity_key
+      WHERE me.identity_key = $1
+      LIMIT 1`,
+    [identityKey]
+  );
+  return r.rows[0] ? r.rows[0].identity_key : null;
+}
+
+/**
+ * Bind this drip to its wallet the first time one exists. Returns:
+ *   'bound'   — ours now (or already was)
+ *   'shared'  — that wallet already earns for a DIFFERENT identity; this drip must not pay
+ *   'pending' — no wallet provisioned yet; nothing to bind, nothing to refuse
+ */
+async function bindWallet(identityKey) {
+  const wallet = await walletFor(identityKey);
+  if (!wallet) return 'pending';
+  const mine = await db.query('SELECT wallet FROM drip_state WHERE identity_key = $1', [identityKey]);
+  if (!mine.rows[0]) return 'pending';
+  const current = mine.rows[0].wallet;
+  if (current) return current.toLowerCase() === wallet.toLowerCase() ? 'bound' : 'shared';
+  const taken = await db.query(
+    'SELECT identity_key FROM drip_state WHERE lower(wallet) = lower($1) AND identity_key <> $2',
+    [wallet, identityKey]
+  );
+  if (taken.rows[0]) return 'shared';
+  try {
+    await db.query('UPDATE drip_state SET wallet = $2, updated_at = now() WHERE identity_key = $1', [identityKey, wallet]);
+    return 'bound';
+  } catch (e) {
+    // the unique index refused it — another identity bound the same wallet in the same breath
+    return 'shared';
+  }
 }
 
 // ── the meter ────────────────────────────────────────────────────────────────
@@ -205,9 +282,18 @@ async function armOnLogin(identityKey) {
   const nowMs = Date.now();
   const cap = await dailyWei();
   if (cap === 0n) return { armed: false, paused: true }; // the owner paused the drip on-chain
+  // The season is over: settle whatever is owed, arm nothing new, and leave every tally
+  // untouched and redeemable. A participant logging in on day 101 loses nothing they earned.
+  if (seasonOver(Math.floor(nowMs / 1000))) {
+    await db.withTransaction((client) => settleIn(client, identityKey, nowMs));
+    return { armed: false, seasonOver: true };
+  }
   return db.withTransaction(async (client) => {
     const settled = await settleIn(client, identityKey, nowMs);
     if (!settled) {
+      // a second account on a mailbox that already earns arms nothing at all
+      const twin = await emailTwin(client, identityKey);
+      if (twin) return { armed: false, duplicate: true, twin };
       // first ever sign-in: open the first window
       const ins = await client.query(
         `INSERT INTO drip_state (identity_key, window_started_at, window_ends_at, window_wei, cap_wei, settled_at, windows)
@@ -249,6 +335,9 @@ async function collect(identityKey) {
   const nowMs = Date.now();
   const cap = await dailyWei(); // read the chain BEFORE opening the transaction
   if (cap === 0n) return { error: 'drip_paused' };
+  // After the season, COLLECT still banks what flowed — it simply cannot start another
+  // million. Honouring what was earned is exactly what the season does not touch.
+  const over = seasonOver(Math.floor(nowMs / 1000));
   return db.withTransaction(async (client) => {
     // settleIn has already moved everything this window owes into banked_wei; what it
     // credited is exactly this window's meter, which is what we report as collected.
@@ -262,23 +351,28 @@ async function collect(identityKey) {
     // fraction they had already earned.
     if (collected < MIN_COLLECT_WEI) return { error: 'nothing_to_collect', collectable: collected.toString() };
 
-    await client.query(
-      `UPDATE drip_state
-          SET window_started_at = now(), window_ends_at = now() + make_interval(secs => $2),
-              window_wei = 0, cap_wei = $3::numeric, settled_at = now(),
-              windows = windows + 1, updated_at = now()
-        WHERE identity_key = $1`,
-      [identityKey, DAY_SEC, cap.toString()]
-    );
+    if (!over) {
+      await client.query(
+        `UPDATE drip_state
+            SET window_started_at = now(), window_ends_at = now() + make_interval(secs => $2),
+                window_wei = 0, cap_wei = $3::numeric, settled_at = now(),
+                windows = windows + 1, updated_at = now()
+          WHERE identity_key = $1`,
+        [identityKey, DAY_SEC, cap.toString()]
+      );
+    }
     return {
       ok: true,
+      seasonOver: over,
       // What THIS window had dripped when the button was pressed. It was already banked as
       // it flowed — settlement is continuous — so this is a report of the window's
       // contribution, never a second credit of the same LUV.
       collected: collected.toString(),
       accrued: row.banked_wei, // the whole tally, which already contains the above
-      restarted: true,
-      note: 'the clock restarts from this moment — a fresh million begins dripping',
+      restarted: !over,
+      note: over
+        ? 'the season is complete — this is banked and stays redeemable, and no new million starts'
+        : 'the clock restarts from this moment — a fresh million begins dripping',
     };
   });
 }
@@ -326,6 +420,11 @@ async function status(identityKey) {
     needsLogin: s.full || now >= s.windowEndsAt,
     minRedeemWei: MIN_REDEEM_WEI.toString(),
     minCollectWei: MIN_COLLECT_WEI.toString(),
+    // the season: when earning ends. Honouring does not end with it.
+    binding: await bindWallet(identityKey).catch(() => 'pending'),
+    seasonEndsAt: seasonEnd() || null,
+    seasonOver: seasonOver(now),
+    seasonDaysLeft: seasonEnd() ? Math.max(0, Math.ceil((seasonEnd() - now) / 86400)) : null,
     // false while the configured distributor predates the REDEEM rail: the drip still accrues,
     // only delivery waits on the deployment — the dashboard says exactly that.
     redeemOpen: await railPresent(),
@@ -410,6 +509,11 @@ async function issueVoucher(identityKey, opts) {
   // redeemDigest, so a voucher could never be signed — say so BEFORE holding anyone's LUV.
   // The drip keeps accruing meanwhile; only delivery waits on the deployment.
   if (!(await railPresent())) return { error: 'redeem_not_open' };
+
+  // ONE DRIP PER WALLET, enforced where it matters most: nothing is signed for a wallet that
+  // is already earning under another identity. Checked before any hold is taken.
+  const binding = await bindWallet(identityKey);
+  if (binding === 'shared') return { error: 'wallet_shared' };
 
   // Re-offer a live voucher rather than stranding its LUV in a second one.
   const existing = await liveVoucher(identityKey);
@@ -709,7 +813,7 @@ function stopSponsorPass() { if (_sponsorTimer) { clearInterval(_sponsorTimer); 
 
 module.exports = {
   DAILY_WEI, MIN_REDEEM_WEI, MIN_COLLECT_WEI, perSecond, windowEarned, dailyWei, dripToken, railPresent,
-  armOnLogin, status, collect, issueVoucher, liveVoucher,
+  armOnLogin, status, collect, issueVoucher, liveVoucher, seasonEnd, seasonOver, bindWallet,
   markPaid, releaseExpired, reconcile,
   sponsorCandidates, sponsorRedeem, sponsorOne,
   startReconciler, stopReconciler, startSponsorPass, stopSponsorPass,

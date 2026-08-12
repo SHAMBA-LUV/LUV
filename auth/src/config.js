@@ -105,6 +105,17 @@ const config = {
   // A standing periodic sponsored pass (ms). 0 = OFF, the default: the project sponsors when
   // the operator says so (`node src/actions/dripctl.js sponsor …`), not on a silent timer.
   dripSponsorAutoIntervalMs: parseInt(opt('DRIP_SPONSOR_AUTO_INTERVAL_MS', '0'), 10),
+  // THE SEASON. The published offer is "log in daily to collect a million LUV for the next
+  // 100 days" (operator, 2026-08-12), so the ledger ends it on the same day the copy does:
+  // day 1 is 2026-08-12 and no login after this instant arms a new million. A window already
+  // armed runs its full 24 hours — the login that opened it happened inside the season.
+  // EVERY ACCRUED TALLY REMAINS REDEEMABLE FOREVER; the season bounds earning, never honouring.
+  // 0 disables the bound entirely. Accepts an ISO date or an epoch-seconds integer.
+  dripSeasonEnd: (function (v) {
+    if (!v || v === '0') return 0;
+    const n = /^\d+$/.test(v) ? parseInt(v, 10) : Math.floor(Date.parse(v) / 1000);
+    return Number.isFinite(n) ? n : 0;
+  })(opt('DRIP_SEASON_END', '1795132800')), // 2026-11-20T00:00:00Z
   // How often pending vouchers are reconciled against the chain (self-paid redemptions are
   // sent by the participant, so the chain — not the browser — is what tells us they landed).
   dripReconcileIntervalMs: parseInt(opt('DRIP_RECONCILE_INTERVAL_MS', '60000'), 10),
