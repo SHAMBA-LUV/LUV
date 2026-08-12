@@ -247,8 +247,9 @@
       } else {
         setBal(bal || '0');
         if (balState) { balState.className = 'balstate'; balState.innerHTML = '🎉 <b>stage one complete</b> — thank you'; }
-        if (balLine) balLine.textContent = 'stage two: a million LUV a day, for logging in — your drip is below';
-        if (line) line.innerHTML = '🎉 Stage one — the LUV drop — is <b>complete</b>; thank you for being part of it. Stage two is open: <b>1,000,000 LUV for every daily login</b>. ❤';
+        if (balLine) balLine.textContent = 'stage two: thanks a million LUV — log in daily to collect a million, for the next 100 days';
+        if (line) line.innerHTML = '🎉 Stage one — the LUV drop — is <b>complete</b>; thank you for being part of it. '
+          + 'Stage two: <b>thanks a million LUV</b>. Log in daily to collect a million LUV for the next <b>100 days</b>. ❤';
       }
       return;
     }
