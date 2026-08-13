@@ -320,6 +320,28 @@ h2.gold{color:var(--gold)}
   border:1px solid var(--seam);border-radius:999px;padding:8px 16px;transition:color .15s,border-color .15s}
 .shr-btn:hover{color:var(--rose);border-color:var(--rose)}
 .shr-note{text-align:center;font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:8px}
+/* ── the earn strip: post, paste, claim ──
+   The share buttons above work signed out and always will; this is the second step, and it is
+   additive. Candle green, because being paid is a positive event. */
+.shr-earn{max-width:640px;margin:14px auto 0;padding:14px 18px;border:1px solid rgba(14,203,129,.35);
+  border-radius:14px;background:rgba(14,203,129,.05);text-align:center;transition:border-color .2s,box-shadow .2s}
+.shr-earn.armed{border-color:rgba(14,203,129,.75);box-shadow:0 0 26px -10px rgba(14,203,129,.8)}
+.shr-terms{font-family:var(--mono);font-size:11.5px;color:#7ee2a0;letter-spacing:.02em;line-height:1.6}
+.shr-lbl{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--dim);margin:12px 0 7px}
+.shr-inrow{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.shr-in{flex:1 1 300px;min-width:0;font-family:var(--mono);font-size:12.5px;color:var(--cream);
+  background:var(--ink);border:1px solid var(--seam);border-radius:9px;padding:9px 12px}
+.shr-in:focus{outline:none;border-color:#0ecb81;box-shadow:0 0 0 2px rgba(14,203,129,.25)}
+.shr-in::placeholder{color:#7d5d6c}
+.shr-go{border-color:rgba(14,203,129,.6);color:#7ee2a0;white-space:nowrap}
+.shr-go:hover:not(:disabled){color:#0ecb81;border-color:#0ecb81;background:rgba(14,203,129,.1)}
+.shr-go:disabled{opacity:.5;cursor:default}
+.shr-msg{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-top:9px;min-height:1.2em;line-height:1.6}
+.shr-msg.ok{color:#0ecb81}
+.shr-msg.bad{color:var(--rose)}
+.shr-earn a{color:#7ee2a0}
+@media (prefers-reduced-motion:reduce){.shr-earn{transition:none}}
 
 /* ── the beating heart — a lub-dub, honored only when motion is welcome ── */
 @keyframes luvbeat{0%,56%,100%{transform:scale(1)}14%{transform:scale(1.18)}28%{transform:scale(1)}42%{transform:scale(1.22)}}
@@ -355,6 +377,14 @@ footer .brandmark:hover img{opacity:1}
      title="USDC / LUV — buy LUV with USDC on Uniswap · set slippage ~10% (the 5% fee plus price impact)"><img
      src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap"><span class="pair">USDC<span class="slash">/</span>LUV</span><span class="beat">❤</span></a></h1>
   <div class="sub">✨ the LUV/ETH market, in real time ✨</div>
+
+  <!-- share this page, and be paid for it. The buttons work signed out; the earn strip is the
+       second step, wired to the IncentiveDistributor tasks rail (data-earn names the action). -->
+  <div data-luvshare data-earn="tweet" data-note="off"
+       data-earn-max="3333333333"
+       data-label="share the live market"
+       data-url="https://luv.pythai.net/view.html"
+       data-text="The LUV market, live: one trillion LUV — a million millions — priced in USDC, read straight from the Uniswap pair. HOLD LUV to earn LUV ❤ @shambaluv #SHAMBALUV"></div>
 
   <!-- the feeling of LUV: the pulse widened into bands of frequency -->
   <div class="feelband">
@@ -519,7 +549,7 @@ footer .brandmark:hover img{opacity:1}
 <script src="substrate/d3.min.js?v=1"></script>
 <script src="substrate/luv-market.js?v=19"></script>
 <script src="substrate/luv-screener.js?v=6"></script>
-<script src="substrate/luv-share.js?v=5"></script>
+<script src="substrate/luv-share.js?v=7"></script>
 <script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
 <script src="substrate/luv-frame.js?v=6"></script>
