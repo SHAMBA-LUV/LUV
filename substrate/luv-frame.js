@@ -84,14 +84,22 @@
     this.reduced = false;
     // Candle mode is opt-in per page: <body data-luvframe="candles">. Pages that say
     // nothing keep the rose hairline exactly as before.
+    //
+    // GREEN REST is a second token on the same attribute — <body data-luvframe="candles green">.
+    // It changes only what the boundary does when NOTHING is happening: instead of the
+    // four-then-one bias blended toward Bitcoin orange, the hairline blinks candle green on the
+    // beat. It does not touch the flash: a real swap read from the pair's own log still lands as
+    // pure green or pure red, because the truth of a trade is never a mood.
     this.candles = !!(opts && opts.candles);
     this.rainbow = !!(opts && opts.rainbow);
+    this.greenRest = !!(opts && opts.green);
     if (!opts) {
       try {
         var host = document.body || document.documentElement;
         var want = host && host.getAttribute && host.getAttribute('data-luvframe');
         this.candles = /(^|\s)candles(\s|$)/i.test(want || '');
         this.rainbow = /(^|\s)rainbow(\s|$)/i.test(want || '');
+        this.greenRest = /(^|\s)green(\s|$)/i.test(want || '');
       } catch (e) { /* no DOM yet */ }
     }
     try {
@@ -191,7 +199,7 @@
     ctx.stroke();
 
     // inner hairline — the living edge, breathing with the pulse (2px standoff)
-    var edge = ROSE, glow = PINK;
+    var edge = ROSE, glow = PINK, blink = false;
     if (this.rainbow) {
       // reduced motion: hold one colour rather than freeze mid-sweep at random
       edge = glow = this.reduced ? ROYGBIV[3] : roygbiv(Date.now());
@@ -199,6 +207,10 @@
       if (this.flashUntil && Date.now() < this.flashUntil) {
         // an actual swap, straight from the pair's own log — this is not a bias
         edge = glow = (this.flashSide === 's') ? CANDLE_RED : CANDLE_GREEN;
+      } else if (this.greenRest) {
+        // the page asked for candle green at rest, and asked for it to BLINK
+        edge = glow = CANDLE_GREEN;
+        blink = true;
       } else {
         // resting bias: still four-then-one, but blended toward Bitcoin orange so the
         // boundary encourages rather than alarms. reduced motion holds the resting hue
@@ -208,11 +220,16 @@
       }
     }
     octPath(ctx, m + 3, m + 3, w - m - 3, h - m - 3, Math.max(ch - 3, 4));
-    ctx.lineWidth = 1;
+    ctx.lineWidth = blink ? 1.4 : 1;
     ctx.strokeStyle = edge;
-    ctx.globalAlpha = 0.22 + 0.5 * v;
+    // A BLINK, not a breath. The default hairline rides the envelope linearly (0.22 → 0.72), which
+    // reads as breathing; cubing it holds the edge dim for most of the second and then snaps it
+    // bright at the top of the beat, which is what a blink is. Still one blink per second — 1 Hz,
+    // a third of the 3 Hz flash threshold, so it stays WCAG 2.3.1-safe — and reduced motion gets a
+    // steady green edge with no cycling at all.
+    ctx.globalAlpha = blink ? (this.reduced ? 0.55 : 0.10 + 0.82 * v * v * v) : 0.22 + 0.5 * v;
     ctx.shadowColor = glow;
-    ctx.shadowBlur = 6 * v;
+    ctx.shadowBlur = blink ? (this.reduced ? 5 : 16 * v * v) : 6 * v;
     ctx.stroke();
     ctx.shadowBlur = 0;
 

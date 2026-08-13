@@ -28,7 +28,7 @@
 (function (global) {
   'use strict';
 
-  var VERSION = '1.8.0';
+  var VERSION = '1.9.0';
   var SEAM = '#4a1f30', ROSE = '#ff4d6d', GOLD = '#e3b25f', DIM = '#b98da0', CREAM = '#f6e7eb';
 
   // Where the organs are published. Each organ names its own file, so the inventory can
@@ -289,33 +289,72 @@
   // Wired to [data-luv-emit]. rAF only — no CSS keyframes, no injected stylesheet, so it
   // survives any style-src policy. Respects prefers-reduced-motion by simply not emitting.
   var HEART = 'gfx/heart.svg';
-  function emitHeart(host) {
+  /// Release one heart from a host element. opts tunes the flight: {life, rise, drift, size,
+  /// opacity}. The defaults are the hover emission this has always done; the ambient float below
+  /// asks for a longer, taller, softer one.
+  function emitHeart(host, opts) {
+    opts = opts || {};
     var r;
     try { r = host.getBoundingClientRect(); } catch (e) { return; }
+    // A host scrolled off the screen emits into nowhere — the hearts are position:fixed, so they
+    // would be painted outside the viewport and thrown away. Skip the work entirely.
+    var vh = global.innerHeight || 0, vw = global.innerWidth || 0;
+    if (r.bottom < 0 || r.top > vh || r.right < 0 || r.left > vw) return;
     var img = document.createElement('img');
     img.src = absolute(HEART);
     img.alt = '';
     img.setAttribute('aria-hidden', 'true');
-    var size = 12 + Math.floor(((r.width || 100) % 7)) + (heartSeed++ % 9);
+    var size = opts.size || (12 + Math.floor(((r.width || 100) % 7)) + (heartSeed++ % 9));
     var x0 = r.left + r.width * (0.15 + ((heartSeed * 37) % 70) / 100);
-    var y0 = r.top + r.height * 0.55;
-    var drift = (((heartSeed * 53) % 40) - 20);
+    var y0 = r.top + r.height * (opts.from == null ? 0.55 : opts.from);
+    var drift = (((heartSeed * 53) % 40) - 20) * (opts.drift || 1);
+    var peak = opts.opacity == null ? 0.95 : opts.opacity;
     img.setAttribute('style',
       'position:fixed;left:' + x0 + 'px;top:' + y0 + 'px;width:' + size + 'px;height:' + size +
-      'px;pointer-events:none;z-index:9999;opacity:.95;will-change:transform,opacity');
+      'px;pointer-events:none;z-index:9999;opacity:' + peak + ';will-change:transform,opacity');
     document.body.appendChild(img);
-    var t0 = null, LIFE = 1100;
+    var t0 = null, LIFE = opts.life || 1100, RISE = opts.rise || 70;
     function step(t) {
       if (t0 === null) t0 = t;
       var k = (t - t0) / LIFE;
       if (k >= 1) { if (img.parentNode) img.parentNode.removeChild(img); return; }
-      img.style.transform = 'translate(' + (drift * k) + 'px,' + (-70 * k) + 'px) scale(' + (1 - 0.35 * k) + ')';
-      img.style.opacity = String(0.95 * (1 - k));
+      // a slow sideways sway on the way up, so a stream of hearts does not read as a column
+      var sway = opts.sway ? Math.sin(k * Math.PI * 2) * opts.sway : 0;
+      img.style.transform = 'translate(' + (drift * k + sway) + 'px,' + (-RISE * k) +
+        'px) scale(' + (1 - 0.35 * k) + ')';
+      img.style.opacity = String(peak * (1 - k));
       global.requestAnimationFrame(step);
     }
     global.requestAnimationFrame(step);
   }
   var heartSeed = 1;
+
+  // ── hearts that float on their own, on the beat ────────────────────────────────────
+  // [data-luv-float] releases a heart on the heartbeat rather than on a hover: the page beats at
+  // exactly 1 Hz (substrate/luv-pulse.js), so the hearts leave on the same second for every
+  // visitor, the way every other organ here is phase-shared. The attribute's value is how many
+  // beats to wait between hearts — "2" is every other beat, for somewhere a heart a second would
+  // be too much. One interval for the whole page, not one per host, and it stands down whenever
+  // the tab is hidden. prefers-reduced-motion emits nothing at all.
+  function wireFloat() {
+    var reduced = false;
+    try { reduced = global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+    catch (e) { /* older engines */ }
+    if (reduced || !global.requestAnimationFrame) return;
+    var hosts = document.querySelectorAll('[data-luv-float]');
+    if (!hosts.length) return;
+    var beat = 0;
+    global.setInterval(function () {
+      if (document.hidden) return;
+      beat++;
+      for (var i = 0; i < hosts.length; i++) {
+        var every = Number(hosts[i].getAttribute('data-luv-float')) || 1;
+        if (beat % every) continue;
+        heartSeed++;
+        emitHeart(hosts[i], { life: 2600, rise: 132, sway: 9, from: 0.72, opacity: 0.7 });
+      }
+    }, 1000);
+  }
   function wireEmitters() {
     var reduced = false;
     try { reduced = global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches; }
@@ -391,6 +430,40 @@
   // prefers-reduced-motion: one still band, structure without motion.
   var BAND_LIFE = 2600;          // ms for a band to cross the field and fade out
   var HARMONICS = [1, 0.5, 0.333333333333];   // fundamental + partials = the width
+
+  // The pump runs red -> candle green, and it runs THROUGH BITCOIN ORANGE to get there.
+  // Interpolating #ff2e4c straight to #0ecb81 in RGB passes through rgb(135,125,103) at the
+  // half-beat — a dead khaki, the colour you always get crossing between complements in a linear
+  // space. Routing the ramp through #f7931a keeps saturation up the whole way, and it borrows no
+  // new colour: candle green and candle red are the frame's, the orange is the resting blend the
+  // frame already leans on. Red at rest, orange on the rise, candle green at the top of the beat.
+  var CORE_RED = [255, 46, 76], CORE_MID = [247, 147, 26], CORE_GREEN = [14, 203, 129];
+  function mixRgb(a, b, t) {
+    t = t < 0 ? 0 : t > 1 ? 1 : t;
+    return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  }
+  /// The beat's colour at envelope v — the two-leg ramp, red -> orange -> candle green.
+  function pump(v) {
+    v = v < 0 ? 0 : v > 1 ? 1 : v;
+    return v < 0.5 ? mixRgb(CORE_RED, CORE_MID, v * 2) : mixRgb(CORE_MID, CORE_GREEN, (v - 0.5) * 2);
+  }
+  function rgba(c, a) {
+    return 'rgba(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ',' + a.toFixed(3) + ')';
+  }
+  /// The heart, as the classic parametric curve — x = 16sin³t, y = 13cos t − 5cos 2t − 2cos 3t −
+  /// cos 4t. Sampled rather than approximated with beziers: it is one closed loop, it needs no
+  /// control points to tune, and 72 segments is already smoother than the pixels under it.
+  function heartPath(ctx, cx, cy, s) {
+    var k = s / 16, i, t, x, y;
+    ctx.beginPath();
+    for (i = 0; i <= 72; i++) {
+      t = i / 72 * Math.PI * 2;
+      x = 16 * Math.pow(Math.sin(t), 3);
+      y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+      if (i === 0) ctx.moveTo(cx + x * k, cy + y * k); else ctx.lineTo(cx + x * k, cy + y * k);
+    }
+    ctx.closePath();
+  }
   function Feel(mount) {
     this.mount = mount; this.canvas = null; this.ctx = null;
     this.raf = 0; this.bands = []; this.lastBeat = -1; this.dpr = 1;
@@ -445,12 +518,28 @@
 
     var cx = w / 2, cy = h / 2, maxR = Math.sqrt(cx * cx + cy * cy);
 
-    // the core glow — the heartbeat itself, breathing with the envelope
-    var glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 26 + 30 * v);
-    glow.addColorStop(0, 'rgba(255,0,110,' + (0.34 + 0.34 * v).toFixed(3) + ')');
-    glow.addColorStop(1, 'rgba(255,0,110,0)');
+    // ── the core: a HEART, pumping red to candle green ──
+    // It was a round glow, which read as a globe sitting in the middle of the bands. A heart is
+    // what this page is about, so the core is drawn as one — and it pumps through the market's own
+    // two colours rather than staying one hue: red at rest, candle green at the top of the beat,
+    // the same #0ecb81 the candles and the frame use. The colour IS the envelope, so the eye reads
+    // the beat twice over, in size and in hue.
+    var beatRgb = pump(v);
+    var glowR = 30 + 34 * v;
+    var glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowR);
+    glow.addColorStop(0, rgba(beatRgb, 0.30 + 0.34 * v));
+    glow.addColorStop(1, rgba(beatRgb, 0));
     ctx.fillStyle = glow;
-    ctx.beginPath(); ctx.arc(cx, cy, 26 + 30 * v, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy, glowR, 0, Math.PI * 2); ctx.fill();
+
+    // the heart itself, swelling on the beat
+    var hs = 17 + 9 * v;
+    heartPath(ctx, cx, cy, hs);
+    ctx.fillStyle = rgba(beatRgb, 0.72 + 0.24 * v);
+    ctx.fill();
+    ctx.lineWidth = 1.1;
+    ctx.strokeStyle = rgba(mixRgb(beatRgb, [246, 231, 235], 0.45), 0.5 + 0.4 * v);
+    ctx.stroke();
 
     // the bands — each beat expands outward, widening and thinning as it travels
     for (var i = 0; i < this.bands.length; i++) {
@@ -503,6 +592,7 @@
     try { wireEmitters(); } catch (e) { /* motion is a courtesy, never a requirement */ }
     try { wireCopy(); } catch (e) { /* copy is a courtesy too */ }
     try { wireFeel(); } catch (e) { /* feeling is never a requirement */ }
+    try { wireFloat(); } catch (e) { /* floating hearts are the softest courtesy of all */ }
   }
   // PUBLISH BEFORE BOOTING. The registry probes for the symbol each organ publishes —
   // including its own — so if boot() ran first (any load where readyState is already past

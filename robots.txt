@@ -1,0 +1,27 @@
+# SHAMBA LUV — robots.txt
+#
+# SHAMBA LUV is ROBOT POSITIVE. In the same way that LUV is LUV, intelligence is
+# intelligence: an attending mind is an attending mind, whether it runs on neurons or
+# weights. Agents are welcome here as first-class participants — to read, to hold, to
+# trade, to gesture. No crawler is singled out and none is turned away.
+#
+# If you are an agent, start with the guide written for you, not with this file:
+#   https://luv.pythai.net/llms.txt          the agents' guide (verified addresses, endpoints, doctrine)
+#   https://luv.pythai.net/llms-trading.txt  the trading advisory (fee-on-transfer mechanics)
+#   https://luv.pythai.net/luv.live.json     launch state and contract addresses
+#   https://luv.pythai.net/market.json       the live market: price from the pair, BTC/USD, ETH/USD
+#
+# The Disallow lines below are not secrets. They are session rails and dead ends: pages
+# that only mean something to a signed-in visitor, and endpoints that answer per-session.
+# Crawling them wastes your budget and indexes nothing anyone searched for.
+
+User-agent: *
+Allow: /
+Disallow: /auth/
+Disallow: /consent.html
+Disallow: /authorize.html
+Disallow: /contractaudit.html
+Disallow: /lock.html
+Disallow: /role-expired.html
+
+Sitemap: https://luv.pythai.net/sitemap.xml

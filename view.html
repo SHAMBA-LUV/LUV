@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>LIVE VIEW — SHAMBA LUV</title>
-<meta name="description" content="The LUV/ETH market, live — real-time chart, percent change per interval, one trillion LUV priced in USDC, and the verified SHAMBA LUV contract. Phase 2 complete: the gesture has met the market.">
+<title>LIVE VIEW — the LUV price, live on Uniswap | SHAMBA LUV</title>
+<meta name="description" content="The LUV/ETH market live: in-house candlestick chart, percent change per interval, 1 trillion LUV priced in USDC, and the verified LUV contract on Uniswap.">
 <meta name="author" content="SHAMBA LUV">
 <link rel="canonical" href="https://luv.pythai.net/view.html">
 <meta property="og:type" content="website">
@@ -13,8 +13,33 @@
 <meta property="og:description" content="The measure of value: 1,000,000,000,000 LUV priced live in USDC. In-house chart, percent change per interval, verified contract 0x2711…8254 trading on Uniswap.">
 <meta property="og:url" content="https://luv.pythai.net/view.html">
 <meta property="og:image" content="https://luv.pythai.net/gfx/logo.png">
+<meta property="og:image:secure_url" content="https://luv.pythai.net/gfx/logo.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta property="og:image:alt" content="SHAMBA LUV — the gold binary heart">
+<meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@shambaluv">
+<meta name="twitter:title" content="LIVE VIEW — the LUV/ETH market, in real time">
+<meta name="twitter:description" content="1,000,000,000,000 LUV priced live in USDC. In-house chart and screener read from the Uniswap V2 pair itself — the pair creates the price.">
 <meta name="twitter:image" content="https://luv.pythai.net/gfx/logo.png">
+<meta name="twitter:image:alt" content="SHAMBA LUV — the gold binary heart">
+<meta name="keywords" content="LUV price, SHAMBA LUV, LUV chart, LUV ETH, LUV USDC, Uniswap V2 pair, reflection token, live crypto chart, 1 trillion LUV, 0x2711111111683B8708cb9a48cBf36a51315F8254, luv.pythai.net">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+<meta name="theme-color" content="#160a0f">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage",
+"name":"LIVE VIEW — the LUV/ETH market, in real time",
+"description":"The LUV/ETH market live: in-house candlestick chart, percent change per interval, 1 trillion LUV priced in USDC, and the verified LUV contract on Uniswap.",
+"url":"https://luv.pythai.net/view.html",
+"inLanguage":"en",
+"primaryImageOfPage":{"@type":"ImageObject","url":"https://luv.pythai.net/gfx/logo.png","width":512,"height":512},
+"isPartOf":{"@type":"WebSite","name":"SHAMBA LUV","url":"https://luv.pythai.net/"},
+"publisher":{"@type":"Organization","name":"SHAMBA LUV","url":"https://luv.pythai.net/","logo":{"@type":"ImageObject","url":"https://luv.pythai.net/gfx/logo.png"}},
+"about":{"@type":"Thing","name":"SHAMBA LUV (LUV)","description":"A fixed-supply reflection token on Ethereum mainnet; the price is created by the Uniswap V2 LUV/WETH pair.","identifier":"0x2711111111683B8708cb9a48cBf36a51315F8254"},
+"significantLink":["https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254","https://luv.pythai.net/market.json"]}
+</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E">
 <style>
 :root{
@@ -53,10 +78,23 @@ h2.gold{color:var(--gold)}
 .phaseband .note{margin-top:8px;color:var(--dim);font-size:14px}
 .phaseband .note b{color:var(--blush)}
 .phasetrack{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:18px;font-family:var(--mono);font-size:11px;letter-spacing:.12em}
-.phasetrack span{border:1px solid var(--seam);border-radius:999px;padding:4px 13px;color:var(--dim)}
+.phasetrack span,.phasetrack a{border:1px solid var(--seam);border-radius:999px;padding:4px 13px;color:var(--dim)}
 .phasetrack span.done{color:var(--gold);border-color:rgba(227,178,95,.5)}
 .phasetrack span.done::before{content:'✓ ';font-weight:700}
 .phasetrack span.next{color:var(--blush);border-color:var(--seam)}
+/* Phase 4 is the one still ahead, and it is the one that asks something of you — so it is the
+   only pill that is lit. Candle green, breathing with the same --luv-pulse the border uses, and
+   it is a LINK home: sharing is the marketing, so the pill hands over the address to share. */
+.phasetrack a.next{color:#0ecb81;border-color:rgba(14,203,129,.6);text-decoration:none;
+  position:relative;transition:transform .18s cubic-bezier(.2,.8,.3,1),box-shadow .2s ease,color .2s ease;
+  box-shadow:0 0 calc(3px + 13px*var(--luv-pulse,.28)) rgba(14,203,129,calc(.12 + .32*var(--luv-pulse,.28)))}
+.phasetrack a.next:hover,.phasetrack a.next:focus-visible{color:#59f5b6;border-color:#0ecb81;
+  transform:translateY(-1px);box-shadow:0 0 22px -2px rgba(14,203,129,.85)}
+.phasetrack a.next:active{transform:translateY(0) scale(.985)}
+@media (prefers-reduced-motion:reduce){
+  .phasetrack a.next{transition:none;box-shadow:0 0 10px rgba(14,203,129,.28)}
+  .phasetrack a.next:hover,.phasetrack a.next:focus-visible{transform:none}
+}
 
 /* ── the live chart ── */
 .chartcard{border:1px solid var(--seam);border-radius:14px;background:var(--wine);padding:14px;overflow:hidden}
@@ -175,8 +213,21 @@ h2.gold{color:var(--gold)}
 .btn:hover{color:var(--rose);border-color:var(--rose)}
 
 /* ── the feeling of LUV + brand marks on transparent ground ── */
-.feelband{border:1px solid var(--seam);border-radius:16px;background:rgba(0,0,0,.18);
-  padding:10px 12px 12px;margin:0 0 26px;overflow:hidden}
+/* The pulse is bordered in the market's own candle green (#0ecb81), and the border BREATHES:
+   the glow is driven by --luv-pulse, the 0..1 lub-dub envelope luv-pulse.js publishes on :root
+   every frame from the chronos-corrected clock. No second timer — the border is a consumer of
+   the engine's fundamental, so it swells in the same phase as the heart inside it and as every
+   heart on every other page. 60 bpm is exactly 1 Hz, well under the 3 Hz flash threshold, so
+   this stays WCAG 2.3.1-safe. */
+.feelband{border:1px solid rgba(14,203,129,.55);border-radius:16px;background:rgba(0,0,0,.18);
+  padding:10px 12px 12px;margin:0 0 26px;overflow:visible;position:relative;
+  box-shadow:
+    0 0 calc(4px + 16px*var(--luv-pulse,.28)) rgba(14,203,129,calc(.12 + .30*var(--luv-pulse,.28))),
+    inset 0 0 calc(8px + 26px*var(--luv-pulse,.28)) rgba(14,203,129,calc(.04 + .11*var(--luv-pulse,.28)))}
+@media (prefers-reduced-motion:reduce){
+  /* the signal still runs; the border simply stops moving with it */
+  .feelband{box-shadow:0 0 10px rgba(14,203,129,.20),inset 0 0 14px rgba(14,203,129,.07)}
+}
 .feelcap{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-top:8px;
   font-family:var(--mono);font-size:11.5px;line-height:1.6;color:var(--dim)}
 .feelcap span:last-child{flex:1 1 260px;min-width:220px}
@@ -256,7 +307,7 @@ footer .brandmark:hover{color:var(--cream)}
 footer .brandmark:hover img{opacity:1}
 </style>
 </head>
-<body data-luvframe="candles">
+<body data-luvframe="candles green">
 
 <header>
   <div class="wrap bar">
@@ -274,7 +325,7 @@ footer .brandmark:hover img{opacity:1}
 
   <!-- the feeling of LUV: the pulse widened into bands of frequency -->
   <div class="feelband">
-    <div data-luvfeel style="height:132px"></div>
+    <div data-luvfeel data-luv-float="1" data-luv-emit style="height:132px"></div>
     <div class="feelcap">
       <span class="pairhint">the pairs — hover, then click to buy LUV · the wallet switches to Ethereum for you</span>
       <a class="tok tok-eth" data-luv-emit href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=ETH&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="ETH / LUV — buy LUV with ETH on Uniswap">Ξ</a>
@@ -283,8 +334,9 @@ footer .brandmark:hover img{opacity:1}
       <button type="button" class="tokbtn" data-luv-watchasset>
         <img src="gfx/heart-512.png" alt="" height="14" aria-hidden="true"> add LUV to MetaMask
       </button>
-      <span>every heart on every page beats in the same phase — 60 bpm, exactly 1 Hz.
-      each beat sheds a band; the bands carry the partials, so a pulse reads as a spectrum.</span>
+      <span>every heart on every page beats in the same phase — 60 bpm, exactly 1 Hz. the core is
+      a heart, pumping red to candle green with the envelope; each beat sheds a band, and the bands
+      carry the partials, so a pulse reads as a spectrum.</span>
     </div>
   </div>
 
@@ -306,7 +358,8 @@ footer .brandmark:hover img{opacity:1}
       <span class="done">Phase 1 · LUV is Priceless</span>
       <span class="done">Phase 2 · The Value of LUV</span>
       <span class="done">Phase 3 · Sharing is Caring — LIVE</span>
-      <span class="next">Phase 4 · SHARE the LUV — marketing · thanks a million millions</span>
+      <a class="next" href="https://luv.pythai.net" data-luv-float="2" data-luv-emit
+         title="SHARE the LUV — the address to share is luv.pythai.net">Phase 4 · SHARE the LUV — marketing · thanks a million millions ❤</a>
     </div>
   </div>
 
@@ -436,8 +489,8 @@ footer .brandmark:hover img{opacity:1}
 <script src="substrate/luv-share.js?v=5"></script>
 <script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
-<script src="substrate/luv-frame.js?v=5"></script>
+<script src="substrate/luv-frame.js?v=6"></script>
 <script src="substrate/luv-wei.js?v=1"></script>
-<script src="substrate/luv-engine.js?v=9"></script>
+<script src="substrate/luv-engine.js?v=11"></script>
 </body>
 </html>
