@@ -33,7 +33,7 @@ const DIST_ABI = [
 ];
 
 // Landing fallback while the distributor isn't deployed/configured. Phase-3 policy
-// (operator, 2026-08-03): tweet = 50 billion LUV, limit 3/day, 1h cooldown timer —
+// (operator, 2026-08-13): tweet = 1,000,000 LUV, limit 3/day, 8h cooldown timer —
 // the rail supports both the trigger (proof submission → review → relay) and the
 // timer (canPerform cooldown clock in the widget). NOTE: when the on-chain registry
 // is live it ALWAYS wins; retune it with setAction("tweet", LUV, 5e28, 3, 3600,
@@ -47,11 +47,14 @@ const SEED_ACTIONS = [
   // setAction("welcome", LUV, 1e24, 0, 0, true, true) + setAction("return", LUV, 1e24, 1, 86400, false, true).
   { name: 'welcome', reward: (10n ** 24n).toString(), dailyLimit: 0, cooldown: 0, oneTime: true, active: true, completions: 0 },
   { name: 'return', reward: (10n ** 24n).toString(), dailyLimit: 1, cooldown: 86400, oneTime: false, active: true, completions: 0 },
-  // Sliding-scale tweet incentive (operator, 2026-08-05): 3,333,333,333 LUV per tweet
-  // (~$0.0006 at the $0.001≈5.7B mark), 8h between tweets (3 fit a UTC day). The scale
-  // slides with price — the owner retunes the registry as LUV appreciates:
-  // setAction("tweet", LUV, 3333333333e18, 3, 28800, false, true).
-  { name: 'tweet', reward: (3333333333n * 10n ** 18n).toString(), dailyLimit: 3, cooldown: 28800, oneTime: false, active: true, completions: 0 },
+  // THE MILLION, FOR A TWEET (operator, 2026-08-13 — supersedes the 3,333,333,333 sliding
+  // scale). A tweet pays 1,000,000 LUV, the same standard gesture the signup and the daily
+  // drip pay: one figure across the whole rail, and "thanks a million" means the same thing
+  // whichever way it is earned. 8h between tweets, so exactly three fit a day — 3,000,000
+  // from tweeting, on top of the day's 1,000,000 LUVdrip, for a 4,000,000 ceiling.
+  // Owner retunes the chain to agree:
+  // setAction("tweet", LUV, 1e24, 3, 28800, false, true).
+  { name: 'tweet', reward: (10n ** 24n).toString(), dailyLimit: 3, cooldown: 28800, oneTime: false, active: true, completions: 0 },
   { name: 'post', reward: (5n * 10n ** 29n).toString(), dailyLimit: 10, cooldown: 300, oneTime: false, active: true, completions: 0 },
   { name: 'interaction', reward: (5n * 10n ** 28n).toString(), dailyLimit: 20, cooldown: 60, oneTime: false, active: true, completions: 0 },
 ];

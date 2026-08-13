@@ -57,9 +57,9 @@ LUV is a fee-on-transfer (FoT) token. Respect the mechanics or your transactions
 5. **Maintenance is permissionless**: `processFees()` (selector `0xba69ebed`) on the token flushes accrued team/liquidity fees — anyone may call it, you pay only gas. A robot-positive protocol lets robots do the housekeeping.
 6. **maxTx**: 1% of supply (1.11 quadrillion LUV) per transaction.
 
-## Earning LUV (phase 3 — the tasks rail, sliding scale)
+## Earning LUV (phase 3 — the tasks rail)
 
-The earn rail pays on a **sliding scale** — amounts are retuned as LUV appreciates, and
+The earn rail pays **the standard gesture, a million LUV**, whichever way you earn it, and
 **the on-chain registry (IncentiveDistributor `0x607E477AB12406A3294A7Ba63817103f92D8f806`,
 `getAllActions()`) is always the final word**. Current posted terms:
 
@@ -68,9 +68,12 @@ The earn rail pays on a **sliding scale** — amounts are retuned as LUV appreci
   every 86.4 ms) against the WALL CLOCK: it keeps flowing with the tab closed and the
   session ended, until the whole million has landed. The NEXT million starts on the NEXT
   login. The dashboard counts the window down to the second.
-- **Tweets: 3,333,333,333 LUV each, 8 hours between tweets, 3 per day** — a full day of
-  tweeting earns 9,999,999,999 LUV; with the day's LUVdrip the ceiling is
-  10,000,999,999 LUV.
+- **Tweets: 1,000,000 LUV each, 8 hours between tweets, 3 per day** — the same million the
+  signup and the daily drip pay, because a gesture is a gesture. Three fit a day exactly, so
+  a full day of tweeting earns 3,000,000 LUV; with the day's LUVdrip the ceiling is
+  **4,000,000 LUV a day**. The 8-hour cooldown is enforced on-chain (`canPerform`) and shown
+  as a live countdown on the share rail at https://luv.pythai.net/view.html — post, paste the
+  link, claim.
 - **The day starts when you sign in**: earn submissions only count on days you actually
   logged in (a lingering session is presence, not a return).
 - Rewards **accrue gas-free** as ONE ACCUMULATING TALLY, and **REDEEM** delivers the

@@ -174,14 +174,18 @@
     var terms = document.createElement('div'); terms.className = 'shr-terms';
     terms.textContent = 'checking what the rail pays…';
     var body = document.createElement('div'); body.className = 'shr-claim';
+    // Two lines, deliberately. The clock ticks once a second; the claim result must outlive it.
+    // Sharing one element meant "that link is already in" was wiped before it could be read.
+    var clock = document.createElement('div'); clock.className = 'shr-clock';
     var msg = document.createElement('div'); msg.className = 'shr-msg';
-    box.appendChild(terms); box.appendChild(body); box.appendChild(msg);
+    box.appendChild(terms); box.appendChild(body); box.appendChild(clock); box.appendChild(msg);
     this.root.appendChild(box);
 
     function say(text, kind) {
       msg.textContent = text || '';
       msg.className = 'shr-msg' + (kind ? ' ' + kind : '');
     }
+    function tickSay(text) { clock.textContent = text || ''; }
 
     // 1. the published terms — public, no session needed
     getJson(API.registry).then(function (reg) {
@@ -239,21 +243,44 @@
         try { input.focus({ preventScroll: true }); } catch (e) { input.focus(); }
       };
 
-      // what is left of today, from the contract's own per-user stats
+      // What is left of today, and when the next one unlocks — from the contract's own per-user
+      // stats, counted down live. The cooldown is the whole shape of the offer (a tweet every
+      // eight hours, three a day), so it is a running clock rather than a number that was true
+      // when the page loaded.
       getJson(API.mine).then(function (m) {
         var st = (m && m.stats && m.stats[action]) || null;
         if (!st) return;
         var left = a.dailyLimit ? Math.max(0, a.dailyLimit - (Number(st.countToday) || 0)) : null;
-        var parts = [];
         // "2 of 10 left today" quotes the daily limit as plainly as the terms line would, so it
-        // is withheld on the same rule. The cooldown clock stays either way: without it a user
-        // walks into an invisible wall, and a countdown offers nothing.
-        if (left !== null && self.figures) parts.push(left + ' of ' + a.dailyLimit + ' left today');
-        if (st.lastAt && a.cooldown) {
-          var next = (Number(st.lastAt) + Number(a.cooldown)) * 1000 - Date.now();
-          if (next > 0) parts.push('next in ' + Math.ceil(next / 60000) + ' min');
+        // is withheld on the same rule. The clock stays either way: without it a user walks into
+        // an invisible wall, and a countdown quotes no rate.
+        var head = (left !== null && self.figures) ? left + ' of ' + a.dailyLimit + ' left today' : '';
+        var nextAt = (st.lastAt && a.cooldown)
+          ? (Number(st.lastAt) + Number(a.cooldown)) * 1000 : 0;
+
+        function hhmmss(ms) {
+          var t = Math.max(0, Math.ceil(ms / 1000));
+          var h = Math.floor(t / 3600), mn = Math.floor((t % 3600) / 60), sc = t % 60;
+          return (h ? h + ':' + ('0' + mn).slice(-2) : mn) + ':' + ('0' + sc).slice(-2);
         }
-        if (parts.length) say(parts.join(' · '));
+        function tick() {
+          var rem = nextAt - Date.now();
+          if (rem <= 0) {
+            if (self._clock) { clearInterval(self._clock); self._clock = 0; }
+            tickSay(head ? head + ' · ready — post and claim' : 'ready — post and claim');
+            return;
+          }
+          tickSay((head ? head + ' · ' : '') + 'next in ' + hhmmss(rem));
+        }
+        if (nextAt > Date.now()) {
+          tick();
+          // one interval, cleared the moment it reaches zero; a hidden tab need not tick
+          self._clock = setInterval(function () {
+            if (!document.hidden) tick(); else if (nextAt - Date.now() <= 0) tick();
+          }, 1000);
+        } else if (head) {
+          tickSay(head);
+        }
       }, function () { /* stats are a courtesy; the claim works without them */ });
 
       function submit() {
@@ -278,6 +305,9 @@
           }
           var sub = res.d && res.d.submission;
           input.value = '';
+          // the clock the strip was showing is now wrong — that claim started a new cooldown
+          if (self._clock) { clearInterval(self._clock); self._clock = 0; }
+          tickSay('');
           say(sub && sub.status === 'approved'
             ? '✓ claimed — approved. The payout worker relays it on-chain; the LUV lands in your account.'
             : '✓ claimed — queued for review. Approved claims are relayed on-chain automatically.', 'ok');
@@ -294,7 +324,7 @@
     });
   };
 
-  var DVLuvShare = { Rail: Rail, DEFAULT_TEXT: DEFAULT_TEXT, API: API, luv: luv, version: '1.2.0' };
+  var DVLuvShare = { Rail: Rail, DEFAULT_TEXT: DEFAULT_TEXT, API: API, luv: luv, version: '1.3.0' };
   if (typeof module !== 'undefined' && module.exports) module.exports = DVLuvShare;
   global.DVLuvShare = DVLuvShare;
 
