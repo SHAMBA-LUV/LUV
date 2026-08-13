@@ -181,7 +181,9 @@
     opts = opts || {};
     var fromYear = opts.from || 2010, toYear = opts.to || 2140;
     var W = opts.width || 1240, H = opts.height || 780;
-    var L = 70, R = 122, T = 20, B = 48;                       // R carries the market-cap axis
+    // The halving date rail needs room under the axis for a column of dates set on their side:
+    // ten monospace characters at 8.5px is ~52px, plus the year ticks and the ordinals above them.
+    var L = 70, R = 122, T = 20, B = opts.halvingDates ? 116 : 48;   // R carries the market-cap axis
     var x0 = Math.log10(daysSinceGenesis(Date.UTC(fromYear, 0, 1)));
     var x1 = Math.log10(daysSinceGenesis(Date.UTC(toYear, 0, 1)));
     var yLo = centerLog(Math.pow(10, x0)) - 0.7 - 0.15;
@@ -195,7 +197,8 @@
     var svg = el('svg', {
       viewBox: '0 0 ' + W + ' ' + H, xmlns: NS, role: 'img',
       'aria-label': 'The in-house Bitcoin rainbow on log-log axes, ' + fromYear + ' to ' + toYear +
-        ', with a market-cap axis and reference marks at world debt and the quadrillion.'
+        ', with a market-cap axis and reference marks at world debt and the quadrillion' +
+        (opts.halvingDates ? ', and every halving drawn as a dated bar.' : '.')
     });
     svg.appendChild(el('rect', { width: W, height: H, fill: '#160a0f' }));
 
@@ -327,6 +330,18 @@
         ppts.push(pxx + ',' + pyy);
         plast = { x: pxx, y: pyy };
       }
+      // Carry the path to the live reading. The embedded series ends at its last weekly close;
+      // without this the white line stops days short of the dot and the chart shows a gap between
+      // the record and where it says you are. The segment is drawn to the same point the dot uses,
+      // so the two can never disagree.
+      if (opts.price > 0 && plast) {
+        var liveMs = opts.dateMs || Date.now();
+        var lastSeriesMs = RC.msOf(RC.SERIES_LAST_X);
+        var liveLg = Math.log10(daysSinceGenesis(liveMs));
+        if (liveMs > lastSeriesMs && liveMs <= toMs0 && liveLg >= x0 && liveLg <= x1) {
+          ppts.push(X(liveLg) + ',' + Y(Math.log10(opts.price)));
+        }
+      }
       if (ppts.length > 1) {
         svg.appendChild(el('polyline', {
           points: ppts.join(' '), fill: 'none', stroke: '#ffffff',
@@ -457,22 +472,49 @@
       }
     }
 
-    // ── halvings: solid where actual, dashed where schedule, and legible ──
+    // ── halvings: bars, solid where actual, dashed where schedule, and dated ──
+    // Every halving is a BAR the full height of the plot — the schedule is the one thing on this
+    // chart that is not a mood, so it is drawn as structure rather than as a hint. With
+    // opts.halvingDates the bars carry their dates in a rail under the axis, set on their side
+    // because thirty-two horizontal dates cannot fit across any width.
+    //
+    // WHAT KIND OF DATE EACH ONE IS. The four that have happened get their full calendar date,
+    // because that is a fact. The rest get year and month only: they are 210,000 blocks apart at
+    // whatever pace the chain keeps, and printing a day would claim a precision the schedule does
+    // not have. The rail thins itself by pixels — on log time the last halvings sit a few pixels
+    // apart — but the four actual ones and the NEXT one are always dated, since those are the ones
+    // a reader came for.
     var toMs = Date.UTC(toYear, 0, 1), fromMs = Date.UTC(fromYear, 0, 1), ms, n = 0;
     var all = HALVINGS.slice(), lastH = all[all.length - 1];
     while (lastH + HALVING_STEP_MS <= toMs && all.length < 33) { lastH += HALVING_STEP_MS; all.push(lastH); }
     var spacingOK = all.length > 1 ? Math.abs(Xdate(all[all.length - 1]) - Xdate(all[all.length - 2])) : 99;
+    var dateBase = H - 8, lastDateX = -Infinity, dated = 0;
     for (i = 0; i < all.length; i++) {
       ms = all[i];
       if (ms < fromMs || ms > toMs) continue;
       var actual = i < HALVINGS.length, hx = Xdate(ms);
       if (hx < L || hx > W - R) continue;
-      svg.appendChild(el('line', {
-        x1: hx, y1: T, x2: hx, y2: H - B, stroke: '#e3b25f',
-        'stroke-width': actual ? 1.4 : 0.9,
-        'stroke-opacity': actual ? 0.9 : 0.42,
-        'stroke-dasharray': actual ? '' : '4 4'
-      }));
+      var barW = actual ? 3.2 : 1.6;
+      if (opts.halvingDates) {
+        // a bar, not a hairline: the same mark the rail's date belongs to
+        svg.appendChild(el('rect', {
+          x: hx - barW / 2, y: T, width: barW, height: (H - B) - T, fill: '#e3b25f',
+          'fill-opacity': actual ? 0.8 : 0.3
+        }));
+        if (!actual) {
+          svg.appendChild(el('line', {
+            x1: hx, y1: T, x2: hx, y2: H - B, stroke: '#e3b25f',
+            'stroke-width': 0.9, 'stroke-opacity': 0.5, 'stroke-dasharray': '4 4'
+          }));
+        }
+      } else {
+        svg.appendChild(el('line', {
+          x1: hx, y1: T, x2: hx, y2: H - B, stroke: '#e3b25f',
+          'stroke-width': actual ? 1.4 : 0.9,
+          'stroke-opacity': actual ? 0.9 : 0.42,
+          'stroke-dasharray': actual ? '' : '4 4'
+        }));
+      }
       // the four that happened are named; the schedule is numbered where there is room
       if (actual) {
         svg.appendChild(el('text', {
@@ -485,12 +527,34 @@
           'text-anchor': 'middle', 'font-family': 'monospace'
         }, String(i + 1)));
       }
+      // the rail: the date itself, rotated, reading up from a common baseline
+      if (opts.halvingDates) {
+        var must = actual || i === HALVINGS.length;      // the record, and the one coming next
+        if (must || hx - lastDateX >= 11) {
+          var iso = new Date(ms).toISOString();
+          var label = actual ? iso.slice(0, 10) : iso.slice(0, 7);
+          // rotate(-90) turns the baseline to run upward; the glyphs then hang to the LEFT of the
+          // anchor, so the anchor is offset half a cap-height to sit the column astride its bar.
+          var lx2 = (hx + 4.25).toFixed(1);
+          svg.appendChild(el('text', {
+            x: lx2, y: dateBase, fill: actual ? '#e3b25f' : '#8a6a3c',
+            'font-size': 8.5, 'font-family': 'monospace',
+            'font-weight': actual ? 'bold' : 'normal', 'text-anchor': 'start',
+            transform: 'rotate(-90 ' + lx2 + ' ' + dateBase + ')'
+          }, label));
+          lastDateX = hx;
+          dated++;
+        }
+      }
       n++;
     }
     svg.appendChild(el('text', {
       x: L, y: H - B + 30, fill: '#8a6a3c', 'font-size': 9,
       'text-anchor': 'start', 'font-family': 'monospace'
-    }, 'halvings — ' + HALVINGS.length + ' actual, ' + (n - HALVINGS.length) + ' scheduled'));
+      // This label shares its row with the halving ordinals, and the first of those lands around
+      // x = 363 on a 2010–2140 window: anything much longer than ~48 characters overprints it.
+    }, 'halvings — ' + HALVINGS.length + ' actual, ' + (n - HALVINGS.length) + ' scheduled' +
+       (opts.halvingDates ? ' · ' + dated + ' dated' : '')));
 
     // ── you are here — the origin of perspective ──
     if (opts.price > 0) {
@@ -502,8 +566,14 @@
       if (inRange) {
         svg.appendChild(el('line', { x1: L, y1: dy, x2: W - R, y2: dy, stroke: '#ff4d6d', 'stroke-width': 0.8, 'stroke-dasharray': '2 3', 'stroke-opacity': 0.5 }));
         svg.appendChild(el('circle', { cx: dx, cy: dy, r: 4.5, fill: '#ff4d6d', stroke: '#f6e7eb', 'stroke-width': 1.5 }));
-        svg.appendChild(el('text', { x: dx + 9, y: dy + 15, fill: '#ffb3c1', 'font-size': 11, 'font-family': 'monospace', 'font-weight': 'bold' },
-          'you are here · ' + priceTxt + ' · ' + usd(opts.price * TERMINAL_SUPPLY) + ' cap'));
+        // The dot rides the live price, so on a near window it sits close to the right-hand edge and
+        // the label would run out over the market-cap axis. Clamp it inside the plot: to the right
+        // of the dot where there is room, flush against the right margin where there is not.
+        var dotTxt = 'you are here · ' + priceTxt + ' · ' + usd(opts.price * TERMINAL_SUPPLY) + ' cap';
+        var dotW = dotTxt.length * 6.6;
+        var dotLx = Math.max(L + 4, Math.min(dx + 9, W - R - dotW - 4));
+        svg.appendChild(el('text', { x: dotLx, y: dy + 15, fill: '#ffb3c1', 'font-size': 11, 'font-family': 'monospace', 'font-weight': 'bold' },
+          dotTxt));
       }
     }
 
@@ -685,7 +755,7 @@
 
   var DVLuvRainbow = {
     FIT: FIT, BANDS: BANDS, GENESIS: GENESIS, MACRO: MACRO, TERMINAL_SUPPLY: TERMINAL_SUPPLY,
-    version: '1.4.0', SCALES: SCALES, SCALE_LABELS: SCALE_LABELS,
+    version: '1.5.0', SCALES: SCALES, SCALE_LABELS: SCALE_LABELS,
     center: function (days) { return Math.pow(10, centerLog(days)); },
     yearAtPrice: yearAtPrice, usd: usd, worldDebtAt: worldDebtAt, WORLD_DEBT: WORLD_DEBT,
     worldDebtPerSecond: worldDebtPerSecond, DEBT_CAGR: DEBT_CAGR,
@@ -708,7 +778,8 @@
           price: m.dataset.price ? Number(m.dataset.price) : undefined,
           dateMs: m.dataset.date ? Date.parse(m.dataset.date + 'T00:00:00Z') : undefined,
           yMax: m.dataset.ymax ? Number(m.dataset.ymax) : undefined,
-          debt: m.dataset.debt === '1'
+          debt: m.dataset.debt === '1',
+          halvingDates: m.dataset.halvingdates === '1'
         };
         m._rainbowOpts = o;   // the zoom ladder re-renders from these
         render(m, o);

@@ -43,7 +43,10 @@
     var RB = window.DVLuvRainbow;
     if (!RB) { addWidthZoom(box); return; }
     var c = makeRow(box);
-    var idx = 4; // $100M — the whole 2010–2040 fit fits under it
+    // $100M — the whole 2010–2040 fit fits under it. A mount drawing a shorter window says so with
+    // data-zoomstart, because a ceiling chosen for 2140 leaves a near view as a stripe at the floor.
+    var idx = mount.dataset.zoomstart ? Number(mount.dataset.zoomstart) : 4;
+    if (!(idx >= 0 && idx < RB.SCALES.length)) idx = 4;
     function apply() {
       var o = mount._rainbowOpts || {};
       o.yMax = RB.SCALES[idx];
@@ -66,6 +69,7 @@
   // so a window left open overnight is never quietly stale.
   var PRICE_TTL_MS = 15 * 60 * 1000;
   var lastPriceAt = 0;
+  var lastRead = null;      // the last good reading, so a chart mounted later is never blank-dated
 
   function fmtUsd(v) {
     return '$' + Math.round(v).toLocaleString('en-US');
@@ -73,8 +77,8 @@
 
   function paintCaption(mount, price, atMs, stale) {
     var box = mount.parentNode;
-    if (!box) return;
-    var cap = box.nextSibling;
+    if (!box || !box.parentNode) return;
+    var cap = box.nextElementSibling;
     if (!cap || cap.className !== 'livecap') {
       cap = document.createElement('div');
       cap.className = 'livecap';
@@ -102,6 +106,14 @@
       }
       paintCaption(m, price, atMs, stale);
     }
+    // The arc is the other renderer of the same history, and it carries its own embedded series:
+    // it takes the reading through setLive, which redraws every arc mount the organ has drawn into.
+    // Without this the page's first chart sat at its last embedded close while the two below it
+    // moved — the same picture disagreeing with itself.
+    var RC = window.DVLuvRainbowChart;
+    if (RC && RC.setLive) RC.setLive(price, atMs);
+    var arcs = document.querySelectorAll('[data-luvrainbowchart],[data-rainbow-chart]');
+    for (i = 0; i < arcs.length; i++) paintCaption(arcs[i], price, atMs, stale);
   }
 
   function refreshPrice(force) {
@@ -111,7 +123,9 @@
     }).then(function (d) {
       if (!d || !(d.btcUsd > 0)) return;         // no price is better than a wrong dot
       lastPriceAt = Date.now();
-      applyPrice(d.btcUsd, d.btcUsdAt || Date.now(), /(stale)/.test(d.btcUsdSource || ''));
+      lastRead = { price: d.btcUsd, atMs: d.btcUsdAt || Date.now(),
+                   stale: /(stale)/.test(d.btcUsdSource || '') };
+      applyPrice(lastRead.price, lastRead.atMs, lastRead.stale);
     }).catch(function () { /* offline: the dated dot stands, and says its date */ });
   }
 
@@ -143,6 +157,24 @@
     var mount = box.querySelector('[data-luvrainbow]');
     if (mount) { addScaleZoom(box, mount); addDebtToggle(box, mount); } else addWidthZoom(box);
   }
+
+  /// A box that gained a live rainbow AFTER boot — the gated one — needs its controls rebuilt:
+  /// it was given the width zoom a static SVG wants, and now wants the scale ladder instead.
+  function rewire(box) {
+    var row = box.previousElementSibling;
+    if (row && row.className === 'zoomrow') row.parentNode.removeChild(row);
+    delete box.dataset.zoomed;
+    box._applyZoom = null;
+    addZoom(box);
+  }
+
+  /// Paint the last good reading onto whatever is on the page now, then top it up if it is old.
+  /// A chart mounted between refreshes would otherwise wait up to fifteen minutes for its price.
+  function republish() {
+    if (lastRead) applyPrice(lastRead.price, lastRead.atMs, lastRead.stale);
+    refreshPrice(false);
+  }
+
   function boot() {
     var boxes = document.querySelectorAll('.chartbox');
     for (var i = 0; i < boxes.length; i++) addZoom(boxes[i]);
@@ -155,25 +187,55 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
   window.__rainbowZoomBoot = boot;
+  window.__rainbowRewire = rewire;
+  window.__rainbowRefresh = republish;
 })();
 (async function () {
   var gate = document.getElementById('gate');
   var box = document.getElementById('chartbox');
   var gated = document.querySelectorAll('.gated');
   if (!gate || !box) return;
+  function unlock() {
+    box.hidden = false;
+    gate.hidden = true;
+    for (var i = 0; i < gated.length; i++) gated[i].hidden = false;
+  }
+
   try {
     var me = await fetch('/auth/me', { credentials: 'same-origin' });
     if (!me.ok) return; // no session — the gate stays
+
+    // THE NEAR VIEW, DRAWN LIVE RATHER THAN DELIVERED FROZEN.
+    // /auth/rainbow serves a static SVG generated when the page was last published, so the one
+    // chart behind the handshake was the one chart still quoting the price of the day it was made.
+    // A session now unlocks a chart the substrate draws in the browser, on the same fifteen-minute
+    // reading as everything else here. The gate is unchanged — /auth/me still decides who sees it,
+    // and the near window with its band prices is still what a session buys. The frozen SVG stays
+    // as the fallback for a browser where the substrate did not load.
+    var RB = window.DVLuvRainbow;
+    if (RB) {
+      var mount = document.createElement('div');
+      mount.setAttribute('data-luvrainbow', '');
+      mount.dataset.rainbowBooted = '1';   // this file renders it; the organ's self-boot must not
+      mount.dataset.zoomstart = '3';       // $10M — the near window's ribbon, top to bottom
+      mount._rainbowOpts = { from: 2010, to: 2030, height: 620 };
+      box.textContent = '';
+      box.appendChild(mount);
+      unlock();
+      if (window.__rainbowRewire) window.__rainbowRewire(box);
+      else RB.render(mount, mount._rainbowOpts);
+      if (window.__rainbowRefresh) window.__rainbowRefresh();
+      return;
+    }
+
     var r = await fetch('/auth/rainbow', { credentials: 'same-origin' });
     if (!r.ok) return;
     var svg = await r.text();
     // defense in depth: only inject if the payload is the expected SVG document
     if (svg.indexOf('<svg') !== 0) return;
     box.innerHTML = svg;
-    box.hidden = false;
+    unlock();
     if (box._applyZoom) box._applyZoom();
-    gate.hidden = true;
-    for (var i = 0; i < gated.length; i++) gated[i].hidden = false;
   } catch (_) {
     /* network error — the gate stays; the prose is already visible */
   }

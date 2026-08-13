@@ -38,8 +38,17 @@
  * innerHTML. The series is embedded — weekly closes, delta-encoded log10 × 1000 — so the chart
  * renders identically offline and airgapped.
  *
+ * THE LIVE TIP. The embedded series ends at its last close, which is a fact with a date on it and
+ * therefore wrong by a little more every day the page is not republished. `setLive(price, atMs)`
+ * hands the organ a current price: the white path is carried from the last close to that reading,
+ * the marker and the readout card move to it, and every mount already on the page is redrawn. The
+ * organ still fetches NOTHING — the caller supplies the number (on luv.pythai.net that is
+ * rainbow.js, reading same-origin /market.json every fifteen minutes), so zero-network-calls
+ * survives intact and the page keeps one source of truth for "now".
+ *
  * Self-boot: <div data-rainbow-chart data-to="2027" data-height="600"></div>
  * API: RainbowChart.render(mount, opts) · .fit(x) → USD · .bandOf(price, x) · .FIT · .BANDS
+ *      RainbowChart.setLive(usd, atMs) → redraws every mount at the live price · .live()
  */
 (function (global) {
   'use strict';
@@ -120,6 +129,38 @@
 
   /// Day index of series point i — uniform weekly stride, except the last, which is the real close.
   function seriesX(i) { return i === SERIES.length - 1 ? SERIES_LAST_X : 1 + i * SERIES_STEP; }
+
+  // ── the live tip ──
+  // LIVE is the current price as last handed in, and MOUNTS is every element this organ has drawn
+  // into, so a new reading redraws what is actually on the page rather than waiting for a reload.
+  // Mounts are deduplicated by element, and a mount removed from the document is dropped on the
+  // next pass — otherwise a long-lived page would redraw into detached nodes forever.
+  var LIVE = null;
+  var MOUNTS = [];
+
+  function remember(mount, opts) {
+    for (var i = 0; i < MOUNTS.length; i++) {
+      if (MOUNTS[i].mount === mount) { MOUNTS[i].opts = opts; return; }
+    }
+    MOUNTS.push({ mount: mount, opts: opts });
+  }
+
+  /// Hand the organ the current price. Returns false — and changes nothing — for anything that is
+  /// not a positive number, because a wrong tip is worse than a dated one.
+  function setLive(usd, atMs) {
+    if (!(usd > 0)) return false;
+    LIVE = { price: usd, atMs: atMs > 0 ? atMs : Date.now() };
+    var live = [];
+    for (var i = 0; i < MOUNTS.length; i++) {
+      var m = MOUNTS[i];
+      if (m.mount.ownerDocument && m.mount.ownerDocument.contains(m.mount)) {
+        live.push(m);
+        render(m.mount, m.opts);
+      }
+    }
+    MOUNTS = live;
+    return true;
+  }
 
   // The reference fits on the ROW INDEX of its CSV, not on days-since-genesis, so index and date
   // only coincide where the series has no gaps. Across 2010-08-16 → 2026-08-08 there is exactly
@@ -256,9 +297,21 @@
   }
 
   /// The measured close at day index x, interpolated in log space between the weekly points.
-  /// null past the end of the record, where the fitted curve takes over.
+  /// null past the end of the record, where the fitted curve takes over — unless a live price has
+  /// been handed in, in which case the stretch between the last close and the live reading is
+  /// interpolated too. That stretch is not a record of anything: it is a straight line drawn
+  /// between two real points, and the hover readout says so rather than calling it a close.
   function seriesPriceAtX(x) {
-    if (x < 1 || x > SERIES_LAST_X) return null;
+    if (x > SERIES_LAST_X) {
+      if (!LIVE) return null;
+      var lx = xOf(LIVE.atMs);
+      if (x > lx) return null;
+      var lastLg = SERIES[SERIES.length - 1];
+      if (lx <= SERIES_LAST_X) return LIVE.price;
+      var f = (x - SERIES_LAST_X) / (lx - SERIES_LAST_X);
+      return Math.pow(10, lastLg + (Math.log10(LIVE.price) - lastLg) * f);
+    }
+    if (x < 1) return null;
     var i = Math.floor((x - 1) / SERIES_STEP);
     if (i < 0) i = 0;
     if (i >= SERIES.length - 1) return Math.pow(10, SERIES[SERIES.length - 1]);
@@ -272,11 +325,20 @@
     var theme = THEME;
     if (opts.theme) { theme = {}; for (var t in THEME) theme[t] = opts.theme[t] || THEME[t]; }
 
+    remember(mount, opts);
+
+    // The live tip, if the page has handed one in. Its day index is derived from the reading's own
+    // timestamp, so a price read at 00:32 UTC lands on today rather than on whatever "now" was when
+    // the chart last drew.
+    var live = LIVE && LIVE.price > 0 ? { price: LIVE.price, atMs: LIVE.atMs, x: xOf(LIVE.atMs) } : null;
+
     // The reference extends nine months past the last close and stops. Anything further stretches
     // the arc thin and paints more forecast than record, so nine months is the default here too.
+    // The window is measured from the LIVE tip when there is one — otherwise a page left open long
+    // enough would eventually push its own marker off the right-hand edge.
     var xEnd = opts.to
       ? xOf(Date.UTC(opts.to, 0, 1))
-      : xOf(msOf(SERIES_LAST_X) + 274 * DAY);
+      : xOf(Math.max(msOf(SERIES_LAST_X), live ? live.atMs : 0) + 274 * DAY);
     var xStart = 1;
 
     // 1240 x 600 is ~2.07:1, close to the reference figure's 15x7. The arc wants width: it is a
@@ -388,12 +450,15 @@
         }, String(i + 1)));
       }
     }
-    // ── the measured price path ──
+    // ── the measured price path, carried to the live tip ──
     var pts = [];
     for (i = 0; i < SERIES.length; i++) {
       var px = seriesX(i);
       if (px > xEnd) break;
       pts.push(X(px) + ',' + Y(SERIES[i]));
+    }
+    if (live && live.x > SERIES_LAST_X && live.x <= xEnd) {
+      pts.push(X(live.x) + ',' + Y(Math.log10(live.price)));
     }
     svg.appendChild(el('polyline', {
       points: pts.join(' '), fill: 'none', stroke: theme.price,
@@ -408,15 +473,20 @@
     // The arc climbs to the top-right, so the bottom-right of the plot is always empty: the
     // readout card lives there on its own backing plate and reaches the dot with a leader line.
     // Text is never laid over the bands, where nine saturated colours make any ink unreadable.
-    var lastX = SERIES_LAST_X;
-    var lastUsd = Math.pow(10, SERIES[SERIES.length - 1]);
+    // The marker is the live reading when there is one and the last embedded close otherwise, so
+    // the card is never a dated number wearing the word "today".
+    var lastX = live ? live.x : SERIES_LAST_X;
+    var lastUsd = live ? live.price : Math.pow(10, SERIES[SERIES.length - 1]);
     var lastBand = bandOf(lastUsd, lastX);
     if (lastX <= xEnd) {
-      var dx = X(lastX), dy2 = Y(SERIES[SERIES.length - 1]);
+      var dx = X(lastX), dy2 = Y(Math.log10(lastUsd));
       var mcap = marketcapAt(lastUsd, msOf(lastX));
       var ratio = lastUsd / fit(lastX);
+      var stamp = live
+        ? new Date(live.atMs).toISOString().slice(0, 16).replace('T', ' ') + ' UTC · live'
+        : FIT.to + ' · last close';
       var lines = [
-        { t: FIT.to, c: theme.dim, s: 10, w: 'normal' },
+        { t: stamp, c: live ? '#7ee2a0' : theme.dim, s: 10, w: live ? 'bold' : 'normal' },
         { t: '$' + Math.round(lastUsd).toLocaleString('en-US'), c: theme.ink, s: 17, w: 'bold' },
         { t: usdLabel(mcap) + ' market cap', c: theme.dim, s: 10.5, w: 'normal' },
         { t: ratio.toFixed(2) + '× the fit', c: theme.dim, s: 10.5, w: 'normal' },
@@ -443,6 +513,13 @@
           'font-family': 'monospace', 'font-weight': lines[i].w
         }, lines[i].t));
         ty += lines[i].s + 6;
+      }
+      // a soft ring marks the live reading — the dot is the same dot, but it is saying "now"
+      if (live) {
+        svg.appendChild(el('circle', {
+          cx: dx, cy: dy2, r: 9, fill: 'none', stroke: '#7ee2a0',
+          'stroke-width': 1.1, 'stroke-opacity': 0.55
+        }));
       }
       svg.appendChild(el('circle', {
         cx: dx, cy: dy2, r: 4.5, fill: theme.dot, stroke: theme.bg, 'stroke-width': 1.4
@@ -502,8 +579,12 @@
         // reading is the close itself (audited against an independent feed: median 0.25% off,
         // worst 2.95%); between two it is a log-space interpolation, which smooths a volatile week
         // (median 2.8%, worst 12%). Calling both "measured" would overstate the second.
+        // Past the last close the reading rides the line drawn to the live tip, which is neither a
+        // close nor the fit, and is named as its own third thing.
         var onPoint = ((Math.round(xh) - 1) % SERIES_STEP) === 0 || Math.round(xh) === SERIES_LAST_X;
         var kind = measured == null ? 'the fitted curve'
+                 : Math.round(xh) > SERIES_LAST_X
+                   ? (live && Math.round(xh) >= live.x ? 'the live price' : 'toward the live price')
                  : onPoint ? 'weekly close' : 'between weekly closes';
         var rows = [
           when.toISOString().slice(0, 10),
@@ -532,9 +613,10 @@
   var RainbowChart = {
     render: render, fit: fit, bandOf: bandOf, xOf: xOf, msOf: msOf, seriesX: seriesX,
     supplyAt: supplyAt, marketcapAt: marketcapAt, usdLabel: usdLabel,
+    setLive: setLive, live: function () { return LIVE; }, seriesPriceAtX: seriesPriceAtX,
     FIT: FIT, BANDS: BANDS, SERIES: SERIES, SERIES_STEP: SERIES_STEP, SERIES_LAST_X: SERIES_LAST_X,
     BAND_WIDTH: BAND_WIDTH, BAND_OFFSET: BAND_OFFSET, TERMINAL_SUPPLY: TERMINAL_SUPPLY,
-    THEME: THEME, version: '2.0.0'
+    THEME: THEME, version: '2.1.0'
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = RainbowChart;
   global.RainbowChart = RainbowChart;
