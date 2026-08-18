@@ -26,10 +26,17 @@
   var PAIR = '0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31';
   var COIN = 'gfx/logo-transparent.png';        // the mark: the gold binary heart
   var SEED_PRICE_NATIVE = 1e-17;                 // the seed — exactly 10 wei per LUV
-  // classic candle colours: candle green up, candle red down — the market's own vocabulary, not
-  // the site's rose (which stays for prose and the seed's dot). Bitcoin, where it appears on this
-  // site, goes up in bitcoin orange; LUV wears its own gold coin.
-  var UP = '#0ecb81', UPSOFT = '#7ee2a8', DOWN = '#f6465d', DOWNSOFT = '#ff8098', FLAT = '#b98da0';
+  // TRADINGVIEW CLASSIC (operator, 2026-08-17): up is the top of the screen, and an up bar — a
+  // close above its open — is the classic candle green; a close below is the classic candle red.
+  // The indicators wear TradingView's own defaults too, so a trader reads this chart on sight:
+  // Bollinger basis orange over blue bands, MACD blue over signal orange, the four-shade histogram.
+  var UP = '#26a69a', UPSOFT = '#4dd0c4', DOWN = '#ef5350', DOWNSOFT = '#ff8a80', FLAT = '#b98da0';
+  var TV = {
+    bbLine: '#2962FF', bbBasis: '#FF6D00', bbFill: 'rgba(41,98,255,.10)',
+    macd: '#2962FF', signal: '#FF6D00',
+    histGA: '#26A69A', histFA: '#B2DFDB', histGB: '#FFCDD2', histFB: '#FF5252'
+  };
+  var BB_N = 20, BB_K = 2, MACD_F = 12, MACD_S = 26, MACD_SIG = 9;
   var GOLD = '#e3b25f', SEAM = '#4a1f30', DIM = '#b98da0';
   var REFRESH_MS = 5 * 60e3;                     // full refresh from the mirror: 5 minutes
   var PRICE_MS = 60e3;                           // light price tick from the mirror: 1 minute
@@ -71,6 +78,44 @@
     return Math.min(Math.max(Math.ceil(-Math.log10(span / 5)) + 1, base), cap);
   }
   function shortHash(h) { return h ? h.slice(0, 6) + '…' + h.slice(-4) : '—'; }
+
+  // ── indicator math — plain arrays, index-aligned to their input, NaN where undefined ──
+  // Computed over EVERY bar the series holds, not only the visible ones, so the first visible bar
+  // already carries a settled reading — the way a charting terminal warms an indicator up on the
+  // bars to the left of the screen.
+  function smaSeries(v, n) {
+    var out = new Array(v.length).fill(NaN), sum = 0;
+    for (var i = 0; i < v.length; i++) {
+      sum += v[i]; if (i >= n) sum -= v[i - n];
+      if (i >= n - 1) out[i] = sum / n;
+    }
+    return out;
+  }
+  function stdevSeries(v, n, mean) {
+    var out = new Array(v.length).fill(NaN);
+    for (var i = n - 1; i < v.length; i++) {
+      var ss = 0;
+      for (var j = i - n + 1; j <= i; j++) { var d = v[j] - mean[i]; ss += d * d; }
+      out[i] = Math.sqrt(ss / n);            // population σ — what TradingView's BB uses
+    }
+    return out;
+  }
+  function emaSeries(v, n) {
+    var out = new Array(v.length).fill(NaN), k = 2 / (n + 1), prev = NaN, seed = 0, cnt = 0;
+    for (var i = 0; i < v.length; i++) {
+      if (isNaN(prev)) { seed += v[i]; cnt++; if (cnt === n) { prev = seed / n; out[i] = prev; } continue; }
+      prev = v[i] * k + prev * (1 - k); out[i] = prev;
+    }
+    return out;
+  }
+  function macdSeries(v, f, sl, sg) {
+    var ef = emaSeries(v, f), es = emaSeries(v, sl), line = v.map(function (_, i) { return ef[i] - es[i]; });
+    // the signal EMA runs on the MACD line where it exists
+    var start = -1; for (var i = 0; i < line.length; i++) if (!isNaN(line[i])) { start = i; break; }
+    var sig = new Array(v.length).fill(NaN);
+    if (start >= 0) { var sub = emaSeries(line.slice(start), sg); for (i = 0; i < sub.length; i++) sig[start + i] = sub[i]; }
+    return { line: line, signal: sig, hist: line.map(function (x, i) { return x - sig[i]; }) };
+  }
   function utc(ms, withSec) {
     var d = new Date(ms), p = function (n) { return (n < 10 ? '0' : '') + n; };
     return d.getUTCFullYear() + '-' + p(d.getUTCMonth() + 1) + '-' + p(d.getUTCDate()) + ' ' +
@@ -131,6 +176,8 @@
     this.mode = recall('luvchart-mode', 'line', function (v) { return v === 'line' || v === 'candles'; });
     this.log = recall('luvchart-log', '0') === '1';
     this.trades = recall('luvchart-trades', '1') === '1';
+    this.bb = recall('luvchart-bb', '1') === '1';
+    this.macd = recall('luvchart-macd', '1') === '1';
     this.market = null; this.history = null; this.tape = null;
     this._lastTx = null;
     // claim the mount: a second chart built on the same element would rebuild the skeleton
@@ -192,7 +239,9 @@
     });
     [['mode', 'candles', 'candles — open, high, low, close per bucket'],
      ['log', 'LOG', 'logarithmic price axis — equal ratios take equal space'],
-     ['trades', 'TRADES', 'the swap log itself, plotted: green buys, red sells']
+     ['trades', 'TRADES', 'the swap log itself, plotted: green buys, red sells'],
+     ['bb', 'BB', 'Bollinger Bands (20, 2) — TradingView defaults: SMA basis, ±2σ bands'],
+     ['macd', 'MACD', 'MACD (12, 26, 9) — TradingView defaults: MACD line, signal, histogram — in its own pane below']
     ].forEach(function (m) {
       var b = document.createElement('button');
       b.type = 'button'; b.className = 'lc-pill'; b.textContent = m[1]; b.title = m[2];
@@ -200,6 +249,8 @@
       b.addEventListener('click', function () {
         if (m[0] === 'mode') { self.mode = self.mode === 'line' ? 'candles' : 'line'; store('luvchart-mode', self.mode); }
         else if (m[0] === 'log') { self.log = !self.log; store('luvchart-log', self.log ? '1' : '0'); }
+        else if (m[0] === 'bb') { self.bb = !self.bb; store('luvchart-bb', self.bb ? '1' : '0'); }
+        else if (m[0] === 'macd') { self.macd = !self.macd; store('luvchart-macd', self.macd ? '1' : '0'); }
         else { self.trades = !self.trades; store('luvchart-trades', self.trades ? '1' : '0'); }
         self._renderAll();
       });
@@ -275,11 +326,11 @@
   };
   Chart.prototype._series = function () {
     var w = WINDOWS[winIndex(this.win)];
-    if (w.k === 'all') return { pts: this._tradePoints(), w: w, step: true };
+    if (w.k === 'all') { var tp = this._tradePoints(); return { pts: tp, full: tp, w: w, step: true, bucket: Math.max(3600e3, w.bucket) }; }
     var pts = (this.history || []).slice(), m = this.market;
     if (m && m.t && (!pts.length || Number(m.t) > pts[pts.length - 1][0])) pts.push([Number(m.t), Number(m.priceUsd), Number(m.priceNative)]);
     var t1 = pts.length ? pts[pts.length - 1][0] : Date.now(), t0 = t1 - w.ms;
-    return { pts: pts.filter(function (p) { return p[0] >= t0; }), w: w, step: false };
+    return { pts: pts.filter(function (p) { return p[0] >= t0; }), full: pts, w: w, step: false, bucket: w.bucket };
   };
   // buckets of the active series → OHLC. Same bucketing serves candles and nothing else;
   // the line draws the points themselves.
@@ -326,7 +377,8 @@
     });
     this.root.querySelectorAll('[data-toggle]').forEach(function (b) {
       var k = b.getAttribute('data-toggle');
-      b.classList.toggle('on', k === 'mode' ? self.mode === 'candles' : k === 'log' ? self.log : self.trades);
+      b.classList.toggle('on', k === 'mode' ? self.mode === 'candles' : k === 'log' ? self.log :
+        k === 'bb' ? self.bb : k === 'macd' ? self.macd : self.trades);
     });
   };
 
@@ -347,21 +399,46 @@
     var lo = d3.min(vals), hi = d3.max(vals);
     if (!(lo > 0)) return;
 
-    var x = d3.scaleUtc().domain([pts[0][0], pts[pts.length - 1][0]]).range([m.left, W - m.right]);
+    // ── the bars, over the WHOLE series, and the indicators on their closes ──
+    // Bars are what candles, Bollinger and MACD all read; the visible slice is what gets drawn.
+    var bars = this._candles(s.full, U, s.bucket), t0v = pts[0][0], t1v = pts[pts.length - 1][0];
+    var closes = bars.map(function (b) { return b.c; });
+    var bbOn = this.bb && bars.length >= BB_N, macdOn = this.macd && bars.length >= MACD_S + MACD_SIG;
+    var bb = null, md = null;
+    if (bbOn) { var basis = smaSeries(closes, BB_N), sd = stdevSeries(closes, BB_N, basis);
+      bb = { basis: basis, up: basis.map(function (b, i) { return b + BB_K * sd[i]; }), lo: basis.map(function (b, i) { return b - BB_K * sd[i]; }) }; }
+    if (macdOn) md = macdSeries(closes, MACD_F, MACD_S, MACD_SIG);
+    var firstVis = 0; while (firstVis < bars.length && bars[firstVis].t + s.bucket <= t0v) firstVis++;
+    var cs = bars.slice(firstVis);
+    // the bands widen the price window when they run past it — a band off the top is no band
+    if (bb) for (var bi = firstVis; bi < bars.length; bi++) {
+      if (bb.up[bi] > 0 && !isNaN(bb.up[bi])) hi = Math.max(hi, bb.up[bi]);
+      if (bb.lo[bi] > 0 && !isNaN(bb.lo[bi])) lo = Math.min(lo, bb.lo[bi]);
+    }
+
+    // ── layout: the main pane, then — when MACD is on — its own pane under it, TradingView-style,
+    // sharing the time axis at the very bottom ──
+    var macdH = md ? Math.round((H - m.top - m.bottom) * 0.26) : 0, gap = md ? 16 : 0;
+    var mainBot = H - m.bottom - macdH - gap;
+    var x = d3.scaleUtc().domain([t0v, t1v]).range([m.left, W - m.right]);
     var y, padF = 0.08;
     if (this.log) {
       var k = Math.pow(hi / lo || 1, padF) || 1.02;
-      y = d3.scaleLog().domain([lo / k, hi * k]).range([H - m.bottom, m.top]);
+      y = d3.scaleLog().domain([lo / k, hi * k]).range([mainBot, m.top]);
     } else {
       var pad = (hi - lo) * padF || hi * 0.02 || 1;
-      y = d3.scaleLinear().domain([lo - pad, hi + pad]).range([H - m.bottom, m.top]);
+      y = d3.scaleLinear().domain([lo - pad, hi + pad]).range([mainBot, m.top]);
     }
     var dom = y.domain(), dec = U.dec(dom[1] - dom[0], dom[1]);
+    var MONO = 'ui-monospace,Menlo,monospace';
+    // bar geometry, shared by candles, Bollinger and the histogram
+    var bw = cs.length > 1 ? Math.max(2, Math.min(22, (x(cs[1].t) - x(cs[0].t)) * .62)) : 8;
+    var xb = function (b) { return x(b.t) + bw / 2; };
 
     // ── the mark, behind everything: the coin the chart is named for ──
-    var wm = Math.min(W - m.left - m.right, H) * 0.46;
+    var wm = Math.min(W - m.left - m.right, mainBot - m.top) * 0.46;
     svg.append('image').attr('href', COIN).attr('x', (W - m.right + m.left - wm) / 2)
-      .attr('y', (H - wm) / 2).attr('width', wm).attr('height', wm)
+      .attr('y', m.top + (mainBot - m.top - wm) / 2).attr('width', wm).attr('height', wm)
       .attr('class', 'lc-watermark').attr('preserveAspectRatio', 'xMidYMid meet');
 
     // ── gridlines, then the axes on the outside ──
@@ -379,6 +456,9 @@
     svg.append('g').attr('transform', 'translate(0,' + (H - m.bottom) + ')')
       .attr('class', 'lc-axis')
       .call(d3.axisBottom(x).ticks(Math.max(3, Math.round(W / 150))).tickSize(0).tickPadding(8));
+    // the pane seam under the main chart
+    svg.append('line').attr('x1', m.left).attr('x2', W - m.right).attr('y1', mainBot + .5).attr('y2', mainBot + .5)
+      .attr('stroke', SEAM).attr('stroke-width', 1).attr('opacity', md ? .9 : .55);
     svg.append('g').attr('transform', 'translate(' + (W - m.right) + ',0)')
       .attr('class', 'lc-axis')
       .call(d3.axisRight(y).tickValues(ticks).tickSize(0).tickPadding(8)
@@ -401,12 +481,34 @@
     var rising = vals.length > 1 && vals[vals.length - 1] >= vals[0];
     var stroke = rising ? UP : DOWN;
 
+    // ── Bollinger Bands (20, 2): the blue envelope, the orange basis, the pale fill between ──
+    if (bb) {
+      var vis = [], vi;
+      for (vi = firstVis; vi < bars.length; vi++) if (!isNaN(bb.basis[vi])) vis.push({ b: bars[vi], i: vi });
+      if (vis.length > 1) {
+        var bandArea = d3.area().x(function (d) { return xb(d.b); })
+          .y0(function (d) { return y(bb.lo[d.i]); }).y1(function (d) { return y(bb.up[d.i]); }).curve(d3.curveMonotoneX)
+          .defined(function (d) { return bb.lo[d.i] > 0; });
+        svg.append('path').datum(vis).attr('d', bandArea).attr('fill', TV.bbFill);
+        ['up', 'lo', 'basis'].forEach(function (key) {
+          var ln = d3.line().x(function (d) { return xb(d.b); }).y(function (d) { return y(bb[key][d.i]); })
+            .curve(d3.curveMonotoneX).defined(function (d) { return bb[key][d.i] > 0; });
+          svg.append('path').datum(vis).attr('d', ln).attr('fill', 'none')
+            .attr('stroke', key === 'basis' ? TV.bbBasis : TV.bbLine).attr('stroke-width', key === 'basis' ? 1.2 : 1)
+            .attr('opacity', .9);
+        });
+        var lastB = vis[vis.length - 1].i;
+        svg.append('text').attr('x', m.left + 6).attr('y', m.top + 12).attr('font-size', 10).attr('font-family', MONO)
+          .attr('fill', TV.bbLine).text('BB 20 2  ')
+          .append('tspan').attr('fill', TV.bbBasis).text(U.axis(bb.basis[lastB], dec) + ' ')
+          .append('tspan').attr('fill', TV.bbLine).text(U.axis(bb.up[lastB], dec) + ' ' + U.axis(bb.lo[lastB], dec));
+      }
+    }
+
     if (this.mode === 'candles') {
-      var cs = this._candles(pts, U, s.w.k === 'all' ? Math.max(3600e3, s.w.bucket) : s.w.bucket);
-      var bw = cs.length > 1 ? Math.max(2, Math.min(22, (x(cs[1].t) - x(cs[0].t)) * .62)) : 8;
       var g = svg.append('g');
       cs.forEach(function (c) {
-        var col = c.c >= c.o ? UP : DOWN, cx = x(c.t) + bw / 2;
+        var col = c.c >= c.o ? UP : DOWN, cx = xb(c);
         g.append('line').attr('x1', cx).attr('x2', cx).attr('y1', y(c.h)).attr('y2', y(c.l))
           .attr('stroke', col).attr('stroke-width', 1);
         var top = y(Math.max(c.o, c.c)), bot = y(Math.min(c.o, c.c));
@@ -415,7 +517,7 @@
       });
     } else {
       var area = d3.area().x(function (p) { return x(p[0]); })
-        .y0(H - m.bottom).y1(function (p) { return y(U.val(p)); }).curve(curve)
+        .y0(mainBot).y1(function (p) { return y(U.val(p)); }).curve(curve)
         .defined(function (p) { return U.val(p) > 0; });
       var line = d3.line().x(function (p) { return x(p[0]); })
         .y(function (p) { return y(U.val(p)); }).curve(curve)
@@ -467,6 +569,55 @@
         .append('title').text('the live price · ' + U.tip(liveV, dec));
     }
 
+    // ── MACD (12, 26, 9), in its own pane: the four-shade histogram, MACD blue, signal orange ──
+    var y2 = null, mdVis = [];
+    if (md) {
+      var pTop = mainBot + gap, pBot = H - m.bottom, ext = [0, 0], mi;
+      for (mi = firstVis; mi < bars.length; mi++) {
+        if (isNaN(md.line[mi])) continue;
+        mdVis.push({ b: bars[mi], i: mi });
+        ext[0] = Math.min(ext[0], md.line[mi], isNaN(md.signal[mi]) ? 0 : md.signal[mi], isNaN(md.hist[mi]) ? 0 : md.hist[mi]);
+        ext[1] = Math.max(ext[1], md.line[mi], isNaN(md.signal[mi]) ? 0 : md.signal[mi], isNaN(md.hist[mi]) ? 0 : md.hist[mi]);
+      }
+      var mpad = (ext[1] - ext[0]) * .12 || 1e-18;
+      y2 = d3.scaleLinear().domain([ext[0] - mpad, ext[1] + mpad]).range([pBot, pTop]);
+      var mdec = U.dec((ext[1] - ext[0]) || Math.abs(ext[1]) || 1, Math.max(Math.abs(ext[0]), Math.abs(ext[1])) || 1);
+      var signed = function (v) { return (v < 0 ? '−' : '') + U.axis(Math.abs(v), mdec); };
+      // zero line + a light axis
+      svg.append('line').attr('x1', m.left).attr('x2', W - m.right).attr('y1', y2(0)).attr('y2', y2(0))
+        .attr('stroke', SEAM).attr('stroke-width', 1).attr('opacity', .9);
+      var mticks = [ext[0] + mpad * 0, 0, ext[1] - mpad * 0].filter(function (v, i, a) { return a.indexOf(v) === i; });
+      svg.append('g').attr('transform', 'translate(' + (W - m.right) + ',0)').attr('class', 'lc-axis lc-axis2')
+        .call(d3.axisRight(y2).tickValues(mticks).tickSize(0).tickPadding(8).tickFormat(signed));
+      svg.selectAll('.lc-axis2 .domain').remove();
+      svg.selectAll('.lc-axis2 text').attr('fill', DIM).attr('font-size', 9.5).attr('font-family', MONO);
+      // the histogram: TradingView's four shades — grow above, fall above, grow below, fall below
+      var hg = svg.append('g'), hw = Math.max(1.5, bw * .8);
+      mdVis.forEach(function (d, j) {
+        var h = md.hist[d.i]; if (isNaN(h)) return;
+        var prev = j > 0 ? md.hist[mdVis[j - 1].i] : NaN, grow = isNaN(prev) ? true : Math.abs(h) >= Math.abs(prev);
+        var col = h >= 0 ? (grow ? TV.histGA : TV.histFA) : (grow ? TV.histGB : TV.histFB);
+        var yz = y2(0), yh = y2(h);
+        hg.append('rect').attr('x', xb(d.b) - hw / 2).attr('y', Math.min(yz, yh)).attr('width', hw)
+          .attr('height', Math.max(1, Math.abs(yh - yz))).attr('fill', col).attr('opacity', .95);
+      });
+      ['line', 'signal'].forEach(function (key) {
+        var ln = d3.line().x(function (d) { return xb(d.b); }).y(function (d) { return y2(md[key][d.i]); })
+          .curve(d3.curveMonotoneX).defined(function (d) { return !isNaN(md[key][d.i]); });
+        svg.append('path').datum(mdVis).attr('d', ln).attr('fill', 'none')
+          .attr('stroke', key === 'line' ? TV.macd : TV.signal).attr('stroke-width', 1.3);
+      });
+      var lastM = mdVis.length ? mdVis[mdVis.length - 1].i : -1;
+      var lbl = svg.append('text').attr('x', m.left + 6).attr('y', pTop + 12).attr('font-size', 10).attr('font-family', MONO)
+        .attr('fill', DIM).text('MACD 12 26 9  ');
+      if (lastM >= 0) {
+        var hcol = md.hist[lastM] >= 0 ? TV.histGA : TV.histFB;
+        lbl.append('tspan').attr('fill', hcol).text(signed(md.hist[lastM]) + ' ');
+        lbl.append('tspan').attr('fill', TV.macd).text(signed(md.line[lastM]) + ' ');
+        lbl.append('tspan').attr('fill', TV.signal).text(signed(md.signal[lastM]));
+      }
+    }
+
     // ── the crosshair ──
     var xh = svg.append('g').attr('display', 'none');
     var xhv = xh.append('line').attr('y1', m.top).attr('y2', H - m.bottom).attr('stroke', FLAT).attr('stroke-width', .8).attr('stroke-dasharray', '3 4');
@@ -492,6 +643,18 @@
           var p = pts[i], v = U.val(p);
           if (!(v > 0)) return;
           html = '<b>' + U.tip(v, dec) + '</b><br><span style="color:' + DIM + '">' + utc(p[0], true) + '</span>';
+          // the bar under the pointer, and what the indicators read on it
+          var tms = x.invert(mx).getTime(), bidx = firstVis + Math.floor((tms - (cs.length ? cs[0].t : tms)) / s.bucket);
+          if (cs.length && bidx >= firstVis && bidx < bars.length) {
+            var B = bars[bidx], bcol = B.c >= B.o ? UPSOFT : DOWNSOFT;
+            html += '<br><span style="color:' + bcol + '">O ' + U.axis(B.o, dec) + ' H ' + U.axis(B.h, dec) +
+              ' L ' + U.axis(B.l, dec) + ' C ' + U.axis(B.c, dec) + '</span>';
+            if (bb && !isNaN(bb.basis[bidx])) html += '<br><span style="color:' + TV.bbLine + '">BB ' + U.axis(bb.up[bidx], dec) +
+              ' <span style="color:' + TV.bbBasis + '">' + U.axis(bb.basis[bidx], dec) + '</span> ' + U.axis(bb.lo[bidx], dec) + '</span>';
+            if (md && !isNaN(md.line[bidx])) html += '<br><span style="color:' + TV.macd + '">MACD ' + signed(md.line[bidx]) +
+              '</span> <span style="color:' + TV.signal + '">' + (isNaN(md.signal[bidx]) ? '—' : signed(md.signal[bidx])) +
+              '</span> <span style="color:' + (md.hist[bidx] >= 0 ? TV.histGA : TV.histFB) + '">' + (isNaN(md.hist[bidx]) ? '—' : signed(md.hist[bidx])) + '</span>';
+          }
           xhv.attr('x1', x(p[0])).attr('x2', x(p[0])); xhd.attr('cx', x(p[0])).attr('cy', y(v));
         }
         xh.attr('display', null);
@@ -511,7 +674,10 @@
         (this.unit === 'usdc' ? ' · the seed\'s USD leg is derived from the first trade\'s own ETH/USD' : '')
       : pts.length + ' readings, one a minute · ' + utc(pts[0][0]) + ' → now';
     this.el.cap.innerHTML = srcTxt + ' · <b>' + (this.mode === 'candles' ? 'candles' : 'line') + '</b> on a ' +
-      (this.log ? 'logarithmic' : 'linear') + ' axis · read at ' +
+      (this.log ? 'logarithmic' : 'linear') + ' axis' +
+      (bb ? ' · <b>BB(20, 2)</b>' : this.bb ? ' · BB needs 20 bars' : '') +
+      (md ? ' · <b>MACD(12, 26, 9)</b>' : this.macd ? ' · MACD needs 35 bars' : '') +
+      ' · TradingView classic: up bars green, down bars red · read at ' +
       (this.market && this.market.t ? clock(this.market.t) : '—') + ' · same-origin, no third party';
   };
 
@@ -536,7 +702,8 @@
     global.clearInterval(this._t1); global.clearInterval(this._t2); return this;
   };
 
-  var DVLuvChart = { Chart: Chart, UNITS: UNITS, WINDOWS: WINDOWS, UP: UP, DOWN: DOWN, version: '1.1.0' };
+  var DVLuvChart = { Chart: Chart, UNITS: UNITS, WINDOWS: WINDOWS, UP: UP, DOWN: DOWN, TV: TV, version: '1.2.0',
+    math: { sma: smaSeries, stdev: stdevSeries, ema: emaSeries, macd: macdSeries } };
   if (typeof module !== 'undefined' && module.exports) module.exports = DVLuvChart;
   global.DVLuvChart = DVLuvChart;
 
