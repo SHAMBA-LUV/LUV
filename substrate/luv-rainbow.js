@@ -40,17 +40,26 @@
   var GENESIS = Date.UTC(2009, 0, 3);
   var STEP = (1.0 - (-0.7)) / 9; // 0.18889 in log10 — one band
   var TERMINAL_SUPPLY = 21e6;    // the market-cap axis basis
-  var BANDS = [
-    { name: 'basically a fire sale',     col: '#2f6fd0' },
-    { name: 'BUY!',                      col: '#2fa3c9' },
-    { name: 'accumulate',                col: '#2fbf71' },
-    { name: 'still cheap',               col: '#8fd032' },
-    { name: 'HODL!',                     col: '#e3d032' },
-    { name: 'is this a bubble?',         col: '#e3a832' },
-    { name: 'FOMO intensifies',          col: '#e07f2f' },
-    { name: 'sell. seriously, SELL!',    col: '#d0522f' },
-    { name: 'maximum bubble territory',  col: '#c22f4a' }
-  ];
+  // ── the two palettes ──
+  // HOUSE is the ramp this site draws (operator, 2026-08-17): the fire zone is RED, the centre
+  // band is BITCOIN ORANGE (#F7931A — the mark Bitcoin itself uses), and the far top — where you
+  // sell — is CANDLE GREEN, because a realised gain is a green candle. Red → orange → yellow →
+  // green is one continuous spectrum segment, so the ladder still reads as a rainbow, in the
+  // trader's own colours. CLASSIC is the reference scale every other rainbow chart wears, kept for
+  // comparison; opts.palette picks, and the page's toggle flips between them.
+  var BTC_ORANGE = '#F7931A';
+  var NAMES = ['basically a fire sale', 'BUY!', 'accumulate', 'still cheap', 'HODL!',
+               'is this a bubble?', 'FOMO intensifies', 'sell. seriously, SELL!', 'maximum bubble territory'];
+  var PALETTES = {
+    house:   ['#d81e3c', '#e5402c', '#ee5f22', '#f47a1c', BTC_ORANGE, '#e8a91e', '#d3bd25', '#8ec43a', '#0ecb81'],
+    classic: ['#2f6fd0', '#2fa3c9', '#2fbf71', '#8fd032', '#e3d032', '#e3a832', '#e07f2f', '#d0522f', '#c22f4a']
+  };
+  function bandsFor(palette) {
+    var cols = PALETTES[palette] || PALETTES.house, out = [];
+    for (var i = 0; i < 9; i++) out.push({ name: NAMES[i], col: cols[i] });
+    return out;
+  }
+  var BANDS = bandsFor('house');       // the site's default
 
   // The magnitudes the estimate is measured against, in MARKET CAP. Figures are the ones
   // rainbow.html states; they are reference marks, not predictions, and each is drawn where
@@ -179,6 +188,13 @@
 
   function render(mount, opts) {
     opts = opts || {};
+    // every layer is a toggle; undefined means on, so an old caller draws the whole chart
+    var showPath = opts.path !== false, showHalvings = opts.halvings !== false;
+    var showKey = opts.key !== false, showMiles = opts.milestones !== false;
+    var palette = PALETTES[opts.palette] ? opts.palette : 'house';
+    var bands = bandsFor(palette);
+    // Bitcoin goes up in bitcoin orange on the house ramp; the classic scale keeps its white line
+    var pathCol = palette === 'house' ? BTC_ORANGE : '#ffffff';
     var fromYear = opts.from || 2010, toYear = opts.to || 2140;
     var W = opts.width || 1240, H = opts.height || 780;
     // The halving date rail needs room under the axis for a column of dates set on their side:
@@ -193,6 +209,50 @@
     function X(lgDays) { return L + (lgDays - x0) / (x1 - x0) * (W - L - R); }
     function Y(lgUsd) { return T + (yHi - lgUsd) / (yHi - yLo) * (H - T - B); }
     function Xdate(ms) { return X(Math.log10(daysSinceGenesis(ms))); }
+
+    // ── plates that never sit on the ribbon ──
+    // The ribbon rises left to right, so under it the clearance along a plate's span is set by
+    // its LEFT edge and above it by its RIGHT edge. settle() hangs a plate under the ribbon at its
+    // own span, walks it down past anything already placed, and only when it would leave the
+    // canvas lifts it above the ribbon instead. Every label that once landed on the bands — the
+    // milestones, the you-are-here readout — is placed through it.
+    var occupied = [];
+    function ribbonEdgeAt(px, off) {
+      var lg = x0 + (px - L) / (W - L - R) * (x1 - x0);
+      return Y(centerLog(Math.pow(10, lg)) + off);
+    }
+    function overlaps(a, b) { return a.x < b.x + b.w + 6 && a.x + a.w + 6 > b.x && a.y < b.y + b.h + 6 && a.y + a.h + 6 > b.y; }
+    function settle(x, w, h) {
+      var r = { x: x, w: w, h: h, y: ribbonEdgeAt(x, -0.7) + 10 }, i, guard = 0, moved = true;
+      while (moved && guard++ < 24) {
+        moved = false;
+        for (i = 0; i < occupied.length; i++) if (overlaps(r, occupied[i])) { r.y = occupied[i].y + occupied[i].h + 6; moved = true; }
+      }
+      if (r.y + h > H - B - 2) {
+        r.y = ribbonEdgeAt(x + w, 1.0) - 10 - h; guard = 0; moved = true;
+        while (moved && guard++ < 24) {
+          moved = false;
+          for (i = 0; i < occupied.length; i++) if (overlaps(r, occupied[i])) { r.y = occupied[i].y - h - 6; moved = true; }
+        }
+        if (r.y < T + 2) r.y = T + 2;
+      }
+      occupied.push(r);
+      return r.y;
+    }
+    var kb0 = keyBox(L, T);
+    if (opts.key !== false) occupied.push({ x: kb0.x, y: kb0.y, w: kb0.w, h: kb0.h });
+    // the you-are-here readout settles FIRST — it is the reading the chart exists to give, so the
+    // milestones make room for it and not the other way round; it is drawn last, on top
+    var dotPlate = null;
+    if (opts.price > 0) {
+      var dpMs = opts.dateMs || Date.now(), dpx = Xdate(dpMs), dpy = Y(Math.log10(opts.price));
+      if (dpy >= T + 6 && dpy <= H - B - 6) {
+        var dpTxt = 'you are here · $' + Math.round(opts.price).toLocaleString('en-US') + ' · ' + usd(opts.price * TERMINAL_SUPPLY) + ' cap';
+        var dpW = dpTxt.length * 6.6;
+        var dpLx = Math.max(L + 4, Math.min(dpx + 9, W - R - dpW - 4));
+        dotPlate = { txt: dpTxt, w: dpW, lx: dpLx, y: settle(dpLx - 5, dpW + 10, 17) };
+      }
+    }
 
     var svg = el('svg', {
       viewBox: '0 0 ' + W + ' ' + H, xmlns: NS, role: 'img',
@@ -301,7 +361,7 @@
       var pts = X(x0) + ',' + Y(c0 + lo) + ' ' + X(x1) + ',' + Y(c1 + lo) + ' ' +
                 X(x1) + ',' + Y(c1 + hi) + ' ' + X(x0) + ',' + Y(c0 + hi);
       svg.appendChild(el('polygon', {
-        points: pts, fill: BANDS[b].col, 'fill-opacity': 0.94,
+        points: pts, fill: bands[b].col, 'fill-opacity': 0.94,
         stroke: '#160a0f', 'stroke-opacity': 0.85, 'stroke-width': 1.1
       }));
     }
@@ -342,10 +402,16 @@
           ppts.push(X(liveLg) + ',' + Y(Math.log10(opts.price)));
         }
       }
-      if (ppts.length > 1) {
+      // Bitcoin goes up in BITCOIN ORANGE. The centre band is the same orange, so the line wears a
+      // dark casing: over every other band it is an orange line, over its own it is a dark-edged one.
+      if (showPath && ppts.length > 1) {
+        if (palette === 'house') svg.appendChild(el('polyline', {
+          points: ppts.join(' '), fill: 'none', stroke: '#160a0f', 'stroke-opacity': 0.75,
+          'stroke-width': 4.2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'
+        }));
         svg.appendChild(el('polyline', {
-          points: ppts.join(' '), fill: 'none', stroke: '#ffffff',
-          'stroke-width': 1.6, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'
+          points: ppts.join(' '), fill: 'none', stroke: pathCol,
+          'stroke-width': palette === 'house' ? 1.9 : 1.6, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'
         }));
       }
     }
@@ -420,18 +486,26 @@
         note2: 'block ' + END_BLOCK.toLocaleString('en-US') + ' at the observed ' +
                eom.secPerBlock.toFixed(1) + 's/block \u00b7 ' + tgtY + ' at the 600s target' }
     ];
-    for (i = 0; i < MILES.length; i++) {
+    for (i = 0; showMiles && i < MILES.length; i++) {
       var mi = MILES[i];
       if (mi.year > toYear) continue;
       var mms = Date.UTC(mi.year, 0, 1);
       var mxp = Xdate(mms), mpr = Math.pow(10, centerLog(daysSinceGenesis(mms))), myp = Y(Math.log10(mpr));
-      if (mxp < L || mxp > W - R) continue;
+      if (mxp < L || mxp > W - R || myp < T) continue;
       var txt = mi.year + '  ' + usd(mpr) + '  \u00b7  ' + usd(mpr * TERMINAL_SUPPLY) + ' cap';
       var fs2 = 10, tw = Math.max(txt.length, mi.note.length, (mi.note2 || '').length) * fs2 * 0.6 + 16;
-      var lx = Math.min(mxp + 10, W - R - tw), ly = myp + 46;
-      svg.appendChild(el('line', { x1: mxp, y1: myp, x2: mxp, y2: ly - 12, stroke: '#ffd479', 'stroke-width': 0.9, 'stroke-dasharray': '2 3', 'stroke-opacity': 0.8 }));
+      var plateH = (mi.note2 ? fs2 * 3 + 24 : mi.note ? fs2 * 2 + 16 : fs2 + 14);
+      // The plate used to hang 46px under the centre point, which on a tall ribbon is INSIDE the
+      // lower bands. It is settled clear of the ribbon and of every plate before it instead.
+      var lx = Math.min(mxp + 10, W - R - tw);
+      var plateY = settle(lx - 8, tw, plateH);
+      var ly = plateY + 12 + fs2;
+      // the leader runs from the point to the nearest edge of the plate, whichever side it settled on
+      var leadX = Math.max(lx - 8, Math.min(mxp, lx - 8 + tw));
+      var leadY = plateY > myp ? plateY : plateY + plateH;
+      svg.appendChild(el('line', { x1: mxp, y1: myp, x2: leadX, y2: leadY, stroke: '#ffd479', 'stroke-width': 0.9, 'stroke-dasharray': '2 3', 'stroke-opacity': 0.8 }));
       svg.appendChild(el('circle', { cx: mxp, cy: myp, r: 4, fill: '#ffd479', stroke: '#160a0f', 'stroke-width': 1.2 }));
-      svg.appendChild(el('rect', { x: lx - 8, y: ly - 12 - fs2, width: tw, height: (mi.note2 ? fs2 * 3 + 24 : mi.note ? fs2 * 2 + 16 : fs2 + 14), rx: 5, fill: '#160a0f', 'fill-opacity': 0.92, stroke: '#ffd479', 'stroke-opacity': 0.45 }));
+      svg.appendChild(el('rect', { x: lx - 8, y: ly - 12 - fs2, width: tw, height: plateH, rx: 5, fill: '#160a0f', 'fill-opacity': 0.92, stroke: '#ffd479', 'stroke-opacity': 0.45 }));
       svg.appendChild(el('text', { x: lx, y: ly - 2, fill: '#ffe9b0', 'font-size': fs2, 'font-family': 'monospace', 'font-weight': 'bold' }, txt));
       if (mi.note) svg.appendChild(el('text', { x: lx, y: ly + 12, fill: '#b98da0', 'font-size': 9, 'font-family': 'monospace' }, mi.note));
       if (mi.note2) svg.appendChild(el('text', { x: lx, y: ly + 24, fill: '#7d5d6c', 'font-size': 8.5, 'font-family': 'monospace' }, mi.note2));
@@ -458,7 +532,8 @@
       // label whose line runs through that block is pushed out past its right edge. The text
       // itself is deferred to after the key is drawn, so the key's leaders cannot cross it.
       var kb = keyBox(L, T);
-      var overKey = my > kb.y - 4 && my < kb.y + kb.h + 4;
+      // the label is drawn ABOVE its line, so it is the label's top — 18px up — that must clear the key
+      var overKey = opts.key !== false && my > kb.y - 4 && my - 18 < kb.y + kb.h + 4;
       macroLabels.push({
         x: overKey ? kb.x + kb.w + 18 : L + 8, y: my, key: m.key,
         text: m.label + (cross <= toYear ? '  \u2014 the fit crosses ' + cross : '')
@@ -489,7 +564,7 @@
     while (lastH + HALVING_STEP_MS <= toMs && all.length < 33) { lastH += HALVING_STEP_MS; all.push(lastH); }
     var spacingOK = all.length > 1 ? Math.abs(Xdate(all[all.length - 1]) - Xdate(all[all.length - 2])) : 99;
     var dateBase = H - 8, lastDateX = -Infinity, dated = 0;
-    for (i = 0; i < all.length; i++) {
+    for (i = 0; showHalvings && i < all.length; i++) {
       ms = all[i];
       if (ms < fromMs || ms > toMs) continue;
       var actual = i < HALVINGS.length, hx = Xdate(ms);
@@ -553,8 +628,10 @@
       'text-anchor': 'start', 'font-family': 'monospace'
       // This label shares its row with the halving ordinals, and the first of those lands around
       // x = 363 on a 2010–2140 window: anything much longer than ~48 characters overprints it.
-    }, 'halvings — ' + HALVINGS.length + ' actual, ' + (n - HALVINGS.length) + ' scheduled' +
-       (opts.halvingDates ? ' · ' + dated + ' dated' : '')));
+    }, showHalvings
+       ? 'halvings — ' + HALVINGS.length + ' actual, ' + (n - HALVINGS.length) + ' scheduled' +
+         (opts.halvingDates ? ' · ' + dated + ' dated' : '')
+       : 'halvings — hidden'));
 
     // ── you are here — the origin of perspective ──
     if (opts.price > 0) {
@@ -562,17 +639,24 @@
       var dx = Xdate(dotMs), dy = Y(Math.log10(opts.price));
       var priceTxt = '$' + Math.round(opts.price).toLocaleString('en-US');
       svg.appendChild(el('line', { x1: dx, y1: T, x2: dx, y2: H - B, stroke: '#ff4d6d', 'stroke-width': 0.9, 'stroke-dasharray': '2 3', 'stroke-opacity': 0.6 }));
-      var inRange = dy >= T + 6 && dy <= H - B - 6;
+      var inRange = dy >= T + 6 && dy <= H - B - 6 && dotPlate;
       if (inRange) {
         svg.appendChild(el('line', { x1: L, y1: dy, x2: W - R, y2: dy, stroke: '#ff4d6d', 'stroke-width': 0.8, 'stroke-dasharray': '2 3', 'stroke-opacity': 0.5 }));
         svg.appendChild(el('circle', { cx: dx, cy: dy, r: 4.5, fill: '#ff4d6d', stroke: '#f6e7eb', 'stroke-width': 1.5 }));
         // The dot rides the live price, so on a near window it sits close to the right-hand edge and
         // the label would run out over the market-cap axis. Clamp it inside the plot: to the right
         // of the dot where there is room, flush against the right margin where there is not.
-        var dotTxt = 'you are here · ' + priceTxt + ' · ' + usd(opts.price * TERMINAL_SUPPLY) + ' cap';
-        var dotW = dotTxt.length * 6.6;
-        var dotLx = Math.max(L + 4, Math.min(dx + 9, W - R - dotW - 4));
-        svg.appendChild(el('text', { x: dotLx, y: dy + 15, fill: '#ffb3c1', 'font-size': 11, 'font-family': 'monospace', 'font-weight': 'bold' },
+        var dotTxt = dotPlate.txt, dotW = dotPlate.w, dotLx = dotPlate.lx;
+        // the readout was settled clear of the ribbon up front; a leader ties it back to the dot
+        // when the settling has moved it away
+        var dotPy = dotPlate.y;
+        var dotLy = dotPy + 12;
+        if (Math.abs(dotPy - dy) > 22) {
+          svg.appendChild(el('line', { x1: dx, y1: dy, x2: Math.max(dotLx - 5, Math.min(dx, dotLx + dotW + 5)), y2: dotPy > dy ? dotPy : dotPy + 17,
+            stroke: '#ff4d6d', 'stroke-width': 0.9, 'stroke-dasharray': '2 3', 'stroke-opacity': 0.7 }));
+        }
+        svg.appendChild(el('rect', { x: dotLx - 5, y: dotPy, width: dotW + 10, height: 17, rx: 4, fill: '#160a0f', 'fill-opacity': 0.9, stroke: '#ff4d6d', 'stroke-opacity': 0.45 }));
+        svg.appendChild(el('text', { x: dotLx, y: dotLy, fill: '#ffb3c1', 'font-size': 11, 'font-family': 'monospace', 'font-weight': 'bold' },
           dotTxt));
       }
     }
@@ -581,7 +665,7 @@
     // A log-log ribbon rises left to right, so the top-left is empty at every zoom. Each row
     // runs a leader in the band's own colour to that band's midline, so the name and the colour
     // are joined by a line instead of by the reader's guesswork.
-    drawPointerKey(svg, X, Y, x0, x1, c0, c1, L, T, W, R, H, B);
+    if (showKey) drawPointerKey(svg, X, Y, x0, x1, c0, c1, L, T, W, R, H, B, opts.leaders !== false, bands);
 
     // ── the magnitude labels, last, on plates so nothing crosses them ──
     for (i = 0; i < macroLabels.length; i++) {
@@ -651,8 +735,8 @@
         sy = Y(lgP);
         var resid = lgP - centerLog(days);
         var bi = Math.floor((resid + 0.7) / STEP);
-        var bname = bi < 0 ? 'below the scale' : bi > 8 ? 'above the scale' : BANDS[bi].name;
-        var bcol = bi < 0 || bi > 8 ? '#b98da0' : BANDS[bi].col;
+        var bname = bi < 0 ? 'below the scale' : bi > 8 ? 'above the scale' : bands[bi].name;
+        var bcol = bi < 0 || bi > 8 ? '#b98da0' : bands[bi].col;
 
         hvx.setAttribute('x1', sx); hvx.setAttribute('y1', T); hvx.setAttribute('x2', sx); hvx.setAttribute('y2', H - B);
         hvy.setAttribute('x1', L); hvy.setAttribute('y1', sy); hvy.setAttribute('x2', W - R); hvy.setAttribute('y2', sy);
@@ -701,8 +785,9 @@
     };
   }
 
-  function drawPointerKey(svg, X, Y, x0, x1, c0, c1, L, T, W, R, H, B) {
+  function drawPointerKey(svg, X, Y, x0, x1, c0, c1, L, T, W, R, H, B, wantLeaders, bands) {
     var k = keyBox(L, T), i;
+    bands = bands || BANDS;
 
     // WHERE TO POINT. In log-log the ribbon is a straight diagonal: low on the left, high on the
     // right. Sampling it just beside the key — the obvious choice — aims every leader at the
@@ -712,6 +797,11 @@
     var midY = k.y + k.h / 2;
     var lgAtMid = yHiLoInvert(Y, midY);                 // the log10 price at the key's height
     var frac = (lgAtMid - c0) / (c1 - c0);              // where the centre line reaches it
+    // Leaders only run when the ribbon actually passes at the key's height inside the plot's
+    // middle. Clamping the target used to draw them anyway — nine lines fanning across the whole
+    // canvas to land wherever the clamp put them, which is the fan the near view was wearing.
+    // When the ribbon is not there, the swatches say everything the leaders would.
+    var leaders = wantLeaders && frac >= 0.28 && frac <= 0.76;
     frac = Math.max(0.30, Math.min(0.74, frac));        // keep the target on the canvas
     var lgDays = x0 + (x1 - x0) * frac;
     var cAt = c0 + (c1 - c0) * frac;
@@ -728,17 +818,19 @@
       var tyMid = Y(cAt + (-0.7 + i * STEP) + STEP / 2);
 
       // the pointer: a short stub out of the block, then a level run to the band it names
-      svg.appendChild(el('polyline', {
-        points: (k.x + k.w) + ',' + (ty - 3) + ' ' + (k.x + k.w + 16) + ',' + (ty - 3) + ' ' + tx + ',' + tyMid,
-        fill: 'none', stroke: BANDS[i].col, 'stroke-width': 0.9, 'stroke-opacity': 0.75
-      }));
-      svg.appendChild(el('circle', { cx: tx, cy: tyMid, r: 2.4, fill: BANDS[i].col, stroke: '#160a0f', 'stroke-width': 0.6 }));
+      if (leaders) {
+        svg.appendChild(el('polyline', {
+          points: (k.x + k.w) + ',' + (ty - 3) + ' ' + (k.x + k.w + 16) + ',' + (ty - 3) + ' ' + tx + ',' + tyMid,
+          fill: 'none', stroke: bands[i].col, 'stroke-width': 0.9, 'stroke-opacity': 0.75
+        }));
+        svg.appendChild(el('circle', { cx: tx, cy: tyMid, r: 2.4, fill: bands[i].col, stroke: '#160a0f', 'stroke-width': 0.6 }));
+      }
 
-      svg.appendChild(el('rect', { x: k.x + k.PAD, y: ty - k.SW + 1, width: k.SW, height: k.SW, fill: BANDS[i].col, rx: 1.5 }));
+      svg.appendChild(el('rect', { x: k.x + k.PAD, y: ty - k.SW + 1, width: k.SW, height: k.SW, fill: bands[i].col, rx: 1.5 }));
       svg.appendChild(el('text', {
-        x: k.x + k.PAD + k.SW + k.GAP, y: ty, fill: BANDS[i].col, 'font-size': k.FS,
+        x: k.x + k.PAD + k.SW + k.GAP, y: ty, fill: bands[i].col, 'font-size': k.FS,
         'font-family': 'monospace', 'font-weight': 'bold'
-      }, BANDS[i].name));
+      }, bands[i].name));
     }
   }
 
@@ -755,7 +847,9 @@
 
   var DVLuvRainbow = {
     FIT: FIT, BANDS: BANDS, GENESIS: GENESIS, MACRO: MACRO, TERMINAL_SUPPLY: TERMINAL_SUPPLY,
-    version: '1.5.0', SCALES: SCALES, SCALE_LABELS: SCALE_LABELS,
+    version: '1.6.0', SCALES: SCALES, SCALE_LABELS: SCALE_LABELS, BTC_ORANGE: BTC_ORANGE,
+    PALETTES: PALETTES, NAMES: NAMES, bandsFor: bandsFor,
+    LAYERS: ['debt', 'path', 'halvings', 'milestones', 'key', 'palette'],
     center: function (days) { return Math.pow(10, centerLog(days)); },
     yearAtPrice: yearAtPrice, usd: usd, worldDebtAt: worldDebtAt, WORLD_DEBT: WORLD_DEBT,
     worldDebtPerSecond: worldDebtPerSecond, DEBT_CAGR: DEBT_CAGR,
@@ -779,7 +873,10 @@
           dateMs: m.dataset.date ? Date.parse(m.dataset.date + 'T00:00:00Z') : undefined,
           yMax: m.dataset.ymax ? Number(m.dataset.ymax) : undefined,
           debt: m.dataset.debt === '1',
-          halvingDates: m.dataset.halvingdates === '1'
+          halvingDates: m.dataset.halvingdates === '1',
+          path: m.dataset.path !== '0', halvings: m.dataset.halvings !== '0',
+          milestones: m.dataset.milestones !== '0', key: m.dataset.key !== '0',
+          palette: m.dataset.palette || undefined
         };
         m._rainbowOpts = o;   // the zoom ladder re-renders from these
         render(m, o);

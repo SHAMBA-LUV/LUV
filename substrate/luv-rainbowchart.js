@@ -40,7 +40,7 @@
  *
  * THE LIVE TIP. The embedded series ends at its last close, which is a fact with a date on it and
  * therefore wrong by a little more every day the page is not republished. `setLive(price, atMs)`
- * hands the organ a current price: the white path is carried from the last close to that reading,
+ * hands the organ a current price: the price path is carried from the last close to that reading,
  * the marker and the readout card move to it, and every mount already on the page is redrawn. The
  * organ still fetches NOTHING — the caller supplies the number (on luv.pythai.net that is
  * rainbow.js, reading same-origin /market.json every fifteen minutes), so zero-network-calls
@@ -66,18 +66,27 @@
   var BAND_OFFSET = 1.5;                 // the reference's i_decrease
   var TERMINAL_SUPPLY = 21e6;            // the marketcap axis basis
 
-  // the reference colour scale + labels, bottom band first
-  var BANDS = [
-    { name: 'Fire sale!',                col: '#4472c4' },
-    { name: 'BUY!',                      col: '#54989f' },
-    { name: 'Accumulate',                col: '#63be7b' },
-    { name: 'Still cheap',               col: '#b1d580' },
-    { name: 'HODL!',                     col: '#feeb84' },
-    { name: 'Is this a bubble?',         col: '#f6b45a' },
-    { name: 'FOMO Intensifies',          col: '#ed7d31' },
-    { name: 'Sell. Seriously, SELL!',    col: '#d64018' },
-    { name: 'Maximum bubble territory',  col: '#c00200' }
-  ];
+  // ── the two palettes ──
+  // CLASSIC is the reference colour scale, kept verbatim: it is what makes one rainbow chart
+  // comparable to every other, and it is the default. HOUSE is the trader's ramp SHAMBA LUV draws
+  // (operator, 2026-08-17): the fire zone is RED, the centre band is BITCOIN ORANGE (#F7931A), and
+  // the far top — where you sell — is CANDLE GREEN, because a realised gain is a green candle.
+  // Labels are the same nine words either way; opts.palette picks the colours. The Python
+  // renderer carries both under the same names, and the parity test checks both.
+  var BTC_ORANGE = '#F7931A';
+  var NAMES = ['Fire sale!', 'BUY!', 'Accumulate', 'Still cheap', 'HODL!', 'Is this a bubble?',
+               'FOMO Intensifies', 'Sell. Seriously, SELL!', 'Maximum bubble territory'];
+  var PALETTES = {
+    classic: ['#4472c4', '#54989f', '#63be7b', '#b1d580', '#feeb84', '#f6b45a', '#ed7d31', '#d64018', '#c00200'],
+    house:   ['#d81e3c', '#e5402c', '#ee5f22', '#f47a1c', BTC_ORANGE, '#e8a91e', '#d3bd25', '#8ec43a', '#0ecb81']
+  };
+  function bandsFor(palette) {
+    var cols = PALETTES[palette] || PALETTES.classic, out = [];
+    for (var i = 0; i < 9; i++) out.push({ name: NAMES[i], col: cols[i] });
+    return out;
+  }
+  // BANDS is the reference scale, bottom band first — the object the parity test reads
+  var BANDS = bandsFor('classic');
 
   // the four halvings that have happened; the schedule then steps 210,000 blocks ~= 1458.33 days
   var HALVINGS = [Date.UTC(2012, 10, 28), Date.UTC(2016, 6, 9), Date.UTC(2020, 4, 11), Date.UTC(2024, 3, 20)];
@@ -87,8 +96,10 @@
   // the house palette; every colour the chart uses is overridable through opts.theme
   var THEME = {
     bg: '#160a0f', ink: '#f6e7eb', dim: '#b98da0', faint: '#7d5d6c', seam: '#4a1f30',
-    price: '#ffffff', dot: '#ff4d6d', grid: '#160a0f', halving: '#f6e7eb'
+    price: '#ffffff', dot: '#ff4d6d', grid: '#160a0f', halving: '#f6e7eb', debt: '#7ad7ff'
   };
+  // on the house palette Bitcoin goes up in bitcoin orange; the reference keeps its white line
+  var HOUSE_PRICE = BTC_ORANGE;
   // ── the embedded series: weekly closes, every 7th day from x = 1, delta-encoded log10 x 1000 ──
   var SERIES_STEP = 7;
   // the final point is the true last close, which does not land on the weekly stride
@@ -248,10 +259,11 @@
   //
   // It sits on a backing plate because the decade gridlines run the full width of the plot and
   // would otherwise strike through the text.
-  function drawCornerLegend(svg, L, T, theme, fontSize, note) {
+  function drawCornerLegend(svg, L, T, theme, fontSize, note, extra, bands) {
     var ROW = fontSize + 5, PAD = 11, SW = 9, GAP = 6, charW = fontSize * 0.6;
     var items = [{ name: 'BTC price', col: theme.price }];
-    for (var i = 8; i >= 0; i--) items.push(BANDS[i]);
+    if (extra) items.push(extra);
+    for (var i = 8; i >= 0; i--) items.push(bands[i]);
 
     var wide = note ? note.length * (fontSize - 1.5) * 0.6 : 0;
     for (i = 0; i < items.length; i++) wide = Math.max(wide, items[i].name.length * charW);
@@ -322,10 +334,19 @@
 
   function render(mount, opts) {
     opts = opts || {};
-    var theme = THEME;
-    if (opts.theme) { theme = {}; for (var t in THEME) theme[t] = opts.theme[t] || THEME[t]; }
+    var theme = THEME, t;
+    var palette = PALETTES[opts.palette] ? opts.palette : 'classic';
+    var bands = bandsFor(palette);
+    if (palette === 'house') { theme = {}; for (t in THEME) theme[t] = THEME[t]; theme.price = HOUSE_PRICE; }
+    if (opts.theme) { var base = theme; theme = {}; for (t in THEME) theme[t] = opts.theme[t] || base[t]; }
 
     remember(mount, opts);
+    // every layer is a toggle; undefined means on, so an old caller draws the whole chart
+    var showPath = opts.path !== false, showHalvings = opts.halvings !== false, showKey = opts.key !== false;
+    // World debt rides the market-cap reading, and lives in the substrate rainbow — the arc
+    // borrows the figure rather than keeping a second copy of the record.
+    var RB = global.DVLuvRainbow;
+    var showDebt = !!opts.debt && RB && typeof RB.worldDebtAt === 'function';
 
     // The live tip, if the page has handed one in. Its day index is derived from the reading's own
     // timestamp, so a price read at 00:32 UTC lands on today rather than on whatever "now" was when
@@ -359,6 +380,9 @@
     // floating in it.
     var lgLo = Math.log10(Math.exp(Math.log(fit(xStart)) - BAND_OFFSET * BAND_WIDTH - BAND_WIDTH));
     var lgHi = Math.log10(Math.exp(Math.log(fit(xEnd)) + (8 - BAND_OFFSET) * BAND_WIDTH));
+    // With the debt overlay on, the ceiling rises to hold it: the debt line sits about two decades
+    // above the top of the arc today, and THAT gap is the picture the toggle exists to show.
+    if (showDebt) lgHi = Math.max(lgHi, Math.log10(RB.worldDebtAt(msOf(xEnd)) / TERMINAL_SUPPLY) + 0.12);
 
     function X(x) { return L + (x - xStart) / (xEnd - xStart) * (W - L - R); }
     function Y(lg) { return T + (lgHi - lg) / (lgHi - lgLo) * (H - T - B); }
@@ -377,7 +401,7 @@
         bot.push(X(xx) + ',' + Y((lnFit + loOff) / Math.LN10));
       }
       svg.appendChild(el('polygon', {
-        points: top.join(' ') + ' ' + bot.reverse().join(' '), fill: BANDS[i].col
+        points: top.join(' ') + ' ' + bot.reverse().join(' '), fill: bands[i].col
       }));
     }
 
@@ -434,7 +458,7 @@
     }
     var spacing = hv.length > 1 ? Math.abs(Xms(hv[1]) - Xms(hv[0])) : 999;
     var labelEvery = spacing >= 46 ? 1 : spacing >= 22 ? 4 : 0;
-    for (i = 0; i < hv.length; i++) {
+    for (i = 0; showHalvings && i < hv.length; i++) {
       var hx = Xms(hv[i]);
       if (hx < L || hx > W - R) continue;
       var actual = i < HALVINGS.length;
@@ -460,14 +484,43 @@
     if (live && live.x > SERIES_LAST_X && live.x <= xEnd) {
       pts.push(X(live.x) + ',' + Y(Math.log10(live.price)));
     }
-    svg.appendChild(el('polyline', {
-      points: pts.join(' '), fill: 'none', stroke: theme.price,
-      'stroke-width': 1.6, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'
-    }));
+    // Bitcoin goes up in BITCOIN ORANGE. The centre band is the same orange, so the line wears a
+    // dark casing: an orange line over every other band, a dark-edged one over its own.
+    if (showPath && pts.length > 1) {
+      if (palette === 'house') svg.appendChild(el('polyline', {
+        points: pts.join(' '), fill: 'none', stroke: theme.bg, 'stroke-opacity': 0.75,
+        'stroke-width': 4.2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'
+      }));
+      svg.appendChild(el('polyline', {
+        points: pts.join(' '), fill: 'none', stroke: theme.price,
+        'stroke-width': 1.9, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'
+      }));
+    }
+
+    // ── world debt, on the market-cap reading of the same axis (opt-in) ──
+    // The IIF record interpolated, then compounded forward at the rate the record itself kept —
+    // the same worldDebtAt the substrate rainbow draws, so the two charts can never disagree.
+    if (showDebt) {
+      var dpts = [], DSTEPS = 120;
+      for (k = 0; k <= DSTEPS; k++) {
+        var dxx = xStart + (xEnd - xStart) * k / DSTEPS;
+        dpts.push(X(dxx) + ',' + Y(Math.log10(RB.worldDebtAt(msOf(dxx)) / TERMINAL_SUPPLY)));
+      }
+      svg.appendChild(el('polyline', { points: dpts.join(' '), fill: 'none', stroke: theme.debt, 'stroke-width': 7, 'stroke-opacity': 0.14, 'stroke-linecap': 'round' }));
+      svg.appendChild(el('polyline', { points: dpts.join(' '), fill: 'none', stroke: theme.debt, 'stroke-width': 1.8, 'stroke-dasharray': '8 4', 'stroke-opacity': 0.95 }));
+      var dNow = RB.worldDebtAt(Date.now()), dEndY = Y(Math.log10(RB.worldDebtAt(msOf(xEnd)) / TERMINAL_SUPPLY));
+      var arcTop = fit(xEnd) * Math.exp((8 - BAND_OFFSET) * BAND_WIDTH) * TERMINAL_SUPPLY;
+      var dlabel = 'total world debt \u00b7 ' + usdLabel(dNow) + ' now \u00b7 ' +
+                   (RB.worldDebtAt(msOf(xEnd)) / arcTop).toFixed(0) + '\u00d7 the top of the arc';
+      var dlw = dlabel.length * 6 + 12, dlx = W - R - dlw - 8;
+      svg.appendChild(el('rect', { x: dlx - 6, y: dEndY + 8, width: dlw, height: 17, rx: 4, fill: theme.bg, 'fill-opacity': 0.92, stroke: theme.debt, 'stroke-opacity': 0.4 }));
+      svg.appendChild(el('text', { x: dlx, y: dEndY + 20, fill: theme.debt, 'font-size': 10, 'font-family': 'monospace', 'font-weight': 'bold' }, dlabel));
+    }
 
     // ── the key, in the dead corner above the early years ──
-    drawCornerLegend(svg, L, T, theme, 10.5,
-      hv.length > 4 ? 'halvings: 4 actual, ' + (hv.length - 4) + ' scheduled' : 'halvings');
+    if (showKey) drawCornerLegend(svg, L, T, theme, 10.5,
+      showHalvings ? (hv.length > 4 ? 'halvings: 4 actual, ' + (hv.length - 4) + ' scheduled' : 'halvings') : 'halvings: hidden',
+      showDebt ? { name: 'world debt (as cap)', col: theme.debt } : null, bands);
 
     // ── where the price stands today, and what that is worth in aggregate ──
     // The arc climbs to the top-right, so the bottom-right of the plot is always empty: the
@@ -490,8 +543,8 @@
         { t: '$' + Math.round(lastUsd).toLocaleString('en-US'), c: theme.ink, s: 17, w: 'bold' },
         { t: usdLabel(mcap) + ' market cap', c: theme.dim, s: 10.5, w: 'normal' },
         { t: ratio.toFixed(2) + '× the fit', c: theme.dim, s: 10.5, w: 'normal' },
-        { t: lastBand < 0 ? 'below the scale' : lastBand > 8 ? 'above the scale' : BANDS[lastBand].name,
-          c: lastBand < 0 || lastBand > 8 ? theme.dim : BANDS[lastBand].col, s: 11.5, w: 'bold' }
+        { t: lastBand < 0 ? 'below the scale' : lastBand > 8 ? 'above the scale' : bands[lastBand].name,
+          c: lastBand < 0 || lastBand > 8 ? theme.dim : bands[lastBand].col, s: 11.5, w: 'bold' }
       ];
       var cardW = 0;
       for (i = 0; i < lines.length; i++) cardW = Math.max(cardW, lines[i].t.length * lines[i].s * 0.6);
@@ -564,8 +617,8 @@
         var dy3 = Y(Math.log10(price));
         var when = new Date(msOf(Math.round(xh)));
         var bnd = bandOf(price, xh);
-        var bname = bnd < 0 ? 'below the scale' : bnd > 8 ? 'above the scale' : BANDS[bnd].name;
-        var bcol = bnd < 0 || bnd > 8 ? theme.dim : BANDS[bnd].col;
+        var bname = bnd < 0 ? 'below the scale' : bnd > 8 ? 'above the scale' : bands[bnd].name;
+        var bcol = bnd < 0 || bnd > 8 ? theme.dim : bands[bnd].col;
 
         hvx.setAttribute('x1', sx); hvx.setAttribute('y1', T); hvx.setAttribute('x2', sx); hvx.setAttribute('y2', H - B);
         hdot.setAttribute('cx', sx); hdot.setAttribute('cy', dy3);
@@ -616,7 +669,8 @@
     setLive: setLive, live: function () { return LIVE; }, seriesPriceAtX: seriesPriceAtX,
     FIT: FIT, BANDS: BANDS, SERIES: SERIES, SERIES_STEP: SERIES_STEP, SERIES_LAST_X: SERIES_LAST_X,
     BAND_WIDTH: BAND_WIDTH, BAND_OFFSET: BAND_OFFSET, TERMINAL_SUPPLY: TERMINAL_SUPPLY,
-    THEME: THEME, version: '2.1.0'
+    THEME: THEME, PALETTES: PALETTES, NAMES: NAMES, bandsFor: bandsFor, BTC_ORANGE: BTC_ORANGE,
+    LAYERS: ['debt', 'path', 'halvings', 'key', 'palette'], version: '2.2.0'
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = RainbowChart;
   global.RainbowChart = RainbowChart;
@@ -628,10 +682,14 @@
       for (var i = 0; i < ns.length; i++) {
         if (ns[i].getAttribute('data-booted')) continue;
         ns[i].setAttribute('data-booted', '1');
-        render(ns[i], {
+        // the options live on the mount, so a page's toggles re-render from the same object
+        var o = ns[i]._arcOpts || {
           to: +ns[i].getAttribute('data-to') || 0,
-          height: +ns[i].getAttribute('data-height') || 0
-        });
+          height: +ns[i].getAttribute('data-height') || 0,
+          palette: ns[i].getAttribute('data-palette') || undefined
+        };
+        ns[i]._arcOpts = o;
+        render(ns[i], o);
       }
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();

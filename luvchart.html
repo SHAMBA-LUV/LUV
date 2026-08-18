@@ -45,7 +45,7 @@
 <style>
 :root{
   --ink:#160a0f;--wine:#2b111c;--seam:#4a1f30;--rose:#ff4d6d;--pink:#ff006e;--purple:#8338ec;
-  --blush:#ffb3c1;--cream:#f6e7eb;--dim:#b98da0;--gold:#e3b25f;--candle:#0ecb81;--candle-dim:rgba(14,203,129,.14);
+  --blush:#ffb3c1;--cream:#f6e7eb;--dim:#b98da0;--gold:#e3b25f;--candle:#0ecb81;--candle-dim:rgba(14,203,129,.14);--candle-red:#f6465d;--btc:#F7931A;
   --mono:ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace;
   --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
 }
@@ -99,7 +99,7 @@ h1 img.coin{width:clamp(46px,8vw,74px);height:auto;display:block;
 .lc-sub{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;align-items:baseline;
   font-family:var(--mono);font-size:11.5px;color:var(--dim)}
 .lc-pct{font-weight:700}
-.lc-pct.up{color:var(--candle)}.lc-pct.down{color:var(--rose)}.lc-pct.flat{color:var(--dim)}
+.lc-pct.up{color:var(--candle)}.lc-pct.down{color:var(--candle-red)}.lc-pct.flat{color:var(--dim)}
 .lc-winlbl{font-size:10px;letter-spacing:.2em}
 .lc-xs{color:var(--gold)}
 .lc-xs small{color:var(--dim)}
@@ -136,7 +136,7 @@ h1 img.coin{width:clamp(46px,8vw,74px);height:auto;display:block;
 .legend span{display:inline-flex;align-items:center;gap:7px}
 .legend img{width:17px;height:17px;display:block}
 .legend .lg-buy{color:#7ee2a8}
-.legend .lg-sell{color:var(--rose)}
+.legend .lg-sell{color:var(--candle-red)}
 .legend .lg-seed{color:var(--gold)}
 
 /* ── the reading column ── */
@@ -249,8 +249,8 @@ footer .brandmark:hover img{opacity:1}
 
   <div class="legend">
     <span><img src="gfx/logo-transparent.png" alt=""> the live price</span>
-    <span class="lg-buy">▲ a buy</span>
-    <span class="lg-sell">▼ a sell</span>
+    <span class="lg-buy">▲ a buy · candle green</span>
+    <span class="lg-sell">▼ a sell · candle red</span>
     <span class="lg-seed">╌╌ the seed · 10 wei</span>
     <span>marker size = what the trade moved, in USD</span>
     <span>hover anywhere — the tape answers</span>
@@ -309,8 +309,8 @@ footer .brandmark:hover img{opacity:1}
     <div class="tablewrap"><table>
       <tr><th>mark</th><th>what it is</th></tr>
       <tr><td>the gold coin</td><td>the live price — the last reading the collector wrote, breathing at 60 bpm with every other heart on this site</td></tr>
-      <tr><td>▲ green</td><td>a buy, sized by the dollars it moved</td></tr>
-      <tr><td>▼ red</td><td>a sell, sized the same way</td></tr>
+      <tr><td>▲ candle green</td><td>a buy, sized by the dollars it moved — up is the classic candle green, on this chart and everywhere on the site</td></tr>
+      <tr><td>▼ candle red</td><td>a sell, sized the same way — down is the classic candle red; the site's rose is kept for prose and the seed's dot</td></tr>
       <tr><td>╌╌ gold</td><td>the seed: <b>exactly 10 wei per LUV</b>, the price this market started from</td></tr>
       <tr><td>× since the seed</td><td>the live price over the seed price — the multiplier, read to two decimals</td></tr>
       <tr><td>− / +</td><td>the zoom ladder: 15M · 1H · 4H · 12H · 24H · 48H · ALL</td></tr>
@@ -415,7 +415,7 @@ python3 -c "print(2.0349717731668952e-13 * 1e12)"</pre>
 
 <!-- ?v= busts the immutable .js cache — bump on every change -->
 <script src="substrate/d3.min.js?v=1"></script>
-<script src="substrate/luv-luvchart.js?v=1"></script>
+<script src="substrate/luv-luvchart.js?v=2"></script>
 <script src="substrate/luv-share.js?v=9"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
 <script src="substrate/luv-frame.js?v=6"></script>

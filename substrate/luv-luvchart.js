@@ -26,7 +26,10 @@
   var PAIR = '0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31';
   var COIN = 'gfx/logo-transparent.png';        // the mark: the gold binary heart
   var SEED_PRICE_NATIVE = 1e-17;                 // the seed — exactly 10 wei per LUV
-  var UP = '#0ecb81', UPSOFT = '#7ee2a8', DOWN = '#ff4d6d', FLAT = '#b98da0';
+  // classic candle colours: candle green up, candle red down — the market's own vocabulary, not
+  // the site's rose (which stays for prose and the seed's dot). Bitcoin, where it appears on this
+  // site, goes up in bitcoin orange; LUV wears its own gold coin.
+  var UP = '#0ecb81', UPSOFT = '#7ee2a8', DOWN = '#f6465d', DOWNSOFT = '#ff8098', FLAT = '#b98da0';
   var GOLD = '#e3b25f', SEAM = '#4a1f30', DIM = '#b98da0';
   var REFRESH_MS = 5 * 60e3;                     // full refresh from the mirror: 5 minutes
   var PRICE_MS = 60e3;                           // light price tick from the mirror: 1 minute
@@ -479,7 +482,7 @@
         var html;
         if (near) {
           var r = near.rec, buy = r[2] === 'b';
-          html = '<b style="color:' + (buy ? UPSOFT : DOWN) + '">' + (buy ? 'BUY' : 'SELL') + '</b> ' +
+          html = '<b style="color:' + (buy ? UPSOFT : DOWNSOFT) + '">' + (buy ? 'BUY' : 'SELL') + '</b> ' +
             fmtNum(Number(r[3]) / 1e12, 3) + 'T LUV<br>' + fmtUsd(r[5]) + ' · ' + U.tip(near.v, dec) +
             '<br><span style="color:' + DIM + '">' + utc(Number(r[0]), true) + ' · block ' + r[1] + '</span>' +
             '<br><span style="color:' + DIM + '">tx ' + shortHash(r[8]) + '</span>';
@@ -533,7 +536,7 @@
     global.clearInterval(this._t1); global.clearInterval(this._t2); return this;
   };
 
-  var DVLuvChart = { Chart: Chart, UNITS: UNITS, WINDOWS: WINDOWS, version: '1.0.0' };
+  var DVLuvChart = { Chart: Chart, UNITS: UNITS, WINDOWS: WINDOWS, UP: UP, DOWN: DOWN, version: '1.1.0' };
   if (typeof module !== 'undefined' && module.exports) module.exports = DVLuvChart;
   global.DVLuvChart = DVLuvChart;
 

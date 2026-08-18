@@ -129,33 +129,70 @@
     }).catch(function () { /* offline: the dated dot stands, and says its date */ });
   }
 
-  // world-debt overlay toggle — only for the substrate rainbow, which carries the market-cap
-  // reading the comparison needs. Re-renders through the organ from the mount's own options, so
-  // the toggle can never disagree with what is drawn.
-  function addDebtToggle(box, mount) {
-    var RB = window.DVLuvRainbow;
-    if (!RB) return;
+  // ── the layer toggles ── every chart on the page gets a rail of them, left of the zoom.
+  // Each one flips a flag on the mount's OWN options object and re-renders through the organ,
+  // so a toggle can never disagree with what is drawn. The substrate rainbow carries five (world
+  // debt · path · halvings · milestones · key); the arc carries four (no milestones there).
+  var LAYERS = [
+    { k: 'debt',       lbl: 'world debt', on: false, cls: 'debtbtn',
+      title: 'overlay total world debt on the market-cap scale (IIF aggregates, carried forward at 3.15%/yr)' },
+    { k: 'path',       lbl: 'BTC path',   on: true,  cls: 'togbtn',
+      title: 'the measured price path — weekly closes, carried to the live reading, in bitcoin orange' },
+    { k: 'halvings',   lbl: 'halvings',   on: true,  cls: 'togbtn',
+      title: 'the halving schedule — solid where it happened, dashed where it is arithmetic' },
+    { k: 'milestones', lbl: 'milestones', on: true,  cls: 'togbtn',
+      title: '2035 · 2050 · the last coin mined — where the fit puts them' },
+    { k: 'key',        lbl: 'key',        on: true,  cls: 'togbtn',
+      title: 'the nine band names in the top-left corner' },
+    // palette is a string, not a flag: pressed = the classic reference scale, released = the house ramp
+    { k: 'palette',    lbl: 'classic colours', on: false, cls: 'palbtn', values: ['house', 'classic'],
+      title: 'swap the house ramp (red fire sale · bitcoin-orange centre · green top) for the classic reference scale, and back' }
+  ];
+  function addToggles(box, mount, kind) {
     var row = box.previousSibling;
     if (!row || row.className !== 'zoomrow') return;
-    var b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'debtbtn';
-    b.textContent = 'world debt';
-    b.title = 'overlay total world debt on the market-cap scale (IIF aggregates, carried forward at 3.15%/yr)';
-    b.setAttribute('aria-pressed', 'false');
-    b.addEventListener('click', function () {
-      var o = mount._rainbowOpts || {};
-      o.debt = !o.debt;
-      b.setAttribute('aria-pressed', o.debt ? 'true' : 'false');
-      RB.render(mount, o);
-    });
-    row.insertBefore(b, row.firstChild);
+    var RB = window.DVLuvRainbow, RC = window.DVLuvRainbowChart;
+    var isArc = kind === 'arc';
+    var org = isArc ? RC : RB;
+    if (!org) return;
+    var optsOf = function () {
+      if (isArc) { mount._arcOpts = mount._arcOpts || {}; return mount._arcOpts; }
+      mount._rainbowOpts = mount._rainbowOpts || {}; return mount._rainbowOpts;
+    };
+    var rail = document.createElement('span');
+    rail.className = 'tograil';
+    var allowed = (org.LAYERS || ['debt', 'path', 'halvings', 'key']);
+    for (var i = 0; i < LAYERS.length; i++) {
+      (function (L) {
+        if (allowed.indexOf(L.k) < 0) return;
+        var o = optsOf();
+        var pressed = function (v) { return L.values ? v === L.values[1] : !!v; };
+        if (o[L.k] === undefined) o[L.k] = L.values ? L.values[0] : L.on;
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = L.cls;
+        b.textContent = L.lbl;
+        b.title = L.title;
+        b.setAttribute('aria-pressed', pressed(o[L.k]) ? 'true' : 'false');
+        b.addEventListener('click', function () {
+          var o2 = optsOf();
+          o2[L.k] = L.values ? (o2[L.k] === L.values[1] ? L.values[0] : L.values[1]) : !o2[L.k];
+          b.setAttribute('aria-pressed', pressed(o2[L.k]) ? 'true' : 'false');
+          org.render(mount, o2);
+          if (box._applyZoom) box._applyZoom();      // the arc widens inside its box; keep the width
+        });
+        rail.appendChild(b);
+      })(LAYERS[i]);
+    }
+    row.insertBefore(rail, row.firstChild);
   }
 
   function addZoom(box) {
     if (box.dataset.zoomed) return; box.dataset.zoomed = '1';
     var mount = box.querySelector('[data-luvrainbow]');
-    if (mount) { addScaleZoom(box, mount); addDebtToggle(box, mount); } else addWidthZoom(box);
+    var arc = box.querySelector('[data-luvrainbowchart],[data-rainbow-chart]');
+    if (mount) { addScaleZoom(box, mount); addToggles(box, mount, 'sub'); }
+    else { addWidthZoom(box); if (arc) addToggles(box, arc, 'arc'); }
   }
 
   /// A box that gained a live rainbow AFTER boot — the gated one — needs its controls rebuilt:
