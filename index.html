@@ -439,6 +439,9 @@ a.card{display:block;text-decoration:none;color:inherit}
 a.card:hover{border-color:var(--candle);background:var(--candle-dim)}
 a.card:hover h3,a.card:hover .n{color:var(--candle)}
 .card .livetag{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--candle);margin-left:8px;white-space:nowrap}
+.card .n img.cardcoin{display:block;width:36px;height:36px;
+  filter:drop-shadow(0 0 calc(2px + 10px*var(--luv-pulse,.28)) rgba(227,178,95,calc(.2 + .45*var(--luv-pulse,.28))))}
+@media (prefers-reduced-motion:reduce){.card .n img.cardcoin{filter:none}}
 .paperrow{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px;justify-content:center}
 
 /* ── contracts ledger ── */
@@ -759,9 +762,9 @@ the live deployment landed · <b>launch successful</b> ·
       <div class="card"><div class="n">Δ</div>
         <h3>sentiment.shift</h3>
         <p>The derivative: indicator change per <b>blocktime</b>, normalized by average blocktime — including <b>speed to return from ping</b>.</p></div>
-      <a class="card" href="view.html" title="the LIVEchart — LUV/ETH price every minute, full refresh every 5"><div class="n">📈</div>
+      <a class="card" href="luvchart.html" title="the LUVchart — the price of LUV drawn from the pair itself · price every minute, full refresh every 5"><div class="n"><img class="cardcoin" src="gfx/logo-transparent.png" alt="" width="36" height="36"></div>
         <h3>LUVchart <span class="livetag">● LIVEchart</span></h3>
-        <p>Price as sentiment: fundamentals are fixed at genesis, so the chart reads as a pure feeling series. <b>open the LIVEchart →</b></p></a>
+        <p>Price as sentiment: fundamentals are fixed at genesis, so the chart reads as a pure feeling series. <b>open the LUVchart →</b></p></a>
     </div>
     <div class="paperrow">
       <a class="btn" href="faq.html">💬 FAQ</a>

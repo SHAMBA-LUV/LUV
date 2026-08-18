@@ -31,6 +31,7 @@ deployed bytecode. Verify everything yourself; that is the point.
 - https://luv.pythai.net/market-history.json — the price series: `points` = [[tsMs, priceUsd, priceNative]...], one point a minute, 2,880 points (48 hours).
 - https://luv.pythai.net/market-trades.json — the transaction log: the pair's Swap events decoded (`trades`: [tsMs, block, 'b'|'s', luv, weth, usd, priceNative, maker, txHash, logIndex]), rolling 600, refreshed every minute.
 - https://luv.pythai.net/market-holders.json — the holders: `top` = [[address, luv]...] read live from `balanceOf` (reflections included — the same truth the Etherscan holders tab expresses; candidate discovery is enrichment, balances are chain reads), `count` = holders ≥ 1 LUV. Holding LUV is recognized participation.
+- https://luv.pythai.net/luvchart.html — **the LUVchart**: the price on the whole page, drawn in the browser from the three files above. Two series: the minute series (15M…48H, the collector's samples) and the trade series (ALL, since the seed — the swap log itself, stepped, because a V2 price only moves when someone trades). Candles, log axis, three expressions of one price ($1T LUV in USDC · WEI per LUV · T LUV per ETH), the ten-wei seed line, and every trade plotted green/red at what it paid. Renderer: /substrate/luv-luvchart.js on the vendored d3 — readable, same-origin, no CDN.
 - https://luv.pythai.net/substrate/ — the engine substrates, readable source (zero-dependency JS; luv-pulse.js emits the 1 Hz heartbeat signal any consumer can drink).
 
 ## Crawling and indexing

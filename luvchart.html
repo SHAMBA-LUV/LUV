@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>THE LUVchart — the price of LUV, drawn from the pair | SHAMBA LUV</title>
+<meta name="description" content="The LUVchart: the price of SHAMBA LUV drawn in your browser from the Uniswap V2 pair itself — the minute series, every trade since the seed, candles, log axis, and the live price marked by the LUV coin.">
+<meta name="author" content="SHAMBA LUV">
+<link rel="canonical" href="https://luv.pythai.net/luvchart.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SHAMBA LUV">
+<meta property="og:title" content="THE LUVchart — the price of LUV, drawn from the pair">
+<meta property="og:description" content="Price as sentiment: fundamentals fixed at genesis, so the chart reads as a pure feeling series. In-house d3, same-origin data, every trade since the seed.">
+<meta property="og:url" content="https://luv.pythai.net/luvchart.html">
+<meta property="og:image" content="https://luv.pythai.net/gfx/logo.png">
+<meta property="og:image:secure_url" content="https://luv.pythai.net/gfx/logo.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta property="og:image:alt" content="SHAMBA LUV — the gold binary heart">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@shambaluv">
+<meta name="twitter:title" content="THE LUVchart — the price of LUV, drawn from the pair">
+<meta name="twitter:description" content="The minute series and every trade the pair has ever settled, drawn in your browser. The coin is the live price. Nothing third-party between you and the pool.">
+<meta name="twitter:image" content="https://luv.pythai.net/gfx/logo.png">
+<meta name="twitter:image:alt" content="SHAMBA LUV — the gold binary heart">
+<meta name="keywords" content="LUVchart, LUV chart, LUV price chart, SHAMBA LUV, LUV ETH chart, Uniswap V2 pair chart, candlestick, reflection token, 0x2711111111683B8708cb9a48cBf36a51315F8254, luv.pythai.net">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+<meta name="theme-color" content="#160a0f">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage",
+"name":"THE LUVchart — the price of LUV, drawn from the pair",
+"description":"The LUVchart: the price of SHAMBA LUV drawn in the browser from the Uniswap V2 pair — the minute series, every trade since the seed, candles, a logarithmic axis, and the live price marked by the LUV coin.",
+"url":"https://luv.pythai.net/luvchart.html",
+"inLanguage":"en",
+"primaryImageOfPage":{"@type":"ImageObject","url":"https://luv.pythai.net/gfx/logo.png","width":512,"height":512},
+"isPartOf":{"@type":"WebSite","name":"SHAMBA LUV","url":"https://luv.pythai.net/"},
+"publisher":{"@type":"Organization","name":"SHAMBA LUV","url":"https://luv.pythai.net/","logo":{"@type":"ImageObject","url":"https://luv.pythai.net/gfx/logo.png"}},
+"about":{"@type":"Thing","name":"SHAMBA LUV (LUV)","description":"A fixed-supply reflection token on Ethereum mainnet; the price is created by the Uniswap V2 LUV/WETH pair.","identifier":"0x2711111111683B8708cb9a48cBf36a51315F8254"},
+"significantLink":["https://luv.pythai.net/view.html","https://luv.pythai.net/market.json","https://etherscan.io/address/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31"]}
+</script>
+<!-- the chart is named for the coin, so the coin is the tab -->
+<link rel="icon" href="gfx/logo-transparent.png">
+<style>
+:root{
+  --ink:#160a0f;--wine:#2b111c;--seam:#4a1f30;--rose:#ff4d6d;--pink:#ff006e;--purple:#8338ec;
+  --blush:#ffb3c1;--cream:#f6e7eb;--dim:#b98da0;--gold:#e3b25f;--candle:#0ecb81;--candle-dim:rgba(14,203,129,.14);
+  --mono:ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--ink);color:var(--cream);font-family:var(--sans);line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:var(--blush)}
+a:hover{color:var(--rose)}
+:focus-visible{outline:2px solid var(--rose);outline-offset:3px;border-radius:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.narrow{max-width:820px;margin:0 auto}
+header{border-bottom:1px solid var(--seam)}
+.bar{display:flex;align-items:center;gap:14px;padding:16px 0}
+.brand{font-family:var(--mono);font-size:15px;letter-spacing:.14em;color:var(--cream);text-decoration:none}
+.brand b{color:var(--rose)}
+.bar .spacer{flex:1}
+.bar a.back{font-family:var(--mono);font-size:12px;text-decoration:none;color:var(--dim)}
+.bar a.back:hover{color:var(--rose)}
+
+/* ── the title carries the mark ── the chart is named for the coin, so the coin leads ── */
+h1{margin:46px 0 8px;text-align:center;font-size:clamp(30px,5.6vw,50px);font-weight:800;
+  display:flex;align-items:center;justify-content:center;gap:clamp(12px,2.4vw,22px);flex-wrap:wrap;line-height:1.1}
+h1 .titletext{background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+h1 .titletext b{font-weight:800}
+h1 img.coin{width:clamp(46px,8vw,74px);height:auto;display:block;
+  filter:drop-shadow(0 0 calc(4px + 18px*var(--luv-pulse,.28)) rgba(227,178,95,calc(.22 + .5*var(--luv-pulse,.28))))}
+.sub{text-align:center;color:var(--dim);margin-bottom:6px}
+.paperkind{text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);margin-bottom:30px}
+
+/* ── the chart card ── */
+.chartcard{border:1px solid var(--seam);border-radius:16px;background:var(--wine);padding:14px;overflow:hidden}
+.chartcard .head{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;padding:6px 8px 12px}
+.chartcard .head .t{font-weight:800;font-size:16px}
+.chartcard .head .t b{color:var(--rose)}
+.chartcard .head .pair{font-family:var(--mono);font-size:11.5px;color:var(--dim);word-break:break-all}
+.chartcard .head .spacer{flex:1}
+.chartcard .head .livepill{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+  color:#7ee2a8;border:1px solid rgba(126,226,168,.45);border-radius:999px;padding:3px 11px;white-space:nowrap}
+
+/* ── the LUVchart substrate ── */
+.lc-head{display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:4px 2px 12px}
+.lc-mark{border-radius:50%;display:block;
+  filter:drop-shadow(0 0 calc(3px + 13px*var(--luv-pulse,.28)) rgba(227,178,95,calc(.22 + .45*var(--luv-pulse,.28))))}
+.lc-name{font-size:19px;font-weight:800;letter-spacing:.02em;line-height:1.2}
+.lc-name b{background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lc-pair{font-family:var(--mono);font-size:11px;color:var(--dim)}
+.lc-spacer{flex:1}
+.lc-readout{text-align:right;margin-left:auto}
+.lc-big{font-family:var(--mono);font-weight:800;font-size:clamp(17px,3vw,25px);color:var(--gold);line-height:1.25}
+.lc-big .lc-amt{font-size:10px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase;font-weight:600}
+.lc-big small{font-size:10.5px;letter-spacing:.16em;color:var(--dim)}
+.lc-sub{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;align-items:baseline;
+  font-family:var(--mono);font-size:11.5px;color:var(--dim)}
+.lc-pct{font-weight:700}
+.lc-pct.up{color:var(--candle)}.lc-pct.down{color:var(--rose)}.lc-pct.flat{color:var(--dim)}
+.lc-winlbl{font-size:10px;letter-spacing:.2em}
+.lc-xs{color:var(--gold)}
+.lc-xs small{color:var(--dim)}
+.lc-ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:0 2px 12px}
+.lc-zoom{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;color:var(--dim)}
+.lc-zoom button{width:27px;height:27px;border-radius:8px;border:1px solid var(--seam);background:var(--ink);
+  color:var(--blush);font-size:15px;line-height:1;cursor:pointer;
+  transition:transform .15s cubic-bezier(.2,.8,.3,1),color .15s,border-color .15s}
+.lc-zoom button:hover{color:var(--rose);border-color:var(--rose);transform:translateY(-1px)}
+.lc-zoom button:active{transform:translateY(0) scale(.94)}
+.lc-zlbl{min-width:36px;text-align:center;color:var(--cream);letter-spacing:.14em}
+.lc-pills{display:flex;flex-wrap:wrap;gap:6px}
+.lc-pill{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--dim);background:var(--ink);
+  border:1px solid var(--seam);border-radius:999px;padding:5px 12px;cursor:pointer;transition:color .15s,border-color .15s}
+.lc-pill:hover{color:var(--rose);border-color:var(--rose)}
+.lc-pill.on{color:var(--cream);border-color:var(--rose);box-shadow:0 0 0 1px rgba(255,0,110,.25) inset}
+.lc-plot{position:relative}
+.lc-plot svg{display:block;width:100%;height:auto}
+.lc-watermark{opacity:.055}
+/* the live price wears the coin, and the coin breathes with --luv-pulse — the same 1 Hz
+   envelope every heart on the site beats to, published on :root by luv-pulse.js */
+.lc-coin{filter:drop-shadow(0 0 calc(2px + 13px*var(--luv-pulse,.28)) rgba(227,178,95,calc(.3 + .5*var(--luv-pulse,.28))))}
+.lc-tip{position:absolute;pointer-events:none;background:var(--ink);border:1px solid var(--seam);border-radius:9px;
+  padding:8px 11px;font-family:var(--mono);font-size:11px;color:var(--cream);white-space:nowrap;z-index:3;
+  box-shadow:0 10px 26px -14px #000;line-height:1.55}
+.lc-cap{font-family:var(--mono);font-size:11px;color:var(--dim);padding:10px 2px 0;line-height:1.75}
+.lc-cap b{color:var(--blush)}
+@media (prefers-reduced-motion:reduce){h1 img.coin,.lc-mark,.lc-coin{filter:none}.lc-zoom button{transition:none}
+  .lc-zoom button:hover,.lc-zoom button:active{transform:none}}
+
+/* ── the legend: what every mark on the chart means ── */
+.legend{display:flex;flex-wrap:wrap;gap:9px 18px;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:11.5px;color:var(--dim);margin:14px 0 0}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend img{width:17px;height:17px;display:block}
+.legend .lg-buy{color:#7ee2a8}
+.legend .lg-sell{color:var(--rose)}
+.legend .lg-seed{color:var(--gold)}
+
+/* ── the reading column ── */
+.paper{max-width:820px;margin:0 auto}
+.paper p{margin:0 0 16px;font-size:15.5px}
+.paper .preface{border:1px solid var(--seam);border-left:3px solid var(--gold);border-radius:10px;background:var(--wine);
+  padding:18px 22px;margin:0 0 36px;color:var(--dim);font-size:14px}
+.paper h2{font-family:var(--mono);font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);
+  margin:46px 0 16px;padding-top:26px;border-top:1px solid var(--seam)}
+.paper h2 .n{color:var(--rose);margin-right:10px}
+.paper em{font-style:italic;color:var(--blush)}
+.paper b{color:var(--cream);font-weight:700}
+.paper .cite{color:var(--dim);font-size:13px}
+.paper pre{background:var(--wine);border:1px solid var(--seam);border-radius:10px;padding:16px 18px;
+  font-family:var(--mono);font-size:12.5px;color:var(--cream);overflow-x:auto;margin:0 0 16px;line-height:1.55}
+.paper .hi{border:1px solid rgba(227,178,95,.5);border-radius:10px;background:var(--wine);padding:16px 20px;margin-bottom:16px}
+.paper .hi .t{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.paper .hi p{margin:0 0 10px;font-size:14.5px}
+.paper .hi p:last-child{margin-bottom:0}
+.paper .tablewrap{overflow-x:auto;margin:0 0 16px}
+.paper table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12.5px}
+.paper th{color:var(--rose);text-transform:uppercase;letter-spacing:.12em;font-size:10px;text-align:left;padding:7px 10px;border-bottom:1px solid var(--seam)}
+.paper td{padding:6px 10px;border-bottom:1px solid rgba(74,31,48,.5);color:var(--cream)}
+.paper td:first-child{color:var(--blush)}
+
+/* ── buttons + the offering ── */
+.btn{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--blush);text-decoration:none;
+  border:1px solid var(--seam);border-radius:999px;padding:9px 18px;transition:color .15s,border-color .15s;background:none;cursor:pointer}
+.btn:hover{color:var(--rose);border-color:var(--rose)}
+.btn.candlehover:hover{border-color:var(--candle);color:var(--candle);background:var(--candle-dim)}
+.readmore{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:44px 0 0}
+.uni-cta{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:15px;color:var(--cream);text-decoration:none;
+  border:1px solid #FF007A;border-radius:999px;padding:12px 24px;transition:background .15s}
+.uni-cta:hover{background:rgba(255,0,122,.12);color:var(--cream)}
+.uni-cta img{height:18px;width:auto}
+.slipnote{text-align:center;font-size:13px;color:var(--dim);margin-top:14px}
+.slipnote b{color:var(--gold)}
+
+/* ── the share rail ── */
+.shr-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;margin-top:30px}
+.shr-lead{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--rose)}
+.shr-btn{font-family:var(--mono);font-size:12px;color:var(--blush);text-decoration:none;background:none;cursor:pointer;
+  border:1px solid var(--seam);border-radius:999px;padding:8px 16px;transition:color .15s,border-color .15s}
+.shr-btn:hover{color:var(--rose);border-color:var(--rose)}
+.shr-note{text-align:center;font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:8px}
+.shr-earn{max-width:640px;margin:14px auto 0;padding:14px 18px;border:1px solid rgba(14,203,129,.35);
+  border-radius:14px;background:rgba(14,203,129,.05);text-align:center;transition:border-color .2s,box-shadow .2s}
+.shr-earn.armed{border-color:rgba(14,203,129,.75);box-shadow:0 0 26px -10px rgba(14,203,129,.8)}
+.shr-terms{font-family:var(--mono);font-size:11.5px;color:#7ee2a0;letter-spacing:.02em;line-height:1.6}
+.shr-lbl{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin:12px 0 7px}
+.shr-inrow{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.shr-in{flex:1 1 300px;min-width:0;font-family:var(--mono);font-size:12.5px;color:var(--cream);
+  background:var(--ink);border:1px solid var(--seam);border-radius:9px;padding:9px 12px}
+.shr-in:focus{outline:none;border-color:#0ecb81;box-shadow:0 0 0 2px rgba(14,203,129,.25)}
+.shr-in::placeholder{color:#7d5d6c}
+.shr-go{border-color:rgba(14,203,129,.6);color:#7ee2a0;white-space:nowrap}
+.shr-go:hover:not(:disabled){color:#0ecb81;border-color:#0ecb81;background:rgba(14,203,129,.1)}
+.shr-go:disabled{opacity:.5;cursor:default}
+.shr-clock{font-family:var(--mono);font-size:11.5px;color:#7ee2a0;margin-top:9px;min-height:1.2em;line-height:1.6;font-variant-numeric:tabular-nums}
+.shr-msg{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-top:4px;min-height:1.2em;line-height:1.6}
+.shr-msg.ok{color:#0ecb81}
+.shr-msg.bad{color:var(--rose)}
+.shr-earn a{color:#7ee2a0}
+@media (prefers-reduced-motion:reduce){.shr-earn{transition:none}}
+
+footer{margin-top:64px;border-top:1px solid var(--seam);padding:26px 0 44px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:18px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--dim)}
+footer a{text-decoration:none}
+footer .spacer{flex:1}
+footer .brandmark{display:inline-flex;align-items:center;gap:7px;color:var(--dim)}
+footer .brandmark img{height:14px;width:auto;display:block;opacity:.85;transition:opacity .15s}
+footer .brandmark:hover{color:var(--cream)}
+footer .brandmark:hover img{opacity:1}
+.fieldnav{border-top:1px solid var(--seam);margin-top:22px;padding-top:16px;display:flex;flex-wrap:wrap;gap:8px 16px;
+  align-items:baseline;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em}
+.fieldnav .fn-k{color:var(--gold);text-transform:uppercase;letter-spacing:.18em;font-size:10px;width:100%;margin-bottom:2px}
+.fieldnav a{color:var(--dim);text-decoration:none;border-bottom:1px solid transparent}
+.fieldnav a:hover{color:var(--rose);border-bottom-color:var(--rose)}
+</style>
+</head>
+<body data-luvframe="candles green">
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="/">❤ SHAMBA <b>LUV</b></a>
+    <span class="spacer"></span>
+    <a class="back" href="view.html">live view</a>
+    <a class="back" href="LUV.html">the price</a>
+    <a class="back" href="rainbow.html">the rainbow</a>
+    <a class="back" href="/">← back to the doorway</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1><img class="coin" src="gfx/logo-transparent.png" alt="SHAMBA LUV — the gold binary heart">
+    <span class="titletext">THE LUV<b>chart</b></span></h1>
+  <div class="sub">✨ the price of LUV, drawn from the pair itself ✨</div>
+  <div class="paperkind">a market instrument · the fastest clock</div>
+
+  <!-- ═══ the chart ═══ -->
+  <div class="chartcard">
+    <div class="head">
+      <span class="t">📈 the <b>LUVchart</b></span>
+      <span class="pair">in-house d3 · Uniswap V2 pair 0x57D2…8a31 · price every minute, full refresh every 5</span>
+      <span class="spacer"></span>
+      <span class="livepill">● same-origin data</span>
+    </div>
+    <div data-luvchart data-height="560"></div>
+  </div>
+
+  <div class="legend">
+    <span><img src="gfx/logo-transparent.png" alt=""> the live price</span>
+    <span class="lg-buy">▲ a buy</span>
+    <span class="lg-sell">▼ a sell</span>
+    <span class="lg-seed">╌╌ the seed · 10 wei</span>
+    <span>marker size = what the trade moved, in USD</span>
+    <span>hover anywhere — the tape answers</span>
+  </div>
+
+  <div class="readmore" style="margin-top:22px">
+    <a class="uni-cta" data-luv-emit href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="the offering — preset USDC → LUV · set slippage ~10%">
+      <img src="gfx/brand/uniswap_horizontal_white.svg" alt="Uniswap"> · buy &amp; sell <b>LUV</b> live ❤</a>
+    <a class="btn candlehover" href="view.html">📊 the screener &amp; the tape — LIVE VIEW</a>
+    <a class="btn" href="LUV.html">💱 the price expression</a>
+  </div>
+  <div class="slipnote">set slippage to <b>~10%</b> — LUV carries a 5% reflection fee, so a lower tolerance will bounce the swap</div>
+
+  <!-- share this page, and be paid for it -->
+  <div data-luvshare data-earn="tweet" data-note="off"
+       data-earn-max="1000000"
+       data-label="share the LUVchart"
+       data-url="https://luv.pythai.net/luvchart.html"
+       data-text="The LUVchart: the price of LUV drawn straight from the Uniswap pair — every trade since the seed, in your browser, nothing third-party in between. HOLD LUV to earn LUV ❤ @shambaluv #SHAMBALUV"></div>
+
+  <!-- ═══ the reading ═══ -->
+  <div class="paper">
+    <div class="preface"><b>Preface.</b> This is the house chart of the LUV price, and it is not an
+    embed: no widget, no aggregator frame, no third-party script watching you read it. The page holds
+    the drawing code and the browser does the drawing, from three files this site writes for itself —
+    <a href="market.json">market.json</a> (the live reading),
+    <a href="market-history.json">market-history.json</a> (one point a minute, 48 hours deep) and
+    <a href="market-trades.json">market-trades.json</a> (the pair's own swap log, every trade since
+    the seed). The Content-Security-Policy on this vhost is <code>connect-src 'self'</code>, so the
+    chart <em>cannot</em> call anywhere else even if it wanted to; the collector alone talks to the
+    chain, once a minute, on its own cadence.</div>
+
+    <div class="hi"><div class="t">📈 the LUVchart, in one sentence</div>
+    <p><b>Price as sentiment.</b> LUV's fundamentals are fixed at genesis — supply immutable, no
+    mint, no burn schedule, no earnings — so what is left to move the price is the community's
+    disposition toward it. That makes this chart the closest thing there is to a <em>pure sentiment
+    series</em>, which is exactly the claim <a href="sentiment.html">the measurement paper</a> makes
+    for it: the fifth instrument, the oldest one, relabeled honestly.</p></div>
+
+    <h2><span class="n">I.</span> Two clocks, two series</h2>
+    <p><b>The minute series — 15M through 48H.</b> The collector reads the pair's reserves once a
+    minute and writes the price it computes. Those samples are what the short windows draw: a
+    regularly-clocked view of a market that is not itself regular.</p>
+    <p><b>The trade series — ALL, since the seed.</b> A Uniswap V2 price only moves when somebody
+    trades, so between trades the honest curve is a <em>step</em>, and a step is what the ALL window
+    draws. Its points are not samples at all: they are the swaps themselves, decoded from the pair's
+    own <code>Swap</code> events, each one carrying the LUV it moved, the ETH it moved, its block, and
+    its transaction hash. There is no smoothing between them, because nothing happened between them.</p>
+    <p>Every trade also carries its own dollar value and its own LUV amount, so <code>usd ÷ luv</code>
+    <em>is</em> the price that trade paid — the dollar path since the seed needs no historical ETH/USD
+    series and invents no number. One number on this page is derived rather than measured, and it is
+    named as such in the caption: the seed's dollar leg, which takes the first trade's own implied
+    ETH/USD and applies it to the seed price of exactly 10 wei.</p>
+
+    <h2><span class="n">II.</span> How to read it</h2>
+    <div class="tablewrap"><table>
+      <tr><th>mark</th><th>what it is</th></tr>
+      <tr><td>the gold coin</td><td>the live price — the last reading the collector wrote, breathing at 60 bpm with every other heart on this site</td></tr>
+      <tr><td>▲ green</td><td>a buy, sized by the dollars it moved</td></tr>
+      <tr><td>▼ red</td><td>a sell, sized the same way</td></tr>
+      <tr><td>╌╌ gold</td><td>the seed: <b>exactly 10 wei per LUV</b>, the price this market started from</td></tr>
+      <tr><td>× since the seed</td><td>the live price over the seed price — the multiplier, read to two decimals</td></tr>
+      <tr><td>− / +</td><td>the zoom ladder: 15M · 1H · 4H · 12H · 24H · 48H · ALL</td></tr>
+      <tr><td>$ 1T · WEI · Ξ</td><td>one price, three expressions: a trillion LUV in USDC, wei per one LUV, trillions of LUV per one ETH</td></tr>
+      <tr><td>LOG</td><td>a logarithmic price axis — equal <em>ratios</em> take equal space, which is the honest axis for a young market</td></tr>
+    </table></div>
+    <p><b>The candles</b> bucket whatever series is active into open-high-low-close bars; the bucket
+    is chosen from the window, and the caption always says which. <b>The percentage</b> beside the
+    price is computed from the drawn window itself, first point against last — never quoted from a
+    field that measures a different interval.</p>
+
+    <h2><span class="n">III.</span> Why it is in-house</h2>
+    <p>The chart is drawn with <a href="substrate/d3.min.js" rel="noopener">d3 v7</a>, vendored into
+    this site's own <code>substrate/</code> directory, and with
+    <a href="substrate/luv-luvchart.js" rel="noopener">luv-luvchart.js</a>, which is readable source
+    you can open in one click. Nothing loads from a CDN, because
+    <a href="https://github.com/cypherpunk4096/standard" rel="noopener">cypherpunk4096 §2</a> says
+    vendor everything or do without — a permanent unit that fetches its own code from someone else's
+    host is not permanent. A second charting library was weighed and declined: d3 is already here and
+    already draws <a href="view.html">the measure on the live view</a>, and the second one would have
+    bought nothing this page does not already do.</p>
+    <p><b>And the price is not ours to source.</b> The pair creates the price; Uniswap expresses it.
+    Aggregators are enrichment, never the origin — which is why the numbers here are reserves and
+    swap logs rather than somebody's API, and why the screener that replaced the third-party embed on
+    <a href="view.html">the live view</a> carries zero warning chips: there is nothing between you and
+    the pool to warn about.</p>
+
+    <h2><span class="n">IV.</span> The honest caveats</h2>
+    <p><b>The pool is young and thin.</b> A single sizeable trade moves this price further than it
+    would move a deep one, and the chart will show that honestly rather than smoothing it away. Read
+    the marker sizes: they say how much money made each move.</p>
+    <p><b>The dollar leg moves even when the pair does not.</b> LUV is priced in ETH by the pair; the
+    dollar view multiplies by a median ETH/USD. On a day with no trades the <code>$ 1T</code> line can
+    still drift, and that drift is Ethereum's, not LUV's. Switch to <b>WEI</b> to see the pair alone.</p>
+    <p><b>The minute history is 48 hours deep</b> — 2,880 points, by design. Anything longer is the
+    ALL window's job, and ALL is trade-by-trade, which is a different resolution rather than a longer
+    version of the same one.</p>
+    <p><b>A chart is not an oracle.</b> This one measures disposition on the fastest clock in the
+    stack; <a href="rainbow.html">the rainbow</a> measures it on the slowest, and
+    <a href="sentiment.html">the measurement paper</a> holds the instruments between. Use them
+    together, and none of them as the needle.</p>
+
+    <h2>Appendix — reproduce every number</h2>
+    <pre># the live reading (same-origin, written once a minute)
+curl -s https://luv.pythai.net/market.json | python3 -m json.tool | head -20
+
+# the minute series — [ms, priceUsd, priceNative], 2880 points, 48h
+curl -s https://luv.pythai.net/market-history.json | python3 -c \
+ "import sys,json; p=json.load(sys.stdin)['points']; print(len(p), p[0], p[-1])"
+
+# the swap log — [ts, block, side, luv, weth, usd, priceNative, maker, tx, logIndex]
+curl -s https://luv.pythai.net/market-trades.json | python3 -c \
+ "import sys,json; t=json.load(sys.stdin)['trades']; print(len(t)); print(t[-1])"
+
+# the price a trade actually paid: usd / luv
+python3 -c "print(1.89 / 96762137935362.86)"        # → the per-LUV dollar price of that swap
+
+# wei per LUV, and the multiple since the seed (the seed was exactly 10 wei)
+python3 -c "pn=1.0759333148017753e-16; print(pn*1e18, 'wei'); print(pn/1e-17, 'x since the seed')"
+
+# one trillion LUV, in dollars — the measure of value
+python3 -c "print(2.0349717731668952e-13 * 1e12)"</pre>
+    <p class="cite">Sources: the Uniswap V2 pair
+    <a href="https://etherscan.io/address/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31" target="_blank" rel="noopener">0x57D2…8a31 ↗</a>
+    (reserves and <code>Swap</code> events) and the verified token
+    <a href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254#code" target="_blank" rel="noopener">0x2711…8254 ↗</a>.
+    Collector: <code>luv-market-collector.mjs</code>, run every 60 seconds. Renderer:
+    <a href="substrate/luv-luvchart.js" rel="noopener">substrate/luv-luvchart.js</a> on
+    <a href="substrate/d3.min.js" rel="noopener">d3 v7.9.0</a>, both served from this origin.</p>
+
+    <div class="readmore">
+      <a class="btn candlehover" href="view.html">📊 LIVE VIEW — the screener &amp; the tape</a>
+      <a class="btn" href="LUV.html">💱 the price expression</a>
+      <a class="btn" href="rainbow.html">🌈 THE BITCOIN RAINBOW — the slowest clock</a>
+      <a class="btn" href="sentiment.html">🎭 SENTIMENT — the measurement paper</a>
+      <a class="btn" href="wei.html">⚖️ the WEI of LUV</a>
+      <a class="btn" href="https://github.com/cypherpunk4096/standard" rel="noopener"
+         title="cypherpunk4096 — the 2¹² standard: determinism as identity · zero dependencies · the green checkmark · precision without approximation · quantum compliance">⟁ cypherpunk4096</a>
+      <a class="btn" href="docs.html">📚 THE DOCS — the complete map</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>❤ LUV is priceless</span>
+    <span class="spacer"></span>
+    <a href="/">the doorway</a>
+    <a href="view.html">live view</a>
+    <a href="faq.html">FAQ</a>
+    <a href="docs.html">docs</a>
+    <a href="https://github.com/SHAMBA-LUV/LUV" rel="noopener">source &amp; audit</a>
+    <a href="https://github.com/cypherpunk4096" target="_blank" rel="noopener" title="the cypherpunk4096 organization — the standard, SCIEN·TIFIC, and the commons (2¹²)">⟁ cypherpunk4096</a>
+    <a class="brandmark" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="LUV verified on Etherscan · Powered by Etherscan.io APIs">
+      <img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="14">
+      <span>Powered by Etherscan.io APIs</span>
+    </a>
+    <span>SHAMBA © 2026 LUV · luv@pythai.net</span>
+    <nav class="fieldnav" aria-label="the field"><span class="fn-k">the field</span><a href="/">the doorway</a><a href="view.html">live view</a><a href="LUV.html">the price</a><a href="engine.html">the engine</a><a href="emotonomics.html">emotonomics</a><a href="sentiment.html">sentiment</a><a href="wei.html">wei</a><a href="exabyte.html">exabyte</a><a href="rainbow.html">rainbow</a><a href="luvbus.html">LUVbus</a><a href="faq.html">FAQ</a><a href="docs.html">docs</a></nav>
+  </div>
+</footer>
+
+<!-- ?v= busts the immutable .js cache — bump on every change -->
+<script src="substrate/d3.min.js?v=1"></script>
+<script src="substrate/luv-luvchart.js?v=1"></script>
+<script src="substrate/luv-share.js?v=9"></script>
+<script src="substrate/luv-pulse.js?v=1"></script>
+<script src="substrate/luv-frame.js?v=6"></script>
+<script src="substrate/luv-engine.js?v=11"></script>
+</body>
+</html>
