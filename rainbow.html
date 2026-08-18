@@ -267,225 +267,56 @@ footer .brandmark:hover img{opacity:1}
   <div class="sub">An in-house rainbow chart — our own regression, our own bands, every number reproducible</div>
   <div class="paperkind">a sentiment instrument · the slowest clock</div>
 
-  <div class="preface"><b>Preface.</b> This is the house build of the classic Bitcoin rainbow chart —
-  fitted from scratch rather than copied: the regression is computed from the documented public record
-  (2010–2013 anchors) plus the DeFiLlama price feed (2013→today), the bands are set from the fit's own
-  residuals, and every chart is drawn in your browser with <em>no external calls</em> — the one
-  number that arrives from anywhere is the price, and it arrives <em>same-origin</em>, read for you
-  by this site every fifteen minutes. The fit's reference figures are <b>2026-08-05</b>
-  (BTC $64,482, DeFiLlama, confidence 0.99 — cross-referenced CoinGecko / CoinMarketCap), which is
-  what the worked arithmetic below is checked against; the dot is today. A rainbow is a heuristic, not an oracle: it is sentiment's slowest dial, the
-  companion of the fast dials in <a href="sentiment.html">the measurement paper</a> — from the
-  <a href="https://www.cnn.com/markets/fear-and-greed" rel="noopener">Fear &amp; Greed Index</a> down
-  to gesture velocity.</div>
+  <div class="preface"><b>The charts, and only the charts.</b> Four rainbows drawn in your browser from
+  the published fit, the price read same-origin every fifteen minutes. The reading that used to run
+  between them — how the fit is built, the bands priced today, what a rainbow measures, the window
+  ahead, the halving calendar, the appendix that reproduces every number — now lives under headings on
+  <a href="rbfaq.html"><b>the words page</b></a>. Every layer above each chart is a toggle; ± steps
+  the ceiling. <a href="rbfaq.html#colours">The colours →</a></div>
 
   <div class="hi"><div class="t">🌈 the arc — the reference rainbow, drawn in your browser</div>
-  <p><b>This is the rainbow chart in its reference form</b>, rendered live by
-  <b>DVLuvRainbowChart</b> (<a href="substrate/luv-rainbowchart.js" rel="noopener">readable
-  source</a>, zero dependencies, price series embedded). The organ still calls nothing itself: the
-  page hands it the current price every fifteen minutes and it carries the <b>bitcoin-orange</b> path
-  from its last embedded close to that reading, which is the green-ringed dot. Nine bands on
-  <em>linear time</em> against a log price axis — and linear time is what bends the fit into an
-  <b>arc</b>. Left axis is BTC price; the right axis prices the same gridlines as
-  <b>market cap</b> at the 21,000,000 terminal supply. Ungated: the fit is public arithmetic and
-  so is the series it draws.</p></div>
+  <p>Nine bands on <em>linear time</em> against a log price axis — linear time is what bends the fit
+  into an arc. The bitcoin-orange path is the measured price, carried to the live reading; the right
+  axis prices the same gridlines as market cap at the 21,000,000 terminal supply.
+  <a href="rbfaq.html#arc">read more →</a></p></div>
   <div class="chartbox"><div data-luvrainbowchart data-height="600" data-palette="house"></div></div>
-  <p class="cap">The reference fit — <code>ln(price) = 5.0222935652 · ln(383.8277947247 + x) −
-  32.2162634088</code>, R² = 0.9612 over 5,836 daily closes, 2010-08-16 → 2026-08-08. Solid white
-  verticals are halvings that have happened; dashed are scheduled. The window runs nine months
-  past the live reading, as the reference draws it from its last close. Full page:
-  <a href="rainbowchart.html">the rainbow chart</a> · both renderers, Python and JavaScript, are
-  published at <a href="https://github.com/Professor-Codephreak/rainbow-chart" rel="noopener">Professor-Codephreak/rainbow-chart</a>
-  with a parity test that fails if they ever disagree.</p>
-
-  <div class="hi"><div class="t">two fits, and why both are kept</div>
-  <p>The arc above is the <b>reference</b> fit — the method every other rainbow chart is drawn
-  from, kept verbatim so this one is comparable to them. The chart further down is the
-  <b>in-house</b> fit on log-log axes, where the same idea straightens into a ruler. That one is
-  the honest instrument for a long extrapolation, because nothing hides in curvature; it is the
-  wrong instrument for <em>where are we now</em>, because on log time the years 2010–2011 take a
-  fifth of the canvas while 2020–2026 get an eighth. The arc spends its width on the years you are
-  actually asking about. Neither is more true than the other — they answer different questions, so
-  the page draws both and says which is which.</p></div>
+  <p class="cap">Reference fit <code>ln(price) = 5.0222935652 · ln(383.8277947247 + x) − 32.2162634088</code>,
+  R² = 0.9612 over 5,836 daily closes. Full page: <a href="rainbowchart.html">the rainbow chart</a> ·
+  both renderers at <a href="https://github.com/Professor-Codephreak/rainbow-chart" rel="noopener">Professor-Codephreak/rainbow-chart</a>
+  · <a href="rbfaq.html#twofits">two fits, and why both are kept →</a></p>
 
   <div class="hi" id="gate">
   <div class="t">🌈 delivered to wallets</div>
-  <p><b>The rainbow is delivered on login.</b> CONNECT to COLLECT — sign in with your wallet
-  (MetaMask signature) or a social identity at <a href="/">the doorway</a>, then return here:
-  the chart, the band prices, and the forward window unlock to your session. The gate is a
-  handshake, not a secret — <a href="https://github.com/cypherpunk4096/sentiment" rel="noopener">the
-  chart source is open</a>; gated delivery is the consent rail, the same doctrine as the gesture.</p>
+  <p><b>The near view is delivered on login.</b> CONNECT to COLLECT at <a href="/">the doorway</a>,
+  then return here: the dense 2010–2030 chart, the band prices, and the forward window unlock to
+  your session. <a href="rbfaq.html#gate">why a gate →</a></p>
   </div>
   <div class="chartbox" id="chartbox" hidden></div>
 
   <div class="hi"><div class="t">🌈 the rainbow substrate — the whole estimate, to the last coin</div>
-  <p><b>This rainbow is not an image.</b> It is rendered live by <b>DVLuvRainbow</b>, a DeltaVerse
-  substrate (<a href="substrate/luv-rainbow.js" rel="noopener">readable source</a>, zero dependencies,
-  zero network calls): the published fit and the nine bands, redrawn from the arithmetic every time
-  the page opens. The fit is public — the <em>measured price path</em> above stays login-delivered.
-  The dot is <b>live</b>: BTC read from the free tier and refreshed every 15 minutes (the caption
-  under each chart carries the price and the minute it was read). The figures quoted in the prose
-  below stay pinned to the fit's reference date, <b>2026-08-05, BTC $64,482</b>, so the worked
-  arithmetic can be checked line by line — where the dot sits today is what the chart shows.</p>
   <p>Log-log axes, so the fit is a straight ruler and a long extrapolation hides nothing in
-  curvature. The nine names stand in a stack at the top-left, each pointing at the band it names
-  wherever the ribbon passes at that height — and standing alone where it does not, because nine
-  leaders fanning across the canvas said less than nine swatches.
-  The gold run is the <b>trajectory</b> — picked up at the $30,000 mark, carried through today and
-  out to <b>2035</b>, <b>2050</b> and the <b>last coin mined</b>, after which miners are paid by
-  transaction fees alone.</p>
-  <p>The right axis prices the same picture as <b>market cap</b>, one clean decade at a time —
-  $1B, $10B, $100B, $1T — with the year the fit reaches each. Two magnitudes are marked across it:
-  <b>world debt at ~$345T</b> and <b>the quadrillion</b>, where the derivatives economy sits. The
-  point those marks make is one of <em>capacity</em>, not prophecy: 21 million units divide into a
-  quadrillion without strain, so the arithmetic has room for the whole of it. The crossing years
-  are what the regression says, not what the market owes.</p></div>
+  curvature. The gold run is the trajectory — $30k, today, 2035, 2050, the last coin mined. The
+  right axis is market cap, with the year the fit reaches each decade; world debt and the
+  quadrillion are marked across it. <a href="rbfaq.html#substrate">read more →</a></p></div>
   <div class="chartbox"><div data-luvrainbow data-from="2010" data-to="2140" data-price="64482" data-date="2026-08-05" data-zoomstart="7"></div></div>
-
   <div class="hi gated" hidden><div class="t">you are here</div>
-  <p><b>At the reference date, BTC $64,482 sat in the "accumulate" band</b> — 10<sup>−0.28</sup> below the center line.
-  The center line values today at $121,932; the dot is where the market disagrees with the curve, which
-  is the only place a sentiment reading lives.</p></div>
+  <p><b>At the reference date, BTC $64,482 sat in the "accumulate" band</b> — 10<sup>−0.28</sup> below the
+  center line, which valued that day at $121,932. <a href="rbfaq.html#here">read more →</a></p></div>
 
-  <h2><span class="n">I.</span> How it is built — in-house</h2>
-  <p><b>The fit.</b> Least squares over 360 observations of log-price against log-time
-  (days since the genesis block, 2009-01-03):</p>
-  <pre>log₁₀(price) = 5.380917 · log₁₀(days since genesis) − 15.403007        R² = 0.936</pre>
-  <p><b>The bands.</b> Nine bands span the fit's own residual range (−0.70 … +1.00 in log₁₀ —
-  every historical price falls inside), each band 10<sup>0.1889</sup> ≈ 1.545× tall. The labels keep
-  the classic vocabulary for comprehension; the placement is ours, derived from the data rather than
-  inherited. <b>The colours are the house ramp</b>, not the classic blue-to-red: the fire sale is
-  <b style="color:#d81e3c">red</b>, the centre band is <b style="color:#F7931A">bitcoin orange</b>,
-  and the far top — where you sell — is <b style="color:#0ecb81">candle green</b>, because a
-  realised gain is a green candle. Bitcoin's own path is drawn in bitcoin orange on every chart
-  here; the trajectory stays gold. Every layer is a toggle above each chart — <b>world debt</b>,
-  the <b>BTC path</b>, the <b>halvings</b>, the <b>milestones</b>, the <b>key</b> — and the ± steps
-  the price ceiling.</p>
-  <p><b>The sources.</b> 2010–2013: documented public-record monthly anchors (the pre-aggregator era).
-  2013→today: the <a href="https://defillama.com" rel="noopener">DeFiLlama</a> keyless feed
-  (biweekly closes), spot cross-referenced against
-  <a href="https://www.coingecko.com/en/coins/bitcoin" rel="noopener">CoinGecko</a> and
-  <a href="https://coinmarketcap.com/currencies/bitcoin/" rel="noopener">CoinMarketCap</a>.
-  The page itself fetches nothing: the chart is a static SVG, correct as of its date, regenerated on
-  republish — approximation is a display decision, and staleness is a dated fact rather than a silent
-  one.</p>
-
-  <h2><span class="n">II.</span> The bands, priced today</h2>
-  <div class="tablewrap gated" hidden><table>
-    <tr><th>band</th><th>offset from center (log₁₀)</th><th>price range, 2026-08-05</th></tr>
-    <tr><td>basically a fire sale</td><td>10^-0.7000 … 10^-0.5111</td><td>$24,329 … $37,584</td></tr><tr><td>BUY!</td><td>10^-0.5111 … 10^-0.3222</td><td>$37,584 … $58,062</td></tr><tr><td>accumulate</td><td>10^-0.3222 … 10^-0.1333</td><td>$58,062 … $89,698</td></tr><tr><td>still cheap</td><td>10^-0.1333 … 10^+0.0556</td><td>$89,698 … $138,571</td></tr><tr><td>HODL!</td><td>10^+0.0556 … 10^+0.2444</td><td>$138,571 … $214,072</td></tr><tr><td>is this a bubble?</td><td>10^+0.2444 … 10^+0.4333</td><td>$214,072 … $330,712</td></tr><tr><td>FOMO intensifies</td><td>10^+0.4333 … 10^+0.6222</td><td>$330,712 … $510,903</td></tr><tr><td>sell. seriously, SELL!</td><td>10^+0.6222 … 10^+0.8111</td><td>$510,903 … $789,273</td></tr><tr><td>maximum bubble territory</td><td>10^+0.8111 … 10^+1.0000</td><td>$789,273 … $1,219,316</td></tr>
-  </table></div>
-
-  <h2><span class="n">III.</span> What a rainbow measures</h2>
-  <p>The rainbow is a <em>revealed</em> instrument on the slowest clock: it reads the market's
-  disposition toward Bitcoin against the only regressor that never changes — time itself. Where the
-  <a href="https://www.cnn.com/markets/fear-and-greed" rel="noopener">CNN Fear &amp; Greed Index</a>
-  and the <a href="https://alternative.me/crypto/fear-and-greed-index/" rel="noopener">Crypto Fear &amp;
-  Greed Index</a> read disposition over days, the rainbow reads it over epochs: which band the price
-  lives in is a statement about collective patience. In the emotonomic frame
-  (<a href="sentiment.html">SENTIMENT</a>, §IV) it is the outermost ring of the instrument stack —
-  epochs → days (Fear &amp; Greed) → blocks (gesture velocity, resonance depth, sentiment.shift).</p>
-  <p><b>The honest caveats.</b> A log-time regression has no economic mechanism behind it — it is a
-  description of history, not a law; past rainbows have been redrawn when new history bent the fit
-  (this one will be too — the fit parameters are dated and versioned); and the band vocabulary is
-  sentiment about sentiment. Use it the way the paper uses every instrument: as one dial among many,
-  never as the needle.</p>
-
-  <h2><span class="n">IV.</span> The window ahead — the next halving and the five-year read</h2>
-  <p>The fit, projected forward. The halving rhythm and the residual rhythm share a clock: historically
-  the deep-band visits (where the dot sits now) came in the season <em>before</em> a halving, and the
-  excursions into the upper bands arrived 12–18 months <em>after</em>. If the next cycle rhymes, the
-  path runs: lower bands through the pre-halving trough, across the center line near the
-  <b>April 2028</b> halving, upper-band excursions inside the five-year window. One honest asymmetry:
-  each cycle's amplitude has <em>damped</em> — 2013 overshot the center far more than 2021 did — so the
-  center is the gravity, the halving sets the phase, and the amplitude is the one thing the chart
-  cannot promise.</p>
-  <div class="tablewrap gated" hidden><table>
-    <tr><th>date</th><th>center line</th><th>"accumulate" band</th><th>top of "HODL!"</th><th>"max bubble" starts</th></tr>
-    <tr><td>today · 2026-08-05</td><td>$121,931</td><td>$58,065 … $89,705</td><td>$214,050</td><td>$789,250+</td></tr><tr><td>next halving · ~2028-04</td><td>$200,044</td><td>$95,263 … $147,172</td><td>$351,177</td><td>$1,294,869+</td></tr><tr><td>the 5-year window · 2031-08</td><td>$468,623</td><td>$223,164 … $344,765</td><td>$822,666</td><td>$3,033,356+</td></tr><tr><td>the century mark · 2100 <em>(extrapolation absurdum)</em></td><td>$870,996,627</td><td>$414,778,726 … $640,791,103</td><td>$1,529,031,643</td><td>$5,637,888,378+</td></tr>
-  </table></div>
-  <p>The 2100 row is printed to make the caveat visible, not to make a claim: a log-time regression,
-  pushed to the century mark, hands back <b>$871 million per bitcoin</b> — and $6.1 billion by 2140.
-  Numbers that large are the fit confessing it is a description of one era, not a law of the next
-  eleven. Read the near rows with interest and the far rows as a lesson in humility.</p>
-
-  <h2 id="long"><span class="n">IV·b.</span> The long rainbow — extrapolation to 2140, every halving dated</h2>
-  <p>Both axes logarithmic. In log-log space the fitted rainbow is a <b>straight ruler</b>, which is
-  what makes a 130-year extrapolation honest to draw: nothing hides in curvature, and the absurdity is
-  visible at a glance ($6B a coin at the end of emission — a description of one era confessing, not a
-  law).</p>
-  <p><b>Every halving is a gold bar, and every bar carries its date</b> — read them in the rail under
-  the axis, set on their side because thirty-two dates will not fit across any width. Four bars are
-  solid, and those are dated to the day, because they happened: <b>2012-11-28</b>, <b>2016-07-09</b>,
-  <b>2020-05-11</b>, <b>2024-04-20</b>. The other twenty-eight are dashed and dated to the month
-  only — they are 210,000 blocks apart at whatever pace the chain keeps, and a day would claim a
-  precision the schedule does not have. The next one is <b>2028-04</b>. Where the bars crowd closer
-  than a label is wide, the rail thins its dates and keeps the bars; the four that happened and the
-  one coming next are always dated. Emission ends when the subsidy does — 2135 at the pace the chain
-  has actually kept, 2140 at the 600-second target, both marked on the trajectory. The bands are a
-  mood; the verticals are a schedule.</p>
+  <div class="hi" id="long"><div class="t">🌈 the long rainbow — extrapolation to 2140, every halving dated</div>
+  <p>Every halving is a gold bar and every bar carries its date in the rail under the axis — four
+  solid and dated to the day because they happened, twenty-eight dashed and dated to the month
+  because they are arithmetic. Emission ends 2135 at the pace the chain has kept, 2140 at the
+  600-second target; both are marked. The bands are a mood; the verticals are a schedule.
+  <a href="rbfaq.html#long">read more →</a> · <a href="rbfaq.html#fact">the ambiguous message of fact →</a></p></div>
   <div class="chartbox"><div data-luvrainbow data-from="2010" data-to="2140" data-price="64482" data-date="2026-08-05" data-height="780" data-halvingdates="1" data-zoomstart="8"></div></div>
-  <p><b>The leap-year coincidence.</b> Every halving so far has landed in a leap year — 2012, 2016,
-  2020, 2024 — and the schedule keeps the streak alive almost to the end: each cycle is 210,000 blocks
-  ≈ 3.99 years, so the halving walks backward through the calendar (April → February by 2136) while
-  staying on the four-year lattice. Of all thirty-two halvings, <b>exactly one misses: halving #23,
-  scheduled 2100-02-24</b> — the year 2100 sits on the lattice but is not a leap year, by the
-  Gregorian century rule (divisible by 100, not by 400). The subsidy's final year, 2140, is a leap
-  year again. Thirty-one of thirty-two — the exception is the calendar's fault, not Bitcoin's.</p>
-  <p class="cite" style="font-size:13px">The price on every chart here is read fresh every fifteen
-  minutes; the emission schedule under it moves on a <b>quarterly cadence</b> — a quarter emits
-  ≈ 41,000 BTC (≈ 0.196% of the cap) and nothing else about the schedule changes. The near view —
-  the dense 2010–2030 chart with live band prices — is
-  <a href="#gate">delivered on wallet login above</a>. The long view is public: the invitation, and
-  the argument for why the gate is worth a handshake.</p>
 
-  <h2><span class="n">V.</span> The ambiguous message of fact</h2>
-  <div class="hi"><div class="t">read it twice</div>
-  <p><b>Bitcoin is mathematically guaranteed to go to 21 million.</b></p></div>
-  <p>Read as a price, that sentence is sentiment — the upper bands talking. Read as a supply, it is
-  consensus code, and the guarantee is real arithmetic: the block subsidy started at 50 BTC, halves
-  every 210,000 blocks, and after thirty-three halvings pays nothing at all. The schedule is drawn
-  above — <a href="#long">every halving, dated</a>; the bands are a mood, the verticals are the
-  arithmetic.</p>
-  <p>The sentence is ambiguous, and the ambiguity is the point: one reading is a hope priced in
-  dollars, the other is a certainty priced in blocks, and the whole discipline of this page is
-  knowing which kind of claim you are holding.</p>
-  <div class="hi"><div class="t">here to stay</div>
-  <p><b>Whether the banks include Bitcoin or Bitcoin becomes the bank — Bitcoin is here to stay.</b>
-  Either branch of that sentence ends at the same place: an asset with a supply fixed by arithmetic
-  and a schedule fixed to the year 2140 does not need permission to persist. The banks deciding to
-  hold it and the protocol outliving the question are the same fact wearing two futures.</p></div>
-
-  <h2>Appendix — reproduce every number</h2>
-  <pre># the feed (keyless)
-curl "https://coins.llama.fi/chart/coingecko:bitcoin?start=1279324800&amp;span=500&amp;period=2w"
-curl "https://coins.llama.fi/prices/current/coingecko:bitcoin"
-
-# the fit: least squares on (log10(days since 2009-01-03), log10(price))
-# center(d)  = 10 ** (5.380917 * log10(d) - 15.403007)
-# residual   = log10(price) - log10(center)
-# bands      = nine equal slices of [-0.70, +1.00]
-python3 -c "import math; d=6423; print(10**(5.380917*math.log10(d)-15.403007))"  # ≈ 121932
-python3 -c "import math; print(math.log10(64482)-(5.380917*math.log10(6423)-15.403007))"  # ≈ -0.28
-
-# the live price the charts draw (same-origin, refreshed every 15 minutes)
-curl -s https://luv.pythai.net/market.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['btcUsd'], d['btcUsdAt'], d['btcUsdSource'])"
-
-# the halving schedule the last chart dates: 210,000 blocks per epoch, 33 epochs
-python3 -c "print(6930000*600/31557600+2009.0)"                    # naive genesis schedule ≈ 2140
-
-# chain-anchored (live tip 961,239 @ 2026-08-05; two independent sources)
-curl -s https://mempool.space/api/blocks/tip/height
-curl -s https://blockchain.info/q/getblockcount
-python3 -c "print((6930000-961239)*600/31557600 + 2026.6)"         # subsidy ends ≈ 2140.1
-python3 -c "print((1411200-961239)*600/31557600 + 2026.6)"         # 99% of supply ≈ 2035.15
-python3 -c "print((1050000-961239)*600/86400)"                     # next halving in ~616 days ≈ 2028-04</pre>
-  <p class="cite" style="font-size:13px">Lineage: the original rainbow chart tradition
-  (bitcointalk log-regression threads, 2014; Blockchaincenter's popularization) — rebuilt here from
-  first principles. Data: DeFiLlama (primary feed), CoinGecko, CoinMarketCap (references).
-  BTC genesis: Nakamoto, block 0, 2009-01-03.</p>
+  <p class="cite" style="font-size:13px">The price on every chart is read fresh every fifteen minutes,
+  same-origin, from the free tier; the fit and the bands are public arithmetic. Reproduce every number:
+  <a href="rbfaq.html#appendix">the appendix →</a></p>
 
   <div class="readmore">
+    <a class="btn" href="rbfaq.html">📖 THE RAINBOW — the words</a>
     <a class="btn" href="sentiment.html">🎭 SENTIMENT — the measurement paper</a>
     <a class="btn cp4096" href="https://github.com/cypherpunk4096/sentiment" rel="noopener"
        title="cypherpunk4096 — the 2¹² standard: determinism as identity · zero dependencies · the green checkmark · precision without approximation · quantum compliance">⟁ cypherpunk4096</a>
@@ -527,7 +358,7 @@ python3 -c "print((1050000-961239)*600/86400)"                     # next halvin
   .shr:hover,.shr:focus-visible,.shr:active{transform:none}}
 @media(max-width:640px){.shr{margin-left:.35em;font-size:.76rem;padding:.3em .6em}}
 </style>
-<nav class="fieldnav" aria-label="the field"><span class="fn-k">the field</span><a href="/">the doorway</a><a href="view.html">live view</a><a href="luvchart.html">the LUVchart</a><a href="LUV.html">the price</a><a href="luvstory.html">the story</a><a href="engine.html">the engine</a><a href="emotonomics.html">emotonomics</a><a href="sentiment.html">sentiment</a><a href="wei.html">wei</a><a href="exabyte.html">exabyte</a><a href="luvbus.html">LUVbus</a><a href="faq.html">FAQ</a><a href="docs.html">docs</a></nav>
+<nav class="fieldnav" aria-label="the field"><span class="fn-k">the field</span><a href="/">the doorway</a><a href="view.html">live view</a><a href="luvchart.html">the LUVchart</a><a href="rbfaq.html">rainbow — the words</a><a href="LUV.html">the price</a><a href="luvstory.html">the story</a><a href="engine.html">the engine</a><a href="emotonomics.html">emotonomics</a><a href="sentiment.html">sentiment</a><a href="wei.html">wei</a><a href="exabyte.html">exabyte</a><a href="luvbus.html">LUVbus</a><a href="faq.html">FAQ</a><a href="docs.html">docs</a></nav>
 </div>
 </footer>
 

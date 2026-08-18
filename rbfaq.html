@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>THE RAINBOW — THE WORDS — SHAMBA LUV</title>
+<meta name="description" content="The reading behind the in-house Bitcoin rainbow, under headings: how the fit is built, the bands priced today, what a rainbow measures, the window ahead, the long rainbow to 2140, the halving calendar, and how to reproduce every number.">
+<meta name="author" content="SHAMBA LUV">
+<link rel="canonical" href="https://luv.pythai.net/rbfaq.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="SHAMBA LUV">
+<meta property="og:title" content="The rainbow — the words">
+<meta property="og:description" content="Our own fit: log10(price) = 5.380917 log10(days) − 15.403007, R² 0.936. Nine bands, one dot: you are here.">
+<meta property="og:url" content="https://luv.pythai.net/rbfaq.html">
+<meta property="og:image" content="https://luv.pythai.net/gfx/rainbow.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Bitcoin rainbow — an in-house log-log regression, nine bands, with today’s price marked">
+<meta property="og:image:secure_url" content="https://luv.pythai.net/gfx/rainbow.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:locale" content="en_US">
+<meta property="article:author" content="SHAMBA LUV">
+<meta property="article:section" content="Sentiment">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@shambaluv">
+<meta name="twitter:title" content="The rainbow — the words">
+<meta name="twitter:description" content="Our own log-log fit, nine bands, a price read every fifteen minutes, and every one of the thirty-two halvings drawn as a dated bar.">
+<meta name="twitter:image" content="https://luv.pythai.net/gfx/rainbow.png">
+<meta name="twitter:image:alt" content="The Bitcoin rainbow — in-house fit with today’s price marked">
+<meta name="keywords" content="bitcoin rainbow chart, BTC rainbow, log regression bitcoin, bitcoin halving dates, bitcoin price bands, HODL, accumulate, maximum bubble territory, bitcoin market cap chart, 2140, SHAMBA LUV">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+<meta name="theme-color" content="#160a0f">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Article",
+"headline":"The Bitcoin rainbow — in-house",
+"description":"An in-house Bitcoin rainbow chart: our own log-log regression, nine bands, a live price read every fifteen minutes, and all thirty-two halvings drawn as dated bars.",
+"url":"https://luv.pythai.net/rbfaq.html",
+"mainEntityOfPage":{"@type":"WebPage","@id":"https://luv.pythai.net/rainbow.html"},
+"author":{"@type":"Organization","name":"SHAMBA LUV","url":"https://luv.pythai.net/"},
+"publisher":{"@type":"Organization","name":"SHAMBA LUV","url":"https://luv.pythai.net/","logo":{"@type":"ImageObject","url":"https://luv.pythai.net/gfx/logo.png"}},
+"image":"https://luv.pythai.net/gfx/rainbow.png",
+"inLanguage":"en",
+"isPartOf":{"@type":"CreativeWorkSeries","name":"The SHAMBA LUV papers","url":"https://luv.pythai.net/"},
+"about":{"@type":"Thing","name":"Bitcoin (BTC) rainbow chart"},
+"citation":"https://github.com/Professor-Codephreak/rainbow-chart"}
+</script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --ink:#160a0f;--wine:#2b111c;--seam:#4a1f30;--rose:#ff4d6d;--pink:#ff006e;--purple:#8338ec;
+  --blush:#ffb3c1;--cream:#f6e7eb;--dim:#b98da0;--gold:#e3b25f;
+  --mono:ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--ink);color:var(--cream);font-family:var(--sans);line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--blush)} a:hover{color:var(--rose)}
+:focus-visible{outline:2px solid var(--rose);outline-offset:3px;border-radius:2px}
+.wrap{max-width:980px;margin:0 auto;padding:0 24px}
+header{border-bottom:1px solid var(--seam)}
+.bar{display:flex;align-items:center;gap:14px;padding:16px 0}
+.bar .wrap{max-width:1180px}
+.brand{font-family:var(--mono);font-size:15px;letter-spacing:.14em;color:var(--cream);text-decoration:none}
+.brand b{color:var(--rose)}
+.bar .spacer{flex:1}
+.bar a.back{font-family:var(--mono);font-size:12px;text-decoration:none;color:var(--dim)}
+.bar a.back:hover{color:var(--rose)}
+h1{margin:52px 0 6px;text-align:center;font-size:clamp(30px,5.6vw,46px);font-weight:800;
+  background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{text-align:center;color:var(--dim);margin-bottom:8px;font-style:italic}
+.paperkind{text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);margin-bottom:36px}
+.paper p{margin:0 0 16px;font-size:15.5px}
+.paper .preface{border:1px solid var(--seam);border-left:3px solid var(--gold);border-radius:10px;background:var(--wine);
+  padding:18px 22px;margin:0 0 36px;color:var(--dim);font-size:14px}
+.paper h2{font-family:var(--mono);font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);
+  margin:46px 0 16px;padding-top:26px;border-top:1px solid var(--seam)}
+.paper h2 .n{color:var(--rose);margin-right:10px}
+.paper em{font-style:italic;color:var(--blush)}
+.paper b{color:var(--cream);font-weight:700}
+.paper .cite{color:var(--dim)}
+.paper pre{background:var(--wine);border:1px solid var(--seam);border-radius:10px;padding:16px 18px;
+  font-family:var(--mono);font-size:12.5px;color:var(--cream);overflow-x:auto;margin:0 0 16px;line-height:1.55}
+.paper table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12.5px;margin:0 0 16px}
+.paper th{color:var(--rose);text-transform:uppercase;letter-spacing:.12em;font-size:10px;text-align:left;padding:7px 10px;border-bottom:1px solid var(--seam)}
+.paper td{padding:6px 10px;border-bottom:1px solid rgba(74,31,48,.5);color:var(--cream)}
+.paper td:nth-child(2),.paper td:nth-child(3){color:var(--blush)}
+.paper .tablewrap{overflow-x:auto;margin:0 0 16px}
+.paper .hi{border:1px solid rgba(227,178,95,.5);border-radius:10px;background:var(--wine);padding:16px 20px;margin-bottom:16px}
+.paper .hi .t{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.paper .hi p{margin:0;font-size:14.5px}
+/* the rainbow deserves the whole sky: the chart breaks out of the reading column */
+/* The frame is the chart's own nine bands, and it BEATS: the glow is driven by --luv-pulse, the
+   0..1 lub-dub envelope luv-pulse.js publishes on :root every frame from the chronos-corrected
+   clock. No second timer, no animation of its own — the border is a consumer of the engine's
+   fundamental, so every heart on every page beats it in the same phase. 60 bpm is exactly 1 Hz,
+   well under the 3 Hz flash threshold, so this stays WCAG 2.3.1-safe.
+   The colour ramp is the house ramp — red at the fire sale, bitcoin orange at the centre, candle
+   green at the top — mirrored (red -> green -> red) so the drift tiles seamlessly.
+   Glow is box-shadow rather than a ::before halo on purpose: overflow-x:auto would clip a
+   pseudo-element reaching outside the box, but never the box's own shadow. */
+.chartbox{border:2px solid transparent;border-radius:12px;padding:10px;margin:0 0 16px;overflow-x:auto;
+  width:min(1360px,calc(100vw - 32px));position:relative;left:50%;transform:translateX(-50%);
+  background:
+    linear-gradient(var(--wine),var(--wine)) padding-box,
+    linear-gradient(90deg,#d81e3c,#e5402c,#ee5f22,#f47a1c,#F7931A,#e8a91e,#d3bd25,#8ec43a,#0ecb81,
+                          #8ec43a,#d3bd25,#e8a91e,#F7931A,#f47a1c,#ee5f22,#e5402c,#d81e3c) border-box;
+  background-size:auto,200% 100%;
+  background-repeat:no-repeat,repeat;
+  animation:luvrainbowdrift 16s linear infinite;
+  box-shadow:
+    0 0 calc(3px + 13px*var(--luv-pulse,.28)) rgba(14,203,129,calc(.10 + .30*var(--luv-pulse,.28))),
+    0 0 calc(8px + 32px*var(--luv-pulse,.28)) rgba(247,147,26,calc(.07 + .22*var(--luv-pulse,.28))),
+    0 0 calc(14px + 52px*var(--luv-pulse,.28)) rgba(216,30,60,calc(.05 + .18*var(--luv-pulse,.28)))}
+@keyframes luvrainbowdrift{from{background-position:0 0,0 0}to{background-position:0 0,200% 0}}
+@media (prefers-reduced-motion:reduce){
+  /* the signal still runs; the frame simply stops moving with it */
+  .chartbox{animation:none;
+    box-shadow:0 0 10px rgba(14,203,129,.22),0 0 26px rgba(247,147,26,.14)}
+}
+.chartbox svg{display:block;width:100%;height:auto;min-width:760px}
+/* +/− zoom (rainbow.js drives it; the svg widens inside the scrolling box) */
+.zoomrow{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin:0 0 8px;font-family:var(--mono)}
+.zoomrow button{font-family:var(--mono);font-size:15px;font-weight:700;line-height:1;color:var(--blush);background:var(--ink);
+  border:1px solid var(--seam);border-radius:8px;padding:6px 13px;cursor:pointer;transition:color .15s,border-color .15s}
+.zoomrow button:hover{color:var(--rose);border-color:var(--rose)}
+.zoomrow button:disabled{opacity:.4;cursor:default}
+.zoomrow .zoomlvl{font-size:11px;color:var(--dim);min-width:44px;text-align:center}
+/* the layer toggles: a rail on the left, the zoom on the right. Pressed = lit. */
+.zoomrow .tograil{display:flex;flex-wrap:wrap;gap:6px;margin-right:auto}
+.zoomrow .debtbtn,.zoomrow .togbtn{font-size:11px;font-weight:700;letter-spacing:.04em;padding:6px 12px;color:var(--dim)}
+.zoomrow .debtbtn:hover{color:#7ad7ff;border-color:#7ad7ff}
+.zoomrow .debtbtn[aria-pressed="true"]{color:#7ad7ff;border-color:#7ad7ff;background:#10222b;
+  box-shadow:0 0 14px -5px rgba(122,215,255,.85)}
+.zoomrow .togbtn:hover{color:#F7931A;border-color:#F7931A}
+.zoomrow .togbtn[aria-pressed="true"]{color:#F7931A;border-color:rgba(247,147,26,.75);background:#2b1a0e;
+  box-shadow:0 0 14px -5px rgba(247,147,26,.8)}
+.zoomrow .togbtn[aria-pressed="false"]{text-decoration:line-through;text-decoration-color:rgba(185,141,160,.6)}
+.zoomrow .palbtn{font-size:11px;font-weight:700;letter-spacing:.04em;padding:6px 12px;color:var(--dim)}
+.zoomrow .palbtn:hover{color:#feeb84;border-color:#feeb84}
+.zoomrow .palbtn[aria-pressed="true"]{color:#feeb84;border-color:rgba(254,235,132,.7);background:#2a2410}
+@media(max-width:700px){.zoomrow{flex-wrap:wrap}.zoomrow .tograil{flex-basis:100%;margin-bottom:6px}}
+.readmore{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;align-items:center;margin:44px 0 8px}
+/* ── the outer ring, massively — a gradient halo around every button ──
+   RULE FOR EVERY BUTTON ON THIS PAGE: hover may change colour, shadow, and transform.
+   It may NOT change anything that reflows — no font-size, no letter-spacing, no
+   text-transform, no swapped label. Those resize the element, which reflows the flex
+   row, which makes every neighbouring button jump under the cursor. Transform and
+   box-shadow are composited; they move nothing else on the page. */
+.btn{position:relative;display:inline-flex;align-items:center;gap:2px;
+  font-family:var(--mono);font-size:12.5px;letter-spacing:.06em;color:var(--blush);
+  text-decoration:none;border:2px solid transparent;border-radius:999px;padding:11px 24px;
+  background:linear-gradient(var(--wine),var(--wine)) padding-box,
+             linear-gradient(100deg,var(--pink),var(--purple),var(--gold)) border-box;
+  box-shadow:0 0 18px -6px rgba(255,0,110,.55),0 0 34px -14px rgba(131,56,236,.6);
+  transition:transform .18s cubic-bezier(.2,.8,.3,1),box-shadow .18s ease,color .18s ease}
+/* the sheen — a light sweep that crosses on hover; inset:0 so it never needs clipping */
+.btn::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.18) 50%,transparent 62%);
+  background-size:250% 100%;background-position:135% 0;
+  transition:background-position .6s cubic-bezier(.3,.7,.3,1)}
+.btn:hover::before,.btn:focus-visible::before{background-position:-45% 0}
+.btn::after{content:'';position:absolute;inset:-7px;border-radius:999px;border:1px solid rgba(255,0,110,.28);
+  pointer-events:none;transition:inset .18s ease,border-color .18s ease}
+.btn:hover,.btn:focus-visible{color:var(--cream);transform:translateY(-2px);
+  box-shadow:0 0 26px -4px rgba(255,0,110,.8),0 0 54px -12px rgba(131,56,236,.85)}
+.btn:hover::after,.btn:focus-visible::after{inset:-10px;border-color:rgba(227,178,95,.5)}
+.btn:focus-visible{outline:none;border-radius:999px}
+.btn:focus-visible::after{border-color:var(--rose);border-width:2px}
+/* the press — a real one, so the button answers the click */
+.btn:active{transform:translateY(0) scale(.985);
+  box-shadow:0 0 14px -6px rgba(255,0,110,.7),0 0 26px -14px rgba(131,56,236,.7)}
+
+/* ── the cypherpunk4096 button: mouseover crosses into POST-2048 TECHNOLOGY ──
+   the wine-and-rose present gives way to the 2¹² interface — terminal green on
+   near-black, electric sweep border, scanlines. The label is fixed at
+   "cypherpunk4096" and never changes: it used to swap to a much longer string on
+   hover, which resized the button and shoved the whole row sideways. The interface
+   still crosses over; only the geometry now holds still. */
+.btn.cp4096:hover,.btn.cp4096:focus-visible{color:#0aff9d;
+  background:linear-gradient(#02120b,#02120b) padding-box,
+             linear-gradient(120deg,#0aff9d,#00e5ff,#8338ec,#0aff9d) border-box;
+  background-size:100% 100%,300% 100%;
+  animation:cp4096sweep 2.2s linear infinite;
+  box-shadow:0 0 34px -4px rgba(10,255,157,.95),0 0 90px -10px rgba(0,229,255,.85);
+  text-shadow:0 0 9px rgba(10,255,157,.85);
+  transform:translateY(-3px) scale(1.04)}
+.btn.cp4096:hover::after,.btn.cp4096:focus-visible::after{inset:-12px;border:1px dashed rgba(0,229,255,.65)}
+/* scanlines replace the sheen — this button has its own idiom */
+.btn.cp4096:hover::before,.btn.cp4096:focus-visible::before{
+  background:repeating-linear-gradient(0deg,rgba(10,255,157,.09) 0 1px,transparent 1px 3px);
+  background-size:auto;background-position:0 0;transition:none}
+@keyframes cp4096sweep{to{background-position:0 0,-300% 0}}
+/* reduced-motion overrides live at the END of the button rules on purpose: a media query
+   adds no specificity, so an override placed above the rule it cancels simply loses. */
+
+/* the offering — the Uniswap button leads the row, unmistakably */
+.uni-cta{position:relative;display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:16px;color:#fff;
+  text-decoration:none;border-radius:999px;padding:15px 30px;flex-basis:100%;justify-content:center;max-width:520px;margin:0 auto;
+  background:linear-gradient(100deg,#FF007A,var(--purple));
+  box-shadow:0 0 30px -6px rgba(255,0,122,.85),0 0 70px -18px rgba(131,56,236,.9);
+  transition:transform .15s,box-shadow .15s}
+.uni-cta::after{content:'';position:absolute;inset:-8px;border-radius:999px;border:1px solid rgba(255,0,122,.45);
+  pointer-events:none;transition:inset .18s ease,border-color .18s ease}
+.uni-cta::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.24) 50%,transparent 62%);
+  background-size:250% 100%;background-position:135% 0;
+  transition:background-position .6s cubic-bezier(.3,.7,.3,1)}
+.uni-cta:hover::before,.uni-cta:focus-visible::before{background-position:-45% 0}
+.uni-cta:hover,.uni-cta:focus-visible{color:#fff;transform:translateY(-2px) scale(1.02);
+  box-shadow:0 0 44px -4px rgba(255,0,122,1),0 0 90px -16px rgba(131,56,236,1)}
+.uni-cta:hover::after,.uni-cta:focus-visible::after{inset:-11px;border-color:rgba(255,0,122,.85)}
+.uni-cta:focus-visible{outline:none}
+.uni-cta:focus-visible::after{border-color:#fff;border-width:2px}
+.uni-cta:active{transform:translateY(0) scale(.99);
+  box-shadow:0 0 22px -6px rgba(255,0,122,.9),0 0 44px -18px rgba(131,56,236,.9)}
+.uni-cta img{height:20px;width:auto}
+
+/* the zoom + window controls answer the same way the pills do */
+.zoomrow button,.winrow button{transition:transform .15s cubic-bezier(.2,.8,.3,1),
+  color .15s ease,border-color .15s ease,box-shadow .15s ease}
+.zoomrow button:hover:not(:disabled),.zoomrow button:focus-visible:not(:disabled){
+  transform:translateY(-1px);box-shadow:0 0 16px -6px rgba(255,77,109,.8)}
+.zoomrow button:active:not(:disabled){transform:translateY(0) scale(.94)}
+.zoomrow button:disabled{transform:none;box-shadow:none}
+
+/* ── one reduced-motion switch for every button, last so it always wins ── */
+@media (prefers-reduced-motion:reduce){
+  .btn,.btn::before,.btn::after,.uni-cta,.uni-cta::before,.uni-cta::after,
+  .zoomrow button,.winrow button{transition:none}
+  .btn.cp4096:hover,.btn.cp4096:focus-visible{animation:none}
+  .btn:hover,.btn:focus-visible,.btn:active,
+  .btn.cp4096:hover,.btn.cp4096:focus-visible,
+  .uni-cta:hover,.uni-cta:focus-visible,.uni-cta:active,
+  .zoomrow button:hover:not(:disabled),.zoomrow button:active:not(:disabled){transform:none}
+  .btn:hover::before,.btn:focus-visible::before,
+  .uni-cta:hover::before,.uni-cta:focus-visible::before{background-position:135% 0}
+  .chartbox{animation:none}
+}
+footer{margin-top:64px;border-top:1px solid var(--seam);padding:26px 0 44px}
+footer .wrap{max-width:1180px;display:flex;flex-wrap:wrap;gap:18px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--dim)}
+footer a{text-decoration:none}
+footer .spacer{flex:1}
+footer .brandmark{display:inline-flex;align-items:center;gap:7px;color:var(--dim)}
+footer .brandmark img{height:14px;width:auto;display:block;opacity:.85;transition:opacity .15s}
+footer .brandmark:hover{color:var(--cream)}
+footer .brandmark:hover img{opacity:1}
+.livecap{font-family:var(--mono);font-size:12px;color:#7ee2a0;margin:8px 0 2px;letter-spacing:.03em}
+.toc{border:1px solid var(--seam);border-radius:12px;background:var(--wine);padding:16px 20px;margin:0 0 36px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:6px 18px;font-family:var(--mono);font-size:12.5px}
+.toc .t{grid-column:1/-1;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+.toc a{color:var(--blush);text-decoration:none;border-bottom:1px solid transparent}
+.toc a:hover{color:var(--rose);border-bottom-color:var(--rose)}
+.paper h2{scroll-margin-top:24px}
+</style>
+</head>
+<body data-luvframe="rainbow">
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="/">❤ SHAMBA <b>LUV</b></a>
+    <span class="spacer"></span>
+    <a class="back" href="sentiment.html">the measurement paper</a>
+    <a class="back" href="wei.html">the arithmetic paper</a>
+    <a class="back" href="view.html">live view</a>
+    <a class="back" href="/">← back to the doorway</a>
+    <button class="shr" id="shrBtn" type="button" title="Share this chart">share</button>
+    <button class="shr" id="cpyBtn" type="button" title="Copy the link">copy link</button>
+  </div>
+</header>
+
+<main class="wrap paper">
+  <h1>THE RAINBOW — THE WORDS</h1>
+  <div class="sub">Everything <a href="rainbow.html">the rainbow page</a> used to say, under headings — the charts stayed there</div>
+  <div class="paperkind">the reading · a sentiment instrument · the slowest clock</div>
+
+  <nav class="toc" aria-label="contents">
+    <div class="t">contents</div>
+    <a href="#preface">Preface</a>
+    <a href="#colours">The colours &amp; the toggles</a>
+    <a href="#arc">The arc — the reference rainbow</a>
+    <a href="#twofits">Two fits, and why both are kept</a>
+    <a href="#gate">Delivered to wallets</a>
+    <a href="#substrate">The rainbow substrate</a>
+    <a href="#here">You are here</a>
+    <a href="#built">I. How it is built</a>
+    <a href="#bands">II. The bands, priced today</a>
+    <a href="#measures">III. What a rainbow measures</a>
+    <a href="#ahead">IV. The window ahead</a>
+    <a href="#long">IV·b. The long rainbow</a>
+    <a href="#fact">V. The ambiguous message of fact</a>
+    <a href="#appendix">Appendix — reproduce every number</a>
+  </nav>
+
+  <h2 id="preface">Preface</h2>
+  <div class="preface"><b>Preface.</b> This is the house build of the classic Bitcoin rainbow chart —
+  fitted from scratch rather than copied: the regression is computed from the documented public record
+  (2010–2013 anchors) plus the DeFiLlama price feed (2013→today), the bands are set from the fit's own
+  residuals, and every chart is drawn in your browser with <em>no external calls</em> — the one
+  number that arrives from anywhere is the price, and it arrives <em>same-origin</em>, read for you
+  by this site every fifteen minutes. The fit's reference figures are <b>2026-08-05</b>
+  (BTC $64,482, DeFiLlama, confidence 0.99 — cross-referenced CoinGecko / CoinMarketCap), which is
+  what the worked arithmetic below is checked against; the dot is today. A rainbow is a heuristic, not an oracle: it is sentiment's slowest dial, the
+  companion of the fast dials in <a href="sentiment.html">the measurement paper</a> — from the
+  <a href="https://www.cnn.com/markets/fear-and-greed" rel="noopener">Fear &amp; Greed Index</a> down
+  to gesture velocity.</div>
+
+
+  <h2 id="colours">The colours &amp; the toggles</h2>
+  <p><b>The colours are the house ramp</b>, not the classic blue-to-red: the fire sale is
+  <b style="color:#d81e3c">red</b>, the centre band is <b style="color:#F7931A">bitcoin orange</b>,
+  and the far top — where you sell — is <b style="color:#0ecb81">candle green</b>, because a
+  realised gain is a green candle. Bitcoin's own path is drawn in bitcoin orange on every chart;
+  the trajectory stays gold. The classic reference scale is one toggle away, and
+  <a href="rainbowchart.html">rainbowchart.html</a> stays on it.</p>
+  <p><b>Every layer is a toggle</b> above each chart — <b>world debt</b> (on the arc it lifts the
+  ceiling to hold the debt line, which sits about 17× above the top of the arc today), the
+  <b>BTC path</b>, the <b>halvings</b>, the <b>milestones</b>, the <b>key</b>, and <b>classic
+  colours</b> — and the ± steps the price ceiling: $10k … $100T on the substrate charts, width on
+  the arc.</p>
+
+  <h2 id="arc">The arc — the reference rainbow</h2>
+  <div class="hi"><p><b>This is the rainbow chart in its reference form</b>, rendered live by
+  <b>DVLuvRainbowChart</b> (<a href="substrate/luv-rainbowchart.js" rel="noopener">readable
+  source</a>, zero dependencies, price series embedded). The organ still calls nothing itself: the
+  page hands it the current price every fifteen minutes and it carries the <b>bitcoin-orange</b> path
+  from its last embedded close to that reading, which is the green-ringed dot. Nine bands on
+  <em>linear time</em> against a log price axis — and linear time is what bends the fit into an
+  <b>arc</b>. Left axis is BTC price; the right axis prices the same gridlines as
+  <b>market cap</b> at the 21,000,000 terminal supply. Ungated: the fit is public arithmetic and
+  so is the series it draws.</p></div>
+  <p class="cap">The reference fit — <code>ln(price) = 5.0222935652 · ln(383.8277947247 + x) −
+  32.2162634088</code>, R² = 0.9612 over 5,836 daily closes, 2010-08-16 → 2026-08-08. Solid white
+  verticals are halvings that have happened; dashed are scheduled. The window runs nine months
+  past the live reading, as the reference draws it from its last close. Full page:
+  <a href="rainbowchart.html">the rainbow chart</a> · both renderers, Python and JavaScript, are
+  published at <a href="https://github.com/Professor-Codephreak/rainbow-chart" rel="noopener">Professor-Codephreak/rainbow-chart</a>
+  with a parity test that fails if they ever disagree.</p>
+
+
+  <h2 id="twofits">Two fits, and why both are kept</h2>
+  <div class="hi"><p>The arc above is the <b>reference</b> fit — the method every other rainbow chart is drawn
+  from, kept verbatim so this one is comparable to them. The chart further down is the
+  <b>in-house</b> fit on log-log axes, where the same idea straightens into a ruler. That one is
+  the honest instrument for a long extrapolation, because nothing hides in curvature; it is the
+  wrong instrument for <em>where are we now</em>, because on log time the years 2010–2011 take a
+  fifth of the canvas while 2020–2026 get an eighth. The arc spends its width on the years you are
+  actually asking about. Neither is more true than the other — they answer different questions, so
+  the page draws both and says which is which.</p></div>
+
+
+  <h2 id="gate">Delivered to wallets</h2>
+  <div class="hi">
+  
+  <p><b>The rainbow is delivered on login.</b> CONNECT to COLLECT — sign in with your wallet
+  (MetaMask signature) or a social identity at <a href="/">the doorway</a>, then return here:
+  the chart, the band prices, and the forward window unlock to your session. The gate is a
+  handshake, not a secret — <a href="https://github.com/cypherpunk4096/sentiment" rel="noopener">the
+  chart source is open</a>; gated delivery is the consent rail, the same doctrine as the gesture.</p>
+  </div>
+
+  <h2 id="substrate">The rainbow substrate — the whole estimate, to the last coin</h2>
+  <div class="hi"><p><b>This rainbow is not an image.</b> It is rendered live by <b>DVLuvRainbow</b>, a DeltaVerse
+  substrate (<a href="substrate/luv-rainbow.js" rel="noopener">readable source</a>, zero dependencies,
+  zero network calls): the published fit and the nine bands, redrawn from the arithmetic every time
+  the page opens. The fit is public — the <em>measured price path</em> stays login-delivered.
+  The dot is <b>live</b>: BTC read from the free tier and refreshed every 15 minutes (the caption
+  under each chart carries the price and the minute it was read). The figures quoted in the prose
+  below stay pinned to the fit's reference date, <b>2026-08-05, BTC $64,482</b>, so the worked
+  arithmetic can be checked line by line — where the dot sits today is what the chart shows.</p>
+  <p>Log-log axes, so the fit is a straight ruler and a long extrapolation hides nothing in
+  curvature. The nine names stand in a stack at the top-left, each pointing at the band it names
+  wherever the ribbon passes at that height — and standing alone where it does not, because nine
+  leaders fanning across the canvas said less than nine swatches.
+  The gold run is the <b>trajectory</b> — picked up at the $30,000 mark, carried through today and
+  out to <b>2035</b>, <b>2050</b> and the <b>last coin mined</b>, after which miners are paid by
+  transaction fees alone.</p>
+  <p>The right axis prices the same picture as <b>market cap</b>, one clean decade at a time —
+  $1B, $10B, $100B, $1T — with the year the fit reaches each. Two magnitudes are marked across it:
+  <b>world debt at ~$345T</b> and <b>the quadrillion</b>, where the derivatives economy sits. The
+  point those marks make is one of <em>capacity</em>, not prophecy: 21 million units divide into a
+  quadrillion without strain, so the arithmetic has room for the whole of it. The crossing years
+  are what the regression says, not what the market owes.</p></div>
+
+  <h2 id="here">You are here</h2>
+  <div class="hi gated" hidden><p><b>At the reference date, BTC $64,482 sat in the "accumulate" band</b> — 10<sup>−0.28</sup> below the center line.
+  The center line values today at $121,932; the dot is where the market disagrees with the curve, which
+  is the only place a sentiment reading lives.</p></div>
+
+
+  <h2 id="built"><span class="n">I.</span> How it is built — in-house</h2>
+
+  <p><b>The fit.</b> Least squares over 360 observations of log-price against log-time
+  (days since the genesis block, 2009-01-03):</p>
+  <pre>log₁₀(price) = 5.380917 · log₁₀(days since genesis) − 15.403007        R² = 0.936</pre>
+  <p><b>The bands.</b> Nine bands span the fit's own residual range (−0.70 … +1.00 in log₁₀ —
+  every historical price falls inside), each band 10<sup>0.1889</sup> ≈ 1.545× tall. The labels keep
+  the classic vocabulary for comprehension; the placement is ours, derived from the data rather than
+  inherited. <b>The colours are the house ramp</b>, not the classic blue-to-red: the fire sale is
+  <b style="color:#d81e3c">red</b>, the centre band is <b style="color:#F7931A">bitcoin orange</b>,
+  and the far top — where you sell — is <b style="color:#0ecb81">candle green</b>, because a
+  realised gain is a green candle. Bitcoin's own path is drawn in bitcoin orange on every chart
+  here; the trajectory stays gold. Every layer is a toggle above each chart — <b>world debt</b>,
+  the <b>BTC path</b>, the <b>halvings</b>, the <b>milestones</b>, the <b>key</b> — and the ± steps
+  the price ceiling.</p>
+  <p><b>The sources.</b> 2010–2013: documented public-record monthly anchors (the pre-aggregator era).
+  2013→today: the <a href="https://defillama.com" rel="noopener">DeFiLlama</a> keyless feed
+  (biweekly closes), spot cross-referenced against
+  <a href="https://www.coingecko.com/en/coins/bitcoin" rel="noopener">CoinGecko</a> and
+  <a href="https://coinmarketcap.com/currencies/bitcoin/" rel="noopener">CoinMarketCap</a>.
+  The page itself fetches nothing: the chart is a static SVG, correct as of its date, regenerated on
+  republish — approximation is a display decision, and staleness is a dated fact rather than a silent
+  one.</p>
+
+
+  <h2 id="bands"><span class="n">II.</span> The bands, priced today</h2>
+
+  <div class="tablewrap gated" hidden><table>
+    <tr><th>band</th><th>offset from center (log₁₀)</th><th>price range, 2026-08-05</th></tr>
+    <tr><td>basically a fire sale</td><td>10^-0.7000 … 10^-0.5111</td><td>$24,329 … $37,584</td></tr><tr><td>BUY!</td><td>10^-0.5111 … 10^-0.3222</td><td>$37,584 … $58,062</td></tr><tr><td>accumulate</td><td>10^-0.3222 … 10^-0.1333</td><td>$58,062 … $89,698</td></tr><tr><td>still cheap</td><td>10^-0.1333 … 10^+0.0556</td><td>$89,698 … $138,571</td></tr><tr><td>HODL!</td><td>10^+0.0556 … 10^+0.2444</td><td>$138,571 … $214,072</td></tr><tr><td>is this a bubble?</td><td>10^+0.2444 … 10^+0.4333</td><td>$214,072 … $330,712</td></tr><tr><td>FOMO intensifies</td><td>10^+0.4333 … 10^+0.6222</td><td>$330,712 … $510,903</td></tr><tr><td>sell. seriously, SELL!</td><td>10^+0.6222 … 10^+0.8111</td><td>$510,903 … $789,273</td></tr><tr><td>maximum bubble territory</td><td>10^+0.8111 … 10^+1.0000</td><td>$789,273 … $1,219,316</td></tr>
+  </table></div>
+
+
+  <h2 id="measures"><span class="n">III.</span> What a rainbow measures</h2>
+
+  <p>The rainbow is a <em>revealed</em> instrument on the slowest clock: it reads the market's
+  disposition toward Bitcoin against the only regressor that never changes — time itself. Where the
+  <a href="https://www.cnn.com/markets/fear-and-greed" rel="noopener">CNN Fear &amp; Greed Index</a>
+  and the <a href="https://alternative.me/crypto/fear-and-greed-index/" rel="noopener">Crypto Fear &amp;
+  Greed Index</a> read disposition over days, the rainbow reads it over epochs: which band the price
+  lives in is a statement about collective patience. In the emotonomic frame
+  (<a href="sentiment.html">SENTIMENT</a>, §IV) it is the outermost ring of the instrument stack —
+  epochs → days (Fear &amp; Greed) → blocks (gesture velocity, resonance depth, sentiment.shift).</p>
+  <p><b>The honest caveats.</b> A log-time regression has no economic mechanism behind it — it is a
+  description of history, not a law; past rainbows have been redrawn when new history bent the fit
+  (this one will be too — the fit parameters are dated and versioned); and the band vocabulary is
+  sentiment about sentiment. Use it the way the paper uses every instrument: as one dial among many,
+  never as the needle.</p>
+
+
+  <h2 id="ahead"><span class="n">IV.</span> The window ahead — the next halving and the five-year read</h2>
+
+  <p>The fit, projected forward. The halving rhythm and the residual rhythm share a clock: historically
+  the deep-band visits (where the dot sits now) came in the season <em>before</em> a halving, and the
+  excursions into the upper bands arrived 12–18 months <em>after</em>. If the next cycle rhymes, the
+  path runs: lower bands through the pre-halving trough, across the center line near the
+  <b>April 2028</b> halving, upper-band excursions inside the five-year window. One honest asymmetry:
+  each cycle's amplitude has <em>damped</em> — 2013 overshot the center far more than 2021 did — so the
+  center is the gravity, the halving sets the phase, and the amplitude is the one thing the chart
+  cannot promise.</p>
+  <div class="tablewrap gated" hidden><table>
+    <tr><th>date</th><th>center line</th><th>"accumulate" band</th><th>top of "HODL!"</th><th>"max bubble" starts</th></tr>
+    <tr><td>today · 2026-08-05</td><td>$121,931</td><td>$58,065 … $89,705</td><td>$214,050</td><td>$789,250+</td></tr><tr><td>next halving · ~2028-04</td><td>$200,044</td><td>$95,263 … $147,172</td><td>$351,177</td><td>$1,294,869+</td></tr><tr><td>the 5-year window · 2031-08</td><td>$468,623</td><td>$223,164 … $344,765</td><td>$822,666</td><td>$3,033,356+</td></tr><tr><td>the century mark · 2100 <em>(extrapolation absurdum)</em></td><td>$870,996,627</td><td>$414,778,726 … $640,791,103</td><td>$1,529,031,643</td><td>$5,637,888,378+</td></tr>
+  </table></div>
+  <p>The 2100 row is printed to make the caveat visible, not to make a claim: a log-time regression,
+  pushed to the century mark, hands back <b>$871 million per bitcoin</b> — and $6.1 billion by 2140.
+  Numbers that large are the fit confessing it is a description of one era, not a law of the next
+  eleven. Read the near rows with interest and the far rows as a lesson in humility.</p>
+
+
+  <h2 id="long"><span class="n">IV·b.</span> The long rainbow — extrapolation to 2140, every halving dated</h2>
+
+  <p>Both axes logarithmic. In log-log space the fitted rainbow is a <b>straight ruler</b>, which is
+  what makes a 130-year extrapolation honest to draw: nothing hides in curvature, and the absurdity is
+  visible at a glance ($6B a coin at the end of emission — a description of one era confessing, not a
+  law).</p>
+  <p><b>Every halving is a gold bar, and every bar carries its date</b> — read them in the rail under
+  the axis, set on their side because thirty-two dates will not fit across any width. Four bars are
+  solid, and those are dated to the day, because they happened: <b>2012-11-28</b>, <b>2016-07-09</b>,
+  <b>2020-05-11</b>, <b>2024-04-20</b>. The other twenty-eight are dashed and dated to the month
+  only — they are 210,000 blocks apart at whatever pace the chain keeps, and a day would claim a
+  precision the schedule does not have. The next one is <b>2028-04</b>. Where the bars crowd closer
+  than a label is wide, the rail thins its dates and keeps the bars; the four that happened and the
+  one coming next are always dated. Emission ends when the subsidy does — 2135 at the pace the chain
+  has actually kept, 2140 at the 600-second target, both marked on the trajectory. The bands are a
+  mood; the verticals are a schedule.</p>
+  <p><b>The leap-year coincidence.</b> Every halving so far has landed in a leap year — 2012, 2016,
+  2020, 2024 — and the schedule keeps the streak alive almost to the end: each cycle is 210,000 blocks
+  ≈ 3.99 years, so the halving walks backward through the calendar (April → February by 2136) while
+  staying on the four-year lattice. Of all thirty-two halvings, <b>exactly one misses: halving #23,
+  scheduled 2100-02-24</b> — the year 2100 sits on the lattice but is not a leap year, by the
+  Gregorian century rule (divisible by 100, not by 400). The subsidy's final year, 2140, is a leap
+  year again. Thirty-one of thirty-two — the exception is the calendar's fault, not Bitcoin's.</p>
+  <p class="cite" style="font-size:13px">The price on every chart here is read fresh every fifteen
+  minutes; the emission schedule under it moves on a <b>quarterly cadence</b> — a quarter emits
+  ≈ 41,000 BTC (≈ 0.196% of the cap) and nothing else about the schedule changes. The near view —
+  the dense 2010–2030 chart with live band prices — is
+  <a href="rainbow.html#gate">delivered on wallet login on the rainbow page</a>. The long view is public: the invitation, and
+  the argument for why the gate is worth a handshake.</p>
+
+
+  <h2 id="fact"><span class="n">V.</span> The ambiguous message of fact</h2>
+
+  <div class="hi"><div class="t">read it twice</div>
+  <p><b>Bitcoin is mathematically guaranteed to go to 21 million.</b></p></div>
+  <p>Read as a price, that sentence is sentiment — the upper bands talking. Read as a supply, it is
+  consensus code, and the guarantee is real arithmetic: the block subsidy started at 50 BTC, halves
+  every 210,000 blocks, and after thirty-three halvings pays nothing at all. The schedule is drawn
+  on <a href="rainbow.html#long">the long rainbow</a> — <a href="#long">every halving, dated</a>; the bands are a mood, the verticals are the
+  arithmetic.</p>
+  <p>The sentence is ambiguous, and the ambiguity is the point: one reading is a hope priced in
+  dollars, the other is a certainty priced in blocks, and the whole discipline of this page is
+  knowing which kind of claim you are holding.</p>
+  <div class="hi"><div class="t">here to stay</div>
+  <p><b>Whether the banks include Bitcoin or Bitcoin becomes the bank — Bitcoin is here to stay.</b>
+  Either branch of that sentence ends at the same place: an asset with a supply fixed by arithmetic
+  and a schedule fixed to the year 2140 does not need permission to persist. The banks deciding to
+  hold it and the protocol outliving the question are the same fact wearing two futures.</p></div>
+
+
+  <h2 id="appendix">Appendix — reproduce every number</h2>
+
+  <pre># the feed (keyless)
+curl "https://coins.llama.fi/chart/coingecko:bitcoin?start=1279324800&amp;span=500&amp;period=2w"
+curl "https://coins.llama.fi/prices/current/coingecko:bitcoin"
+
+# the fit: least squares on (log10(days since 2009-01-03), log10(price))
+# center(d)  = 10 ** (5.380917 * log10(d) - 15.403007)
+# residual   = log10(price) - log10(center)
+# bands      = nine equal slices of [-0.70, +1.00]
+python3 -c "import math; d=6423; print(10**(5.380917*math.log10(d)-15.403007))"  # ≈ 121932
+python3 -c "import math; print(math.log10(64482)-(5.380917*math.log10(6423)-15.403007))"  # ≈ -0.28
+
+# the live price the charts draw (same-origin, refreshed every 15 minutes)
+curl -s https://luv.pythai.net/market.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['btcUsd'], d['btcUsdAt'], d['btcUsdSource'])"
+
+# the halving schedule the last chart dates: 210,000 blocks per epoch, 33 epochs
+python3 -c "print(6930000*600/31557600+2009.0)"                    # naive genesis schedule ≈ 2140
+
+# chain-anchored (live tip 961,239 @ 2026-08-05; two independent sources)
+curl -s https://mempool.space/api/blocks/tip/height
+curl -s https://blockchain.info/q/getblockcount
+python3 -c "print((6930000-961239)*600/31557600 + 2026.6)"         # subsidy ends ≈ 2140.1
+python3 -c "print((1411200-961239)*600/31557600 + 2026.6)"         # 99% of supply ≈ 2035.15
+python3 -c "print((1050000-961239)*600/86400)"                     # next halving in ~616 days ≈ 2028-04</pre>
+  <p class="cite" style="font-size:13px">Lineage: the original rainbow chart tradition
+  (bitcointalk log-regression threads, 2014; Blockchaincenter's popularization) — rebuilt here from
+  first principles. Data: DeFiLlama (primary feed), CoinGecko, CoinMarketCap (references).
+  BTC genesis: Nakamoto, block 0, 2009-01-03.</p>
+
+
+  <div class="readmore">
+    <a class="btn" href="rainbow.html">🌈 THE BITCOIN RAINBOW — the charts</a>
+    <a class="btn" href="rainbowchart.html">📈 the reference arc, full page</a>
+    <a class="btn" href="luvchart.html">❤ THE LUVchart — the fastest clock</a>
+    <a class="btn" href="sentiment.html">🎭 SENTIMENT — the measurement paper</a>
+    <a class="btn cp4096" href="https://github.com/cypherpunk4096/sentiment" rel="noopener"
+       title="cypherpunk4096 — the 2¹² standard">⟁ cypherpunk4096</a>
+    <a class="btn" href="docs.html">📚 THE DOCS — the complete map</a>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>❤ LUV is priceless</span>
+    <span class="spacer"></span>
+    <a href="/">the doorway</a>
+    <a href="faq.html">FAQ</a>
+    <a href="docs.html">docs</a>
+    <a href="https://github.com/SHAMBA-LUV/LUV" rel="noopener">source &amp; audit</a>
+    <a href="https://github.com/cypherpunk4096/standard" target="_blank" rel="noopener" title="cypherpunk4096 — the standard LUV is built to (2¹²)">⟁ cypherpunk4096</a>
+    <a href="https://github.com/cypherpunk4096/scientific" target="_blank" rel="noopener" title="SCIEN·TIFIC — the reference deployment">🔬 SCIEN·TIFIC</a>
+    <a class="brandmark" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="LUV verified on Etherscan · Powered by Etherscan.io APIs">
+      <img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="14">
+      <span>Powered by Etherscan.io APIs</span>
+    </a>
+    <span>SHAMBA © 2026 LUV</span>
+  <style>.fieldnav{border-top:1px solid var(--seam);margin-top:22px;padding-top:16px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em}.fieldnav .fn-k{color:var(--gold);text-transform:uppercase;letter-spacing:.18em;font-size:10px;width:100%;margin-bottom:2px}.fieldnav a{color:var(--dim);text-decoration:none;border-bottom:1px solid transparent}.fieldnav a:hover{color:var(--rose);border-bottom-color:var(--rose)}
+/* share + copy — same weight as the nav links, so the chart stays the subject */
+.shr{background:transparent;border:1px solid var(--seam);color:var(--blush);
+  font:inherit;font-size:.82rem;letter-spacing:.02em;padding:.34em .8em;border-radius:7px;
+  cursor:pointer;margin-left:.5rem;transition:.16s;white-space:nowrap}
+.shr:hover,.shr:focus-visible{border-color:var(--rose);color:var(--cream);
+  transform:translateY(-1px);box-shadow:0 0 16px rgba(255,77,109,.32)}
+.shr:focus-visible{outline:none;box-shadow:0 0 0 2px var(--rose),0 0 16px rgba(255,77,109,.32)}
+.shr.done{border-color:var(--gold);color:var(--gold)}
+.shr:active{transform:translateY(0) scale(.96)}
+@media(prefers-reduced-motion:reduce){.shr{transition:none}
+  .shr:hover,.shr:focus-visible,.shr:active{transform:none}}
+@media(max-width:640px){.shr{margin-left:.35em;font-size:.76rem;padding:.3em .6em}}
+</style>
+<nav class="fieldnav" aria-label="the field"><span class="fn-k">the field</span><a href="/">the doorway</a><a href="view.html">live view</a><a href="luvchart.html">the LUVchart</a><a href="rainbow.html">rainbow</a><a href="rbfaq.html">rainbow — the words</a><a href="LUV.html">the price</a><a href="luvstory.html">the story</a><a href="engine.html">the engine</a><a href="emotonomics.html">emotonomics</a><a href="sentiment.html">sentiment</a><a href="wei.html">wei</a><a href="exabyte.html">exabyte</a><a href="luvbus.html">LUVbus</a><a href="faq.html">FAQ</a><a href="docs.html">docs</a></nav>
+</div>
+</footer>
+
+<script src="rbfaq.js?v=1" defer></script>
+<script src="substrate/luv-pulse.js?v=1" defer></script>
+<script src="substrate/luv-frame.js?v=5" defer></script>
+<script src="share.js?v=1" defer></script>
+</body>
+</html>
