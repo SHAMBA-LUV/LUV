@@ -415,6 +415,10 @@ details.festwrap>summary.topfest .cue::before{content:"▶"}
 /* a hover that opens a market, adds the token, or shows the price is a POSITIVE event */
 .mmbtn:hover,.candlehover:hover{border-color:var(--candle);color:var(--candle);background:var(--candle-dim)}
 .mmbtn img{display:block;border-radius:50%}
+.lockline{margin:10px 0 2px;font-size:17px;letter-spacing:.04em;text-align:center}
+.lockline a{color:inherit;text-decoration:none;border-bottom:1px solid rgba(255,0,122,.5);transition:color .15s,border-color .15s}
+.lockline a[href="liqlock.html"]{color:#0ecb81;border-bottom-color:rgba(14,203,129,.6)}
+.lockline a:hover{color:#0ecb81;border-bottom-color:#0ecb81}
 .uni-cta .soon{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(227,178,95,.5);border-radius:999px;padding:2px 9px}
 .taskmsg.ok{color:var(--candle)}
 .subs .sub{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;border-top:1px solid var(--seam);padding:10px 0;font-family:var(--mono);font-size:12px}
@@ -687,6 +691,7 @@ the live deployment landed · <b>launch successful</b> ·
     <img class="logo" src="gfx/heart-512.png" alt="SHAMBA LUV" width="512" height="512">
     <h1>SHAMBA LUV</h1>
     <div class="phase"><span style="color:#7ee2a0;font-weight:800">✅ Phase 2 complete</span> · 🌕 <a href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" data-luv-emit target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1px solid rgba(255,0,122,.5)">Phase 3 — The Price of LUV · <span style="color:var(--gold);font-weight:800">LIVE</span></a> ✨</div>
+    <div class="lockline"><b>LUV <a href="https://etherscan.io/address/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31" target="_blank" rel="noopener" title="the LUV/WETH pair — where the price is created">liquidity</a> is now <a href="liqlock.html" title="the live proof — your own browser reads the chain">LOCKED</a> 🔒</b></div>
     <div class="claimhero soldout">
       <span class="tag">💧 the LUVdrip is flowing</span>
       <div class="amt">1,000,000&nbsp;LUV&nbsp;/&nbsp;DAY</div>
