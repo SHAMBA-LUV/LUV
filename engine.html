@@ -479,7 +479,17 @@ footer .brandmark:hover img{opacity:1}
   if it traces to the <b>green checkmark</b> — source-code verification on the public explorer, where
   the published source is compiled and matched against the bytecode deployed on chain.
   <a href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254#code" target="_blank" rel="noopener">ShambaLuv
-  (0x2711…8254) carries that checkmark</a>; the footer of every page routes "verified" to it. What this
+  (0x2711…8254) carries that checkmark</a>; so does the
+  <a href="https://etherscan.io/address/0x111111f70cb3469B5285862d7a4e7Cb53d04f502#code" target="_blank" rel="noopener">liquidity
+  locker (0x111111f7…f502)</a> that holds 100% of the circulating LUV/WETH position — and
+  <a href="liqlock.html">liqlock.html</a> takes the doctrine one step further: the page hands the
+  verification to the reader, whose own browser performs the <code>eth_call</code>s that prove the
+  lock, live, with no wallet and no trust asked. The locker's construction is documented end to end in
+  <a href="https://github.com/SHAMBA-LUV/liq-locker" target="_blank" rel="noopener">SHAMBA-LUV/liq-locker</a>
+  (<a href="https://github.com/SHAMBA-LUV/liq-locker/blob/main/docs/DEPLOYMENT.md" target="_blank" rel="noopener">deployment
+  report</a> · <a href="https://github.com/SHAMBA-LUV/liq-locker/blob/main/PRODUCTION.md" target="_blank" rel="noopener">production
+  sheet</a> · <a href="https://github.com/SHAMBA-LUV/liq-locker/blob/main/test.md" target="_blank" rel="noopener">186-test
+  record</a>). The footer of every page routes "verified" to the checkmark. What this
   doctrine excludes is self-attestation: an audit we paid for, a claim we typed, a screenshot — none of
   these may be called <em>verified</em>. They may be called what they are. The rule is the cypherpunk
   inheritance in one sentence: don't trust — verify, and let the verification be public, mechanical, and
@@ -508,7 +518,21 @@ footer .brandmark:hover img{opacity:1}
     <a href="https://artsandscience.usask.ca/profile/VThompson" target="_blank" rel="noopener">Department of
     Psychology, University of Saskatchewan</a>. An economy that prices emotion must instrument the felt
     side of judgment, not only the clicked side.</li>
-  </ol>
+      <li><b>Custody claims are checkable.</b> "The liquidity is locked" is not a statement of intent
+    but an <code>eth_call</code> anyone can repeat: <code>total_locked(pair)</code> on the
+    <a href="https://etherscan.io/address/0x111111f70cb3469B5285862d7a4e7Cb53d04f502#code" target="_blank" rel="noopener">verified
+    locker</a> equals <code>pair.balanceOf(locker)</code> to the wei and the treasury's LP balance is
+    zero — refutable in one query, performed live by <a href="liqlock.html">liqlock.html</a>. Behind
+    the claim sits the evidence chain:
+    <a href="https://github.com/SHAMBA-LUV/liq-locker/blob/main/test.md" target="_blank" rel="noopener">186 tests</a>
+    including a mainnet-fork rehearsal that returned the real position to the wei,
+    <a href="https://github.com/SHAMBA-LUV/liq-locker/blob/main/GATE_ATTACK_RESULTS.md" target="_blank" rel="noopener">28
+    adversarial gate attacks</a>, the
+    <a href="https://github.com/SHAMBA-LUV/liq-locker/blob/main/AUDIT.md" target="_blank" rel="noopener">self-audit that
+    names itself one</a>, and the sibling
+    <a href="https://github.com/SHAMBA-LUV/vesting" target="_blank" rel="noopener">vesting repo</a>, whose
+    difference test makes the reflection-token correction an executable argument rather than a claim.</li>
+</ol>
 
   <h2 id="s6"><span class="n">VI.</span> Objections answered</h2>
   <div class="obj"><p><span class="q">"An engine from doctrine is just branding."</span> The derivation
@@ -662,6 +686,7 @@ footer .brandmark:hover img{opacity:1}
       <li style="--oc:#ff4d6d"><b>the pulse</b> <a href="substrate/luv-pulse.js"><code>substrate/luv-pulse.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-pulse.js" target="_blank" rel="noopener">source ↗</a> — chronos-locked 1 Hz output, 60 bpm, phase-identical for every visitor · <em>a shared rhythm owned by no one</em></li>
       <li style="--oc:#ff8fab"><b>the heart</b> <a href="substrate/heart.js"><code>substrate/heart.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/heart.js" target="_blank" rel="noopener">source ↗</a> — the visual organ, created only on consent · <em>consent over default</em></li>
       <li style="--oc:#e3b25f"><b>the frame</b> <a href="substrate/luv-frame.js"><code>substrate/luv-frame.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-frame.js" target="_blank" rel="noopener">source ↗</a> — the octagon world-edge worn as the page frame · <em>a boundary that contains, never intercepts</em></li>
+      <li style="--oc:#0ecb81"><b>the lock</b> <a href="liqlock.html"><code>liqlock.html</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/liq-locker" target="_blank" rel="noopener">source ↗</a> — the ownerless timelock at <code>0x111111f7…f502</code> holding 100% of the circulating LUV/WETH liquidity, extend-only, no owner ever · <em>custody without a custodian</em></li>
       <li style="--oc:#34d3eb"><b>the drip</b> <a href="substrate/luv-drip.js"><code>substrate/luv-drip.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-drip.js" target="_blank" rel="noopener">source ↗</a> — meters continuously, settles once as one integer of luv · <em>precision without approximation</em></li>
       <li style="--oc:#b6f36a"><b>the wei</b> <a href="substrate/luv-wei.js"><code>substrate/luv-wei.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-wei.js" target="_blank" rel="noopener">source ↗</a> — the atom, 1 luv = 0.000000000000000001 LUV · <em>rounding is a display decision</em></li>
       <li style="--oc:#0ecb81"><b>the market</b> <a href="substrate/luv-market.js"><code>substrate/luv-market.js</code></a> <a class="src" href="https://github.com/SHAMBA-LUV/LUV/blob/main/substrate/luv-market.js" target="_blank" rel="noopener">source ↗</a> — reserves-first price, block-anchored · <em>the pair creates the price</em></li>
@@ -764,6 +789,7 @@ footer .brandmark:hover img{opacity:1}
     <a class="btn" href="exabyte.html">💾 THE EXABYTE — the identity paper</a>
     <a class="btn" href="LUV.html">❤ LUV.html — the price in LUV and luv</a>
     <a class="btn" href="view.html">📈 the live market</a>
+    <a class="btn" href="liqlock.html">🔒 LIQLOCK — the liquidity, locked &amp; checkable</a>
   </div>
 </main>
 
