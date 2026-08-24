@@ -159,6 +159,27 @@
   }
 
   var MODE_BTNS = [['lp-mode-eth', 'eth'], ['lp-mode-usdc', 'usdc'], ['lp-mode-wei', 'wei'], ['lp-mode-luveth', 'luveth']];
+
+  // The big print is itself a toggle: a click rotates the denomination
+  // ETH → USDC → WEI → ETH. The tab row still reaches every mode directly.
+  var ROTATION = ['eth', 'usdc', 'wei'];
+  function rotate() {
+    var i = ROTATION.indexOf(mode);            // an off-rotation mode (luveth) lands on ETH
+    setMode(ROTATION[(i + 1) % ROTATION.length]);
+  }
+  function armRotation() {
+    ['lp-eth', 'lp-conv', 'lp-wei'].forEach(function (id) {
+      var n = el(id);
+      if (!n || n.getAttribute('data-rotates')) return;
+      n.setAttribute('data-rotates', '1');
+      n.style.cursor = 'pointer';
+      n.title = 'click to rotate the denomination — ETH → USDC → WEI';
+      n.addEventListener('click', rotate);
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', armRotation);
+  else armRotation();
+
   function setMode(m) {
     mode = m;
     try { global.localStorage.setItem('luv-price-mode', m); } catch (e) { /* private mode */ }
