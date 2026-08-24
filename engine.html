@@ -169,7 +169,9 @@ h1{margin:52px 0 6px;text-align:center;font-size:clamp(30px,5.6vw,46px);font-wei
 .pulseheart{display:inline-block;color:var(--rose)}
 /* ── the action bar: buy · add to wallet · the contract, top and bottom ── */
 .actionbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;
-  border:1px solid var(--seam);border-radius:16px;background:rgba(0,0,0,.22);padding:20px 18px;margin:26px 0 8px}
+  border:1px solid var(--seam);border-radius:16px;background:rgba(0,0,0,.22);padding:20px 18px;margin:26px 0 8px;
+  transition:border-color .18s,box-shadow .18s}
+.actionbar:hover{border-color:#0ecb81;box-shadow:0 0 0 2px rgba(14,203,129,.55),0 0 26px 6px rgba(14,203,129,.35)}
 .buybtn{display:inline-flex;align-items:center;gap:10px;padding:15px 28px;border-radius:999px;text-decoration:none;
   font-weight:800;font-size:15px;color:#fff;background:linear-gradient(100deg,var(--pink),var(--purple));
   box-shadow:0 12px 30px -12px rgba(255,0,110,.9);transition:transform .18s ease,box-shadow .3s ease}
