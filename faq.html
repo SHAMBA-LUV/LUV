@@ -76,6 +76,12 @@ a.exlink img,.marketrow img{height:16px;width:auto;vertical-align:-4px}
 .mmbtn{display:inline-flex;align-items:center;gap:8px;cursor:pointer;background:transparent;
   font-family:var(--mono);line-height:normal}
 .mmbtn img{display:block;border-radius:50%}
+.mmcard{position:relative;border:1px solid var(--seam,#4a1f30);border-radius:14px;background:rgba(0,0,0,.25);
+  padding:16px 18px;margin:14px 0;transition:border-color .18s,box-shadow .18s}
+.mmcard:hover{border-color:#0ecb81 !important;box-shadow:0 0 0 2px rgba(14,203,129,.55),0 0 26px 6px rgba(14,203,129,.35)}
+.mmcard-head{font-size:1.05em;margin:0 0 6px}
+.mmcard-body{margin:0 0 12px}
+.mmcard-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 
 
 .brandrow{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:center;
@@ -999,9 +1005,17 @@ a:hover b,a:hover code,a:hover span{color:#0ecb81 !important}
     <div class="marketrow">
       <a href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img src="gfx/brand/uniswap_horizontal_pink.svg" alt="Trade LUV on Uniswap"> · buy &amp; sell LUV ↗</a>
     </div>
-    <p style="margin-top:10px">• <b>The price of LUV now shows up in MetaMask.</b> Wallet price feeds have
-    picked LUV up — your balance prices itself right in the wallet, no site needed. The wallet reads what the
-    pair creates; <a href="view.html">the live view</a> reads it every minute from the source.</p>
+    <div class="mmcard" id="metamask-price" data-cardshare
+      data-cardshare-text="The price of LUV now shows up in MetaMask ❤ wallet price feeds carry LUV — your balance prices itself right in the wallet, no site needed. The wallet reads what the pair creates. HOLD LUV to earn LUV">
+      <p class="mmcard-head">🦊 <b>The price of LUV now shows up in MetaMask.</b></p>
+      <p class="mmcard-body">Wallet price feeds have picked LUV up — <b>your balance prices itself right
+      in the wallet, no site needed</b>. The wallet reads what the pair creates;
+      <a href="view.html">the live view</a> reads it every minute from the source.</p>
+      <div class="mmcard-row">
+        <button type="button" class="btn mmbtn" data-luv-watchasset><img src="gfx/heart-512.png" alt="" height="16" aria-hidden="true"> add LUV to MetaMask</button>
+        <a class="btn" href="https://metamask.io/download" target="_blank" rel="noopener">get MetaMask ↗</a>
+      </div>
+    </div>
     <p style="margin-top:10px">• <b>Scanner chips (Go+ Security, Quick Intel).</b> Automated scanners flag
     <i>every</i> fee-on-transfer token by pattern — the fee that pays holders is what trips the chip. Dismiss
     them with the two facts that are mechanically checkable: <b class="g">verified contract ✓</b> — the green
@@ -1101,5 +1115,6 @@ a:hover b,a:hover code,a:hover span{color:#0ecb81 !important}
 <script src="substrate/heart.js?v=2"></script>
 <script src="substrate/luv-pulse.js?v=1"></script>
 <script src="substrate/luv-engine.js?v=12"></script>
+<script src="substrate/luv-cardshare.js?v=1"></script>
 </body>
 </html>
