@@ -247,7 +247,16 @@
     c.capabilities.forEach(function (cap, i) {
       var r = el('div', 'padding:11px 16px' + (i ? ';border-top:1px solid ' + SEAM : ''));
       var l = el('div', 'display:flex;flex-wrap:wrap;gap:9px;align-items:baseline');
-      l.appendChild(el('code', 'font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:' + GREEN, cap.id));
+      // the capability id is a door: it links to the first thing that backs it
+      if (cap.backs && cap.backs.length) {
+        var idA = el('a', 'font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:' + GREEN +
+          ';text-decoration:none;border-bottom:1px solid rgba(126,226,160,.4)', cap.id);
+        idA.setAttribute('href', cap.backs[0].href);
+        idA.setAttribute('title', cap.says + ' — ' + cap.backs[0].label);
+        l.appendChild(idA);
+      } else {
+        l.appendChild(el('code', 'font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:' + GREEN, cap.id));
+      }
       l.appendChild(el('span', 'flex:1'));
       l.appendChild(el('span', 'font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;color:' + DIM, cap.organ));
       r.appendChild(l);

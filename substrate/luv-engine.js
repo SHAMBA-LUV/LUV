@@ -165,7 +165,21 @@
         col + ';margin-right:2px');
       chip.setAttribute('aria-hidden', 'true');
       l1.appendChild(chip);
-      l1.appendChild(el('span', 'font-weight:700;color:' + col, o.name));
+      // the title is a door: each organ's name links to the surface where it lives
+      var HOMES = { pulse: 'engine.html#s2', heart: 'index.html', frame: 'rainbow.html',
+        drip: 'faq.html#luvdrip', wei: 'wei.html', market: 'view.html', rainbow: 'rainbow.html',
+        share: 'luvstory.html', engine: 'engine.html#s8', story: 'luvstory.html',
+        automindx: 'llms.txt' };
+      var home = HOMES[o.key];
+      if (home) {
+        var nameA = el('a', 'font-weight:700;color:' + col +
+          ';text-decoration:none;border-bottom:1px solid ' + col + '55', o.name);
+        nameA.setAttribute('href', home);
+        nameA.setAttribute('title', 'where ' + o.name + ' lives');
+        l1.appendChild(nameA);
+      } else {
+        l1.appendChild(el('span', 'font-weight:700;color:' + col, o.name));
+      }
       // the organ's self-reference: the filename IS the link to the running file on this
       // origin, and `source ↗` is the published copy. Read either; they are the same bytes.
       var self = el('a', 'text-decoration:none;border-bottom:1px solid rgba(255,77,109,.32)');
