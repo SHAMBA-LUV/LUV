@@ -221,7 +221,8 @@ footer .brandmark:hover img{opacity:1}
   <div class="sub">An Engine from Emotonomics</div>
   <div class="paperkind">the engine paper · phase three · the pulse at 60 bpm <span class="pulseheart" data-luvpulse data-luvpulse-audio title="tap to hear the heartbeat — consent-only, tap again to stop">❤</span></div>
 
-  <div class="actionbar">
+  <div class="actionbar" id="buy-eth" data-cardshare
+    data-cardshare-text="Buy LUV with ETH ❤ — SHAMBA LUV, verified contract 0x2711…8254, live on Uniswap. The liquidity is locked and checkable.">
     <a class="buybtn" data-luv-emit href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=ETH&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">
       <img src="gfx/brand/uniswap_icon_white.svg" alt="" height="20" aria-hidden="true">
       <span>Buy LUV with ETH ❤</span>
@@ -238,7 +239,8 @@ footer .brandmark:hover img{opacity:1}
     <div class="slipnote-sm">set slippage to ~10% — LUV carries a <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/REFLECTIONS.md" target="_blank" rel="noopener">5% reflection fee</a> · the pair is preset</div>
   </div>
 
-  <div class="luvcard">
+  <div class="luvcard" id="buy-usdc" data-cardshare
+    data-cardshare-text="The dollar, priced in gesture — USDC → LUV, preset on Uniswap. SHAMBA LUV: 1 LUV === 1 LUV.">
     <a class="coin" data-luv-emit href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="Uniswap preset — USDC → LUV on Ethereum mainnet">
       <img src="gfx/logo.png" alt="SHAMBA LUV — the gold binary heart" width="112" height="112">
     </a>
@@ -837,5 +839,6 @@ footer .brandmark:hover img{opacity:1}
 <script src="substrate/luv-pulse.js?v=1"></script>
 <script src="substrate/luv-engine.js?v=12"></script>
 <script src="substrate/luv-automindx.js?v=4"></script>
+<script src="substrate/luv-cardshare.js?v=1"></script>
 </body>
 </html>
