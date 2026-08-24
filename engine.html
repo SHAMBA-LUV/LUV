@@ -232,7 +232,7 @@ footer .brandmark:hover img{opacity:1}
       <code>0x2711111111683B8708cb9a48cBf36a51315F8254</code>
       <span class="ca-v">✅</span>
     </a>
-    <div class="slipnote-sm">set slippage to ~10% — LUV carries a 5% reflection fee · the pair is preset, the amount is yours to choose</div>
+    <div class="slipnote-sm">set slippage to ~10% — LUV carries a <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/REFLECTIONS.md" target="_blank" rel="noopener">5% reflection fee</a> · the pair is preset, the amount is yours to choose</div>
   </div>
 
   <div class="luvcard">
@@ -297,7 +297,8 @@ footer .brandmark:hover img{opacity:1}
   <p>Every prior engine encodes the ontology of its source domain. The game engine's frame loop encodes
   the primacy of the image; the matching engine's book encodes the primacy of the order. An emotonomic
   economy has a different primitive: the <b>gesture</b> — attention given, registered, and returned as
-  value. The anthropology of the gift already described this triple movement as the elementary form of
+  value <span class="cite">(<a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/EMOTONOMICS.md" target="_blank" rel="noopener">the emotonomics whitepaper</a> ·
+  <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/LUVPAPER.md" target="_blank" rel="noopener">the LUV paper</a> · <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/WHITEPAPER.md" target="_blank" rel="noopener">the whitepaper</a>)</span>. The anthropology of the gift already described this triple movement as the elementary form of
   social obligation — <em>donner, recevoir, rendre</em>
   <span class="cite">(<a href="https://gallica.bnf.fr/ark:/12148/bpt6k93922b" target="_blank" rel="noopener">Mauss 1925</a>)</span>
   — and the Canadian communication tradition already showed that a medium's bias in <em>time</em> is a
@@ -394,8 +395,8 @@ footer .brandmark:hover img{opacity:1}
     folder.</li>
     <li><b>Power-of-two discipline (the 2048)</b>: quantities that can be exact are exact — 2048 = 2¹¹
     as the graphic standard, 2ⁿ ladders for shading and scale, decimal precision carried at full width
-    (18 decimals; one trillion LUV named exactly). Approximation is a display decision, never a storage
-    decision.</li>
+    (18 decimals; one trillion LUV <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/TRILLIONS_CALCULATION.md" target="_blank" rel="noopener">named exactly</a>).
+    Approximation is a display decision, never a storage decision.</li>
   </ul>
 
   <div class="axiom"><div class="t">The two denominations: LUV and luv</div>
@@ -410,7 +411,11 @@ footer .brandmark:hover img{opacity:1}
   counts. Neither is a rounding of the other — an amount written in luv is the amount, and an amount
   written in LUV is that same integer with the decimal point moved eighteen places. Because the engine
   refuses approximation, both denominations are always available and the conversion is never lossy:
-  reserves, drips, gestures and rewards are all integers of luv before they are decimals of LUV.</p>
+  reserves, drips, gestures and rewards are all integers of luv before they are decimals of LUV — and
+  the token's own arithmetic obeys the same rule: how a holder's balance is computed under reflection is
+  set out operation by operation in <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/HOLDER_BALANCE_CALCULATION.md" target="_blank" rel="noopener">HOLDER_BALANCE_CALCULATION</a>,
+  the reflection mechanism itself in <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/REFLECTIONS.md" target="_blank" rel="noopener">REFLECTIONS</a>, and its test evidence in
+  <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/REFLECTION_TEST_SUMMARY.md" target="_blank" rel="noopener">REFLECTION_TEST_SUMMARY</a>.</p>
   <p>The denomination is also what forces an architectural decision. The LUVdrip pays 1,000,000 LUV a
   day — 10<sup>24</sup> luv — and a day is 86,400 seconds. Those do not divide: 86,400 = 2<sup>7</sup> ·
   3<sup>3</sup> · 5<sup>2</sup>, and the factor 3<sup>3</sup> never divides a power of ten, so the exact
@@ -494,7 +499,13 @@ footer .brandmark:hover img{opacity:1}
   these may be called <em>verified</em>. They may be called what they are. The rule is the cypherpunk
   inheritance in one sentence: don't trust — verify, and let the verification be public, mechanical, and
   repeatable by anyone — a system resting on "cryptographic proof instead of trust"
-  <span class="cite">(<a href="https://bitcoin.org/bitcoin.pdf" target="_blank" rel="noopener">Nakamoto 2008</a>)</span>.</p>
+  <span class="cite">(<a href="https://bitcoin.org/bitcoin.pdf" target="_blank" rel="noopener">Nakamoto 2008</a>)</span>.
+  The same discipline governs the token's own security documentation: the threat model in
+  <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/SECURITY.md" target="_blank" rel="noopener">SECURITY</a>, the hardening record in
+  <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/SECURITY_ENHANCEMENTS.md" target="_blank" rel="noopener">SECURITY_ENHANCEMENTS</a>, the timelocked-parameter rationale in
+  <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/TIMELOCK_DELAY.md" target="_blank" rel="noopener">TIMELOCK_DELAY</a>, and the transfer-cap arithmetic in
+  <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/MAXTRANSFER.md" target="_blank" rel="noopener">MAXTRANSFER</a> — each a claim with its working shown, none of them called
+  <em>verified</em>, because that word belongs to the checkmark alone.</p>
 
   <h2 id="s5"><span class="n">V.</span> Testable propositions</h2>
   <ol class="points">
@@ -779,6 +790,27 @@ footer .brandmark:hover img{opacity:1}
     </a>
     <div class="slipnote-sm">set slippage to ~10% — LUV carries a 5% reflection fee · HOLD LUV to earn LUV</div>
   </div>
+
+  <div class="axiom"><div class="t">The supporting corpus</div>
+  <p>Every claim this paper makes about the token itself resolves to a document in the founding corpus at
+  <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/tree/main/docs" target="_blank" rel="noopener">SHAMBA-LUV/SHAMBALUV/docs</a>:
+  <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/WHITEPAPER.md" target="_blank" rel="noopener">WHITEPAPER</a> and <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/LUVPAPER.md" target="_blank" rel="noopener">LUVPAPER</a> for the economy and the token ·
+  <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/EMOTONOMICS.md" target="_blank" rel="noopener">EMOTONOMICS</a> for the field this engine derives from ·
+  <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/COMPREHENSIVE.md" target="_blank" rel="noopener">COMPREHENSIVE</a> for the complete technical reference ·
+  <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/REFLECTIONS.md" target="_blank" rel="noopener">REFLECTIONS</a>, <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/HOLDER_BALANCE_CALCULATION.md" target="_blank" rel="noopener">HOLDER_BALANCE_CALCULATION</a> and
+  <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/REFLECTION_TEST_SUMMARY.md" target="_blank" rel="noopener">REFLECTION_TEST_SUMMARY</a> for the reflection arithmetic and its tests ·
+  <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/TRILLIONS_CALCULATION.md" target="_blank" rel="noopener">TRILLIONS_CALCULATION</a> for the denomination arithmetic ·
+  <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/SECURITY.md" target="_blank" rel="noopener">SECURITY</a>, <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/SECURITY_ENHANCEMENTS.md" target="_blank" rel="noopener">SECURITY_ENHANCEMENTS</a>,
+  <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/TIMELOCK_DELAY.md" target="_blank" rel="noopener">TIMELOCK_DELAY</a> and <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/MAXTRANSFER.md" target="_blank" rel="noopener">MAXTRANSFER</a> for the security posture ·
+  <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/TEAM.md" target="_blank" rel="noopener">TEAM</a> and <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/TeamFeeTracker.md" target="_blank" rel="noopener">TeamFeeTracker</a> for the 3:1:1 fee governance ·
+  <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/PHASE4.md" target="_blank" rel="noopener">PHASE4</a> for SHARE the LUV ·
+  <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/POLYGON_DEPLOYMENT_GUIDE.md" target="_blank" rel="noopener">POLYGON_DEPLOYMENT_GUIDE</a> for the Polygon origin the POL
+  commitment honours. The custody chapter lives in its own repos:
+  <a href="https://github.com/SHAMBA-LUV/liq-locker" target="_blank" rel="noopener">liq-locker</a> (the lock that holds
+  the liquidity, proven at <a href="liqlock.html">liqlock.html</a>),
+  <a href="https://github.com/SHAMBA-LUV/luv-locker" target="_blank" rel="noopener">luv-locker</a> (the reflection
+  vault) and <a href="https://github.com/SHAMBA-LUV/vesting" target="_blank" rel="noopener">vesting</a> (the two
+  routes, side by side, with the correction proven by test).</p></div>
 
   <div class="readmore">
     <a class="btn" href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/LUV_ENGINE.md" rel="noopener">📄 this paper on GitHub</a>
