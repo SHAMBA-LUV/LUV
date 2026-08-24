@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LIQ LOCKER — the liquidity is locked, checkably · SHAMBA LUV</title>
+<meta name="description" content="The SHAMBA LUV liquidity locker, live: every lock, every gate, every day remaining — read from Ethereum by your own browser. No wallet, no consent, no trust required.">
+<style>
+:root{--bg:#050810;--panel:#0a101c;--seam:#1b2537;--ink:#cdd5e0;--dim:#7a8699;--gold:#ffd166;
+  --ok:#7ee2a8;--bad:#ff6b6b;--mono:'SF Mono',ui-monospace,Menlo,Consolas,monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--mono);line-height:1.6;font-size:14px}
+.wrap{max-width:920px;margin:0 auto;padding:28px 18px 90px}
+h1{font-size:19px;letter-spacing:.16em;color:var(--gold);margin-bottom:10px}
+h2{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);
+  border-top:1px solid var(--seam);padding-top:20px;margin:30px 0 8px}
+.meta{font-size:12.5px;color:var(--dim);margin:5px 0;line-height:1.6}
+.meta b{color:var(--ink)} .meta code{color:var(--ink)}
+.row{border:1px solid var(--seam);border-radius:10px;background:var(--panel);padding:12px 14px;margin:10px 0}
+.sig{color:var(--ink);font-size:13px}
+.ok{color:var(--ok);font-size:12.5px;margin-top:6px;word-break:break-all}
+.bad{color:var(--bad);font-size:12.5px;margin-top:6px;word-break:break-all}
+.muted{color:var(--dim);font-size:12.5px;margin-top:6px;word-break:break-all}
+.lk{color:var(--gold);text-decoration:none}
+footer{border-top:1px solid var(--seam);margin-top:36px;padding-top:14px;font-size:12px;color:var(--dim)}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <h1>⟁ LIQ LOCKER — the liquidity is locked</h1>
+    <p class="meta"><b>Checkable, not believable.</b> Every number on this page is read from
+      Ethereum by your own browser, right now, over a public RPC. No wallet is asked for and none
+      is needed — reading the chain is free and permissionless, which is the point.</p>
+  </header>
+
+  <section>
+    <h2>the live state</h2>
+    <div class="row">
+      <div class="sig">locks created</div><div id="s-locks" class="ok">…</div>
+      <div class="sig">LP held by the locker</div><div id="s-locked" class="ok">…</div>
+      <div class="sig">share of all liquidity</div><div id="s-pct" class="ok">…</div>
+      <div class="sig">treasury LP</div><div id="s-treasury" class="muted">…</div>
+      <div id="s-read" class="muted">reading the chain…</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>every lock, in full</h2>
+    <div id="locks"><p class="muted">reading…</p></div>
+  </section>
+
+  <section>
+    <h2>what makes this a lock, and not a promise</h2>
+    <p class="meta"><b>No owner, anywhere.</b> No pause, no rescue, no setter, no proxy, no
+      <code>delegatecall</code>, no <code>SELFDESTRUCT</code>, no <code>tx.origin</code>. Nobody —
+      including the deployer — can bring a maturity forward. Extension is one-way: a lock can be
+      made longer by its beneficiary, never shorter by anyone.</p>
+    <p class="meta"><b>Two gates.</b> A lock is bound by time, by block height, or by both, and
+      opens only when the later has passed — a clock cannot open it early, a stalling chain cannot
+      strand it.</p>
+    <p class="meta"><b>Deterministic identity</b> (<a class="lk" rel="noopener" target="_blank"
+      href="https://github.com/cypherpunk4096/standard">cypherpunk4096</a>): deployed via CREATE3,
+      the locker's address is a function of (deployer, salt) alone — reproducible on every EVM
+      chain, claimable only by the SHAMBA LUV treasury. The six leading 1s are mined, not luck —
+      and not a different trust story: the contract has no owner regardless of who deployed it.</p>
+    <p class="meta"><b>186 tests</b>, including a mainnet-fork rehearsal that locked the real
+      LUV/WETH position and proved it comes back to the wei — and one open item stated plainly:
+      the code is self-audited, not yet independently audited.</p>
+  </section>
+
+  <section>
+    <h2>verify it yourself — the addresses</h2>
+    <div class="row">
+      <div class="sig">the locker — source verified (the green checkmark)</div>
+      <div id="c-locker" class="ok"></div>
+      <div class="sig">the LUV/WETH pair — Uniswap V2, where the price is created</div>
+      <div id="c-pair" class="ok"></div>
+      <div class="sig">the LUV token</div>
+      <div id="c-luv" class="ok"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>the paper trail — transactions, not claims</h2>
+    <div id="trail"></div>
+    <p class="meta">Source, tests and deployment report:
+      <a class="lk" target="_blank" rel="noopener"
+        href="https://github.com/SHAMBA-LUV/liq-locker">github.com/SHAMBA-LUV/liq-locker</a></p>
+  </section>
+
+  <footer>
+    <a class="lk" href="/">SHAMBA LUV</a> · <a class="lk" href="/faq.html">FAQ</a> ·
+    <a class="lk" href="/view.html">the price of LUV</a> ·
+    <a class="lk" href="/engine.html">the engine</a> ·
+    <span>1 LUV === 1 LUV</span>
+  </footer>
+</main>
+<script src="liqlock.js"></script>
+</body>
+</html>
