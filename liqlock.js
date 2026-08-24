@@ -80,30 +80,42 @@ async function refresh() {
     const pct = circulating > 0n ? Number(locked) / Number(circulating) * 100 : 0;
 
     $("s-locks").textContent = count.toString();
-    $("s-locked").textContent = `${locked} LP wei  (≈ ${fmt18(locked)} LP)`;
-    $("s-pct").textContent = `${(pct === 0 ? "0" : pct < 0.01 ? pct.toExponential(2) : pct.toFixed(4))} % of all circulating LUV/WETH liquidity`;
-    $("s-treasury").textContent = `${treasuryLP} LP wei  (≈ ${fmt18(treasuryLP)} LP) still unlocked in the treasury`;
-    $("s-read").textContent = `read live at ${new Date().toISOString()} — reload to re-ask the chain`;
+    $("s-locked").textContent = `${fmt18(locked, locked < 10n ** 18n ? 6 : 3)} LP`;
+    $("s-pct").textContent = pct === 0 ? "0 %" : pct < 0.01 ? `${pct.toExponential(1)} %` : `${pct.toFixed(2)} %`;
+    $("s-treasury").textContent = `Locked, exactly: ${locked} LP wei. Treasury still holds ${fmt18(treasuryLP, 3)} LP unlocked (${treasuryLP} wei).`;
+    $("s-read").textContent = `read live from Ethereum at ${new Date().toUTCString()} — reload to re-ask the chain`;
 
     const box = $("locks");
     box.replaceChildren();
-    if (count === 0n) { box.append(el("p", "muted", "no locks yet")); return; }
+    if (count === 0n) { box.append(el("p", "fine", "no locks yet")); return; }
     for (let id = 0n; id < count; id++) {
       const w = words(await call(LOCKER, SEL.lock_at + pad(id)));
       const [token, beneficiary, amount, unlockAt, withdrawn] = [addr(w[0]), addr(w[1]), w[2], Number(w[3]), w[4] !== 0n];
       const [secsLeft, blocksLeft] = words(await call(LOCKER, SEL.time_remaining + pad(id)));
       const isLocked = words(await call(LOCKER, SEL.is_locked + pad(id)))[0] !== 0n;
       const leftDays = Number(secsLeft) / 86400;
-      const row = el("div", "row");
-      row.append(el("div", "sig", `lock #${id} — ${fmt18(amount)} LP (${amount} wei)`));
-      const meta = el("div", isLocked ? "ok" : "muted");
-      meta.append(
-        `${withdrawn ? "withdrawn" : isLocked ? "🔒 LOCKED" : "matured, unclaimed"}  ·  `
-        + `opens ${new Date(unlockAt * 1000).toISOString()}  ·  ${leftDays.toFixed(1)} days left`
-        + (blocksLeft > 0n ? `  ·  block gate: ${blocksLeft} blocks` : "  ·  time gate only")
-        + `  ·  beneficiary ${beneficiary.slice(0, 10)}…`);
-      row.append(meta);
-      box.append(row);
+      const opens = new Date(unlockAt * 1000).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+
+      const head = el("div", "head");
+      head.append(el("span", "dot"), el("span", "kicker", `LOCK #${id}`));
+      head.append(el("span", isLocked ? "net state-ok" : "net state-muted",
+        withdrawn ? "withdrawn" : isLocked ? "🔒 LOCKED" : "matured, unclaimed"));
+      box.append(head);
+
+      const grid = el("div", "grid");
+      const cell = (label, value, cls) => {
+        const c = el("div", "cell");
+        c.append(el("span", "label", label), el("span", "value " + (cls || ""), value));
+        return c;
+      };
+      grid.append(
+        cell("Amount", `${fmt18(amount, amount < 10n ** 18n ? 6 : 3)} LP`, "green"),
+        cell("Opens", opens),
+        cell("Days left", leftDays.toFixed(1), "big goldc"),
+        cell("Gates", blocksLeft > 0n ? "time + block height" : "time"));
+      box.append(grid);
+      box.append(el("p", "fine",
+        `Exactly ${amount} LP wei · beneficiary ${beneficiary} · unlocks ${new Date(unlockAt * 1000).toUTCString()}`));
     }
   } catch (e) {
     $("s-read").textContent = `read failed: ${e.message} — the chain is the source; reload to try again`;
@@ -116,12 +128,12 @@ function mountStatic() {
   $("c-luv").replaceChildren(link(`${EXPLORER}/token/${LUV}`, LUV));
   const trail = $("trail");
   for (const t of TRAIL) {
-    const row = el("div", "row");
-    row.append(el("div", "sig", t.label));
-    const meta = el("div", "ok");
-    meta.append(`block ${t.block} · `);
-    meta.append(link(`${EXPLORER}/tx/${t.hash}`, t.hash.slice(0, 22) + "… ↗"));
-    row.append(meta);
+    const row = el("div", "trailrow");
+    row.append(el("span", "what", t.label));
+    const who = el("span", "who");
+    who.append(`block ${t.block} · `);
+    who.append(link(`${EXPLORER}/tx/${t.hash}`, t.hash.slice(0, 22) + "… ↗"));
+    row.append(who);
     trail.append(row);
   }
 }
