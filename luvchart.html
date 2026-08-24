@@ -51,8 +51,8 @@
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--ink);color:var(--cream);font-family:var(--sans);line-height:1.65;-webkit-font-smoothing:antialiased}
-a{color:var(--blush)}
-a:hover{color:var(--rose)}
+a{color:var(--blush);transition:color .15s,border-color .15s,text-decoration-color .15s}
+a:hover{color:#0ecb81;border-bottom-color:#0ecb81;text-decoration-color:#0ecb81}
 :focus-visible{outline:2px solid var(--rose);outline-offset:3px;border-radius:2px}
 .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
 .narrow{max-width:820px;margin:0 auto}
@@ -62,7 +62,7 @@ header{border-bottom:1px solid var(--seam)}
 .brand b{color:var(--rose)}
 .bar .spacer{flex:1}
 .bar a.back{font-family:var(--mono);font-size:12px;text-decoration:none;color:var(--dim)}
-.bar a.back:hover{color:var(--rose)}
+.bar a.back:hover{color:#0ecb81}
 
 /* ── the title carries the mark ── the chart is named for the coin, so the coin leads ── */
 h1{margin:46px 0 8px;text-align:center;font-size:clamp(30px,5.6vw,50px);font-weight:800;
