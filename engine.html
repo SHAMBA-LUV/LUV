@@ -150,7 +150,8 @@ h1{margin:52px 0 6px;text-align:center;font-size:clamp(30px,5.6vw,46px);font-wei
 .paper ul.organs a.src:hover{color:var(--rose);border-bottom-color:var(--rose)}
 /* ── the LUV card: the logo is the swap ── */
 .luvcard{display:flex;flex-wrap:wrap;align-items:center;gap:20px;border:1px solid var(--seam);border-radius:18px;
-  background:linear-gradient(160deg,var(--wine),rgba(0,0,0,.28));padding:20px 22px;margin:26px 0 8px}
+  background:linear-gradient(160deg,var(--wine),rgba(0,0,0,.28));padding:20px 22px;margin:26px 0 8px;transition:border-color .18s,box-shadow .18s}
+.luvcard:hover{border-color:#0ecb81;box-shadow:0 0 0 2px rgba(14,203,129,.55),0 0 26px 6px rgba(14,203,129,.35)}
 .luvcard .coin{flex:0 0 auto;display:block;border-radius:50%;transition:transform .2s ease,box-shadow .3s ease;
   box-shadow:0 14px 34px -14px rgba(227,178,95,.85)}
 .luvcard .coin:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 20px 46px -14px rgba(255,0,110,.95)}
