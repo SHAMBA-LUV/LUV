@@ -96,9 +96,9 @@
   var INDICATORS = [["ribbon", "EMA ribbon"], ["bb", "Bollinger"], ["fib", "Fib"], ["vol", "Volume"], ["rsi", "RSI"], ["macd", "MACD"], ["pressure", "Pressure"], ["reflect", "Reflections"], ["x", "× from launch"]];
 
   // ── state ──
-  var S = { log: false, unit: "t1usdc", range: 7 * 86400e3, interval: 3600e3, ind: { ribbon: false, bb: false, fib: false, vol: true, rsi: false, macd: false, pressure: false, reflect: false, x: true }, type: "candles" };
-  try { var saved = JSON.parse(localStorage.getItem("luvchart-v3") || "null"); if (saved) { if (UNITS[saved.unit]) S.unit = saved.unit; if (saved.interval) S.interval = saved.interval; if (saved.ind) for (var k in saved.ind) if (k in S.ind) S.ind[k] = !!saved.ind[k]; if (saved.type) S.type = saved.type; S.log = !!saved.log; if (saved.range) S.range = saved.range === "inf" ? Infinity : saved.range; } } catch (e) {}
-  function save() { try { localStorage.setItem("luvchart-v3", JSON.stringify({ unit: S.unit, interval: S.interval, ind: S.ind, type: S.type, log: S.log, range: S.range === Infinity ? "inf" : S.range })); } catch (e) {} }
+  var S = { log: false, unit: "t1usdc", range: 7 * 86400e3, interval: 3600e3, ind: { ribbon: false, bb: false, fib: false, vol: true, rsi: false, macd: false, pressure: false, reflect: false, x: false }, type: "candles" };
+  try { var saved = JSON.parse(localStorage.getItem("luvchart-v4") || "null"); if (saved) { if (UNITS[saved.unit]) S.unit = saved.unit; if (saved.interval) S.interval = saved.interval; if (saved.ind) for (var k in saved.ind) if (k in S.ind) S.ind[k] = !!saved.ind[k]; if (saved.type) S.type = saved.type; S.log = !!saved.log; if (saved.range) S.range = saved.range === "inf" ? Infinity : saved.range; } } catch (e) {}
+  function save() { try { localStorage.setItem("luvchart-v4", JSON.stringify({ unit: S.unit, interval: S.interval, ind: S.ind, type: S.type, log: S.log, range: S.range === Infinity ? "inf" : S.range })); } catch (e) {} }
 
   var market = null, tape = [], bars = [], view = { start: 0, count: 120 }, hover = null, dragging = null;
 
