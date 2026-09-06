@@ -1,1134 +1,240 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FAQ — SHAMBA LUV</title>
-<meta name="description" content="SHAMBA LUV frequently asked questions — emotonomics, the 1-trillion-LUV airdrop, your smart wallet, earning LUV, and the contracts.">
+<meta name="description" content="SHAMBA LUV answered: what it is, how to buy on Uniswap, the 3:1:1 fee, the supply, the locked liquidity, every contract address, the audit, the open list, and where all of it is published on GitHub.">
 <link rel="canonical" href="https://luv.pythai.net/faq.html">
+<meta name="keywords" content="SHAMBA LUV FAQ, how to buy LUV, LUV contract address, LUV fees 3:1:1, reflections, liquidity locked, LUV audit, Uniswap slippage">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+<meta name="author" content="SHAMBA LUV">
+<meta name="theme-color" content="#0b0712">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SHAMBA LUV">
+<meta property="og:locale" content="en_US">
+<meta property="og:url" content="https://luv.pythai.net/faq.html">
+<meta property="og:title" content="FAQ — SHAMBA LUV">
+<meta property="og:description" content="SHAMBA LUV answered: what it is, how to buy on Uniswap, the 3:1:1 fee, the supply, the locked liquidity, every contract address, the audit, the open list, and where all of it is published on GitHub.">
 <meta property="og:image" content="https://luv.pythai.net/gfx/og-card.png">
+<meta property="og:image:secure_url" content="https://luv.pythai.net/gfx/og-card.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="SHAMBA LUV — the gold binary heart">
-<meta property="og:locale" content="en_US">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://luv.pythai.net/gfx/og-card.png">
+<meta property="og:image:alt" content="SHAMBA LUV: the gold binary heart. LUV is priceless. 1 LUV == 1 LUV.">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@shambaluv">
-<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
-<meta name="theme-color" content="#160a0f">
-<script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebPage","name":"FAQ \u2014 SHAMBA LUV","description":"SHAMBA LUV frequently asked questions \u2014 emotonomics, the 1-trillion-LUV airdrop, your smart wallet, earning LUV, and the contracts.","url":"https://luv.pythai.net/faq.html","mainEntityOfPage":{"@type":"WebPage","@id":"https://luv.pythai.net/faq.html"},"author":{"@type":"Organization","name":"SHAMBA LUV","url":"https://luv.pythai.net/","logo":{"@type":"ImageObject","url":"https://luv.pythai.net/gfx/logo.png"}},"publisher":{"@type":"Organization","name":"SHAMBA LUV","url":"https://luv.pythai.net/","logo":{"@type":"ImageObject","url":"https://luv.pythai.net/gfx/logo.png"}},"image":"https://luv.pythai.net/gfx/logo.png","inLanguage":"en","isPartOf":{"@type":"WebSite","name":"SHAMBA LUV","url":"https://luv.pythai.net/"}}
-</script>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E">
-<style>
-:root{
-  --ink:#160a0f;--wine:#2b111c;--seam:#4a1f30;--rose:#ff4d6d;--pink:#ff006e;--purple:#8338ec;
-  --blush:#ffb3c1;--cream:#f6e7eb;--dim:#b98da0;--gold:#e3b25f;
-  --mono:ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace;
-  --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
-}
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--ink);color:var(--cream);font-family:var(--sans);line-height:1.65;-webkit-font-smoothing:antialiased}
-a{color:var(--blush)}
-a:hover{color:var(--rose)}
-:focus-visible{outline:2px solid var(--rose);outline-offset:3px;border-radius:2px}
-.wrap{max-width:820px;margin:0 auto;padding:0 24px}
-header{border-bottom:1px solid var(--seam)}
-.bar{display:flex;align-items:center;gap:14px;padding:16px 0}
-.brand{font-family:var(--mono);font-size:15px;letter-spacing:.14em;color:var(--cream);text-decoration:none}
-.brand b{color:var(--rose)}
-.bar .spacer{flex:1}
-.bar a.back{font-family:var(--mono);font-size:12px;text-decoration:none;color:var(--dim)}
-.bar a.back:hover{color:var(--rose)}
-h1{margin:52px 0 6px;text-align:center;font-size:clamp(32px,6vw,52px);font-weight:800;
-  background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
-.sub{text-align:center;color:var(--dim);margin-bottom:40px}
-h2{font-family:var(--mono);font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--rose);margin:44px 0 14px}
-h2.gold{color:var(--gold)}
-details{border:1px solid var(--seam);border-radius:10px;background:var(--wine);margin-bottom:10px;overflow:hidden}
-summary{cursor:pointer;padding:16px 20px;font-weight:650;font-size:15px;list-style:none;display:flex;gap:12px;align-items:baseline}
-summary::-webkit-details-marker{display:none}
-summary::before{content:'❤';color:var(--seam);font-size:12px;flex:none;transition:color .15s}
-details[open] summary::before{content:'❤';color:var(--rose)}
-summary:hover{color:var(--blush)}
-details .a{padding:0 20px 18px 44px;color:var(--dim);font-size:14.5px}
-details .a b{color:var(--blush);font-weight:600}
-details .a .g{color:var(--gold)}
-details .a code{font-family:var(--mono);font-size:12.5px;color:var(--blush);word-break:break-all}
-details .a p+p{margin-top:8px}
-footer{margin-top:64px;border-top:1px solid var(--seam);padding:26px 0 44px}
-footer .wrap{display:flex;flex-wrap:wrap;gap:18px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--dim)}
-footer a{text-decoration:none}
-footer .spacer{flex:1}
-footer .brandmark{display:inline-flex;align-items:center;gap:7px;color:var(--dim)}
-footer .brandmark img{height:14px;width:auto;display:block;opacity:.85;transition:opacity .15s}
-footer .brandmark:hover{color:var(--cream)}
-footer .brandmark:hover img{opacity:1}
-/* official brand marks in-line with explorer/market links */
-a.exlink img,.marketrow img{height:16px;width:auto;vertical-align:-4px}
-.marketrow{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-top:6px}
-.marketrow a{display:inline-flex;align-items:center;gap:7px;color:var(--blush)}
-
-.mmoffer{display:flex;flex-wrap:wrap;gap:12px;align-items:center;border:1px solid var(--seam);
-  border-radius:12px;background:rgba(0,0,0,.18);padding:14px 16px;margin:4px 0 14px}
-.mmoffer span{flex:1 1 260px;min-width:220px;font-size:12.5px;color:var(--dim);line-height:1.6}
-.mmbtn{display:inline-flex;align-items:center;gap:8px;cursor:pointer;background:transparent;
-  font-family:var(--mono);line-height:normal}
-.mmbtn img{display:block;border-radius:50%}
-.mmcard{position:relative;border:1px solid var(--seam,#4a1f30);border-radius:14px;background:rgba(0,0,0,.25);
-  padding:16px 18px;margin:14px 0;transition:border-color .18s,box-shadow .18s}
-.mmcard:hover{border-color:#0ecb81 !important;box-shadow:0 0 0 2px rgba(14,203,129,.55),0 0 26px 6px rgba(14,203,129,.35)}
-.mmcard-head{font-size:1.05em;margin:0 0 6px}
-.mmcard-body{margin:0 0 12px}
-.mmcard-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-
-
-.brandrow{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:center;
-  border:1px solid var(--seam);border-radius:12px;background:rgba(0,0,0,.14);padding:13px 16px;margin:6px 0 12px}
-.brandrow .brandmark{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:var(--dim);
-  font-family:var(--mono);font-size:11px;letter-spacing:.08em}
-.brandrow .brandmark img{display:block;opacity:.95}
-.brandrow .luvmark img{border-radius:50%}
-.brandrow a.brandmark:hover{color:var(--rose)}
-.brandrow .bsep{color:var(--seam)}
-
-
-/* every link declares itself: candle green on hover */
-a{transition:color .15s,border-color .15s,text-decoration-color .15s}
-a:hover{color:#0ecb81 !important;border-bottom-color:#0ecb81 !important;text-decoration-color:#0ecb81 !important}
-a:hover b,a:hover code,a:hover span{color:#0ecb81 !important}
-</style>
-
-<meta property="og:title" content="FAQ — SHAMBA LUV">
-<meta property="og:description" content="SHAMBA LUV frequently asked questions — emotonomics, the 1-trillion-LUV airdrop, your smart wallet, earning LUV, and the contracts.">
-<meta property="og:url" content="https://luv.pythai.net/faq.html">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="SHAMBA LUV">
+<meta name="twitter:creator" content="@shambaluv">
 <meta name="twitter:title" content="FAQ — SHAMBA LUV">
-<meta name="twitter:description" content="SHAMBA LUV frequently asked questions — emotonomics, the 1-trillion-LUV airdrop, your smart wallet, earning LUV, and the contracts.">
+<meta name="twitter:description" content="SHAMBA LUV answered: what it is, how to buy on Uniswap, the 3:1:1 fee, the supply, the locked liquidity, every contract address, the audit, the open list, and where all of it is published on GitHub.">
+<meta name="twitter:image" content="https://luv.pythai.net/gfx/og-card.png">
+<meta name="twitter:image:alt" content="SHAMBA LUV: the gold binary heart. LUV is priceless. 1 LUV == 1 LUV.">
+<link rel="me" href="https://x.com/shambaluv">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://luv.pythai.net/"},{"@type":"ListItem","position":2,"name":"FAQ","item":"https://luv.pythai.net/faq.html"}]},{"@type":"FAQPage","url":"https://luv.pythai.net/faq.html","mainEntity":[{"@type":"Question","name":"What is SHAMBA LUV?","acceptedAnswer":{"@type":"Answer","text":"SHAMBA LUV, ticker LUV, is a reflection token on Ethereum. Holding it earns it: 3% of every market trade is paid out to all holders in proportion to what they hold. Wallet to wallet it has no fee and no minimum, so one LUV is always exactly one LUV. It is the unit of emotonomics, the idea that attention and connection are where value comes from."}},{"@type":"Question","name":"What does \"LUV is priceless\" mean if it has a price?","acceptedAnswer":{"@type":"Answer","text":"Both are true, in order. LUV entered the world priceless: a free trillion to everyone who arrived, in as many hands as would hold it. Then the market opened and the pair gave it a price. Phase 1 was priceless, Phase 2 was value, Phase 3 is the price. The price is an expression of the attention LUV gathered; it did not come first."}},{"@type":"Question","name":"What is \"1 LUV == 1 LUV\"?","acceptedAnswer":{"@type":"Answer","text":"A transfer between wallets carries no fee and has no minimum, so the amount sent is the amount received, to all eighteen decimals. A million LUV is the standard gesture. A trillion LUV is the measure of value."}},{"@type":"Question","name":"How can I get some LUV?","acceptedAnswer":{"@type":"Answer","text":"On Uniswap. This button opens the swap preset from USDC to LUV on Ethereum mainnet:"}},{"@type":"Question","name":"Why does a token scanner flag LUV?","acceptedAnswer":{"@type":"Answer","text":"Automated scanners flag every fee-on-transfer token, because a fee looks like a tax to a script. The answer is not a badge but two checks you can make yourself: the source is verified on Etherscan and matches the deployed bytecode, and the code contains no blacklist, no pause, no mint, no sell block, and fees that can only be lowered. The liquidity is also locked, which is what most scanners actually want to see."}},{"@type":"Question","name":"Can I see the price in MetaMask or a wallet?","acceptedAnswer":{"@type":"Answer","text":"Add the token by address and most wallets will show a USD value once their price feed indexes the pair. The authoritative price is on this site's chart, read from the pair reserves every minute, and on Uniswap itself."}},{"@type":"Question","name":"What are the fees?","acceptedAnswer":{"@type":"Answer","text":"5% on market trades, buys and sells through the pair, split 3 : 1 : 1. Three points reflect to holders. One point is added to liquidity, so every trade permanently deepens the pool. One point funds the team, and the team spends only by two-of-three consensus across its marketing, community and development components. Wallet-to-wallet transfers carry no fee."}},{"@type":"Question","name":"How do reflections actually reach my wallet?","acceptedAnswer":{"@type":"Answer","text":"They do not arrive as a transfer. The contract keeps a reflected supply and a true supply; your balance is your share of the reflected total. When a trade's fee shrinks the reflected supply, every holder's share grows in the same block. Your balance simply reads higher. The pair, the burn address and the platform contracts are excluded, so reflections go only to people."}},{"@type":"Question","name":"What is the total supply?","acceptedAnswer":{"@type":"Answer","text":"111,111,111,111,111,111 LUV, the eighteen-digit repunit, about 111 quadrillion. It was minted once at genesis and there is no mint function, so it can never grow. About 4.98 quadrillion has been sent to the burn address and excluded from rewards, so it never earns reflections and never comes back."}},{"@type":"Question","name":"Is there a maximum transaction?","acceptedAnswer":{"@type":"Answer","text":"Yes: 1% of supply per transaction, about 1.11 quadrillion LUV. It is the floor the contract allows and it can never be set lower. The pair, the treasury and the platform contracts are exempt so that liquidity operations work in one transaction."}},{"@type":"Question","name":"Where is the rest of the supply?","acceptedAnswer":{"@type":"Answer","text":"The pool holds what a Uniswap V2 pair can hold: it was seeded at the protocol maximum of 2¹¹²−1 wei, about 5.19 quadrillion LUV, because V2 reserves are 112-bit numbers and the full allocation cannot fit one pair. The treasury holds the remaining circulating supply and backs the market as depth grows. Marketing and community allocations are earmarked for the rewritten vault and are listed under the open list below until they are locked."}},{"@type":"Question","name":"Is the liquidity locked?","acceptedAnswer":{"@type":"Answer","text":"Yes. 100% of the circulating LUV/WETH LP is held by an ownerless, extend-only timelock at 0x111111f70cb3469B5285862d7a4e7Cb53d04f502. Lock #1 holds 16,419,484.36 LP, the full position, and matures 2026-11-22. The treasury's LP balance is exactly zero. Nobody, including the team, can bring the maturity forward; the beneficiary can only extend it."}},{"@type":"Question","name":"What is the LUVlocker, and how is it different?","acceptedAnswer":{"@type":"Answer","text":"The liq-locker holds LP tokens. The LUVlocker is a vault for LUV itself: principal on an extend-only timer, reflections harvestable as interest. The version deployed on 2026-07-25 has a High-severity finding from the August audit and holds zero LUV; it will not be used for real supply. The rewrite, luv-locker, fixes the finding, removes the owner, and is the route the earmarked supply will take once its remaining tests and an independent audit are done."}},{"@type":"Question","name":"The full ledger: every address, in the open","acceptedAnswer":{"@type":"Answer","text":"Deployer, owner and treasury are bankon.eth, 0x10f7Ee226B16bea7f365Dc1eDEF159Fc1957D169. Salt luv.launcher.6aodu. Every contract is source-verified on Etherscan."}},{"@type":"Question","name":"Is the code audited and open?","acceptedAnswer":{"@type":"Answer","text":"Open, yes: every contract is on GitHub and verified on Etherscan. Audited, yes, in the honest sense: a full internal audit was published in August 2026, severity-ranked, with each finding tagged live or pre-deploy, and 174 curated tests are listed one by one with their status. Where a finding needed a rewrite, the rewrite is its own repository with its own tests. No independent third-party audit has been paid for yet, and the documents say so rather than imply otherwise."}},{"@type":"Question","name":"Who controls the token, and can they rug it?","acceptedAnswer":{"@type":"Answer","text":"The owner is the treasury, bankon.eth, and ownership has not been renounced. What the owner can do is bounded by the code: lower fees, set exemptions, set the pair. What the owner cannot do: mint, pause, blacklist, block sells, raise fees, or unlock the liquidity. The liquidity is in a contract with no owner at all. That is the difference between a promise and a lock."}},{"@type":"Question","name":"What is the cypherpunk4096 standard?","acceptedAnswer":{"@type":"Answer","text":"Five commitments LUV builds to: determinism as identity, zero dependencies, verification over trust, precision without approximation, and quantum-migratable signatures. Upgradeable proxies, admin backdoors, pausable custody, remote fetches and unverified bytecode fail the mark. \"Verified\" is a reserved word on this site: it means the Etherscan green checkmark, and nothing else."}},{"@type":"Question","name":"Is the free airdrop still open?","acceptedAnswer":{"@type":"Answer","text":"The trillion-LUV gesture closed after Phase 1. Signing in still provisions a wallet, and holding LUV still earns reflections on every trade. The airdrop contract remains on chain with its claims recorded."}},{"@type":"Question","name":"What is the LUVdrip?","acceptedAnswer":{"@type":"Answer","text":"A million LUV a day for every signed-in participant, flowing at 11.574 LUV per second, capped daily. It accrues gas-free and is redeemed in one batched transaction when you choose. The meter is live; the on-chain payout waits on a new distributor deployment, listed on the open list below. Nothing accrued expires while you wait."}},{"@type":"Question","name":"What wallet do I get when I sign in, and who holds the key?","acceptedAnswer":{"@type":"Answer","text":"An ERC-4337 smart account, provisioned at sign-in and yours alone. You can export the key; the platform keeps it encrypted only so it can deliver LUV to you, and firstLUV explains why you should keep it private or place it in a trust. You can also sign in with MetaMask and use your own address; the gesture rail is social-gated because a bare wallet is trivial to sybil."}},{"@type":"Question","name":"Which chain is LUV on?","acceptedAnswer":{"@type":"Answer","text":"Ethereum mainnet, only. The address is deterministic: the Create3d factory sits at one address on Ethereum, Optimism, Arbitrum, Base and Polygon, and the LUV address is reserved for the treasury on each of them. When LUV deploys to another chain it will be at the address you already know, and until then any \"LUV\" at a different address on any chain is not LUV."}},{"@type":"Question","name":"The distributor that can pay the LUVdrip","acceptedAnswer":{"@type":"Answer","text":"Today: the live IncentiveDistributor holds zero LUV and predates the redeem rail, and it is deliberately non-upgradeable, so a new deployment is the only honest route. What proves it: the new contract verified, and two live redemptions with the Redeemed event naming who paid the gas."}},{"@type":"Question","name":"The earmarked supply locked","acceptedAnswer":{"@type":"Answer","text":"Today: marketing and community allocations are earmarked, not locked, because the original vault has a High-severity finding and will not be used. The rewrite needs stateful invariant fuzzing, a fork test against the real token, and an independent audit. What proves it: a deposit transaction, the vault balance, and the unlock time."}},{"@type":"Question","name":"The still-funded airdrop contract paused or withdrawn","acceptedAnswer":{"@type":"Answer","text":"Today: the closed airdrop contract still holds a balance and its claim function trusts the signer's voucher for the amount. The audit asks the treasury to pause it or withdraw to treasury. What proves it: the Paused event or the withdrawal transaction."}},{"@type":"Question","name":"An independent audit","acceptedAnswer":{"@type":"Answer","text":"Today: the audits are internal and published in full. What proves it: a third-party report, linked from here."}},{"@type":"Question","name":"Will the Polygon LUV drop be honoured on Ethereum?","acceptedAnswer":{"@type":"Answer","text":"YES. 1 LUV == 1 LUV. On the live Ethereum contract, 0x2711111111683B8708cb9a48cBf36a51315F8254."}}]}]}</script>
+
+<link rel="icon" href="gfx/heart.svg" type="image/svg+xml">
+<link rel="stylesheet" href="site.css?v=7">
 </head>
-<body>
-
-<header>
-  <div class="wrap bar">
-    <a class="brand" href="/">❤ SHAMBA <b>LUV</b></a>
-    <span class="spacer"></span>
-    <a class="back" href="/">← back to the doorway</a>
-  </div>
-</header>
-
-<main class="wrap">
-  <h1>FAQ</h1>
-  <div class="sub">✨ everything about LUV, the airdrop, and your wallet ✨</div>
-
-  <h2>LUV &amp; emotonomics</h2>
-
-  <details open>
-    <summary>What is SHAMBA LUV?</summary>
-    <div class="a"><p><b>SHAMBA LUV (LUV)</b> is the world's first emotonomic protocol — a token where
-    <b>gestures, attention, and community impact</b> are the units of value. Every transfer of LUV is a
-    digital gesture; the network is designed for <b>abundance</b>. SHAMBA LUV — <b>sharing is caring</b>.
-    Hold LUV to watch LUV grow.</p>
-    <p>Read the full vision: <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/EMOTONOMICS.md" rel="noopener">EMOTONOMICS</a> ·
-    <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/LUVPAPER.md" rel="noopener">the LUVPAPER</a> ·
-    <a href="sentiment.html">SENTIMENT</a>.</p></div>
-  </details>
-
-  <details>
-    <summary>What is "Phase 1 — LUV is priceless"?</summary>
-    <div class="a"><p>Phase 1 seeds the emotional economy: LUV spreads person-to-person as a gesture —
-    <b>1 trillion LUV free to every real new signup</b> — before market value enters the picture. Value in
-    emotonomics flows through <b>attention → gestures → impact</b>; the seeding phase maximizes all three.
-    Later phases (see the whitepaper) bring the sentiment layer and cross-chain expansion.</p></div>
-  </details>
-
-  <details>
-    <summary>What is the total supply?</summary>
-    <div class="a"><p><b>111,111,111,111,111,111.111111111111111111 LUV</b> — 111 quadrillion, a
-    <b>repunit of ones</b> (eighteen ones, a point, eighteen ones), fixed at genesis. Nothing else will
-    ever be minted.</p></div>
-  </details>
-
-  <details>
-    <summary>What is the circulating supply — is there real liquidity?</summary>
-    <div class="a"><p><b>Total supply is <b class="g">111.111 quadrillion LUV</b></b> — precisely
-    111,111,111,111,111,111 — minted once at genesis with no mint function. <b>Total supply is not the
-    number that matters.</b> Subtract what has been burned and you get the figure every ratio here is
-    built from:</p>
-
-    <p style="font-family:var(--mono);font-size:13.5px;line-height:2;border-left:2px solid rgba(126,226,160,.5);padding-left:16px">
-      total supply &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;111,111,111,111,111,111<br>
-      − burned to <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0x000000000000000000000000000000000000dEaD" rel="noopener">0x…dEaD</a> &nbsp;<b>4,980,559,643,425,538</b> &nbsp;(4.4825%)<br>
-      <b class="g">= circulating &nbsp;&nbsp;106,130,551,467,685,572</b> &nbsp;(95.5175%)
-    </p>
-
-    <p>Those LUV are <b>gone</b>: <code>0x…dEaD</code> has no key, the address is excluded from
-    reflections, and nothing can ever move them again. So they are subtracted, not counted — and
-    <b>circulating supply is the metric</b> here. Market cap is derived from circulating; a ratio
-    measured against total supply is flattered by tokens that can never trade, and we will not publish
-    one. <b>0x0 holds nothing</b> (checked), so the burn is the dEaD balance alone.</p>
-
-    <p>Of the total, <b>100 quadrillion — exactly 90.0000%</b> — is held by the
-    <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0x10f7Ee226B16bea7f365Dc1eDEF159Fc1957D169" rel="noopener">treasury</a>,
-    and the remaining <b class="g">11.1 quadrillion</b> is the team / founder startup allocation.
-    Every figure on this page is a balance you can read from the chain yourself; the links go to it.</p>
-
-    <p><b class="g">The treasury's 100 quadrillion is multichain liquidity, and it earns nothing.</b>
-    LUV deploys to the <b>same deterministic address on every chain</b>, and that allocation exists to
-    seed and deepen the pool wherever the market actually is — Polygon first, Ethereum now, others as
-    they earn it — rather than being pre-fragmented across venues or sold into the market.</p>
-
-    <p><b>It does not collect reflections.</b> The treasury address is
-    <b>excluded from reflection</b> on the token — <code>isExcludedFromReflection(0x10f7…D169)</code>
-    returns <b class="g">true</b>, which anyone can call on the verified contract. That is the whole
-    point: 90% of the supply takes <b>no share of the 3%</b>, so every reflection from every trade flows
-    to <b>circulating holders</b> instead of being absorbed by the largest balance on the chain. The
-    burn address and the pair are excluded for the same reason. <b>You are not diluted by the treasury.</b></p>
-
-    <p><b>Where it is going: the LUVlocker</b> — the treasury allocation is destined for the same
-    extend-only vault as the marketing and community allocations, so that "the treasury cannot dump" is
-    something you can check rather than something we say. <b>It is not there yet.</b> The
-    <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0xe07ACAde4bE2bbc264EA702880ed988EBae9B898" rel="noopener">LUVlocker</a>
-    holds <b>zero LUV today</b> — check it — and the treasury holds the 100 quadrillion at
-    <code>0x10f7…D169</code>. Earmarked is not locked, and a lock is a transaction anyone can verify.
-    When it exists, this page will link to it rather than describe it.</p>
-
-    <p><b>The 100 quadrillion is NOT in the liquidity pool</b>, and it cannot be. A Uniswap V2 pair
-    stores each reserve in a <code>uint112</code>, so the most LUV a pool can ever hold is
-    <b>2<sup>112</sup>−1 wei ≈ 5.192 quadrillion</b>. The pool was seeded at exactly that ceiling — the
-    Uniswap maximum for a liquidity addition — which is why the plan changed: the rest could not go in
-    if we wanted it to. This page said otherwise for a while. It was wrong, and the chain says so.</p>
-
-    <p><b>Every balance below was read from the chain</b> — <code>balanceOf</code> on the verified
-    token contract, at block <b>25,741,158</b> (2026-08-12 19:58 UTC). Each row links to the live
-    balance so you never have to take this page's word for it, and the last row is the
-    <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254#balances" rel="noopener">full
-    holders list</a> on Etherscan.</p>
-    <div style="overflow-x:auto">
-    <table style="width:100%;border-collapse:collapse;font-size:13px;margin:10px 0 16px">
-    <thead><tr style="text-align:left;border-bottom:1px solid var(--seam)">
-      <th style="padding:7px 8px">holder</th><th style="padding:7px 8px">LUV</th>
-      <th style="padding:7px 8px">% of supply</th><th style="padding:7px 8px">verify</th></tr></thead>
-    <tbody style="font-family:var(--mono)">
-    <tr style="border-bottom:1px solid rgba(74,31,48,.6)"><td style="padding:7px 8px">treasury</td>
-      <td style="padding:7px 8px">100,000,000,000,000,000</td><td style="padding:7px 8px">90.0000%</td>
-      <td style="padding:7px 8px"><a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0x10f7Ee226B16bea7f365Dc1eDEF159Fc1957D169" rel="noopener">0x10f7…D169 ↗</a></td></tr>
-    <tr style="border-bottom:1px solid rgba(74,31,48,.6)"><td style="padding:7px 8px">🔥 burned (dEaD)</td>
-      <td style="padding:7px 8px">4,980,559,643,425,539</td><td style="padding:7px 8px">4.4825%</td>
-      <td style="padding:7px 8px"><a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0x000000000000000000000000000000000000dEaD" rel="noopener">0x…dEaD ↗</a></td></tr>
-    <tr style="border-bottom:1px solid rgba(74,31,48,.6)"><td style="padding:7px 8px">LUV/WETH pair</td>
-      <td style="padding:7px 8px">1,590,658,735,764,078</td><td style="padding:7px 8px">1.4316%</td>
-      <td style="padding:7px 8px"><a href="https://etherscan.io/address/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31" rel="noopener">0x57D2…8a31 ↗</a></td></tr>
-    <tr style="border-bottom:1px solid rgba(74,31,48,.6)"><td style="padding:7px 8px">gesture pool (airdrop)</td>
-      <td style="padding:7px 8px">1,023,939,221,122,842</td><td style="padding:7px 8px">0.9215%</td>
-      <td style="padding:7px 8px"><a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0xdf2C1836550c5711EF9c021cB0de86241dc1DEf3" rel="noopener">0xdf2C…DEf3 ↗</a></td></tr>
-    <tr style="border-bottom:1px solid rgba(74,31,48,.6)"><td style="padding:7px 8px">LUVlocker</td>
-      <td style="padding:7px 8px"><b>0</b></td><td style="padding:7px 8px">0.0000%</td>
-      <td style="padding:7px 8px"><a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0xe07ACAde4bE2bbc264EA702880ed988EBae9B898" rel="noopener">0xe07A…B898 ↗</a></td></tr>
-    <tr><td style="padding:7px 8px">IncentiveDistributor</td>
-      <td style="padding:7px 8px"><b>0</b></td><td style="padding:7px 8px">0.0000%</td>
-      <td style="padding:7px 8px"><a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0x607E477AB12406A3294A7Ba63817103f92D8f806" rel="noopener">0x607E…f806 ↗</a></td></tr>
-    </tbody>
-    <tfoot><tr style="border-top:1px solid rgba(126,226,160,.5)">
-      <td style="padding:9px 8px"><b class="g">circulating</b> <span style="color:var(--dim)">(total − burned)</span></td>
-      <td style="padding:9px 8px;font-family:var(--mono)"><b class="g">106,130,551,467,685,572</b></td>
-      <td style="padding:9px 8px;font-family:var(--mono)"><b class="g">95.5175%</b></td>
-      <td style="padding:9px 8px;font-size:12px;color:var(--dim)">every ratio here is built from this</td></tr></tfoot>
-    </table></div>
-    <div class="brandrow">
-      <a class="brandmark" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254#code" target="_blank" rel="noopener" title="verified means the green checkmark: source verified on Etherscan · Powered by Etherscan.io APIs">
-        <img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="18"><span>verified ✅</span>
-      </a>
-      <span class="bsep">·</span>
-      <span class="brandmark luvmark"><img src="gfx/heart-512.png" alt="SHAMBA LUV" height="20"><span>SHAMBA LUV</span></span>
-      <span class="bsep">·</span>
-      <a class="brandmark" data-luv-emit href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="trade LUV on Uniswap">
-        <img src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap" height="18"><span>the DEX ↗</span>
-      </a>
-    </div>
-
-    <div class="mmoffer">
-      <button type="button" class="btn mmbtn" data-luv-watchasset>
-        <img src="gfx/heart-512.png" alt="" height="16" aria-hidden="true"> add LUV to MetaMask
-      </button>
-      <span>One click adds the verified contract <b>and</b> the LUV logo to your wallet, so LUV shows up
-      by name and face instead of as an unknown address. Nothing is signed, nothing is spent — it only
-      teaches your wallet what LUV is. The icon is served from this origin, not a third party.</span>
-    </div>
-
-    <p style="font-size:12.5px;color:var(--dim)">Balances move; the method does not. The
-    <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254#balances" rel="noopener">Etherscan
-    holders tab</a> is authoritative over this table — if the two ever disagree, the chain is right and
-    this page is stale.</p>
-
-    <p>What the pool actually holds, live:
-    <a href="https://etherscan.io/address/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31" rel="noopener">the
-    LUV/WETH pair</a> — see <a href="view.html">the live view</a> for the current figure to the wei.
-    That pool IS the open market: permissionless depth, anyone may buy or sell against ETH at any time,
-    at a price set purely by the pool — no allowlists, no market-maker gatekeeping.</p>
-
-    <p>The ETH pairing matters three ways. It's the <b>price anchor</b>: LUV's value is measured in hard
-    ETH terms. It's the <b>fee engine</b>: the pool is the trading counterparty, so buys and sells
-    against it are exactly where the 5% applies — <b>3% reflections · 1% liquidity · 1% team</b>, the
-    team point governed by the DAIO in three equal components (marketing, community, development) with
-    2-of-3 consensus before any spend. And it's the <b>reflection source</b>: every trade through the
-    pool feeds the reflections every holder earns.</p>
-
-    <p><b>Liquidity distribution follows value and price, across chains.</b> LUV deploys to the same
-    deterministic address on every chain, and the pool is deepened where the market actually is rather
-    than pre-fragmented across venues.</p>
-
-    <p><b>Polygon holders will be honoured</b> — that is its own topic, with the state of it
-    written out plainly: see <a href="#polygon">honouring the Polygon contract</a> below.</p>
-
-    <p>The startup allocation, split evenly four ways:</p>
-    <p><b>Founders</b> — 2.777 quadrillion — <b class="g">sold to raise the launch liquidity, with 100%
-    of the proceeds going into the pool</b> as the ETH paired against LUV. The founders took <b>nothing
-    off the table</b>: every wei raised became public, permissionless liquidity the whole community
-    trades against.<br>
-    <b>Treasury</b> — 2.777 quadrillion · liquid working capital<br>
-    <b>Marketing</b> — 2.777 quadrillion · <b>earmarked for the LUVlocker</b><br>
-    <b>Community</b> — <b class="g">2.778 quadrillion</b> · <b>earmarked for the LUVlocker</b> — the
-    split's indivisible rounding remainder is deliberately given to the community: sharing is caring,
-    down to the last wei ❤</p>
-
-    <p><b>The liquidity lock is SET — August 24, 2026 — and you can check it.</b> 100% of the
-    circulating LUV/WETH LP (16,419,484.36 LP — the treasury's entire position; its LP balance is now
-    <b>zero</b>) is locked in the ownerless
-    <a href="https://etherscan.io/address/0x111111f70cb3469B5285862d7a4e7Cb53d04f502#code" rel="noopener">liq-locker</a>
-    — verified source, <b>no owner, no pause, no early exit for anyone including the team</b>,
-    extend-only, maturing November 22, 2026. See the <a href="/liqlock.html">live proof page</a>
-    (your own browser reads the chain) or the
-    <a href="https://etherscan.io/tx/0xc2c3c73d2bfa216807e900abb17eff4a98808b45768cf11f23e829e52a10390d" rel="noopener">lock transaction</a> itself.</p>
-
-    <p><b>The supply lock follows, and we will not say it is set until it is.</b> The
-    <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0xe07ACAde4bE2bbc264EA702880ed988EBae9B898" rel="noopener">LUVlocker</a>
-    holds <b>zero LUV</b> today — check it. The marketing and community allocations are <em>earmarked</em>,
-    not locked. A lock is a transaction anyone can verify, so until that transaction exists the
-    honest word is "earmarked".</p>
-
-    <p><b>The 1-trillion drop is shut down — the model is now work for LUV.</b> LUV is earned, not
-    handed out: <b>1,000,000 LUV a day for logging in</b> (the LUVdrip — one sign-in starts a million
-    dripping and it keeps dripping for the whole 24 hours, tab open or closed, until the full million
-    has landed; the next million starts with your next log in), plus the earn rail for real contribution. The
-    <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0xdf2C1836550c5711EF9c021cB0de86241dc1DEf3" rel="noopener">gesture
-    pool</a> still holds its <b>~1.024 quadrillion LUV</b> from the free-gesture campaign; the campaign
-    that spent it is closed, and <b>that remainder is now being distributed through the
-    <a href="#luvdrip">LUVdrip</a></b> — a million a day at a time, to people who show up. Rates and limits are whatever the on-chain action registry says — it is the
-    final word.</p>
-
-    <p>The supply is <b>fixed</b> — no mint function — so the pool, the treasury and the startup
-    allocation are the entire economy, forever. Wallet-to-wallet transfers never touch the pool and cost
-    <b>0%</b>: 1 LUV is 1 LUV.</p></div>
-  </details>
-
-  <details id="liqlock">
-    <summary>🔒 Is the liquidity locked? Show me the details.</summary>
-    <div class="a">
-    <p><b>Yes — 100% of the circulating LUV/WETH liquidity is locked</b>, and every detail below is a
-    thing you can check, not a thing you have to believe. The live proof page —
-    <a href="/liqlock.html">liqlock.html</a> — reads all of it from Ethereum in <em>your</em> browser,
-    refreshing every 60 seconds, with no wallet and no consent asked.</p>
-
-    <p><b>The locker:</b>
-    <a href="https://etherscan.io/address/0x111111f70cb3469B5285862d7a4e7Cb53d04f502#code" rel="noopener"><code>0x111111f70cb3469B5285862d7a4e7Cb53d04f502</code></a>
-    — source <b>verified</b> (the green checkmark), and <b>ownerless by construction</b>: no pause, no
-    rescue, no setter, no proxy, no admin of any kind. Nobody — including the team that deployed it —
-    can open a lock early. A lock can be made <em>longer</em> by its beneficiary, never shorter by
-    anyone. It was deployed deterministically (CREATE3), so the same address is reproducible on every
-    EVM chain, claimable only by the treasury; the six leading 1s are a mined salt — the repunit,
-    LUV's own motif.</p>
-
-    <p><b>The lock:</b> lock #1 holds <b>16,419,484.359707 LP</b>
-    (<code>16419484359707141173121139</code> wei) — the treasury's entire position; its LP balance is
-    now exactly <b>0</b>. Locked August 24, 2026 in
-    <a href="https://etherscan.io/tx/0xc2c3c73d2bfa216807e900abb17eff4a98808b45768cf11f23e829e52a10390d" rel="noopener">tx 0xc2c3…390d</a>
-    (block 25,827,873), maturing <b>November 22, 2026, 21:57 UTC</b> — 90 days, the launch-sequence
-    cadence, with the re-lock plan (a +90-day <code>extend_default</code> before maturity) published in
-    advance. A 0.001-LP <b>dust rehearsal</b>
-    (<a href="https://etherscan.io/tx/0x30748af283c482f0bc8746e53f9f40ce1496ed4c6e64c46d5839a25f03670b72" rel="noopener">lock #0</a>)
-    proved the full path on mainnet before the position committed.</p>
-
-    <p><b>Check it yourself, right now:</b> on the locker's
-    <a href="https://etherscan.io/address/0x111111f70cb3469B5285862d7a4e7Cb53d04f502#readContract" rel="noopener">Read Contract</a>
-    tab, <code>total_locked(pair)</code> equals the pair's <code>balanceOf(locker)</code> to the wei,
-    and <code>is_locked(1)</code> returns true; on the
-    <a href="https://etherscan.io/token/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31#balances" rel="noopener">pair's holder list</a>
-    the locker holds it all. If any of that ever reads otherwise while the lock is live, the claim is
-    refuted — that falsifiability is the point.</p>
-
-    <p><b>Why some screeners still say "unlocked":</b> sites like Dexscreener only badge locks held by
-    commercial lockers on their internal allowlist (or burned LP). Ours is a sovereign, ownerless
-    contract they have not listed yet — structurally <em>stronger</em> custody than the badge-earning
-    lockers, which keep owners. Recognition requests are filed; meanwhile the chain, not the chip, is
-    the verification.</p>
-
-    <p><b>Everything, documented:</b> the contract, 186-test record and deployment report at
-    <a href="https://github.com/SHAMBA-LUV/liq-locker" rel="noopener">SHAMBA-LUV/liq-locker</a> · the
-    corpus document at
-    <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/LIQLOCK.md" rel="noopener">docs/LIQLOCK.md</a> ·
-    the doctrine in <a href="engine.html#s4">the engine paper §IV</a>. One open item, stated plainly:
-    the code is self-tested to 186 green, and not yet independently audited.</p></div>
-  </details>
-
-  <details>
-    <summary>What are the fees?</summary>
-    <div class="a"><p>A <b>5% fee on trades only</b> (buys and sells against the market):
-    <b class="g">3% reflections</b> to every holder, <b class="g">1% auto-liquidity</b>,
-    <b class="g">1% development</b>. Fees can only ever be <b>lowered</b>, never raised.</p>
-    <p>Fees accumulate and distribute together in one unified payout when they reach
-    <b>10 trillion LUV</b> — and anyone may trigger it. Sending LUV wallet-to-wallet is
-    <b>always 0%</b>.</p></div>
-  </details>
-
-  <details>
-    <summary>How do reflections work — how does holding earn LUV?</summary>
-    <div class="a"><p>LUV uses <b>RFI-style reflections</b>: 3% of every trade is redistributed to all
-    holders proportionally, with no staking and no claiming — your balance simply grows. Reflections are
-    solvent by construction (distributed via the supply rate, not a pool), batched into the unified
-    payout. Deep dive: <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/REFLECTIONS.md" rel="noopener">REFLECTIONS.md</a>.</p></div>
-  </details>
-
-  <details>
-    <summary>Is there a maximum transfer?</summary>
-    <div class="a"><p>Yes — <b>1% of supply per transfer</b>, an anti-whale guard. It's configurable in
-    basis points but <b>lower-bounded at 1%</b>, so trading can never be frozen by an admin.</p></div>
-  </details>
-
-  <h2>the free airdrop</h2>
-
-  <details>
-    <summary>How do I claim my 1 trillion LUV?</summary>
-    <div class="a"><p>Tap <b>COLLECT</b> and sign in with <b>Google or GitHub</b> — a social identity is
-    your fair-share pass to the gesture (<a href="#why-social">why social sign-in?</a>). A
-    <b>sovereign smart wallet</b> is minted for you (no seed phrase, no extension) and
-    <b>1,000,000,000,000 LUV</b> boards the LUVbus in your name. Then <b>claim it yourself</b> for a little
-    gas — or <b>ride the LUVbus free</b>: the moment any participant drives the bus, everyone waiting is
-    delivered in one transaction. One gesture per identity • <b>0% fee — the full trillion arrives</b>.</p></div>
-  </details>
-
-  <details>
-    <summary>Can I claim to my own existing wallet (MetaMask, Ledger, …)?</summary>
-    <div class="a"><p><b>Yes.</b> When you claim, there's an optional <b>receive address</b> field — paste
-    any address you control (MetaMask, a hardware wallet, wherever you keep your LUV) and your trillion is
-    delivered <b>straight there</b>. Leave it blank and it goes to the sovereign smart wallet the dapp
-    created for you. Either way <b>you</b> submit the claim from your own wallet and pay the gas, whenever
-    you like.</p>
-    <p>Your chosen receive address is <b>recorded by the dapp and correlated with your social account</b>
-    — the ledger is <b>social identity → receive address → amount delivered</b>. That link is what keeps
-    the gesture <b>one person → one wallet → one trillion</b>: your allocation is stamped with a single
-    stable claim key, so you can even change the receive address before claiming and it can never pay
-    twice — whichever address you finally point it at is the one and only delivery.</p></div>
-  </details>
-
-  <details id="why-social">
-    <summary>Why is the airdrop social sign-in only — can't I just connect MetaMask?</summary>
-    <div class="a"><p>You <b>can</b> sign in with MetaMask — your dashboard, your balance, the LUVbus, and
-    every <b>earn LUV</b> action all work on your own wallet. But the <b>free 1-trillion airdrop is social
-    sign-in only</b>, and that's a deliberate fairness choice, not a limitation.</p>
-    <p><b>A gesture is meant for a person.</b> Wallet addresses are free and infinite — one laptop can mint
-    ten thousand of them in a minute. If a wallet were the unit of the airdrop, a single farmer could spin
-    up thousands of addresses and drain the whole campaign, and real people would get nothing. That's the
-    <b>Sybil problem</b>, and an on-chain guard can't fix it: <code>hasClaimed</code> only stops one
-    <em>address</em> claiming twice — it can't tell that one person owns a thousand addresses.</p>
-    <p>A <b>social identity</b> (Google/GitHub) is far scarcer to create than a wallet, so it makes a
-    practical <b>one person → one wallet → one gesture</b> unit. It keeps the 1,000-gesture pool reaching
-    <b>1,000 different people</b> — which is the whole point of an emotonomic airdrop: spreading LUV
-    <em>wide</em>, not letting it concentrate. Your social login is used only as that proof of personhood;
-    a fresh sovereign wallet is minted for you and <b>the keys are yours</b>. Connection over
-    accumulation — that's LUV. ❤</p></div>
-  </details>
-
-  <details>
-    <summary>How and when does my LUV arrive?</summary>
-    <div class="a"><p>When you sign in, the platform <b>reserves your 1,000,000,000,000 LUV</b> and signs a
-    <b>claim voucher</b> in your name — it's yours, recorded and waiting. Your dashboard shows the state:
-    <b>reserved → claiming → delivered</b>.</p>
-    <p>You claim it <b>yourself, whenever you like</b>: press <b>⚡ claim</b>, your own wallet submits the
-    transaction, and the <b>full trillion arrives fee-free</b> from the funded <code>ShambaLuvAirdrop</code>
-    pool (the contract is fee-exempt, so nothing is skimmed). On-chain <code>hasClaimed</code> + a one-time
-    nonce make double-delivery impossible, and the pool is hard-capped at
-    <b>1 quadrillion LUV = 1,000 gestures</b>.</p></div>
-  </details>
-
-  <details>
-    <summary>Do I have to claim right away? What does it cost?</summary>
-    <div class="a"><p><b>No rush — your gesture never expires.</b> It stays reserved with your name on it
-    until you come for it. You pay only the small <b>network gas</b> for your own claim transaction; the
-    <b>1,000,000,000,000 LUV itself is free and arrives whole</b>. Claim today, or wait until gas is cheap
-    or until LUV is worth more to you — both are perfectly fine. When you claim, you choose whether it lands
-    in the wallet we created for you or in any address you paste in.</p></div>
-  </details>
-
-  <details>
-    <summary>How many airdrops are there?</summary>
-    <div class="a"><p>The campaign pool is hard-capped at <b>1 quadrillion LUV</b> — funded from the
-    treasury wallet's <b>2.777-quadrillion</b> startup allocation — which makes exactly
-    <b>1,000 gestures</b> of 1 trillion each. First come, first LUVed — the live counter is on the
-    front page.</p></div>
-  </details>
-
-  <h2>your wallet</h2>
-
-  <details>
-    <summary>What wallet do I get when I sign in with a social account?</summary>
-    <div class="a"><p>An <b>ERC-4337 smart account</b> (LuvAccount) — deployed from our own in-house,
-    zero-dependency contracts. It's <b>counterfactual</b>: your address exists (and receives LUV) before
-    any deployment; the account materializes on your first transaction. It's upgradeable to future
-    account standards, and gas for its operations can be <b>sponsored by the platform paymaster</b> — you
-    never need ETH to receive or hold LUV.</p></div>
-  </details>
-
-  <details>
-    <summary>Who controls my wallet's keys?</summary>
-    <div class="a"><p>Your account's owner key is generated in SHAMBA LUV's own infrastructure (no
-    third-party wallet vendor) and stored <b>encrypted at rest</b> (AES-256-GCM, per-user derived keys).
-    The roadmap moves spend authority fully to you — passkeys/user key-shares — and the smart account is
-    built so custody migrates <b>without changing your address or moving your LUV</b>.</p></div>
-  </details>
-
-  <details>
-    <summary>Can I use MetaMask instead?</summary>
-    <div class="a"><p>Yes — <b>Sign in with MetaMask</b> in the connect dialog: you sign a free message
-    (no transaction, no gas) proving the wallet is yours. Your own address becomes your account here —
-    balance, dashboard and earning actions included. Only the free airdrop requires a social sign-in
-    (see above).</p></div>
-  </details>
-
-  <details id="firstluv">
-    <summary>I just signed in — what do I do with my first LUV and my private key?</summary>
-    <div class="a"><p>Read <a href="firstluv.html"><b>firstLUV — your first LUV, and the key that holds it</b></a>. The short
-    version: <b>1 LUV === 1 LUV</b> — sharing never costs a fee, so share the LUV; <b>keep your private key private</b> — nobody
-    from SHAMBA LUV will ever ask for it; or better, <b>put the key in a trust for release at a date you choose</b> — a sealed
-    envelope, an escrow, a will, split custody, or the LUVlocker once it is live. A locked key protects your LUV, shows your
-    commitment to LUV, and creates permanent value for every holder. <span class="g">Locker as a service</span> is coming once
-    proof of redemption and collect are finalized.</p></div>
-  </details>
-
-  <h2 class="gold" id="luvdrip">the LUVdrip — a million a day, for logging in</h2>
-
-  <details id="luvdrip-what" open>
-    <summary>What is the LUVdrip, and how much can I actually earn?</summary>
-    <div class="a"><p><b>Log in, and 1,000,000 LUV starts dripping.</b> One sign-in arms a 24-hour
-    window, and the million flows across the whole of it — <b>11.574074 LUV every second</b>, one LUV
-    every 86.4 milliseconds — against the wall clock. It keeps flowing with the tab closed, the browser
-    quit and the session expired. When that million has landed the drip stops, and <b>the next million
-    starts with your next log in</b>.</p>
-
-    <p style="font-family:var(--mono);font-size:14px;line-height:2;border-left:2px solid rgba(126,226,160,.5);padding-left:16px">
-      1,000,000 LUV &nbsp;×&nbsp; 100 days<br>
-      <b class="g">= 100,000,000 LUV</b> &nbsp;— one hundred million, for showing up
-    </p>
-
-    <p><b>Log in every day for the 100 days and you accumulate one hundred million LUV.</b> Miss a day
-    and you miss that day's million — nothing else changes, and nothing you already earned is affected.
-    There is no streak bonus and no penalty; the offer is exactly as arithmetic as it looks.</p>
-
-    <p>It is measured to the wei, and the measurement is published: at hour 1 the meter reads
-    41,666.67 LUV, at hour 12 exactly 500,000, and at hour 24 exactly 1,000,000.000000 — the 24 hourly
-    shares differ by a single wei across the whole day, which is flooring and nothing else. The ledger
-    never credits per second (1,000,000 ÷ 86,400 does not terminate, and rounding it would quietly
-    discard 6,400 LUV a day); it computes <code>cap × elapsed ÷ 24h</code> and reads the clock.</p></div>
-  </details>
-
-  <details id="luvdrip-source">
-    <summary>Where does the LUV come from? — the rest of the LUVdrop</summary>
-    <div class="a"><p><b>The LUVdrip is where the remainder of the LUVdrop goes.</b> The one-year free
-    airdrop is closed, and the
-    <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0xdf2C1836550c5711EF9c021cB0de86241dc1DEf3" rel="noopener">gesture
-    pool</a> that funded it still holds <b>~1.024 quadrillion LUV</b>. That remainder is not being
-    withdrawn to anyone — it is being <b>distributed through the drip</b>, a million a day at a time, to
-    people who show up rather than to whoever claimed fastest.</p>
-
-    <p>At a million a day that pool is <b>1,023,939,221 participant-days</b> — enough to honour
-    <b class="g">over 10.2 million</b> complete 100-day runs. The drip is not a promotion with a budget
-    that quietly runs out; the arithmetic is public and the balance is one <code>balanceOf</code> away.</p>
-
-    <p><b>What is true today:</b> the remainder still sits in the gesture pool at
-    <code>0xdf2C…DEf3</code>, and the distributor that pays redemptions holds <b>0 LUV</b>. Moving it is
-    an owner transaction that has not happened yet — it is on
-    <a href="#todo">the open list</a>, with everything else that is promised and not yet done. Your
-    drip accrues regardless; what waits is delivery, not earning.</p></div>
-  </details>
-
-  <details id="luvdrip-collect">
-    <summary>COLLECT and REDEEM — what is the difference?</summary>
-    <div class="a"><p>Two acts, deliberately separate, because they do different things.</p>
-    <p><b class="g">COLLECT</b> banks whatever has dripped into your tally and <b>restarts your million
-    from that moment</b>. It is free, instant, off-chain, and yours to press whenever you like — but it
-    <b>moves no tokens</b>. It cannot be farmed either: a window always pays a million across 24 hours,
-    so collecting hourly earns exactly what collecting daily earns. What it buys is control of the
-    clock, not more LUV.</p>
-    <p><b class="g">REDEEM</b> is the step that <b>moves the tokens into your wallet</b>, on chain,
-    where they are yours to send, hold or trade and where reflections start growing them. Because it
-    touches the chain it costs gas, in ETH — so there are two ways to do it: <b>ride the LUVbus</b>, where
-    the project sends the transaction and <b>you need no ETH at all</b>, or send it yourself from a
-    wallet that holds ETH. The LUV lands on you either way; only the payer differs.</p>
-    <p>Your tally costs nothing to hold and never expires. Collect for a week, a month, or the whole
-    season, and redeem once.</p></div>
-  </details>
-
-  <details id="luvdrip-fair">
-    <summary>What stops someone farming it with a hundred accounts?</summary>
-    <div class="a"><p>Three bindings, each enforced by the database rather than by a check that could be
-    raced: <b>one drip per identity</b>, <b>one drip per wallet</b> (a second identity can never aim its
-    drip at a wallet that is already earning, and a redemption for a shared wallet is refused before any
-    hold is taken), and <b>one drip per email</b> where the provider gives one.</p>
-    <p>And what is <em>not</em> claimed: none of this can see one person holding two unrelated social
-    accounts — nothing on-chain or in a session can. That is exactly why the <b>social account</b> is the
-    unit here and a wallet is not: a wallet is free to mint by the thousand, a social account costs
-    something to make and something to keep. The bindings raise the price of a farm; they do not pretend
-    to have abolished one.</p></div>
-  </details>
-
-  <details id="luvdrip-more">
-    <summary>What else can I earn — and when?</summary>
-    <div class="a"><p>The drip is the <b>first</b> incentive, not the only one. Others are added
-    <b>as they are complete</b> — working, tested, and paying — rather than announced as coming soon and
-    left hanging. Nothing appears on this page as an offer until it can actually pay.</p>
-    <p><b>Next: pay2tweet.</b> Tweet about LUV and the earn rail rewards it — sharing IS the marketing,
-    and the reward for it belongs on chain with everything else. Amounts, daily limits and cooldowns
-    live in the on-chain action registry, which is always the final word over any figure printed
-    here.</p>
-    <p>The pattern will hold for whatever follows: an incentive ships when it works, its terms are
-    readable from the contract, and this page tells you which of the two it is.</p></div>
-  </details>
-
-  <h2>earning more LUV</h2>
-
-  <details>
-    <summary>How do I earn LUV after the airdrop?</summary>
-    <div class="a"><p>Be an <b>ambassador of LUV</b>. <b class="g">A tweet pays 1,000,000 LUV</b> —
-    the same standard gesture the signup and the daily drip pay, because a gesture is a gesture.
-    There are <b>8 hours between tweets</b>, so exactly three fit a day: <b class="g">3,000,000 LUV
-    from tweeting</b>, on top of the day's <b class="g">1,000,000 LUVdrip</b> for logging in and
-    pressing COLLECT — <b>4,000,000 LUV a day</b>, all in. Post it, then paste the link on
-    <a href="view.html">the live market page</a>: the share rail counts your eight hours down and
-    takes the claim. Other actions (<code>post</code>, <code>interaction</code>) carry their own
-    limits and cooldowns; the dashboard lists whatever the
-    <b>on-chain action registry</b> currently says, and the registry is always the final word.
-    Once a claim is approved the reward pays out <b>on-chain</b> to your wallet. And of course:
-    simply holding LUV earns reflections forever.</p></div>
-  </details>
-
-  <details>
-    <summary>What is the IncentiveDistributor?</summary>
-    <div class="a"><p>The <b>IncentiveDistributor</b> is the on-chain rewards engine — the contract that
-    turns community actions into LUV. Its heart is a <b>named action registry</b>: every reward type
-    (<code>welcome</code>, <code>tweet</code>, <code>post</code>, <code>interaction</code>, and any
-    added later) lives in the contract with its own <b>reward amount, daily limit, cooldown, one-time
-    flag and active switch</b> — all public, all owner-editable live, so the economy can evolve without
-    redeploying anything.</p>
-    <p>Payouts flow two ways: a <b>signed voucher</b> path (the platform signs an EIP-712 approval
-    binding <em>you + the action + a unique action id + a deadline</em>, and the claim is verified
-    against a rotatable signer key on-chain), and a <b>relayer push</b> for operator-driven or batch
-    rewards. Either way the contract enforces everything itself: each action id pays <b>once ever</b>,
-    per-user daily limits and cooldowns are checked on-chain, and the distributor pays from its own
-    funded LUV balance — it's fee-exempt, so rewards arrive whole.</p>
-    <p>Your dashboard's <b>EARN ❤</b> panel is the doorway to it: pick an action, drop your proof link,
-    and once approved the reward lands in your wallet with a transaction you can verify on
-    Etherscan.</p></div>
-  </details>
-
-  <details>
-    <summary>Who decides the action rewards?</summary>
-    <div class="a"><p>The on-chain <b>IncentiveDistributor</b> registry does — rewards, daily limits and
-    cooldowns live in the contract (owner-editable, fully public), never in a hidden backend. Payouts are
-    signature-verified and <b>deduplicated on-chain</b>, so the same proof can never pay twice.</p></div>
-  </details>
-
-  <h2>the LUVlocker</h2>
-
-  <details>
-    <summary>What is the LUVlocker?</summary>
-    <div class="a"><p>The <b>LUVlocker</b> is the diamond-hands vault: lock your LUV principal and
-    <b>keep earning reflections the whole time</b>. The locker stays reflection-<b>included</b>, so the
-    token's 3% trade reflections keep landing on the vault — and your share of those reflections is your
-    <b>interest</b>, tracked per depositor. Lock the principal, harvest the LUV it earns.</p>
-    <p>It ships in the same in-house, zero-dependency suite as the token (no OpenZeppelin, fully
-    audited-in-repo) — see the ledger on the front page for its address at launch.</p></div>
-  </details>
-
-  <details>
-    <summary>How do I earn while my LUV is locked?</summary>
-    <div class="a"><p>Two interest modes, switchable per user at any time:</p>
-    <p><b class="g">CLAIMABLE</b> (default) — your reflections settle into an accrued interest balance
-    you can <b>harvest whenever you like</b>, while the principal stays locked. Above a threshold the
-    vault can even auto-pay it out.</p>
-    <p><b class="g">COMPOUND</b> — settled interest folds into your locked principal instead, growing
-    the position; it becomes withdrawable with the principal when the lock passes. Compounding
-    <b>never resets your lock</b>, and switching modes only affects future interest.</p></div>
-  </details>
-
-  <details>
-    <summary>How does the team use the LUVlocker?</summary>
-    <div class="a"><p>The same way it asks holders to: <b>principal locked, only the yield moves</b>.
-    The <b>marketing and community allocations are held as locked principal in the LUVlocker</b> —
-    safely out of reach behind the extend-only lock, where no one (team included) can unlock early
-    or market-sell the principal.</p>
-    <p>What the team spends from those allocations is the <b>interest</b>: the locked principal keeps
-    earning its share of the 3% trade reflections, and that accrued yield is harvested to fund
-    <b>marketing campaigns and community incentives</b>. The policy in one line:
-    <b class="g">spend the reflections, never the principal</b> — a self-refilling budget that grows
-    with trading activity instead of draining the supply.</p>
-    <p>Two wallets sit outside the locker by design: the <b>founder wallet</b> and the
-    <b>treasury wallet</b> are <b>not locked</b>. The treasury wallet is the platform's working
-    capital, and it's what <b>funds the free airdrop</b> — every 1-trillion-LUV gesture is sent from it. The
-    founders, having <b>provided the initial liquidity themselves</b>, are free to buy and sell as they
-    see fit — and above and beyond their ROI, since they don't need the money, it's safe to assume
-    they're <b class="g">holders</b>. Hold LUV, earn LUV applies to founders too.</p>
-    <p>Because it's all public, this is <b>verifiable, not a promise</b>: the locked balances, unlock
-    times, every harvest, and every gesture from the treasury wallet are on-chain for anyone to
-    check.</p></div>
-  </details>
-
-  <details>
-    <summary>When can I withdraw — can a lock be changed?</summary>
-    <div class="a"><p>Each deposit locks until <b>now + the lock duration</b> (plus a small block-count
-    guard). Locks are <b>extend-only</b>: you (or the owner) can push your unlock <em>later</em> —
-    never earlier — and changing the default duration only affects <em>future</em> deposits. No admin
-    control can ever shorten a lock, touch principal, or touch interest. Once your unlock time and
-    block guard have both passed, withdraw any amount of your principal.</p>
-    <p>The vault can also timelock <b>any other ERC-20</b> under an explicit per-lock unlock time
-    (independent of the LUV interest pool), and the owner's rescue power can only sweep surplus that
-    no accounting bucket claims — <b>never yours</b>.</p></div>
-  </details>
-
-  <h2 class="gold" id="roadmap">the roadmap — from priceless to multi-billion</h2>
-
-  <details open>
-    <summary>Where is LUV headed? The eight phases.</summary>
-    <div class="a"><p>Value is no longer defined by scarcity alone — it is defined by <b>connection,
-    resonance, and participation</b>. SHAMBA LUV grows that value in eight movements. In the 20th century
-    money was scarce and hoarded; in the 21st, memes became abundant and shared. LUV merges them: the
-    first large-scale <b>emotonomic</b> protocol, where gestures, attention, and impact become value
-    on-chain.</p>
-
-    <p><b class="g">Phase 1 — LUV is Priceless.</b> The gesture is born. A fixed 111-quadrillion supply,
-    fee-free wallet-to-wallet, and a free <b>1-trillion-LUV</b> airdrop to everyone who arrives. This is
-    abundance over scarcity — LUV enters the world priceless, in as many hands as will hold it.</p>
-
-    <p><b class="g">Phase 2 — The Value of LUV.</b> Connection earns a price. The LUV/ETH market opened on
-    Uniswap seeded at <b>the absolute maximum a V2 pair can hold: 2¹¹²−1 wei ≈ 5.19 quadrillion LUV</b> —
-    Uniswap V2 stores pair reserves as <b>uint112</b> and reverts anything above it
-    (<a href="https://github.com/Uniswap/v2-core/blob/master/contracts/UniswapV2Pair.sol" rel="noopener">'UniswapV2: OVERFLOW', UniswapV2Pair.sol ↗</a>), so the
-    roadmap's full 100 quadrillion cannot sit in one pair by protocol design. The gesture now meets the
-    market: LUV is tradable, discoverable, and real; every trade feeds the 3% reflections; the treasury's
-    remaining circulating supply backs the market as depth grows — and <b>locking the liquidity (the LP
-    position into LUVLocker) is the standing priority</b>.</p>
-
-    <p><b class="g">Phase 2 — addendum (2026-08-04, delivered complete).</b> The value of LUV is now
-    <b>measured, expressed, and worn</b>: <a href="LUV.html">the price both ways</a> (ETH ↔ USDC toggle,
-    WEI/LUV, the maximum print — read live from the pair by <b>luv.oracle</b>, chronos-anchored, with a
-    multi-input median USD leg); <a href="view.html">the live view</a> with its indicator chart (EMA
-    ribbon 8·13·21·34·55 · Fibonacci retracement · RSI 14 · MACD 12·26·9); the heart at <b>60 bpm</b> —
-    precisely one pulsation per chronos second — on every page and in the favicon;
-    <a href="emotonomics.html">the field paper</a> on-site; and <a href="enter.html">the door</a> into
-    <a href="verse.html">the verse</a> — the OVERLORD hierarchy, a page for every tier. Verify it all on
-    the actual contract:
-    <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254#balances" rel="noopener">holders ↗</a> ·
-    <a href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254#code" rel="noopener">verified source ↗</a> ·
-    <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" rel="noopener">total supply ↗</a> ·
-    <a href="https://etherscan.io/address/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31" rel="noopener">total liquidity ETH/LUV — the pair ↗</a>.</p>
-
-    <p><b class="g">Phase 2 — the locks (permanence for the value).</b> Two locks turn a live market into a
-    lasting one, both through <a href="https://etherscan.io/address/0xe07ACAde4bE2bbc264EA702880ed988EBae9B898" rel="noopener">LUVLocker ↗</a>.
-    <b>The liquidity lock:</b> the LP position — 100% of the circulating LUV/ETH liquidity — is locked in
-    LUVLocker, making the pool <b>provably unremovable</b> until its unlock date; this is what clears the
-    honeypot / unlocked-liquidity flags, and it is the standing priority — the step-by-step is in
-    <a href="lock.html">the LP-lock instructions</a> (OVERLORD only; every other wallet is welcomed to
-    <a href="/">their own daily collection</a> — log in and 1,000,000 LUV arrives one at a time, on a
-    steady beat, across the whole 24 hours that log in armed; thanks a million).
-    <b>The principal lock, that
-    earns:</b> the team allocations — <b>marketing and community</b> — are deposited into the same vault on
-    its <b>extend-only</b> rail, and because LUVLocker stays <b>reflection-included</b>, that locked
-    principal <b>earns the 3% reflection interest the whole time it is locked</b>. The teams earn interest
-    <em>from</em> the principal without ever touching it: locked supply is not idle supply — it is the
-    largest holder being paid to hold, and the interest can be routed to fund the community rewards rail.
-    <b>The timelock over the supply:</b> the <b>~90% of supply that is the circulating emission</b> (the
-    100-quadrillion pool) and every <b>allocation decision</b> move behind a <b>timelock</b> — emission and
-    allocation are announced before they can act, so nothing about the supply changes silently. Consensus
-    before custody; a clock on every hand.</p>
-
-    <p><b class="g">Phase 3 — Sharing is Caring.</b> Attention becomes capital. Through the
-    <b>IncentiveDistributor</b>, participants <b>earn LUV for gestures</b> — welcoming, posting,
-    interacting — each rewarded on-chain with its own amount, daily limit, and cooldown. Gestures are
-    currency; impact is profit; the community's wealth is measured in <b>engagement velocity</b>, not
-    idle balances.</p>
-
-    <p><b class="g">Phase 4 — SHARE the LUV.</b> Sharing IS the marketing — <b>thanks a million
-    millions</b>. The gesture crosses into the world's feeds:
-    <b>integration with existing social media channels</b>, so a like, a post, a share becomes a
-    verifiable on-chain gesture that earns LUV. The emotional economy scales to where the attention
-    already lives — millions of daily gestures, each carrying value, with <b>1,000,000 LUV as the
-    standard gesture</b>.</p>
-
-    <p><b class="g">Phase 5 — LUV Immersive.</b> The economy steps off the screen:
-    <b>integration with DeltaVerse immersive technology</b> — spatial, 3D, and immersive worlds where a
-    gesture is something you <em>make</em>, not just click. LUV becomes the social currency of
-    presence itself.</p>
-
-    <p><b class="g">Phase 6 — Metcalfe's Law: the global interconnection of LUV.</b> The phases
-    before this one add participants. This one connects them. <b>Robert Metcalfe's rule of thumb for
-    Ethernet (1980) says a network's value grows with the SQUARE of the nodes on it</b> — not the count
-    of members but the count of <em>connections between them</em>, which is n(n−1)/2. Eighteen holders
-    are 153 possible connections; a thousand are half a million; four thousand are close to
-    eight million. Emotonomics is the same arithmetic wearing a different word: a gesture needs two people,
-    so the thing being counted was never the balances — it was the pairs. Phase 6 is therefore the
-    <b>interconnection work</b>: LUV on every chain it can be reached from, in every wallet that will
-    hold it, wired into every feed a gesture can cross — one deterministic address everywhere
-    (cypherpunk4096), so the LUV in one place is the same LUV as in every other. <b>One network, not
-    a scatter of islands.</b></p>
-
-    <p><b class="g">Phase 7 — the hundred million.</b> A <b>$100,000,000 valuation</b>. Not a
-    number pulled from the air — a number with a participant count attached. At the market cap of
-    <b>2026-08-13 ($21,481, with 18 holders of ≥1 LUV)</b> a hundred million is <b>4,655×</b> today's
-    value; under Metcalfe that is the SQUARE, so it asks for roughly <b>√4,655 ≈ 68× the
-    participants — about 1,200 people holding LUV</b>. That is the whole point of a network law: you do
-    not need four thousand times the people to be worth four thousand times as much. At that cap, the
-    measure of value — <b>1 trillion LUV, a million millions</b> — prices near <b>$942</b>.</p>
-
-    <p><b class="g">Phase 8 — the billion.</b> A <b>$1,000,000,000 valuation</b>: 46,553× today,
-    which under the same square law asks for <b>≈216× the participants — on the order of 3,900
-    holders</b>, each connected to all the others. 1 trillion LUV prices near <b>$9,422</b>. The
-    horizon the roadmap has always named, with the arithmetic that gets there written down instead
-    of implied.</p>
-
-    <p><b>How to read Phases 6–8, honestly.</b>
-    Metcalfe's law is an <em>observed regularity and a rule of thumb</em>, not a law of nature, and it
-    has serious dissent: <b>Odlyzko and Tilly (2005)</b> argue a network is worth closer to
-    <b>n·log(n)</b>, because not every pair is worth the same and most are worth nothing. Run the same
-    two targets through that model and the ask is far heavier — about <b>24,000</b> participants for
-    the hundred million and <b>198,000</b> for the billion, rather than 1,200 and 3,900. Both models
-    are drawn here on purpose: <b>the gap between them IS the uncertainty</b>, and it is a factor of
-    twenty to fifty. A valuation is also an <em>outcome</em> of participation, never a promise of it —
-    Phases 7 and 8 name where the protocol is aimed, not what anyone is owed, and nothing on this page
-    is investment advice. The figures above are dated because they will move: read the live ones on
-    <a href="view.html">the market page</a>, which is the only number that is ever current.</p>
-
-    <p><b>The horizon — a multi-billion-dollar valuation.</b> Emotonomics compounds: each phase widens
-    the circle of participants, deepens liquidity, and raises engagement velocity — and value follows
-    connection, not scarcity. As gestures multiply from thousands to millions to the mainstream, and
-    reflections keep rewarding every holder, LUV's network value scales with the emotional economy it
-    creates — the path from <b>priceless</b> to a <b>multi-billion-dollar</b> protocol. The future of
-    value is not scarcity — it is <b>connection</b>. ❤</p></div>
-  </details>
-
-  <!-- ═══ the standard — cypherpunk2048 → cypherpunk4096 (moved here from the landing,
-       2026-08-12: it answers a question, and questions live in the FAQ) ═══ -->
-  <style>
-  .cp-std{border:1px solid var(--seam);border-radius:16px;background:
-    radial-gradient(120% 140% at 0% 0%,rgba(131,56,236,.10),transparent 60%),var(--wine);
-    padding:34px clamp(20px,4vw,44px);margin-top:44px;overflow:hidden}
-  .cp-std .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--dim)}
-  .cp-std h2{font-size:clamp(23px,3.6vw,34px);font-weight:800;line-height:1.15;margin:12px 0 0;letter-spacing:-.01em}
-  .cp-std h2 b{background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .cp-std .ladder{display:flex;align-items:center;gap:16px;margin:26px 0 4px;font-family:var(--mono);flex-wrap:wrap}
-  .cp-std .tier{display:flex;flex-direction:column;gap:3px;border:1px solid var(--seam);border-radius:12px;padding:12px 18px;min-width:118px}
-  .cp-std .tier .exp{font-size:clamp(26px,4vw,40px);font-weight:800;line-height:1;letter-spacing:-.02em}
-  .cp-std .tier .nm{font-size:11px;letter-spacing:.14em;color:var(--dim)}
-  .cp-std .tier .st{font-size:10px;letter-spacing:.16em;text-transform:uppercase;margin-top:4px}
-  .cp-std .tier.met{color:var(--blush);border-color:rgba(126,226,160,.55)}
-  .cp-std .tier.met .st{color:#7ee2a0;display:flex;align-items:center;gap:6px}
-  .cp-std .tier.met .st .vcheck{width:15px;height:15px;font-size:10px;flex:none}
-  .cp-std .tier.now{border-color:rgba(255,0,110,.55);color:var(--cream);
-    box-shadow:0 0 0 1px rgba(255,0,110,.25) inset}
-  .cp-std .tier.now .exp{background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .cp-std .tier.now .st{color:var(--rose)}
-  .cp-std .arrow{font-family:var(--mono);font-size:22px;color:var(--dim)}
-  .cp-std .creed{list-style:none;margin:22px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px 26px}
-  .cp-std .creed li{font-size:14px;color:var(--dim);padding-left:20px;position:relative}
-  .cp-std .creed li::before{content:"⟁";position:absolute;left:0;color:var(--gold);font-size:12px;top:2px}
-  .cp-std .creed b{color:var(--cream)}
-  .cp-std .foot{margin-top:24px;font-size:13.5px;color:var(--dim)}
-  .cp-std .foot b{color:var(--blush)}
-  .cp-std .links{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px}
-  .cp-std .links a{font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--blush);text-decoration:none;
-    border:1px solid var(--seam);border-radius:999px;padding:8px 16px;transition:color .15s,border-color .15s}
-  .cp-std .links a:hover{color:var(--rose);border-color:var(--rose)}
-  @media (prefers-reduced-motion:no-preference){.cp-std .tier.now{transition:box-shadow .3s}}
-  </style>
-  <section class="cp-std" aria-labelledby="cp-std-h">
-    <div class="eyebrow">engineered to a standard</div>
-    <h2 id="cp-std-h">Built to <b>cypherpunk2048</b>.<br>Now building to <b>cypherpunk4096</b>.</h2>
-    <div class="ladder" role="img" aria-label="cypherpunk2048 compliant — green checkmark; cypherpunk4096 in progress">
-      <div class="tier met"><span class="exp">2¹¹</span><span class="nm">cypherpunk2048</span><span class="st"><span class="vcheck">✓</span>compliant</span></div>
-      <span class="arrow">→</span>
-      <div class="tier now"><span class="exp">2¹²</span><span class="nm">cypherpunk4096</span><span class="st">building</span></div>
-    </div>
-    <ul class="creed">
-      <li><b>Determinism as identity</b> — one address on every chain; the code is the name.</li>
-      <li><b>Zero dependencies</b> — a unit built to outlast frameworks inherits no supply chain.</li>
-      <li><b>Verification over trust</b> — every claim resolves to a green checkmark anyone can reproduce.</li>
-      <li><b>Precision without approximation</b> — full-width decimals; rounding is display, never storage.</li>
-    </ul>
-    <div class="foot">The next power of two doesn't replace the last — it doubles the bar. Production
-      deployments publish to the <b>cypherpunk4096</b> commons as they go live; the first is
-      <b>SCIEN·TIFIC</b>, deterministic at one address across every chain.</div>
-    <div class="links">
-      <a href="engine.html#s3">⚙️ the standard, in the engine paper</a>
-      <a href="https://github.com/cypherpunk4096" rel="noopener">cypherpunk4096 ↗</a>
-      <a href="https://github.com/cypherpunk4096/scientific" rel="noopener">SCIEN·TIFIC ↗</a>
-    </div>
-  </section>
-
-  <style>
-  /* LUV, written as its own mark: the logo sized and baselined to read as the word */
-  .luvword{height:1.05em;width:1.05em;vertical-align:-.18em;border-radius:50%;display:inline-block;margin:0 .06em}
-  .lede{color:var(--dim);font-size:14px;max-width:76ch;margin:2px 0 14px}
-  .lede b{color:var(--cream)}
-  #todo{scroll-margin-top:20px}
-  details#todo-distributor,details#todo-liqlocker,details#todo-luvlocker,details#polygon{
-    border-left:2px solid rgba(227,178,95,.55)}
-  details#todo-distributor summary,details#todo-liqlocker summary,details#todo-luvlocker summary,
-  details#polygon summary{color:var(--gold)}
-  </style>
-  <h2 class="gold" id="todo">what is not done yet — the open list</h2>
-  <p class="lede">Every item here is something this project has said it will do and has <b>not</b> done.
-  It sits in the FAQ rather than a roadmap slide because an open commitment is a question a reader is
-  entitled to ask, and because a list you can check is the only kind worth publishing. Each item states
-  what exists today <b>on chain</b>, what has to happen, and what will prove it.</p>
-
-  <details id="todo-distributor">
-    <summary>⏳ Deploy the IncentiveDistributor that can actually pay the LUVdrip</summary>
-    <div class="a"><p><b>Today:</b> the live distributor
-    <a href="https://etherscan.io/address/0x607E477AB12406A3294A7Ba63817103f92D8f806" rel="noopener">0x607E…f806</a>
-    holds <b>0 LUV</b> and predates the redeem rail — it has no
-    <code>redeemWithSignature</code>, so a signed redemption cannot be submitted to it at all. The
-    contract is deliberately <b>non-upgradeable</b> (no proxy, no admin backdoor), so it cannot gain
-    the function; a new deployment is the only honest route.</p>
-    <p><b>Meanwhile your LUV is safe.</b> The drip keeps accruing for every participant and the
-    dashboard says <em>"the redeem desk opens shortly"</em> rather than offering a button that cannot
-    pay. Nothing expires while you wait.</p>
-    <p><b>What has to happen:</b> deploy the current source, point the signer at the platform voucher
-    key, set the two blast-radius bounds (<code>maxRewardPerTx</code> and a per-day
-    <code>redeemBudgetPerDay</code>) <b>before</b> funding, publish the drip rate with
-    <code>setDrip</code>, then fund it last. <b>What proves it:</b> the contract verified on Etherscan
-    (the green checkmark), and two live redemptions — one paid by a participant's own ETH, one
-    sponsored, with the <code>Redeemed</code> event naming who paid the gas.</p></div>
-  </details>
-
-  <details id="todo-liqlocker">
-    <summary>⏳ Deploy the LIQlocker and lock the liquidity</summary>
-    <div class="a"><p><b>Today:</b> the treasury holds <b>100% of the circulating LP</b> of the LUV/WETH
-    pair and <b>none of it is locked</b> — the
-    <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254?a=0xe07ACAde4bE2bbc264EA702880ed988EBae9B898" rel="noopener">existing
-    LUVlocker</a> holds zero. This is the standing priority: an unlocked pool is what every scanner
-    flags, and rightly.</p>
-    <p><b>What it is:</b> an <b>ownerless</b> ERC-20 timelock — no pause, no rescue, no setter, and no
-    privileged address anywhere in the file. A lock is bound by <b>time</b>, by <b>block height</b>, or
-    by both, and opens only when the later passes; the default term is <b>90 days</b> and it can be
-    extended, a quarter at a time, to a <b>200-year</b> horizon. Nobody — including whoever deploys it —
-    can ever bring a maturity forward.</p>
-    <p><b>What proves it:</b> the <code>locked</code> event, and <code>balanceOf(locker)</code> on the
-    pair matching the position, both readable by anyone. A rehearsal with 0.001 LP goes first.</p>
-    <p><b>Honest status:</b> 113 tests pass, including 6 stateful invariants over 32,768 random calls
-    and a mainnet-fork rehearsal that locks the <b>real</b> LUV/WETH pair token. It has had <b>no
-    independent audit</b>, and that is written in its own audit file rather than glossed.</p></div>
-  </details>
-
-  <details id="todo-luvlocker">
-    <summary>⏳ Deploy the LUVlocker rewrite and lock the supply that is only earmarked</summary>
-    <div class="a"><p><b>Today:</b> the marketing and community allocations — and the treasury's
-    multichain-liquidity holding — are <b>earmarked, not locked</b>. The vault holds zero LUV.</p>
-    <p><b>Why it is not simply deposited into the existing vault:</b> a 2026-08-05 audit found a
-    <b>High-severity</b> defect in it. Deposits credit the measured balance delta, and LUV rebases
-    <em>upward</em> during a transfer, so a dust deposit timed to a fee flush could absorb other
-    depositors' reflections as its own principal. Depositing real supply into that is not something we
-    will do because a page said we would.</p>
-    <p><b>The rewrite</b> fixes exactly that (the credit is capped at the amount sent, and the surplus
-    goes to the index first), removes the owner entirely, and is regression-tested against a token that
-    reflects <em>during</em> a transfer — the case the original test mock structurally could not see.
-    <b>Still missing before mainnet:</b> stateful invariant fuzzing, a fork test against the real LUV
-    token with its exemptions applied, and an independent audit. Listed because it is not done.</p>
-    <p><b>What proves it:</b> a deposit transaction, the vault's balance, and the unlock time — all on
-    chain, all readable without asking us.</p></div>
-  </details>
-
-  <details id="polygon">
-    <summary>🟣 Honouring the pioneers — the Polygon LUVdrop, 1 LUV == 1 LUV</summary>
-    <div class="a">    <p><b>The Polygon contract was the test deployment and it has been abandoned — LUV is live on
-    Ethereum. But the pioneers who held LUV there are not abandoned: the pioneers' LUVdrop will be
-    honoured, 1 LUV == 1 LUV.</b> Every holder on the Polygon contract receives their balance on the
-    live Ethereum contract, one LUV for one LUV. That commitment stands. <b>The snapshot itself is being reconstructed</b>, and until
-    it is published there is no list — so we will not imply there is one. Honouring a list means three
-    things have to exist and be checkable: the original Polygon contract address, a holder→balance set
-    fixed at a named block height, and the rail by which a holder proves their address and receives.
-    None of the three is published yet.</p>
-
-    <p>What we will publish when it is done: the contract address, the block height the snapshot was
-    taken at, the full holder list, and a hash of that list — so the set is fixed at a moment anyone can
-    verify against Polygon themselves, and cannot drift afterwards. A snapshot that can be edited after
-    the fact is not a snapshot. Until then, treat this as a <em>commitment</em>, not an entitlement you
-    can already check — the same standard applied to the LUVlocker above: earmarked is not locked, and
-    promised is not proven.</p>
-
-    <p><b>Why it is on this list:</b> a commitment with no published set is a promise, and this page
-    does not dress promises as entitlements. When the snapshot exists you will be able to check your own
-    address against it without asking anyone — that is the difference between honouring the pioneers and
-    saying so. And because <b>1 LUV === 1 LUV</b>, there is nothing to negotiate: the number on the
-    Polygon ledger is the number on the Ethereum ledger.</p></div>
-  </details>
-
-  <h2 class="gold">trust &amp; the contracts</h2>
-
-  <details open>
-    <summary>What is the LUV contract address? (peer review &amp; Uniswap)</summary>
-    <div class="a"><p>The <b>SHAMBA LUV token</b> — the address for <b>peer review, Etherscan
-    verification, importing the token, and adding the LUV/ETH pair on Uniswap</b> — is:</p>
-    <p><code>0x2711111111683B8708cb9a48cBf36a51315F8254</code></p>
-    <div class="marketrow">
-      <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img src="gfx/brand/etherscan_wordmark_light.svg" alt="View LUV on Etherscan"> ↗</a>
-      <a href="https://app.uniswap.org/tokens/ethereum/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img src="gfx/brand/uniswap_horizontal_pink.svg" alt="Trade LUV on Uniswap"> ↗</a>
-    </div>
-    <p>
-    Always confirm this exact address before you trade — a gesture sent to the wrong contract is not a
-    gesture. It's <b>live on Ethereum</b>, deployed deterministically so LUV can open at the same address
-    on every chain it grows into.</p></div>
-  </details>
-
-  <details>
-    <summary>ETH is paired to LUV — so LUV is paired to ETH. What does that mean?</summary>
-    <div class="a"><p>A liquidity pair has no one-way street: the pool holds <b>both legs at once</b>, and each
-    leg prices the other. Every LUV price in ETH is, read the other way, an <b>ETH price in LUV</b>. When you
-    hold LUV you hold a claim measured against ETH; when the pool deepens, it deepens in both directions.</p>
-    <p>Which is why <b class="g">holding LUV at the bottom is better than holding ETH at the top</b>. ETH held
-    at the top just waits — it earns nothing while it falls. LUV held at the bottom is <b>still working</b>:
-    every trade anyone makes pays 3% in reflections to your balance, and every trade's 1% deepens the pool
-    under your position. At the bottom your <b>LUV balance grows while you wait</b> — and while collecting
-    LUV, all that matters is LUV balance (1 LUV === 1 LUV). The pair means you never left ETH; you're holding
-    the side of it that pays you to hold. <b>HOLD LUV to earn LUV.</b></p></div>
-  </details>
-
-  <details open>
-    <summary>How do I buy or sell LUV? (set slippage to 10%)</summary>
-    <div class="a">
-    <p><b>Set your slippage tolerance to 10%</b> before you swap LUV on Uniswap. This is a requirement, not a
-    suggestion — a lower setting will make the swap fail with <code>INSUFFICIENT_OUTPUT_AMOUNT</code>, or show
-    <i>"no routes available."</i></p>
-    <p>Ten percent covers two things that stack together:</p>
-    <p>• <b>The 5% buy/sell fee.</b> LUV is a reflection token — every buy and sell carries a <b>5% fee</b>, so you
-    receive about 5% fewer tokens than the raw quote. Your slippage has to absorb that.<br>
-    • <b>Price impact in a young pool.</b> Liquidity is still small, so each trade moves the price. Until the pool
-    deepens toward its <b>first million</b>, leave the extra headroom — 10% comfortably covers the fee <i>and</i> the
-    movement. As liquidity grows, price impact shrinks and slippage can come back down toward the 5% fee floor.</p>
-    <p>In Uniswap: open the swap, click the <b>settings gear → Max slippage → Custom → 10%</b>, then trade. LUV carries
-    a transfer fee, so the swap is routed through Uniswap's fee-on-transfer path automatically.</p>
-    <div class="marketrow">
-      <a href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img src="gfx/brand/uniswap_horizontal_pink.svg" alt="Trade LUV on Uniswap"> · buy &amp; sell LUV ↗</a>
-    </div>
-    <div class="mmcard" id="metamask-price" data-cardshare
-      data-cardshare-text="The price of LUV now shows up in MetaMask ❤ wallet price feeds carry LUV — your balance prices itself right in the wallet, no site needed. The wallet reads what the pair creates. HOLD LUV to earn LUV">
-      <p class="mmcard-head">🦊 <b>The price of LUV now shows up in MetaMask.</b></p>
-      <p class="mmcard-body">Wallet price feeds have picked LUV up — <b>your balance prices itself right
-      in the wallet, no site needed</b>. The wallet reads what the pair creates;
-      <a href="view.html">the live view</a> reads it every minute from the source.</p>
-      <div class="mmcard-row">
-        <button type="button" class="btn mmbtn" data-luv-watchasset><img src="gfx/heart-512.png" alt="" height="16" aria-hidden="true"> add LUV to MetaMask</button>
-        <a class="btn" href="https://metamask.io/download" target="_blank" rel="noopener">get MetaMask ↗</a>
-      </div>
-    </div>
-    <p style="margin-top:10px">• <b>Scanner chips (Go+ Security, Quick Intel).</b> Automated scanners flag
-    <i>every</i> fee-on-transfer token by pattern — the fee that pays holders is what trips the chip. Dismiss
-    them with the two facts that are mechanically checkable: <b class="g">verified contract ✓</b> — the green
-    checkmark: <a href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254#code" rel="noopener">published source compiled and matched against the deployed bytecode ↗</a> —
-    and <b class="g">open source ✓</b> — <a href="https://github.com/SHAMBA-LUV/LUV" rel="noopener">read every
-    line yourself ↗</a>. Don't trust badges in either direction: verify.</p>
-    </div>
-  </details>
-
-  <details open id="contracts">
-    <summary>The full contract ledger — every address, in the open</summary>
-    <div class="a"><p>The whole in-house suite is live on <b>Ethereum mainnet</b> and verifiable. Nothing
-    hidden — read every one against the source.</p>
-    <p><b class="g">Token &amp; genesis</b><br>
-    SHAMBA LUV (token) — <code>0x2711111111683B8708cb9a48cBf36a51315F8254</code>
-    (<a href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254" rel="noopener">↗</a>) · the ERC-20; 111-quadrillion fixed supply, 18 decimals, symbol LUV<br>
-    LuvLauncher — <code>0xBAAc0a44698230661018A9eED48b4e52F14d7523</code>
-    (<a href="https://etherscan.io/address/0xBAAc0a44698230661018A9eED48b4e52F14d7523" rel="noopener">↗</a>) · one-shot genesis; minted the supply and handed everything to the treasury<br>
-    Create3d — <code>0xa5A2581d564248801cc5e06DbB764c99c170320A</code>
-    (<a href="https://etherscan.io/address/0xa5A2581d564248801cc5e06DbB764c99c170320A" rel="noopener">↗</a>) · the multichain rail — same address on every chain</p>
-    <p><b class="g">The gesture &amp; the LUVbus</b><br>
-    ShambaLuvAirdrop — <code>0xdf2C1836550c5711EF9c021cB0de86241dc1DEf3</code>
-    (<a href="https://etherscan.io/address/0xdf2C1836550c5711EF9c021cB0de86241dc1DEf3" rel="noopener">↗</a>) · signature-gated self-serve claim; funded with the 1-quadrillion campaign pool<br>
-    LuvBatchGesture — <code>0xc734e05A6E944D700FdA948fe7B2D0bDF115B4dD</code>
-    (<a href="https://etherscan.io/address/0xc734e05A6E944D700FdA948fe7B2D0bDF115B4dD" rel="noopener">↗</a>) · the treasury-push luvbus (allowance-based batch delivery)<br>
-    IncentiveDistributor — <code>0x607E477AB12406A3294A7Ba63817103f92D8f806</code>
-    (<a href="https://etherscan.io/address/0x607E477AB12406A3294A7Ba63817103f92D8f806" rel="noopener">↗</a>) · earn LUV for gestures — the on-chain rewards engine (Phase 3)<br>
-    LUVLocker — <code>0xe07ACAde4bE2bbc264EA702880ed988EBae9B898</code>
-    (<a href="https://etherscan.io/address/0xe07ACAde4bE2bbc264EA702880ed988EBae9B898" rel="noopener">↗</a>) · lock principal, harvest reflections — diamond-hands vault</p>
-    <p><b class="g">Your sovereign wallet (ERC-4337)</b><br>
-    LuvAccountFactory — <code>0xB8cb4780d79ce0c6DA7700ad46d976376AC21D09</code>
-    (<a href="https://etherscan.io/address/0xB8cb4780d79ce0c6DA7700ad46d976376AC21D09" rel="noopener">↗</a>) · mints your counterfactual smart wallet<br>
-    LuvPaymaster — <code>0xa5Bee1887F145893Fd3698Eb0b4c761d088Ea68A</code>
-    (<a href="https://etherscan.io/address/0xa5Bee1887F145893Fd3698Eb0b4c761d088Ea68A" rel="noopener">↗</a>) · gas sponsorship for your first moves</p>
-    <p>Deployed by the treasury <code>0x10f7Ee226B16bea7f365Dc1eDEF159Fc1957D169</code>. The front page
-    carries the <b class="g">VERIFIED ✓</b> badge; this ledger is what it points to.</p>
-    <p><b class="g">VERIFIED ✓ · cypherpunk2048 standard.</b> Every contract above carries the Etherscan
-    <b>green checkmark</b> — published source compiled and matched against the deployed bytecode — and
-    that checkmark is the only thing "verified" ever means here: never an audit, a badge, or a screenshot.
-    The suite is built to the <a href="engine.html#s3">cypherpunk2048 standard</a>: write code; sovereignty
-    over custody, consent over default; power-of-two discipline with full 18-decimal precision;
-    verification over trust. Reference implementation beyond LUV:
-    <a href="https://github.com/cypherpunk2048" rel="noopener">github.com/cypherpunk2048 ↗</a>.</p></div>
-  </details>
-
-  <details>
-    <summary>Is the code audited and open?</summary>
-    <div class="a"><p>Everything is open source and <b>proudly hosted with
-    <img class="luvword" src="gfx/heart-512.png" alt="LUV" title="LUV"></b> — self-hosted end to end:
-    the token, the airdrop, the smart-wallet stack, this website. The suite is in-house with <b>zero external contract dependencies</b>, carries
-    140+ tests, and ships with its audit docs:
-    <a href="https://github.com/SHAMBA-LUV/LUV" rel="noopener">source &amp; audit</a> ·
-    <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/SECURITY.md" rel="noopener">SECURITY.md</a>.</p></div>
-  </details>
-
-  <details>
-    <summary>Where can I read more?</summary>
-    <div class="a"><p><a href="firstluv.html">firstLUV — your first LUV, and the key that holds it</a> — the welcome paper: 1 LUV === 1 LUV, share the LUV, keep the key private or place it in a trust ·
-    <a href="emotonomics.html">EMOTONOMICS — the field paper</a> — attention as the source of value, the academic statement of the field ·
-    <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/EMOTONOMICS.md" rel="noopener">EMOTONOMICS</a> — the emotional-economy whitepaper ·
-    <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/LUVPAPER.md" rel="noopener">LUVPAPER</a> — the token paper ·
-    <a href="engine.html">THE LUV ENGINE — the engine paper</a> — LUV creates its own engine from emotonomics: the pulse at 60 bpm, the derivation rule, the green-checkmark verification doctrine ·
-    <a href="sentiment.html">SENTIMENT — the measurement paper</a> — measured feeling: fear, greed, and the emotonomic turn ·
-    <a href="wei.html">the WEI of LUV</a> — the arithmetic paper: born at ten wei, the uint112 seed, sources of ETH liquidity, and <a href="wei.html#contracts">the full verified contract ledger</a> ·
-    <a href="exabyte.html">THE EXABYTE, THE ETHER &amp; THE LUV — the identity paper</a> — one number, three units: 10¹⁸ as the shared atomic resolution of information and value, the two byte ladders and the exact law of their drift ·
-    <a href="luveth.html">LUV / ETH — the pair page</a> — media &amp; branding for LUV and the pair that creates the price: verified addresses, the 3:1:1 fee, the imminent lockers, code is law at 4096, and <a href="https://rage.pythai.net/luv-on-the-chain/" rel="noopener">the blockchain-aware article by mindX</a> ·
-    <a href="docs.html">THE DOCS</a> — the complete documentation atlas: every paper, audit, contract, and address ·
-    <a href="liqlock.html">🔒 LIQLOCK — the liquidity, locked &amp; checkable</a> — 100% of the circulating LUV/WETH LP in the ownerless locker, read live from the chain by your own browser; source, tests and deployment report at <a href="https://github.com/SHAMBA-LUV/liq-locker" rel="noopener">SHAMBA-LUV/liq-locker</a> ·
-    <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/WHITEPAPER.md" rel="noopener">WHITEPAPER</a> ·
-    <a href="https://github.com/SHAMBA-LUV" rel="noopener">github.com/SHAMBA-LUV</a> ·
-    <b>luv@pythai.net</b></p></div>
-  </details>
-
-</main>
-
-<footer>
-  <div class="wrap">
-    <span>❤ LUV is priceless</span>
-    <span class="spacer"></span>
-    <a href="/">the doorway</a>
-    <a href="docs.html">docs</a>
-    <a href="https://github.com/SHAMBA-LUV/LUV" rel="noopener">source &amp; audit</a>
-    <a href="https://github.com/cypherpunk4096" target="_blank" rel="noopener" title="the cypherpunk4096 organization — the standard, SCIEN·TIFIC, and the commons (2¹²)">⟁ cypherpunk4096</a>
-    <a href="https://github.com/cypherpunk4096/scientific" target="_blank" rel="noopener" title="SCIEN·TIFIC — the reference deployment: scientific-maximum ERC-20, deterministic at one address on every chain, verified on-chain">🔬 SCIEN·TIFIC</a>
-    <a class="brandmark" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="LUV verified on Etherscan · Powered by Etherscan.io APIs">
-      <img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="14">
-      <span>Powered by Etherscan.io APIs</span>
-    </a>
-    <span>SHAMBA © 2026 LUV</span>
-    <span style="flex-basis:100%;font-size:10.5px;line-height:1.6;opacity:.8">The Uniswap and Etherscan
-    names and marks belong to their respective owners (Uniswap Labs; Etherscan) and are used here for
-    identification, with attribution.</span>
-  <style>.fieldnav{border-top:1px solid var(--seam);margin-top:22px;padding-top:16px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em}.fieldnav .fn-k{color:var(--gold);text-transform:uppercase;letter-spacing:.18em;font-size:10px;width:100%;margin-bottom:2px}.fieldnav a{color:var(--dim);text-decoration:none;border-bottom:1px solid transparent}.fieldnav a:hover{color:var(--rose);border-bottom-color:var(--rose)}</style>
-<nav class="fieldnav" aria-label="the field"><span class="fn-k">the field</span><a href="/">the doorway</a><a href="firstluv.html">firstLUV</a><a href="view.html">live view</a><a href="LUV.html">the price</a><a href="liqlock.html">the lock</a><a href="luvstory.html">the story</a><a href="engine.html">the engine</a><a href="emotonomics.html">emotonomics</a><a href="sentiment.html">sentiment</a><a href="wei.html">wei</a><a href="exabyte.html">exabyte</a><a href="rainbow.html">rainbow</a><a href="luvbus.html">LUVbus</a><a href="docs.html">docs</a></nav>
-</div>
-</footer>
-
-<script src="substrate/heart.js?v=2"></script>
-<script src="substrate/luv-pulse.js?v=1"></script>
-<script src="substrate/luv-engine.js?v=12"></script>
-<script src="substrate/luv-cardshare.js?v=1"></script>
+<body class="faq">
+<nav class="nav"><div class="wrap">
+  <a class="brand" href="index.html"><img src="gfx/logo-transparent.png" alt="">SHAMBA LUV</a>
+  <a class="link" href="faq.html">FAQ</a>
+  <a class="link" href="chart.html">Chart</a>
+  <a class="link" href="roadmap.html">Roadmap</a>
+  <a class="link" href="app.html">Sign in</a>
+  <a class="buy" href="https://app.uniswap.org/swap?chain=mainnet&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img src="gfx/brand/uniswap_icon_white.svg" alt=""><span>Buy LUV</span></a>
+</div></nav>
+
+<header class="hero" style="padding-bottom:0"><div class="wrap" style="display:block">
+  <p class="kicker">Answers, each with its receipt</p>
+  <h1>The FAQ</h1>
+  <p class="lede">The team publishes everything: source, tests, audits, deployment records, the papers, and the list of what is not done yet. Every answer here ends at one of those, or at a transaction on Ethereum.</p>
+  <div class="copybox"><span class="lbl">the LUV contract, Ethereum mainnet</span><code class="full" id="luvaddr">0x2711111111683B8708cb9a48cBf36a51315F8254</code><div class="row"><button type="button" class="copybtn" data-copy="0x2711111111683B8708cb9a48cBf36a51315F8254">copy address</button><a class="alt" href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254#code" target="_blank" rel="noopener">verified on Etherscan</a></div></div>
+  <nav class="faq-nav" aria-label="sections">
+    <a href="#what">what LUV is</a><a href="#buy">buying and selling</a><a href="#fees">fees and reflections</a><a href="#supply">supply</a><a href="#lock">the lock</a><a href="#contracts">the contracts</a><a href="#security">security</a><a href="#earn">earning</a><a href="#chains">chains</a><a href="#drop">the LUV drop</a><a href="#open">the open list</a><a href="#repos">every repository</a><a href="#papers">the papers</a>
+  </nav>
+</div></header>
+
+<section class="plain"><div class="wrap">
+
+<h2 id="what">What LUV is</h2>
+<details class="depth"><summary><span class="jewel"></span><span><span class="t">What is SHAMBA LUV?</span></span></summary><div class="body">
+  <p>SHAMBA LUV, ticker LUV, is a reflection token on Ethereum. Holding it earns it: 3% of every market trade is paid out to all holders in proportion to what they hold. Wallet to wallet it has no fee and no minimum, so one LUV is always exactly one LUV. It is the unit of emotonomics, the idea that attention and connection are where value comes from.</p>
+  <details><summary>where that is written</summary><ul class="acts">
+    <li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/LUVPAPER.md" target="_blank" rel="noopener">LUVPAPER.md</a> · <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/WHITEPAPER.md" target="_blank" rel="noopener">WHITEPAPER.md</a> · <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/EMOTONOMICS.md" target="_blank" rel="noopener">EMOTONOMICS.md</a></li>
+    <li class="doc"><span class="k">📄</span><a href="https://github.com/Professor-Codephreak/emotonomics/blob/master/docs/EMOTONOMICS_FIELD.md" target="_blank" rel="noopener">Emotonomics, the field paper</a></li>
+  </ul></details>
+</div></details>
+<details class="depth"><summary><span class="jewel"></span><span><span class="t">What does "LUV is priceless" mean if it has a price?</span></span></summary><div class="body">
+  <p>Both are true, in order. LUV entered the world priceless: a free trillion to everyone who arrived, in as many hands as would hold it. Then the market opened and the pair gave it a price. Phase 1 was priceless, Phase 2 was value, Phase 3 is the price. The price is an expression of the attention LUV gathered; it did not come first.</p>
+  <details><summary>where that is written</summary><ul class="acts"><li class="page"><span class="k">◉</span><a href="roadmap.html">the roadmap, phase by phase</a></li><li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/WEI_OF_LUV.md" target="_blank" rel="noopener">The WEI of LUV: the exact arithmetic of the price</a></li></ul></details>
+</div></details>
+<details class="depth"><summary><span class="jewel"></span><span><span class="t">What is "1 LUV == 1 LUV"?</span></span></summary><div class="body">
+  <p>A transfer between wallets carries no fee and has no minimum, so the amount sent is the amount received, to all eighteen decimals. A million LUV is the standard gesture. A trillion LUV is the measure of value.</p>
+  <details><summary>where that is written</summary><ul class="acts"><li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/firstLUV.md" target="_blank" rel="noopener">firstLUV.md</a> · <a href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/THE_EXABYTE_THE_ETHER_AND_THE_LUV.md" target="_blank" rel="noopener">The exabyte, the ether and the LUV</a></li><li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/LUV/blob/main/contracts/ShambaLuv.sol" target="_blank" rel="noopener">ShambaLuv.sol: fees apply only when the pair is a counterparty</a></li></ul></details>
+</div></details>
+
+<h2 id="buy">Buying and selling</h2>
+<details class="depth" open><summary><span class="jewel"></span><span><span class="t">How can I get some LUV?</span></span></summary><div class="body">
+  <p>On Uniswap. This button opens the swap preset from USDC to LUV on Ethereum mainnet:</p>
+  <p style="margin:10px 0 14px"><a class="buy big" href="https://app.uniswap.org/swap?chain=mainnet&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img src="gfx/brand/uniswap_icon_white.svg" alt="">Buy LUV on Uniswap</a></p>
+  <div class="copybox"><span class="lbl">the same link, in full</span><code class="full" id="uniurl">https://app.uniswap.org/swap?chain=mainnet&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254</code><div class="row"><button type="button" class="copybtn" data-copy="https://app.uniswap.org/swap?chain=mainnet&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254">copy link</button><a class="alt" href="https://app.uniswap.org/swap?chain=mainnet&amp;inputCurrency=ETH&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">pay with ETH instead</a><a class="addmm" href="#add-to-metamask" role="button" title="adds LUV (0x2711…8254, 18 decimals) with its mark to MetaMask on Ethereum mainnet"><img src="gfx/brand/metamask-fox.svg" alt="">Add LUV to MetaMask</a></div></div>
+  <p>If Uniswap opens without LUV filled in, paste the contract address into its token search: the app only lists tokens it already knows, and LUV is found by address. The same address is what MetaMask needs.</p>
+  <p>On Uniswap, on Ethereum mainnet. The button at the top of every page opens the swap preset from USDC to LUV; you can pay with ETH instead. <b>Set slippage to 10%.</b> The 5% trade fee is what pays holders, and a young pool moves when you enter it, so a lower setting fails with "insufficient output amount" or "no routes".</p>
+  <p>The contract address is shown in full at the top of this page and under <a href="#contracts">the contracts</a>, with a copy button. Check it against Etherscan before you paste it anywhere else.</p>
+  <details><summary>why the Uniswap app sometimes says "no routes"</summary><p>The app's auto-router does not quote fee-on-transfer tokens. The Universal Router and the V2 route that supports fee-on-transfer do. Retry with the V2 route or raise slippage.</p>
+  <details><summary>the actuality</summary><ul class="acts"><li class="chain"><span class="k">✓</span><a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">LUV on Etherscan</a></li><li class="chain"><span class="k">✓</span><a href="https://etherscan.io/tx/0xb3b93b9d82d8710839c05dd870bc2dc7e7bcd42951ec48a22b5dcbab890fc715" target="_blank" rel="noopener">a real buy</a> · <a href="https://etherscan.io/tx/0x954a2fcf8d07b3927f5f0f7bdbdfe46c6371e62aa68817f29ca03715123bf04b" target="_blank" rel="noopener">a real sell</a></li><li class="doc"><span class="k">📄</span><a href="llms.txt">the trading guide for agents in llms.txt</a></li></ul></details></details>
+</div></details>
+<details class="depth"><summary><span class="jewel"></span><span><span class="t">Why does a token scanner flag LUV?</span></span></summary><div class="body">
+  <p>Automated scanners flag every fee-on-transfer token, because a fee looks like a tax to a script. The answer is not a badge but two checks you can make yourself: the source is verified on Etherscan and matches the deployed bytecode, and the code contains no blacklist, no pause, no mint, no sell block, and fees that can only be lowered. The liquidity is also locked, which is what most scanners actually want to see.</p>
+  <details><summary>the actuality</summary><ul class="acts"><li class="chain"><span class="k">✓</span><a href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254#code" target="_blank" rel="noopener">verified source</a></li><li class="page"><span class="k">◉</span><a href="liqlock.html">the lock, live</a></li><li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/passed.md" target="_blank" rel="noopener">passed.md: the no-honeypot tests</a></li></ul></details>
+</div></details>
+<details class="depth" id="metamask"><summary><span class="jewel"></span><span><span class="t">How do I add LUV to MetaMask?</span></span></summary><div class="body">
+  <p>One click: the button switches MetaMask to Ethereum mainnet and offers LUV with its gold-heart mark. Other chains are added when the LUVbridge is live.</p>
+  <p style="margin:10px 0 14px"><a class="addmm" href="#add-to-metamask" role="button" title="adds LUV (0x2711…8254, 18 decimals) with its mark to MetaMask on Ethereum mainnet"><img src="gfx/brand/metamask-fox.svg" alt="">Add LUV to MetaMask</a></p>
+  <p>By hand: in MetaMask choose Import tokens, network Ethereum mainnet, paste the address <span class="addr">0x2711111111683B8708cb9a48cBf36a51315F8254</span>, symbol LUV, 18 decimals. Most wallets show a USD value once their price feed indexes the pair; the authoritative price is on this site's <a href="chart.html">chart</a>, read from the pair reserves every minute, and on Uniswap itself.</p>
+</div></details>
+
+<h2 id="fees">Fees and reflections</h2>
+<details class="depth"><summary><span class="jewel"></span><span><span class="t">What are the fees?</span></span></summary><div class="body">
+  <p>5% on market trades, buys and sells through the pair, split 3 : 1 : 1. Three points reflect to holders. One point is added to liquidity, so every trade permanently deepens the pool. One point funds the team, and the team spends only by two-of-three consensus across its marketing, community and development components. Wallet-to-wallet transfers carry no fee.</p>
+  <details><summary>how it is engineered</summary><p>The 3% pays you to hold; the 1% defends what you hold. Deeper liquidity means less price impact per exit for everyone who remains. The team and liquidity slices accrue as LUV inside the token contract and are swapped to ETH by a public housekeeping call, processFees, that anyone may pay gas for.</p>
+  <details><summary>the actuality</summary><ul class="acts"><li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/REFLECTIONS.md" target="_blank" rel="noopener">REFLECTIONS.md</a> · <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/TeamFeeTracker.md" target="_blank" rel="noopener">TeamFeeTracker.md</a></li><li class="chain"><span class="k">✓</span><a href="https://etherscan.io/tx/0xd5404cf53c48c0c54b3c484d42fee5954910880636c023c813cf9cb8415a525b" target="_blank" rel="noopener">a processFees flush, 90.5T fee-LUV swapped to ETH</a></li></ul></details></details>
+</div></details>
+<details class="depth"><summary><span class="jewel"></span><span><span class="t">How do reflections actually reach my wallet?</span></span></summary><div class="body">
+  <p>They do not arrive as a transfer. The contract keeps a reflected supply and a true supply; your balance is your share of the reflected total. When a trade's fee shrinks the reflected supply, every holder's share grows in the same block. Your balance simply reads higher. The pair, the burn address and the platform contracts are excluded, so reflections go only to people.</p>
+  <details><summary>the actuality</summary><ul class="acts"><li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/HOLDER_BALANCE_CALCULATION.md" target="_blank" rel="noopener">HOLDER_BALANCE_CALCULATION.md</a> · <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/REFLECTION_TEST_SUMMARY.md" target="_blank" rel="noopener">REFLECTION_TEST_SUMMARY.md</a></li><li class="chain"><span class="k">✓</span><a href="https://etherscan.io/tx/0x1a496461d1f2e1a58b103105b3e15c8752560521a74accf0f553464ef4dade27" target="_blank" rel="noopener">pair excluded</a> · <a href="https://etherscan.io/tx/0x9561359c7ad40b16c70a241f9e7f32186befed2cad4c0f515a9667c040033ad5" target="_blank" rel="noopener">dEaD excluded</a></li></ul></details>
+</div></details>
+
+<h2 id="supply">Supply</h2>
+<details class="depth"><summary><span class="jewel"></span><span><span class="t">What is the total supply?</span></span></summary><div class="body">
+  <p>111,111,111,111,111,111 LUV, the eighteen-digit repunit, about 111 quadrillion. It was minted once at genesis and there is no mint function, so it can never grow. About 4.98 quadrillion has been sent to the burn address and excluded from rewards, so it never earns reflections and never comes back.</p>
+  <details><summary>the actuality</summary><ul class="acts"><li class="chain"><span class="k">✓</span><a href="https://etherscan.io/tx/0x18721213d12d6e43069f4540f371e80735fbfd48e220b40259de819322d36f45" target="_blank" rel="noopener">genesis: the whole supply minted to the launcher, forwarded to the treasury</a></li><li class="chain"><span class="k">✓</span><a href="https://etherscan.io/tx/0x85431c15611a391d2a7d24d1b8386a9a75bdcc1deecaf0b3b1cb04c04b8dd613" target="_blank" rel="noopener">the burn</a></li><li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/TRILLIONS_CALCULATION.md" target="_blank" rel="noopener">TRILLIONS_CALCULATION.md</a></li></ul></details>
+</div></details>
+<details class="depth"><summary><span class="jewel"></span><span><span class="t">Is there a maximum transaction?</span></span></summary><div class="body">
+  <p>Yes: 1% of supply per transaction, about 1.11 quadrillion LUV. It is the floor the contract allows and it can never be set lower. The pair, the treasury and the platform contracts are exempt so that liquidity operations work in one transaction.</p>
+  <details><summary>the actuality</summary><ul class="acts"><li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/MAXTRANSFER.md" target="_blank" rel="noopener">MAXTRANSFER.md</a></li><li class="chain"><span class="k">✓</span><a href="https://etherscan.io/tx/0x2e98a6157fd3011aec5fd8ad28cc2bd2282ae0197ea5da563bb4a1bab8171f55" target="_blank" rel="noopener">the pair's exemption</a></li></ul></details>
+</div></details>
+<details class="depth"><summary><span class="jewel"></span><span><span class="t">Where is the rest of the supply?</span></span></summary><div class="body">
+  <p>The pool holds what a Uniswap V2 pair can hold: it was seeded at the protocol maximum of 2¹¹²−1 wei, about 5.19 quadrillion LUV, because V2 reserves are 112-bit numbers and the full allocation cannot fit one pair. The treasury holds the remaining circulating supply and backs the market as depth grows. Marketing and community allocations are earmarked for the rewritten vault and are listed under the open list below until they are locked.</p>
+  <details><summary>the actuality</summary><ul class="acts"><li class="chain"><span class="k">✓</span><a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254#balances" target="_blank" rel="noopener">holders, on Etherscan</a></li><li class="doc"><span class="k">📄</span><a href="https://github.com/Uniswap/v2-core/blob/master/contracts/UniswapV2Pair.sol" target="_blank" rel="noopener">UniswapV2Pair.sol: the uint112 reserves</a></li></ul></details>
+</div></details>
+
+<h2 id="lock">The lock</h2>
+<details class="depth" open><summary><span class="jewel"></span><span><span class="t">Is the liquidity locked?</span></span></summary><div class="body">
+  <p>Yes. 100% of the circulating LUV/WETH LP is held by an ownerless, extend-only timelock at <span class="addr">0x111111f70cb3469B5285862d7a4e7Cb53d04f502</span>. Lock #1 holds 16,419,484.36 LP, the full position, and matures 2026-11-22. The treasury's LP balance is exactly zero. Nobody, including the team, can bring the maturity forward; the beneficiary can only extend it.</p>
+  <details><summary>how it is engineered</summary><p>Two gates, the clock and the block height, must both pass. There is no owner, no pause, no rescue, no upgrade. The contract was deployed through Create3d so its address is reproducible on every chain and claimable only by the treasury. 113 tests including six stateful invariants over 32,768 random calls, and a mainnet-fork rehearsal that locked the real position and proved it comes back to the wei. It has not yet had an independent audit, which its own audit file says plainly.</p>
+  <details><summary>the actuality</summary><ul class="acts"><li class="page"><span class="k">◉</span><a href="liqlock.html">liqlock.html: your browser reads the lock from Ethereum</a></li><li class="chain"><span class="k">✓</span><a href="https://etherscan.io/tx/0xc2c3c73d2bfa216807e900abb17eff4a98808b45768cf11f23e829e52a10390d" target="_blank" rel="noopener">lock #1, the full position</a> · <a href="https://etherscan.io/tx/0x113ba138d140f7ec0ca75c8697d69b7e8a931d508515ded6cee1523c5627f38d" target="_blank" rel="noopener">the deploy</a> · <a href="https://etherscan.io/address/0x111111f70cb3469B5285862d7a4e7Cb53d04f502#code" target="_blank" rel="noopener">verified source</a></li><li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/liq-locker" target="_blank" rel="noopener">liq-locker</a> · <a href="https://github.com/SHAMBA-LUV/liq-locker/blob/main/docs/DEPLOYMENT.md" target="_blank" rel="noopener">DEPLOYMENT.md</a> · <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/LIQLOCK.md" target="_blank" rel="noopener">LIQLOCK.md</a></li></ul></details></details>
+</div></details>
+<details class="depth"><summary><span class="jewel"></span><span><span class="t">What is the LUVlocker, and how is it different?</span></span></summary><div class="body">
+  <p>The liq-locker holds LP tokens. The LUVlocker is a vault for LUV itself: principal on an extend-only timer, reflections harvestable as interest. The version deployed on 2026-07-25 has a High-severity finding from the August audit and holds zero LUV; it will not be used for real supply. The rewrite, luv-locker, fixes the finding, removes the owner, and is the route the earmarked supply will take once its remaining tests and an independent audit are done.</p>
+  <details><summary>the actuality</summary><ul class="acts"><li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/luv-locker" target="_blank" rel="noopener">luv-locker</a> · <a href="https://github.com/SHAMBA-LUV/vesting" target="_blank" rel="noopener">vesting</a></li><li class="chain"><span class="k">✓</span><a href="https://etherscan.io/address/0xe07ACAde4bE2bbc264EA702880ed988EBae9B898" target="_blank" rel="noopener">the original LUVLocker, holding zero</a></li></ul></details>
+</div></details>
+
+<h2 id="contracts">The contracts</h2>
+<div class="copybox"><span class="lbl">the LUV contract, Ethereum mainnet</span><code class="full" id="luvaddr">0x2711111111683B8708cb9a48cBf36a51315F8254</code><div class="row"><button type="button" class="copybtn" data-copy="0x2711111111683B8708cb9a48cBf36a51315F8254">copy address</button><a class="alt" href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254#code" target="_blank" rel="noopener">verified on Etherscan</a></div></div>
+<details class="depth" open><summary><span class="jewel"></span><span><span class="t">The full ledger: every address, in the open</span></span></summary><div class="body">
+  <p>Deployer, owner and treasury are bankon.eth, <span class="addr">0x10f7Ee226B16bea7f365Dc1eDEF159Fc1957D169</span>. Salt <code>luv.launcher.6aodu</code>. Every contract is source-verified on Etherscan.</p>
+  <div class="tblwrap"><table class="ledgertbl">
+    <tr><th>contract</th><th>address</th><th>source</th></tr>
+    <tr><td>ShambaLuv, the token</td><td><a class="addr" href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254#code" target="_blank" rel="noopener">0x2711111111683B8708cb9a48cBf36a51315F8254</a></td><td><a href="https://github.com/SHAMBA-LUV/LUV/blob/main/contracts/ShambaLuv.sol" target="_blank" rel="noopener">ShambaLuv.sol</a></td></tr>
+    <tr><td>LUV/WETH pair, Uniswap V2</td><td><a class="addr" href="https://etherscan.io/address/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31" target="_blank" rel="noopener">0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31</a></td><td><a href="https://github.com/Uniswap/v2-core/blob/master/contracts/UniswapV2Pair.sol" target="_blank" rel="noopener">UniswapV2Pair.sol</a></td></tr>
+    <tr><td>liquidity_locker, the LP lock</td><td><a class="addr" href="https://etherscan.io/address/0x111111f70cb3469B5285862d7a4e7Cb53d04f502#code" target="_blank" rel="noopener">0x111111f70cb3469B5285862d7a4e7Cb53d04f502</a></td><td><a href="https://github.com/SHAMBA-LUV/liq-locker/blob/main/src/liquidity_locker.sol" target="_blank" rel="noopener">liquidity_locker.sol</a></td></tr>
+    <tr><td>Create3d, the deterministic factory</td><td><a class="addr" href="https://etherscan.io/address/0xa5A2581d564248801cc5e06DbB764c99c170320A#code" target="_blank" rel="noopener">0xa5A2581d564248801cc5e06DbB764c99c170320A</a></td><td>same address on ETH, OP, ARB, Base, Polygon</td></tr>
+    <tr><td>LuvLauncher, genesis</td><td><a class="addr" href="https://etherscan.io/address/0xBAAc0a44698230661018A9eED48b4e52F14d7523#code" target="_blank" rel="noopener">0xBAAc0a44698230661018A9eED48b4e52F14d7523</a></td><td><a href="https://github.com/SHAMBA-LUV/LUV/tree/main/contracts" target="_blank" rel="noopener">contracts/</a></td></tr>
+    <tr><td>ShambaLuvAirdrop, signature-gated claim</td><td><a class="addr" href="https://etherscan.io/address/0xdf2C1836550c5711EF9c021cB0de86241dc1DEf3#code" target="_blank" rel="noopener">0xdf2C1836550c5711EF9c021cB0de86241dc1DEf3</a></td><td><a href="https://github.com/SHAMBA-LUV/LUV/blob/main/contracts/ShambaLuvAirdrop.sol" target="_blank" rel="noopener">ShambaLuvAirdrop.sol</a></td></tr>
+    <tr><td>LuvBatchGesture, batched gifting</td><td><a class="addr" href="https://etherscan.io/address/0xc734e05A6E944D700FdA948fe7B2D0bDF115B4dD#code" target="_blank" rel="noopener">0xc734e05A6E944D700FdA948fe7B2D0bDF115B4dD</a></td><td><a href="https://github.com/SHAMBA-LUV/LUV/blob/main/contracts/LUVbus.sol" target="_blank" rel="noopener">LUVbus.sol</a></td></tr>
+    <tr><td>IncentiveDistributor, the earn rail</td><td><a class="addr" href="https://etherscan.io/address/0x607E477AB12406A3294A7Ba63817103f92D8f806#code" target="_blank" rel="noopener">0x607E477AB12406A3294A7Ba63817103f92D8f806</a></td><td><a href="https://github.com/SHAMBA-LUV/LUV/blob/main/contracts/IncentiveDistributor.sol" target="_blank" rel="noopener">IncentiveDistributor.sol</a></td></tr>
+    <tr><td>LUVLocker, original vault (holds zero)</td><td><a class="addr" href="https://etherscan.io/address/0xe07ACAde4bE2bbc264EA702880ed988EBae9B898#code" target="_blank" rel="noopener">0xe07ACAde4bE2bbc264EA702880ed988EBae9B898</a></td><td><a href="https://github.com/SHAMBA-LUV/LUV/blob/main/contracts/oz/LUVLockerModern.sol" target="_blank" rel="noopener">LUVLockerModern.sol</a></td></tr>
+    <tr><td>LuvAccountFactory, ERC-4337</td><td><a class="addr" href="https://etherscan.io/address/0xB8cb4780d79ce0c6DA7700ad46d976376AC21D09#code" target="_blank" rel="noopener">0xB8cb4780d79ce0c6DA7700ad46d976376AC21D09</a></td><td><a href="https://github.com/SHAMBA-LUV/LUV/blob/main/contracts/aa/LuvAccountFactory.sol" target="_blank" rel="noopener">LuvAccountFactory.sol</a></td></tr>
+    <tr><td>LuvPaymaster, ERC-4337</td><td><a class="addr" href="https://etherscan.io/address/0xa5Bee1887F145893Fd3698Eb0b4c761d088Ea68A#code" target="_blank" rel="noopener">0xa5Bee1887F145893Fd3698Eb0b4c761d088Ea68A</a></td><td><a href="https://github.com/SHAMBA-LUV/LUV/blob/main/contracts/aa/LuvPaymaster.sol" target="_blank" rel="noopener">LuvPaymaster.sol</a></td></tr>
+  </table></div>
+</div></details>
+
+<h2 id="security">Security</h2>
+<details class="depth"><summary><span class="jewel"></span><span><span class="t">Is the code audited and open?</span></span></summary><div class="body">
+  <p>Open, yes: every contract is on GitHub and verified on Etherscan. Audited, yes, in the honest sense: a full internal audit was published in August 2026, severity-ranked, with each finding tagged live or pre-deploy, and 174 curated tests are listed one by one with their status. Where a finding needed a rewrite, the rewrite is its own repository with its own tests. No independent third-party audit has been paid for yet, and the documents say so rather than imply otherwise.</p>
+  <details><summary>what the audit found</summary><p>No honeypot switches in the token: no blacklist, pause, mint or sell block, and fees can only be lowered. Two act-now items were raised for the treasury: pause or withdraw the still-funded airdrop contract, and never route real supply through the original vault. Both are tracked on the open list.</p>
+  <details><summary>the actuality</summary><ul class="acts"><li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/passed.md" target="_blank" rel="noopener">passed.md</a> · <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/AUDIT.md" target="_blank" rel="noopener">AUDIT.md</a> · <a href="https://github.com/SHAMBA-LUV/LUV/blob/main/SECURITY.md" target="_blank" rel="noopener">SECURITY.md</a> · <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/SECURITY.md" target="_blank" rel="noopener">docs/SECURITY.md</a></li><li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/liq-locker/blob/main/test.md" target="_blank" rel="noopener">liq-locker test.md</a> · <a href="https://github.com/SHAMBA-LUV/luv-locker/blob/main/test.md" target="_blank" rel="noopener">luv-locker test.md</a></li></ul></details></details>
+</div></details>
+<details class="depth"><summary><span class="jewel"></span><span><span class="t">Who controls the token, and can they rug it?</span></span></summary><div class="body">
+  <p>The owner is the treasury, bankon.eth, and ownership has not been renounced. What the owner can do is bounded by the code: lower fees, set exemptions, set the pair. What the owner cannot do: mint, pause, blacklist, block sells, raise fees, or unlock the liquidity. The liquidity is in a contract with no owner at all. That is the difference between a promise and a lock.</p>
+  <details><summary>the actuality</summary><ul class="acts"><li class="chain"><span class="k">✓</span><a href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254#readContract" target="_blank" rel="noopener">read the token's owner and fees yourself</a></li><li class="chain"><span class="k">✓</span><a href="https://etherscan.io/address/0x111111f70cb3469B5285862d7a4e7Cb53d04f502#code" target="_blank" rel="noopener">the locker: no owner in the file</a></li></ul></details>
+</div></details>
+<details class="depth"><summary><span class="jewel"></span><span><span class="t">What is the cypherpunk4096 standard?</span></span></summary><div class="body">
+  <p>Five commitments LUV builds to: determinism as identity, zero dependencies, verification over trust, precision without approximation, and quantum-migratable signatures. Upgradeable proxies, admin backdoors, pausable custody, remote fetches and unverified bytecode fail the mark. "Verified" is a reserved word on this site: it means the Etherscan green checkmark, and nothing else.</p>
+  <details><summary>the actuality</summary><ul class="acts"><li class="doc"><span class="k">📄</span><a href="https://github.com/cypherpunk4096/standard" target="_blank" rel="noopener">cypherpunk4096/standard</a> · <a href="https://github.com/cypherpunk4096/scientific" target="_blank" rel="noopener">scientific, the reference token</a> · <a href="https://github.com/cypherpunk2048" target="_blank" rel="noopener">cypherpunk2048, the predecessor</a></li></ul></details>
+</div></details>
+
+<h2 id="earn">Earning</h2>
+<details class="depth"><summary><span class="jewel"></span><span><span class="t">Is the free airdrop still open?</span></span></summary><div class="body">
+  <p>The trillion-LUV gesture closed after Phase 1. Signing in still provisions a wallet, and holding LUV still earns reflections on every trade. The airdrop contract remains on chain with its claims recorded.</p>
+  <details><summary>the actuality</summary><ul class="acts"><li class="chain"><span class="k">✓</span><a href="https://etherscan.io/address/0xdf2C1836550c5711EF9c021cB0de86241dc1DEf3" target="_blank" rel="noopener">the airdrop contract</a> · <a href="https://etherscan.io/tx/0x2db0403b58fc06f4fc6a7fae3934005872fdcab1f405e6e787426818f9946e13" target="_blank" rel="noopener">claim #1</a></li></ul></details>
+</div></details>
+<details class="depth"><summary><span class="jewel"></span><span><span class="t">What is the LUVdrip?</span></span></summary><div class="body">
+  <p>A million LUV a day for every signed-in participant, flowing at 11.574 LUV per second, capped daily. It accrues gas-free and is redeemed in one batched transaction when you choose. The meter is live; the on-chain payout waits on a new distributor deployment, listed on the open list below. Nothing accrued expires while you wait.</p>
+  <details><summary>the actuality</summary><ul class="acts"><li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/LUVDRIP.md" target="_blank" rel="noopener">LUVDRIP.md</a> · <a href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/LUVDROP_GO_LIVE.md" target="_blank" rel="noopener">LUVDROP_GO_LIVE.md</a></li></ul></details>
+</div></details>
+<details class="depth"><summary><span class="jewel"></span><span><span class="t">What wallet do I get when I sign in, and who holds the key?</span></span></summary><div class="body">
+  <p>An ERC-4337 smart account, provisioned at sign-in and yours alone. You can export the key; the platform keeps it encrypted only so it can deliver LUV to you, and firstLUV explains why you should keep it private or place it in a trust. You can also sign in with MetaMask and use your own address; the gesture rail is social-gated because a bare wallet is trivial to sybil.</p>
+  <details><summary>the actuality</summary><ul class="acts"><li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/firstLUV.md" target="_blank" rel="noopener">firstLUV.md</a> · <a href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/SIGNER_VAULT.md" target="_blank" rel="noopener">SIGNER_VAULT.md</a> · <a href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/OAUTH_SETUP.md" target="_blank" rel="noopener">OAUTH_SETUP.md</a></li><li class="chain"><span class="k">✓</span><a href="https://etherscan.io/address/0xB8cb4780d79ce0c6DA7700ad46d976376AC21D09#code" target="_blank" rel="noopener">the account factory</a></li></ul></details>
+</div></details>
+
+<h2 id="chains">Chains</h2>
+<details class="depth"><summary><span class="jewel"></span><span><span class="t">Which chain is LUV on?</span></span></summary><div class="body">
+  <p>Ethereum mainnet, only. The address is deterministic: the Create3d factory sits at one address on Ethereum, Optimism, Arbitrum, Base and Polygon, and the LUV address is reserved for the treasury on each of them. When LUV deploys to another chain it will be at the address you already know, and until then any "LUV" at a different address on any chain is not LUV.</p>
+  <details><summary>the actuality</summary><ul class="acts"><li class="page"><span class="k">◉</span><a href="roadmap.html#crosschain">the cross-chain deployment on the roadmap, with the four transactions</a></li><li class="chain"><span class="k">✓</span>Create3d on <a href="https://optimistic.etherscan.io/address/0xa5A2581d564248801cc5e06DbB764c99c170320A" target="_blank" rel="noopener">Optimism</a> · <a href="https://arbiscan.io/address/0xa5A2581d564248801cc5e06DbB764c99c170320A" target="_blank" rel="noopener">Arbitrum</a> · <a href="https://basescan.org/address/0xa5A2581d564248801cc5e06DbB764c99c170320A" target="_blank" rel="noopener">Base</a> · <a href="https://polygonscan.com/address/0xa5A2581d564248801cc5e06DbB764c99c170320A" target="_blank" rel="noopener">Polygon</a></li></ul></details>
+</div></details>
+
+<h2 id="drop">The LUV drop</h2>
+<div class="phase" id="pioneers"><div class="num">❤</div><div><h3>Will the Polygon LUV drop be honoured on Ethereum?</h3><p class="lede"><b class="ok">YES.</b> 1 LUV == 1 LUV. On the live Ethereum contract, <span class="addr">0x2711111111683B8708cb9a48cBf36a51315F8254</span>.</p></div></div>
+
+<h2 id="open">The open list</h2>
+<p class="lede">Promised and not yet done. Each with what the chain says today and what will prove it.</p>
+<details class="depth"><summary><span class="jewel"></span><span><span class="t">The distributor that can pay the LUVdrip</span></span></summary><div class="body"><p>Today: the live IncentiveDistributor holds zero LUV and predates the redeem rail, and it is deliberately non-upgradeable, so a new deployment is the only honest route. What proves it: the new contract verified, and two live redemptions with the Redeemed event naming who paid the gas.</p><ul class="acts"><li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/LUVDROP_GO_LIVE.md" target="_blank" rel="noopener">LUVDROP_GO_LIVE.md</a></li></ul></div></details>
+<details class="depth"><summary><span class="jewel"></span><span><span class="t">The earmarked supply locked</span></span></summary><div class="body"><p>Today: marketing and community allocations are earmarked, not locked, because the original vault has a High-severity finding and will not be used. The rewrite needs stateful invariant fuzzing, a fork test against the real token, and an independent audit. What proves it: a deposit transaction, the vault balance, and the unlock time.</p><ul class="acts"><li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/luv-locker" target="_blank" rel="noopener">luv-locker</a></li></ul></div></details>
+<details class="depth"><summary><span class="jewel"></span><span><span class="t">The still-funded airdrop contract paused or withdrawn</span></span></summary><div class="body"><p>Today: the closed airdrop contract still holds a balance and its claim function trusts the signer's voucher for the amount. The audit asks the treasury to pause it or withdraw to treasury. What proves it: the Paused event or the withdrawal transaction.</p><ul class="acts"><li class="chain"><span class="k">✓</span><a href="https://etherscan.io/address/0xdf2C1836550c5711EF9c021cB0de86241dc1DEf3" target="_blank" rel="noopener">the airdrop contract, today</a></li></ul></div></details>
+<details class="depth"><summary><span class="jewel"></span><span><span class="t">An independent audit</span></span></summary><div class="body"><p>Today: the audits are internal and published in full. What proves it: a third-party report, linked from here.</p></div></details>
+
+<h2 id="repos">Every repository</h2>
+<p class="lede">The SHAMBA-LUV organisation on GitHub, in full. Public unless marked.</p>
+<div class="tblwrap"><table class="repos">
+  <tr><th>repository</th><th>what it holds</th></tr>
+  <tr><td><a href="https://github.com/SHAMBA-LUV/LUV" target="_blank" rel="noopener">LUV</a></td><td>The live platform: the Ethereum contracts, the self-hosted backend, the first site as served, the protocol papers and passed.md.</td></tr>
+  <tr><td><a href="https://github.com/SHAMBA-LUV/SHAMBALUV" target="_blank" rel="noopener">SHAMBALUV</a></td><td>The canonical documents: LUVPAPER, WHITEPAPER, EMOTONOMICS, REFLECTIONS, LIQLOCK, SECURITY, firstLUV, and the contract lineage to today.</td></tr>
+  <tr><td><a href="https://github.com/SHAMBA-LUV/liq-locker" target="_blank" rel="noopener">liq-locker</a></td><td>The ownerless LP timelock, live on mainnet, with its tests, fork rehearsal and deployment report.</td></tr>
+  <tr><td><a href="https://github.com/SHAMBA-LUV/luv-locker" target="_blank" rel="noopener">luv-locker</a></td><td>The reflection vault rewritten: principal locked, reflections harvestable, no owner. Not yet mainnet-cleared.</td></tr>
+  <tr><td><a href="https://github.com/SHAMBA-LUV/vesting" target="_blank" rel="noopener">vesting</a></td><td>Two ways to vest a reflection token, the OpenZeppelin-fork method and the in-house standard, side by side with tests.</td></tr>
+  <tr><td><a href="https://github.com/SHAMBA-LUV/luv-site-archive" target="_blank" rel="noopener">luv-site-archive</a></td><td>The complete first luv.pythai.net, frozen 2026-09-05 and mapped in MAP.md.</td></tr>
+  <tr><td><a href="https://github.com/SHAMBA-LUV/MultiSend" target="_blank" rel="noopener">MultiSend</a></td><td>The first multisend test, the origin of LUVbus.</td></tr>
+  <tr><td><a href="https://github.com/SHAMBA-LUV/luvdrop" target="_blank" rel="noopener">luvdrop</a></td><td>The first claim UI.</td></tr>
+  <tr><td><a href="https://github.com/SHAMBA-LUV/luvdat" target="_blank" rel="noopener">luvdat</a> · <a href="https://github.com/SHAMBA-LUV/dataluv" target="_blank" rel="noopener">dataluv</a></td><td>The first airdrop applications; the flow they pioneered is now self-hosted in LUV.</td></tr>
+  <tr><td><a href="https://github.com/SHAMBA-LUV/.github" target="_blank" rel="noopener">.github</a></td><td>The organisation profile.</td></tr>
+  <tr><td>incentivedistributor · LUVlocker · luvdat2 · luvdat3 · frontend</td><td>Private: the incentive platform's working repository and earlier iterations.</td></tr>
+  <tr><td><a href="https://github.com/cypherpunk4096/standard" target="_blank" rel="noopener">cypherpunk4096/standard</a> · <a href="https://github.com/cypherpunk4096/scientific" target="_blank" rel="noopener">scientific</a></td><td>The standard LUV builds to, and the reference token that proved the multichain rail.</td></tr>
+  <tr><td><a href="https://github.com/Professor-Codephreak/emotonomics" target="_blank" rel="noopener">Professor-Codephreak/emotonomics</a></td><td>Emotonomics as a field of economics: the treatise.</td></tr>
+</table></div>
+
+<h2 id="papers">The papers</h2>
+<ul class="acts">
+  <li class="doc"><span class="k">📄</span><a href="https://github.com/Professor-Codephreak/emotonomics/blob/master/docs/EMOTONOMICS_FIELD.md" target="_blank" rel="noopener">Emotonomics, the field paper</a>: attention as the source of value, five axioms, testable propositions.</li>
+  <li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/LUV_ENGINE.md" target="_blank" rel="noopener">The LUV engine</a>: an engine from emotonomics; the pulse at exactly 1 Hz.</li>
+  <li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/SENTIMENT.md" target="_blank" rel="noopener">Measured feeling</a>: sentiment as what the community verifiably does on chain.</li>
+  <li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/WEI_OF_LUV.md" target="_blank" rel="noopener">The WEI of LUV</a>: the exact arithmetic of the price.</li>
+  <li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/THE_EXABYTE_THE_ETHER_AND_THE_LUV.md" target="_blank" rel="noopener">The exabyte, the ether and the LUV</a>: one number wearing three units.</li>
+  <li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/firstLUV.md" target="_blank" rel="noopener">firstLUV</a>: your first LUV and the key that holds it.</li>
+  <li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/LUVPAPER.md" target="_blank" rel="noopener">The LUVPAPER</a> · <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/WHITEPAPER.md" target="_blank" rel="noopener">The whitepaper</a> · <a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/PHASE4.md" target="_blank" rel="noopener">Phase 4</a></li>
+  <li class="page"><span class="k">◉</span><a href="https://github.com/SHAMBA-LUV/luv-site-archive" target="_blank" rel="noopener">The archive</a>: the rendered paper pages of the first site, and everything else it held.</li>
+</ul>
+
+</div></section>
+
+<footer><div class="wrap">
+  <div><p class="mark">SHAMBA LUV</p><ul><li>LUV <a class="addr" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">0x2711111111683B8708cb9a48cBf36a51315F8254</a></li><li>Built to the <a href="https://github.com/cypherpunk4096/standard" target="_blank" rel="noopener">cypherpunk4096</a> standard.</li></ul></div>
+  <div><p class="mark">Read</p><ul><li><a href="index.html">home</a> · <a href="chart.html">chart</a> · <a href="roadmap.html">roadmap</a> · <a href="liqlock.html">the lock</a></li><li><a href="app.html">sign in to collect and share</a></li>
+    <li><a href="https://github.com/SHAMBA-LUV" target="_blank" rel="noopener">github.com/SHAMBA-LUV</a></li><li><a href="llms.txt">llms.txt</a>, for agents.</li></ul></div>
+  <div><p class="mark">Follow</p><ul><li><a href="https://x.com/shambaluv" target="_blank" rel="noopener">@shambaluv</a> · <a href="https://t.me/+yTfFYQlH53pmODcx" target="_blank" rel="noopener">Telegram</a></li><li><a href="mailto:luv@pythai.net">luv@pythai.net</a></li></ul></div>
+</div></footer>
+<script src="site.js?v=7"></script>
 </body>
 </html>

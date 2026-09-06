@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Dashboard — sign in, collect, share — SHAMBA LUV</title>
+<meta name="description" content="SHAMBA LUV (LUV) — emotonomics. A reflection token where holding grows your balance: hold LUV, earn LUV. LUV is priceless, and the market measures it.">
+<meta name="author" content="SHAMBA LUV">
+<link rel="canonical" href="https://luv.pythai.net/app.html">
+<meta name="robots" content="noindex,follow">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SHAMBA LUV">
+<meta property="og:title" content="SHAMBA LUV — hold LUV, earn LUV">
+<meta property="og:description" content="111 quadrillion LUV, fixed at genesis. Sign in, get your smart wallet, receive the 1-trillion-LUV gesture. LUV is priceless.">
+<meta property="og:url" content="https://luv.pythai.net/">
+<meta property="og:image" content="https://luv.pythai.net/gfx/og-card.png">
+<meta property="og:image:secure_url" content="https://luv.pythai.net/gfx/og-card.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="SHAMBA LUV — the gold binary heart">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@shambaluv">
+<meta name="twitter:title" content="SHAMBA LUV — hold LUV, earn LUV">
+<meta name="twitter:description" content="111 quadrillion LUV, fixed at genesis. A reflection token where holding grows your balance. LUV is priceless — and the market measures it.">
+<meta name="twitter:image" content="https://luv.pythai.net/gfx/og-card.png">
+<meta name="twitter:image:alt" content="SHAMBA LUV — the gold binary heart">
+<meta name="keywords" content="SHAMBA LUV, LUV token, hold LUV earn LUV, reflection token, emotonomics, LUVdrip, LUV price, Uniswap, Ethereum, 0x2711111111683B8708cb9a48cBf36a51315F8254, luv.pythai.net">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+<meta name="theme-color" content="#160a0f">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"Organization","@id":"https://luv.pythai.net/#org","name":"SHAMBA LUV","alternateName":"LUV",
+ "url":"https://luv.pythai.net/","logo":{"@type":"ImageObject","url":"https://luv.pythai.net/gfx/logo.png","width":512,"height":512},
+ "email":"luv@pythai.net",
+ "description":"An emotonomics protocol on Ethereum mainnet: a fixed-supply reflection token where attention is the source of value and holding grows your balance.",
+ "sameAs":["https://github.com/SHAMBA-LUV/LUV","https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254"]},
+{"@type":"WebSite","@id":"https://luv.pythai.net/#site","name":"SHAMBA LUV","url":"https://luv.pythai.net/",
+ "inLanguage":"en","publisher":{"@id":"https://luv.pythai.net/#org"}},
+{"@type":"WebPage","@id":"https://luv.pythai.net/#page","url":"https://luv.pythai.net/",
+ "name":"SHAMBA LUV — hold LUV, earn LUV","isPartOf":{"@id":"https://luv.pythai.net/#site"},
+ "primaryImageOfPage":{"@type":"ImageObject","url":"https://luv.pythai.net/gfx/logo.png"},
+ "description":"SHAMBA LUV (LUV) — emotonomics. A reflection token where holding grows your balance, and every real new signup receives a 1-trillion-LUV gesture."}]}
+</script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --ink:#160a0f;        /* wine-black ground */
+  --wine:#2b111c;       /* raised panels */
+  --seam:#4a1f30;       /* borders */
+  --rose:#ff4d6d;       /* the heart */
+  --pink:#ff006e;       /* legacy SHAMBA LUV brand pink */
+  --purple:#8338ec;     /* legacy SHAMBA LUV brand purple */
+  --candle:#0ecb81;     /* CANDLE GREEN — the up-candle. Positive events, and only those:
+                           a hover that opens a market, a balance that arrived, a step that
+                           completed. Pink is the heart; green is the confirmation. */
+  --candle-dim:rgba(14,203,129,.14);
+  --blush:#ffb3c1;      /* soft secondary */
+  --cream:#f6e7eb;      /* body text */
+  --dim:#b98da0;        /* muted text */
+  --gold:#e3b25f;       /* wealth-ledger accent, sparing */
+  --mono:ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--cream);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--blush)}
+a:hover{color:var(--rose)}
+:focus-visible{outline:2px solid var(--rose);outline-offset:3px;border-radius:2px}
+button{font-family:var(--mono);cursor:pointer;touch-action:manipulation}
+.wrap{max-width:1060px;margin:0 auto;padding:0 24px}
+
+/* page-swap: signed-in ⇒ dashboard replaces the landing (the previous flow) */
+body.authed .landing-only{display:none}
+#dashboard{display:none}
+body.authed #dashboard{display:block}
+
+/* ── header ── */
+header{border-bottom:1px solid var(--seam)}
+.bar{display:flex;align-items:center;gap:14px;padding:16px 0}
+.brand{font-family:var(--mono);font-size:15px;letter-spacing:.14em;color:var(--cream);text-decoration:none}
+.brand b{color:var(--rose)}
+.bar .spacer{flex:1}
+/* CONNECT to COLLECT — the header phrase IS the login */
+.ctc{display:flex;align-items:baseline;gap:8px;font-family:var(--mono)}
+.ctc em{font-style:normal;font-size:12px;color:var(--dim);letter-spacing:.1em}
+.wordbtn{border:0;background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent;
+  font-size:15px;font-weight:800;letter-spacing:.16em;padding:10px 2px;min-height:44px}
+.wordbtn:hover{filter:brightness(1.25);text-decoration:underline;text-decoration-color:var(--rose);text-underline-offset:5px}
+body.authed .ctc{display:none}
+.liveview{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--gold);text-decoration:none;border:1px solid rgba(227,178,95,.5);border-radius:999px;padding:6px 13px;white-space:nowrap}
+.liveview:hover{color:var(--rose);border-color:var(--rose)}
+.socials{display:flex;gap:10px}
+.socials a{width:38px;height:38px;border:1px solid var(--seam);border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:14px;text-decoration:none;color:var(--dim);background:var(--wine)}
+.socials a:hover{border-color:var(--rose);color:var(--rose)}
+.gastank{font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--gold);border:1px solid rgba(227,178,95,.5);border-radius:999px;padding:5px 11px;white-space:nowrap}
+.gastank b{color:var(--cream)}
+.gastank.low{color:var(--rose);border-color:rgba(255,77,109,.6)}
+.gastank.off{color:var(--dim);border-color:var(--seam)}
+.healthdot{width:9px;height:9px;border-radius:50%;background:var(--seam);display:inline-block;flex:none}
+.healthdot.up{background:var(--rose);animation:heartbeat 1.4s ease-in-out infinite}
+.bar small{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--dim)}
+
+/* ── hero: the classic SHAMBA LUV welcome ── */
+.hero{padding:56px 0 32px;text-align:center;display:flex;flex-direction:column;align-items:center}
+.hero .logo{width:clamp(96px,16vw,150px);height:auto;animation:heartbeat 1.4s ease-in-out infinite}
+.hero h1{font-size:clamp(42px,8vw,76px);font-weight:800;letter-spacing:.02em;line-height:1.1;margin-top:14px;
+  background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .phase{margin-top:8px;font-size:clamp(16px,2.4vw,22px);color:var(--blush)}
+.hero .connect{margin-top:6px;font-family:var(--mono);font-size:14px;letter-spacing:.12em;color:var(--dim)}
+.collect{margin-top:8px;font-size:16px;letter-spacing:.14em;padding:17px 46px;min-height:52px;border-radius:999px;border:0;
+  background:linear-gradient(100deg,var(--pink),var(--purple));color:#fff;font-weight:800;
+  box-shadow:0 12px 34px -10px rgba(255,0,110,.55);animation:pulseglow 2.6s ease-in-out infinite}
+.collect:hover{filter:brightness(1.12);transform:translateY(-1px)}
+@keyframes pulseglow{0%,100%{box-shadow:0 12px 34px -10px rgba(255,0,110,.45)}50%{box-shadow:0 14px 40px -8px rgba(131,56,236,.6)}}
+a.collect{display:inline-flex;align-items:center;justify-content:center;gap:9px;text-decoration:none}
+a.collect .uni-logo{height:20px}
+/* the hero TRADE LUV LIVE button — Uniswap logo front and centre, high contrast */
+#tradebtn{gap:14px;padding:18px 40px;background:linear-gradient(100deg,#FF007A,#8338EC 88%);
+  box-shadow:0 16px 46px -6px rgba(255,0,122,.78);border:2px solid rgba(255,255,255,.4)}
+#tradebtn .uni-logo{height:30px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.4))}
+#tradebtn span{color:#fff;font-weight:800;letter-spacing:.09em;text-shadow:0 1px 3px rgba(0,0,0,.35)}
+#tradebtn:hover{filter:brightness(1.1) saturate(1.15)}
+.claimhero.soldout .amt{background:linear-gradient(100deg,var(--gold),var(--rose));-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:.04em}
+.claimhero.soldout .tag{color:var(--rose);border-color:rgba(255,77,109,.55)}
+
+/* ── the claim callout: the 1-trillion gesture, front and centre ── */
+.claimhero{margin-top:22px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.claimhero .tag{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);
+  border:1px solid rgba(227,178,95,.55);border-radius:999px;padding:5px 14px}
+.claimhero .amt{font-family:var(--mono);font-weight:800;font-size:clamp(28px,6.5vw,56px);line-height:1;letter-spacing:-.01em;
+  background:linear-gradient(100deg,var(--pink),var(--purple),var(--rose));-webkit-background-clip:text;background-clip:text;color:transparent}
+.claimhero .amt span{font-size:.42em;color:var(--blush);-webkit-text-fill-color:var(--blush);letter-spacing:.12em;vertical-align:middle}
+.claimhero .cap{font-size:13.5px;color:var(--dim);max-width:46ch}
+.claimhero .cap b{color:var(--blush)}
+
+/* ── live stats (the old LiveStats grid, self-hosted) ── */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:34px}
+.stat{position:relative;overflow:hidden;border:1px solid var(--seam);border-radius:14px;
+  background:linear-gradient(160deg,var(--wine),rgba(43,17,28,.5));padding:22px 22px 20px;
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.stat::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,var(--rose),var(--blush))}
+.stat.gold::before{background:linear-gradient(90deg,var(--gold),#ffe0a3)}
+.stat:hover{transform:translateY(-3px);border-color:var(--rose);box-shadow:0 12px 32px -14px rgba(255,120,150,.4)}
+.stat .icon{display:block;font-size:20px;line-height:1;margin-bottom:11px}
+.stat .v{font-family:var(--mono);font-size:clamp(20px,2.6vw,27px);font-weight:700;color:var(--blush);overflow-wrap:break-word;letter-spacing:-.01em}
+.stat .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--cream);margin-top:8px}
+.stat .sub{font-size:11.5px;color:var(--dim);margin-top:3px}
+.stat.gold .v{color:var(--gold)}
+
+/* ── status strip ── */
+.strip{display:flex;flex-wrap:wrap;gap:12px;align-items:center;border:1px solid var(--seam);
+  background:var(--wine);border-radius:10px;padding:14px 18px;margin:30px 0 0;font-family:var(--mono);font-size:13px}
+.badge{padding:3px 11px;border-radius:999px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--seam)}
+.badge.imminent{color:var(--gold);border-color:var(--gold)}
+.badge.live{color:var(--ink);background:var(--rose);border-color:var(--rose)}
+/* ── VERIFIED — the green checkmark ── */
+.vbadge{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12.5px;letter-spacing:.18em;
+  text-transform:uppercase;color:#7ee2a0;border:1px solid rgba(126,226,160,.55);border-radius:999px;padding:10px 22px;
+  text-decoration:none;background:rgba(24,52,36,.35)}
+.vbadge:hover{border-color:#7ee2a0;box-shadow:0 0 22px -8px rgba(126,226,160,.6)}
+.vcheck{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;
+  background:#21a45d;color:#fff;font-size:12px;font-weight:800}
+.vnote{color:var(--dim);font-size:12.5px;margin-top:10px}
+.vnote a{color:var(--blush)}
+.strip .addr{color:var(--blush);word-break:break-all}
+.strip .note{color:var(--dim);font-size:12px}
+.btn{font-family:var(--mono);font-size:12px;background:none;border:1px solid var(--seam);color:var(--cream);border-radius:7px;padding:7px 13px;text-decoration:none;display:inline-block}
+.btn:hover{border-color:var(--rose);color:var(--rose)}
+/* sign out — prominent red outline */
+#logout{border:2px solid var(--rose);color:var(--rose);font-weight:700}
+#logout:hover{background:rgba(255,77,109,.14);color:var(--rose)}
+/* add LUV to MetaMask — chart-candle green outline */
+#addtoken,#addtoken2{border:2px solid #0ecb81;color:#0ecb81}
+#addtoken:hover,#addtoken2:hover{background:var(--candle-dim);border-color:var(--candle);color:var(--candle)}
+
+/* ── sections ── */
+section{padding:52px 0 0}
+.sechead{font-family:var(--mono);font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--rose);margin-bottom:18px}
+.sechead.gold{color:var(--gold)}
+
+/* ── the gesture CTA (landing) ── */
+.gesture{border:1px solid var(--seam);border-radius:12px;background:var(--wine);padding:30px}
+.gesture h2{font-size:clamp(20px,2.6vw,26px);font-weight:650;line-height:1.3}
+.gesture h2 b{color:var(--rose)}
+.gesture>p{color:var(--dim);margin-top:8px;max-width:62ch}
+.gesturebtns{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+.gesturebtns a,.gesturebtns button{font-family:var(--mono);font-size:13px;padding:12px 20px;min-height:44px;background:var(--ink);
+  border:1px solid var(--seam);color:var(--cream);border-radius:7px;text-decoration:none;display:inline-flex;align-items:center}
+.gesturebtns a:hover,.gesturebtns button:hover{border-color:var(--rose);color:var(--rose)}
+.gesture .fineprint{margin-top:16px;font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.04em}
+
+/* ── login modal (the previous connect modal, self-hosted) ── */
+/* MetaMask-style wallet actions */
+.wallet-actions{display:flex;gap:12px;margin-top:16px}
+.wact{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--mono);font-weight:800;font-size:14px;
+  padding:14px;min-height:50px;border:0;border-radius:12px;color:#fff;background:linear-gradient(100deg,var(--pink),var(--purple));
+  box-shadow:0 10px 26px -12px rgba(255,0,110,.5)}
+.wact:hover{filter:brightness(1.12)}
+.wact span{font-size:16px}
+.recv-addr{font-family:var(--mono);font-size:13px;word-break:break-all;color:var(--gold);background:var(--ink);
+  border:1px solid var(--seam);border-radius:10px;padding:14px;margin:14px 0;text-align:center}
+.modalcard label{display:block;text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin:12px 0 4px}
+.modalcard input{width:100%;box-sizing:border-box;font-family:var(--mono);font-size:14px;padding:12px;border-radius:10px;border:1px solid var(--seam);background:var(--ink);color:var(--cream)}
+.wmodal,#loginmodal{position:fixed;inset:0;background:rgba(10,4,7,.8);backdrop-filter:blur(3px);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px}
+.wmodal.open,#loginmodal.open{display:flex}
+.modalcard{background:var(--wine);border:2px solid var(--rose);border-radius:16px;max-width:380px;width:100%;padding:28px;
+  box-shadow:0 0 0 4px rgba(255,77,109,.18), 0 24px 60px -12px rgba(255,0,110,.55);animation:modalpop .22s ease-out}
+@keyframes modalpop{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
+.modalcard h3{font-family:var(--mono);font-size:15px;letter-spacing:.14em;text-align:center}
+.modalcard h3 b{color:var(--rose)}
+.modalcard .sub{text-align:center;color:var(--dim);font-size:13px;margin-top:6px}
+.modalproviders{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+.modalproviders a,.modalproviders button{font-family:var(--mono);font-size:14px;padding:13px 18px;min-height:48px;border:1px solid var(--seam);border-radius:9px;
+  background:var(--ink);color:var(--cream);text-decoration:none;display:flex;align-items:center;gap:10px;width:100%;text-align:left}
+.modalproviders a:hover,.modalproviders button:hover{border-color:var(--rose);color:var(--rose)}
+.modalproviders .or{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase}
+.modalproviders .or::before,.modalproviders .or::after{content:'';flex:1;border-top:1px solid var(--seam)}
+.modalproviders .soon{font-family:var(--mono);font-size:12px;color:var(--dim);text-align:center;padding:12px;border:1px dashed var(--seam);border-radius:9px}
+.modalcard .close{margin-top:18px;width:100%;padding:10px;font-size:12px;background:none;border:1px solid var(--seam);border-radius:8px;color:var(--dim)}
+.modalcard .close:hover{border-color:var(--rose);color:var(--rose)}
+.modalcard .fine{margin-top:12px;font-family:var(--mono);font-size:10px;color:var(--dim);text-align:center;letter-spacing:.04em}
+
+/* ── dashboard (signed in — the previous post-login view) ── */
+#dashboard{padding:48px 0 0}
+.dashhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px}
+.dashhead h2{font-size:clamp(22px,3vw,30px);font-weight:650}
+.dashhead h2 b{color:var(--rose)}
+.dashhead .via{font-family:var(--mono);font-size:12px;color:var(--dim)}
+.dashgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:22px}
+.panel{border:1px solid var(--seam);border-radius:12px;background:var(--wine);padding:26px}
+.panel .k{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.walletaddr{font-family:var(--mono);font-size:14px;color:var(--blush);word-break:break-all;margin-top:8px}
+.panel .row{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.aatag{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold);border-radius:999px;padding:3px 10px}
+.ownerline{margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--dim);word-break:break-all}
+/* ── public address: highlighted profoundly after login ── */
+.pubkey-label{display:block;margin-top:10px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+.walletaddr.pub{margin-top:8px;font-size:clamp(13px,2vw,16px);font-weight:700;color:var(--cream);
+  background:linear-gradient(160deg,rgba(255,209,102,.12),rgba(255,77,109,.08));
+  border:2px solid var(--gold);border-radius:12px;padding:14px 16px;
+  box-shadow:0 0 0 4px rgba(227,178,95,.12), 0 14px 34px -16px rgba(227,178,95,.5)}
+/* ── private key: hidden; revealed only while the button is held ── */
+.pkrow{margin-top:18px;border-top:1px dashed var(--seam);padding-top:16px}
+.pkfield{margin-top:8px;font-family:var(--mono);font-size:13px;word-break:break-all;color:var(--dim);
+  background:var(--ink);border:1px solid var(--seam);border-radius:10px;padding:12px 14px;min-height:44px;user-select:none}
+.pkfield.shown{color:var(--rose);border-color:var(--rose);user-select:text}
+.pkhold{margin-top:10px;width:100%;padding:12px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;
+  background:none;border:2px dashed var(--rose);border-radius:10px;color:var(--rose);touch-action:none}
+.pkhold:hover{background:rgba(255,77,109,.08)}
+.pkhold.holding{background:var(--rose);color:var(--ink);border-style:solid}
+.pkwarn{margin-top:10px;font-size:11.5px;color:var(--dim);line-height:1.6}
+.pklink{display:inline-block;margin-top:6px;color:var(--gold);text-decoration:none;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;border-bottom:1px solid transparent}
+.pklink:hover{color:var(--rose);border-bottom-color:var(--rose)}
+.pkwarn b{color:var(--rose)}
+.gasest{font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:2px}
+.gasest b{color:var(--gold)}
+.balance{font-family:var(--mono);font-weight:700;font-size:clamp(26px,4vw,40px);color:var(--cream);margin-top:8px;overflow-wrap:break-word}
+.balance small{font-size:.45em;color:var(--rose);white-space:nowrap}
+.balstate{display:inline-block;margin-top:10px;font-family:var(--mono);font-size:12px;letter-spacing:.04em;
+  color:var(--gold);border:1px solid rgba(227,178,95,.55);border-radius:999px;padding:5px 12px}
+.balstate b{color:var(--cream)}
+.balstate.claimed{color:#0ecb81;border-color:rgba(14,203,129,.6)}
+.balstate.claiming{color:var(--blush);border-color:var(--seam)}
+.balline{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:8px}
+.timeline{display:flex;flex-wrap:wrap;gap:0;margin-top:16px}
+.step{flex:1;min-width:110px;padding:10px 12px;border-top:2px solid var(--seam);font-family:var(--mono)}
+.step .t{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.step .d{font-size:12px;color:var(--dim);margin-top:4px;line-height:1.45}
+.step.done{border-top-color:var(--rose)}
+.step.done .t{color:var(--blush)}
+.step.now{border-top-color:var(--gold)}
+.step.now .t{color:var(--gold)}
+.step.now .d{color:var(--cream)}
+.statusline{margin-top:14px;font-size:14px;color:var(--cream)}
+.statusline b{color:var(--gold)}
+.congrats{margin-top:12px;font-size:clamp(18px,2.6vw,24px);font-weight:800;line-height:1.35;
+  background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+.congrats b{color:var(--gold);-webkit-text-fill-color:var(--gold)}
+.congratssub{margin-top:6px;color:var(--dim);font-size:14px}
+.claimnow{margin-top:16px;font-size:15px;letter-spacing:.06em;padding:15px 32px;min-height:48px;border-radius:999px;border:0;
+  background:linear-gradient(100deg,var(--pink),var(--purple));color:#fff;font-weight:700;font-family:var(--sans)}
+.claimnow:hover{filter:brightness(1.12)}
+.claimnow:disabled{filter:grayscale(.6);cursor:wait}
+.ethclaimrow{margin-top:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:baseline}
+.dashfoot{margin-top:18px;display:flex;flex-wrap:wrap;gap:10px}
+
+/* ── tasks widget (IncentiveDistributor actions) ── */
+.task{border-top:1px solid var(--seam);padding:16px 0}
+.task:first-child{border-top:0;padding-top:4px}
+.taskhead{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline}
+.taskhead .name{font-family:var(--mono);font-size:14px;letter-spacing:.08em;color:var(--cream);text-transform:uppercase}
+.taskhead .reward{font-family:var(--mono);font-size:13px;color:var(--gold);font-weight:700}
+.taskhead .lim{font-family:var(--mono);font-size:11px;color:var(--dim)}
+.taskform{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.taskform input{flex:1;min-width:220px;font-family:var(--mono);font-size:13px;padding:10px 12px;min-height:44px;
+  background:var(--ink);border:1px solid var(--seam);border-radius:7px;color:var(--cream)}
+.taskform input::placeholder{color:var(--dim)}
+.taskform input:focus{outline:none;border-color:var(--rose)}
+.taskmsg{font-family:var(--mono);font-size:11px;margin-top:8px;color:var(--dim)}
+/* earn rail — coming soon placeholder */
+.comingsoon{margin-top:10px;text-align:center;font-family:var(--mono);font-size:15px;color:var(--gold);
+  border:1px dashed rgba(227,178,95,.5);border-radius:12px;padding:22px 18px;line-height:1.7}
+.comingsoon b{color:var(--cream)}
+.comingsoon span{display:block;margin-top:8px;font-family:var(--sans);font-size:13px;color:var(--dim)}
+/* phase-2 bottom banner */
+.phasebanner{margin:40px 0 0;padding:18px 20px;text-align:center;border-top:1px solid var(--seam);
+  background:linear-gradient(100deg,rgba(255,0,110,.12),rgba(131,56,236,.12));
+  font-family:var(--mono);font-size:14px;color:var(--cream);letter-spacing:.02em}
+.phasebanner b{background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800}
+.phasebanner .soon{display:inline-block;margin-left:6px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(227,178,95,.5);border-radius:999px;padding:3px 10px}
+.phasebanner .sub{display:block;margin-top:6px;font-size:12px;color:var(--dim)}
+/* top festival bar */
+.topfest{display:block;text-align:center;padding:11px 16px;font-family:var(--mono);font-size:13px;letter-spacing:.03em;
+  background:linear-gradient(100deg,var(--pink),var(--purple));color:#fff;text-decoration:none}
+.topfest:hover{filter:brightness(1.12);color:#fff}
+.topfest b{text-decoration:underline;text-underline-offset:3px}
+/* the player rides in a no-JS details reveal — press play ▶ opens it right here */
+details.festwrap{margin:0}
+details.festwrap>summary.topfest{cursor:pointer;list-style:none}
+details.festwrap>summary.topfest::-webkit-details-marker{display:none}
+details.festwrap[open]>summary.topfest .cue::before{content:"▼"}
+details.festwrap>summary.topfest .cue::before{content:"▶"}
+.festplayer{background:var(--wine);border-bottom:1px solid var(--seam);padding:14px 16px 10px}
+.festplayer .inner{max-width:880px;margin:0 auto}
+.festplayer iframe{display:block;width:100%;height:450px;border:0;border-radius:12px}
+.festplayer .credit{font-family:var(--mono);font-size:10px;color:var(--dim);padding:8px 2px 2px;
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.festplayer .credit a{color:var(--dim);text-decoration:none}
+.festplayer .credit a:hover{color:var(--rose)}
+/* the moonline — celebration of the July blue moon, risen blood red, launch successful */
+.moonline{display:block;text-align:center;padding:9px 16px;font-family:var(--mono);font-size:12px;letter-spacing:.04em;
+  color:var(--cream);background:linear-gradient(100deg,rgba(120,10,20,.55),rgba(22,10,15,.9) 55%,rgba(58,90,160,.35));
+  border-bottom:1px solid var(--seam)}
+.moonline .bluemoon{color:#8fc6ff;font-weight:700}
+.moonline .bloodred{color:#ff3b3b;font-weight:700;text-shadow:0 0 12px rgba(255,45,45,.45)}
+.moonline a{color:var(--gold);text-decoration:none}
+.moonline a:hover{color:var(--rose)}
+.moonline .elements{display:block;font-size:11px;color:var(--dim);margin-top:4px;letter-spacing:.06em}
+.moonline .el{color:var(--blush)}
+.moonline .metal{color:#d9d9e3;font-weight:700;letter-spacing:.14em;text-shadow:0 0 10px rgba(217,217,227,.35)}
+.moonline .aether{color:#b79bff}
+.moonline .chakra{font-weight:700;background:linear-gradient(100deg,#ff3b3b,#ff9d00,#ffd400,#41d97e,#3fa9ff,#7a5cff,#c05cff);
+  -webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:.14em}
+/* bottom: airdrops-claimed count + Uniswap CTA */
+.claimed-count{font-family:var(--mono);font-size:14px;color:var(--dim);margin-bottom:14px}
+.claimed-count b{color:var(--gold);font-size:20px}
+/* ── the LUVdrip meter (substrate/luv-drip.js renders into #luvdripmeter) ── */
+#luvdripmeter .drip-flow{border:1px solid var(--seam);border-radius:12px;background:var(--ink);padding:14px 16px}
+#luvdripmeter .drip-flow.on{border-color:rgba(126,226,160,.45)}
+#luvdripmeter .drip-label{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+#luvdripmeter .drip-amt{font-family:var(--mono);font-weight:800;font-size:clamp(20px,3.4vw,30px);color:var(--cream);margin:4px 0 8px}
+#luvdripmeter .drip-unit{font-size:13px;color:var(--rose)}
+#luvdripmeter .drip-bar{height:7px;border-radius:999px;background:var(--seam);overflow:hidden}
+#luvdripmeter .drip-bar span{display:block;height:100%;background:linear-gradient(90deg,var(--pink),var(--purple));transition:width .2s linear}
+#luvdripmeter .drip-meta{margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--dim)}
+#luvdripmeter .drip-mode{color:var(--gold)}
+/* CLAIM/REDEEM live as the panel's own buttons wired to the backend rails;
+   the Uniswap USDC→LUV preset stays visible — the offering rides with the flow */
+/* ── the participant's holdings, and the two acts, at the top of the panel ── */
+.holdrow{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0 4px}
+.holdcard{flex:1 1 220px;border:1px solid var(--seam);border-radius:12px;background:var(--ink);padding:14px 16px}
+.holdcard.lead{border-color:rgba(255,0,122,.45)}
+.holdcard .hk{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+.holdcard .hv{font-family:var(--mono);font-weight:800;font-size:clamp(22px,3.6vw,34px);color:var(--cream);
+  margin:6px 0 2px;overflow-wrap:break-word;line-height:1.1}
+.holdcard.lead .hv{color:var(--rose)}
+.holdcard .hu{font-size:.42em;color:var(--rose);white-space:nowrap}
+.holdcard.lead .hu{color:var(--cream)}
+.holdcard .hsub{font-family:var(--mono);font-size:11.5px;color:var(--gold)}
+.actrow{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 2px}
+/* the live meter and COLLECT, shoulder to shoulder — the button sits against the figure it banks */
+.flowrow{display:flex;gap:12px;align-items:stretch;flex-wrap:wrap;margin:10px 0 2px}
+.flowmeter{flex:1 1 320px;min-width:0}
+.flowrow .bigbtn{align-self:center}
+/* and the chain step, alone at the foot of the panel */
+.redeemfoot{margin-top:16px;border-top:1px dashed var(--seam);padding-top:14px}
+.rf-k{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--rose);margin-bottom:6px}
+.rf-k b{color:var(--cream)}
+.rf-note{color:var(--dim);font-size:13px;margin-bottom:12px}
+.rf-note b{color:var(--cream)}
+.bigbtn.wide{width:100%;flex:none}
+.bigbtn{flex:1 1 260px;font-family:var(--mono);font-weight:700;font-size:15px;cursor:pointer;
+  padding:11px 16px;border-radius:12px;border:1px solid var(--seam);background:var(--ink);color:var(--cream);
+  transition:border-color .15s,color .15s,background .15s;text-align:center}
+/* COLLECT is the act, so it carries the weight — and the button is the size of its words */
+.bigbtn.collect{font-size:13.5px;font-weight:400;color:var(--ink-soft,var(--cream));
+  flex:0 0 auto;width:auto;padding:10px 18px;white-space:nowrap;display:inline-flex;align-items:baseline;gap:9px}
+.bigbtn.collect .cbig{font-size:clamp(21px,3vw,27px);font-weight:800;letter-spacing:.04em;color:var(--candle)}
+.collecthint{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-top:8px}
+.bigbtn:hover:not(:disabled){border-color:var(--gold);color:var(--gold)}
+.bigbtn:disabled{opacity:.4;cursor:not-allowed}
+.bigbtn.collect{border-color:rgba(14,203,129,.6);color:var(--candle)}
+.bigbtn.collect:hover:not(:disabled){background:var(--candle-dim);border-color:var(--candle)}
+.bigbtn.redeem{border-color:rgba(255,0,122,.65);color:var(--rose)}
+.bigbtn.redeem:hover:not(:disabled){background:rgba(255,0,122,.12);color:#fff}
+.bigbtn small{display:block;font-weight:400;font-size:11.5px;color:var(--dim);margin-top:3px;letter-spacing:.02em}
+.sponsorline{margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--dim)}
+#luvdripmeter .drip-of{font-family:var(--mono);font-size:12px;color:var(--dim);font-weight:600;letter-spacing:.04em}
+#luvdripmeter .drip-tally{margin-top:8px;font-size:13px;color:var(--dim)}
+#luvdripmeter .drip-tally b{color:var(--rose)}
+#luvdripmeter .drip-actions{display:none}
+#luvdripmeter .drip-buy{display:inline-block;margin-top:10px;font-family:var(--mono);font-size:12px;color:var(--blush);
+  text-decoration:none;border:1px solid #FF007A;border-radius:999px;padding:8px 16px;transition:color .15s,background .15s}
+#luvdripmeter .drip-buy:hover{color:var(--cream);background:rgba(255,0,122,.12)}
+.uni-cta{display:inline-flex;align-items:center;gap:9px;flex-wrap:wrap;justify-content:center;
+  font-family:var(--mono);font-size:14px;color:var(--cream);text-decoration:none;
+  border:1px solid #FF007A;border-radius:999px;padding:11px 20px}
+.uni-cta:hover{background:var(--candle-dim);color:var(--cream);border-color:var(--candle);
+  box-shadow:0 0 22px -10px rgba(14,203,129,.75)}
+.uni-cta .uni-mark{color:#FF007A;font-weight:800}
+.uni-cta b{color:var(--rose)}
+.mmbtn{display:inline-flex;align-items:center;gap:7px;cursor:pointer;background:transparent;font-family:var(--mono);line-height:normal}
+/* a hover that opens a market, adds the token, or shows the price is a POSITIVE event */
+.mmbtn:hover,.candlehover:hover{border-color:var(--candle);color:var(--candle);background:var(--candle-dim)}
+.mmbtn img{display:block;border-radius:50%}
+.lockline{margin:10px 0 2px;font-size:17px;letter-spacing:.04em;text-align:center}
+.lockline a{color:inherit;text-decoration:none;border-bottom:1px solid rgba(255,0,122,.5);transition:color .15s,border-color .15s}
+.lockline a[href="liqlock.html"]{color:#0ecb81;border-bottom-color:rgba(14,203,129,.6)}
+.lockline a:hover{color:#0ecb81;border-bottom-color:#0ecb81}
+.mmline{font-size:15px;margin-top:4px}
+.mmlink{font-family:inherit;font-size:inherit;cursor:pointer;background:none;border:0;padding:0;color:var(--gold,#ffd166);
+  border-bottom:1px solid rgba(255,209,102,.5);transition:color .15s,border-color .15s}
+.mmlink:hover{color:#0ecb81;border-bottom-color:#0ecb81}
+.uni-cta .soon{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(227,178,95,.5);border-radius:999px;padding:2px 9px}
+.taskmsg.ok{color:var(--candle)}
+.subs .sub{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;border-top:1px solid var(--seam);padding:10px 0;font-family:var(--mono);font-size:12px}
+.subs .sub:first-child{border-top:0}
+.subs .sub .act{color:var(--cream);text-transform:uppercase;letter-spacing:.08em}
+.subs .sub a{color:var(--dim);word-break:break-all}
+.chip{font-size:10px;letter-spacing:.12em;text-transform:uppercase;border:1px solid var(--seam);border-radius:999px;padding:2px 10px;color:var(--dim)}
+.chip.paid{color:var(--ink);background:var(--rose);border-color:var(--rose)}
+.chip.approved{color:var(--gold);border-color:var(--gold)}
+.chip.queued{color:var(--blush);border-color:var(--blush)}
+.chip.failed,.chip.rejected{color:var(--dim)}
+.subs .empty{font-family:var(--mono);font-size:12px;color:var(--dim);padding:8px 0}
+
+/* ── how LUV works ── */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.card{border:1px solid var(--seam);border-radius:12px;padding:24px;background:var(--wine)}
+.card .n{font-family:var(--mono);font-size:26px;color:var(--rose);font-weight:700}
+.card h3{font-size:16px;font-weight:650;margin-top:10px}
+.card p{color:var(--dim);font-size:14px;margin-top:8px}
+.card p b{color:var(--blush);font-weight:600}
+a.card{display:block;text-decoration:none;color:inherit}
+a.card:hover{border-color:var(--candle);background:var(--candle-dim)}
+a.card:hover h3,a.card:hover .n{color:var(--candle)}
+.card .livetag{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--candle);margin-left:8px;white-space:nowrap}
+.card .n img.cardcoin{display:block;width:36px;height:36px;
+  filter:drop-shadow(0 0 calc(2px + 10px*var(--luv-pulse,.28)) rgba(227,178,95,calc(.2 + .45*var(--luv-pulse,.28))))}
+@media (prefers-reduced-motion:reduce){.card .n img.cardcoin{filter:none}}
+.paperrow{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px;justify-content:center}
+
+/* ── contracts ledger ── */
+.ledger{border:1px solid var(--seam);border-radius:12px;overflow:hidden}
+.ledger .lrow{display:grid;grid-template-columns:220px 1fr 110px;gap:14px;padding:13px 18px;border-top:1px solid var(--seam);font-family:var(--mono);font-size:13px;align-items:baseline}
+.ledger .lrow:first-child{border-top:0;background:var(--wine)}
+.ledger .lrow .role{color:var(--cream)}
+.ledger .lrow .role small{display:block;color:var(--dim);font-size:11px;font-family:var(--sans)}
+.ledger .lrow .a{color:var(--blush);word-break:break-all}
+.ledger .lrow .a.pending{color:var(--dim);font-style:italic}
+.ledger .lrow .tag{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);text-align:right}
+@media(max-width:640px){.ledger .lrow{grid-template-columns:1fr;gap:4px}.ledger .lrow .tag{text-align:left}}
+
+/* ── footer ── */
+footer{margin-top:72px;border-top:1px solid var(--seam);padding:28px 0 44px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:18px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--dim)}
+footer a{text-decoration:none}
+footer .spacer{flex:1}
+footer .brandmark{display:inline-flex;align-items:center;gap:7px;color:var(--dim)}
+footer .brandmark img{height:14px;width:auto;display:block;opacity:.85;transition:opacity .15s}
+footer .brandmark:hover{color:var(--cream)}
+footer .brandmark:hover img{opacity:1}
+/* official brand marks */
+/* THE FAQ DOOR — the standard card moved to the FAQ, so the way in has to be findable.
+   Candle green, because arriving at the answers is a positive event. */
+.mailmark{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);color:var(--candle);
+  border:1px solid rgba(14,203,129,.5);border-radius:999px;padding:2px 12px;text-decoration:none;letter-spacing:.04em}
+.mailmark:hover{background:var(--candle-dim);border-color:var(--candle);color:var(--cream)}
+.faqdoor{margin-top:44px}
+.faqdoor-card{display:block;border:1px solid rgba(14,203,129,.55);border-radius:16px;
+  background:radial-gradient(120% 140% at 0% 0%,rgba(14,203,129,.09),transparent 60%),var(--wine);
+  padding:30px clamp(20px,4vw,44px);text-decoration:none;color:inherit;
+  box-shadow:0 0 34px -18px rgba(14,203,129,.85);transition:border-color .18s,box-shadow .18s,transform .18s}
+.faqdoor-card:hover{border-color:var(--candle);box-shadow:0 0 44px -14px rgba(14,203,129,.95);transform:translateY(-1px)}
+.faqdoor .fd-k{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--candle)}
+.faqdoor .fd-h{display:block;font-size:clamp(20px,3.2vw,30px);font-weight:800;line-height:1.2;margin:10px 0 0;color:var(--cream)}
+.faqdoor .fd-h b{background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+.faqdoor .fd-p{display:block;margin-top:12px;color:var(--dim);font-size:14px;max-width:70ch}
+.faqdoor .fd-go{display:inline-block;margin-top:18px;font-family:var(--mono);font-size:13px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--candle);border:1px solid rgba(14,203,129,.55);border-radius:999px;padding:9px 20px}
+.faqdoor-card:hover .fd-go{background:var(--candle-dim);border-color:var(--candle)}
+/* and every other FAQ link on the page wears the same green, so the door is recognisable */
+a[href="faq.html"]:not(.faqdoor-card){border-bottom:1px solid rgba(14,203,129,.5)}
+footer a[href="faq.html"],.fieldnav a[href="faq.html"]{color:var(--candle);border:1px solid rgba(14,203,129,.5);
+  border-radius:999px;padding:2px 10px}
+footer a[href="faq.html"]:hover,.fieldnav a[href="faq.html"]:hover{background:var(--candle-dim);border-color:var(--candle)}
+.uni-cta .uni-logo{height:18px;width:auto;display:block}
+/* TRADE, at the foot of the page */
+.tradefoot{border-top:1px solid var(--seam);margin-top:34px;padding:26px 0 6px}
+.tradefoot .tf-k{font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;text-align:center}
+.tradefoot .tf-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.tradefoot .tf-row .uni-cta{flex:0 1 300px;justify-content:center}
+/* the LUV heart, standing where the token it buys would stand */
+.luv-mark{height:19px;width:19px;border-radius:50%;display:block;margin:0 1px 0 5px}
+.tradefoot .tf-note{margin-top:12px;text-align:center;color:var(--dim);font-size:12.5px;line-height:1.9}
+.tradefoot .tf-note b{color:var(--cream)}
+.tf-scan{display:inline-flex;align-items:center;gap:6px;margin-left:12px;color:var(--dim);text-decoration:none;
+  border:1px solid var(--seam);border-radius:999px;padding:3px 11px;white-space:nowrap}
+.tf-scan:hover{border-color:var(--gold);color:var(--cream)}
+.tf-scan img{display:block;opacity:.85}
+/* Etherscan's mark on every link that goes there */
+.scanmark{display:inline-flex;align-items:center;gap:6px}
+.scanmark img{display:block;opacity:.9}
+.phasebanner .uni-ico,.topfest .uni-ico{height:15px;width:auto;vertical-align:-3px;margin:0 2px}
+
+@keyframes heartbeat{0%,100%{transform:scale(1)}12%{transform:scale(1.18)}24%{transform:scale(1)}36%{transform:scale(1.12)}48%{transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.repunit .heart,.healthdot.up{animation:none}}
+@media(max-width:600px){#healthtext,.bar small.tagline{display:none}}
+</style>
+</head>
+<body>
+
+<details class="festwrap">
+  <summary class="topfest">❤ the LUV drop landed Sunday night — <b>thanks a million millions · another successful year</b> · press play <span class="cue"></span></summary>
+  <div class="festplayer"><div class="inner">
+    <iframe title="Music 4 Robots 2 Dance 2 — the SHAMBA LUV playlist" loading="lazy" scrolling="no" allow="autoplay; encrypted-media"
+      src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/soundcloud%253Aplaylists%253A2216206346&color=%23ff006e&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true"></iframe>
+    <div class="credit"><a href="https://soundcloud.com/mag-magnus" target="_blank" rel="noopener" title="Mag Magnus">Mag Magnus</a> · <a href="https://soundcloud.com/mag-magnus/sets/music-for-robots-to-dance-2" target="_blank" rel="noopener" title="Music 4 Robots 2 Dance 2">Music 4 Robots 2 Dance 2</a> · music for robots to dance — intelligence is intelligence ❤</div>
+  </div></div>
+</details>
+<div class="moonline">🌕 under the <b class="bluemoon">blue moon of July</b>, risen <b class="bloodred">blood red</b> —
+the live deployment landed · <b>launch successful</b> ·
+<a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="the live contract — the green checkmark">source verified ✓</a>
+· LUV is live, forever ❤
+<span class="elements">witnessed by the seven — <span class="el">🜃 earth</span> · <span class="el">🜄 water</span> · <span class="el">🜁 air</span> · <span class="el">🜂 fire</span> · the fifth, <span class="metal">⛓ METAL</span>: the chain the launch is etched in · the sixth, <span class="aether">🌌 aether</span>: the field between chains · the seventh, <a href="rainbow.html" title="seven colors, seven wheels — the in-house rainbow"><span class="chakra">☸ CHAKRA</span></a>: the wheel that turns them all</span></div>
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="/">❤ SHAMBA <b>LUV</b></a>
+    <small class="tagline">emotonomics</small>
+    <span class="ctc"><button class="wordbtn" id="connectbtn" type="button">CONNECT</button><em>to</em><button class="wordbtn" id="collectword" type="button">COLLECT</button></span>
+    <span class="spacer"></span>
+    <span class="gastank" id="gastank" title="community gas tank — free claims we're sponsoring" hidden>⛽ <b id="gastankval">—</b></span>
+    <a class="liveview candlehover" href="view.html" title="the live market — price every minute, full refresh every 5">📈 LUV LIVE</a>
+    <span class="healthdot" id="healthdot" title="gesture desk status"></span>
+    <small id="healthtext">checking…</small>
+    <nav class="socials" aria-label="SHAMBA LUV socials">
+      <a href="https://x.com/shambaluv" rel="noopener" title="X" aria-label="X">𝕏</a>
+      <a href="https://t.me/+yTfFYQlH53pmODcx" rel="noopener" title="Telegram" aria-label="Telegram">✈</a>
+      <a href="https://github.com/SHAMBA-LUV" rel="noopener" title="GitHub" aria-label="GitHub">⌥</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ═══ DASHBOARD — replaces the landing when signed in (the previous flow) ═══ -->
+  <div id="dashboard">
+    <div class="dashhead">
+      <h2>welcome home <b>bonus</b></h2>
+      <span class="via">✨ your reward awaits ✨ · signed in via <span id="youprovider">—</span></span>
+    </div>
+    <div class="dashgrid">
+      <div class="panel">
+        <div class="k">your wallet</div>
+        <span class="pubkey-label">🔑 your public address — share this to receive LUV</span>
+        <div class="walletaddr pub" id="youwallet">provisioning…</div>
+        <div class="wallet-actions">
+          <button class="wact" id="sendbtn" type="button"><span>↑</span> Send</button>
+          <button class="wact" id="recvbtn" type="button"><span>↓</span> Receive</button>
+        </div>
+        <div class="row">
+          <button class="btn" id="copywallet" type="button">copy address</button>
+          <a class="btn scanmark" id="walletexplorer" href="#" rel="noopener" title="your wallet on Etherscan"><img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="11"> wallet ↗</a>
+        </div>
+        <div class="aatag" id="aatag" hidden>ERC-4337 smart account · created for you</div>
+        <div class="ownerline" id="ownerline" hidden></div>
+        <!-- private key: hidden by default; revealed ONLY while the button is pressed and held -->
+        <div class="pkrow" id="pkrow" hidden>
+          <div class="k">private key — self-custody</div>
+          <div class="pkfield" id="pkfield">•••• hidden — press &amp; hold to reveal ••••</div>
+          <button class="pkhold" id="revealpk" type="button">🔒 press &amp; hold to reveal private key</button>
+          <div class="pkwarn"><b>Never share this.</b> Anyone with your private key controls your wallet and your LUV. It appears only while you hold the button and is never stored. Save it somewhere safe to take full custody. <a href="firstluv.html" class="pklink">❤ firstLUV — what to do with this key →</a></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="k">your LUV</div>
+        <div class="balance" id="balance">1,000,000,000,000<small> LUV</small></div>
+        <div class="balstate" id="balstate">🎁 reserved for you — welcome home ❤</div>
+        <div class="balline" id="balline">we're proud of you — claim it whenever you like</div>
+        <div class="row"><button class="btn" id="refreshbal" type="button">🔄 refresh</button></div>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:16px">
+      <div class="k">your LUV</div>
+      <div class="congrats" id="congrats" hidden>🎉 Welcome home ❤ — your <b>1,000,000,000,000 LUV</b> is reserved</div>
+      <div class="congratssub" id="congratssub" hidden><b>We're proud of you.</b> It's recorded and waiting with your name on it — claim it whenever you like. No rush, and it never expires.</div>
+      <div class="ethclaimrow" id="ethclaimrow" hidden style="flex-direction:column;align-items:stretch;gap:8px">
+        <label style="font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)">receive address <span style="text-transform:none;letter-spacing:0">(optional — defaults to your LUV wallet)</span></label>
+        <input id="recipientinput" type="text" placeholder="0x… — leave blank to use your created wallet" spellcheck="false" autocomplete="off"
+          style="font-family:var(--mono);font-size:13px;padding:11px 13px;border-radius:8px;border:1px solid var(--seam);background:var(--ink);color:var(--cream)">
+        <button class="claimnow" id="claimsponsored" type="button">🎁 Claim my 1,000,000,000,000 LUV — FREE ❤</button>
+        <span class="taskmsg" id="ethclaimmsg">gas is on us — no ETH needed. One tap and your trillion is delivered.</span>
+        <button class="btn" id="ethclaim" type="button" style="align-self:center" hidden>or claim yourself with your own ETH</button>
+        <div class="gasest" id="gasest" hidden></div>
+      </div>
+      <div class="timeline" id="timeline">
+        <div class="step" data-step="reserved"><div class="t">reserved</div><div class="d">Your trillion is recorded and waiting for you.</div></div>
+        <div class="step" data-step="submitted"><div class="t">claiming</div><div class="d">Your claim is on-chain, awaiting confirmation.</div></div>
+        <div class="step" data-step="confirmed"><div class="t">delivered</div><div class="d">1 trillion LUV is in your wallet.</div></div>
+      </div>
+      <div class="statusline" id="statusline">checking your gesture…</div>
+    </div>
+    <div class="panel" style="margin-top:16px" id="droppanel" hidden>
+      <div class="k">the LUVdrip — flowing to you now</div>
+
+      <!-- the live flow, and the act that banks it, side by side: you collect what you watch -->
+      <div class="flowrow">
+        <div id="luvdripmeter" class="flowmeter"></div>
+        <button class="bigbtn collect" id="dripcollectbtn" type="button" data-luv-emit disabled><b class="cbig">COLLECT</b> your LUV every 24 hrs</button>
+      </div>
+      <div class="collecthint" id="collecthint">free, and your million restarts the moment you press it</div>
+      <div class="collecthint" style="margin-top:4px">COLLECT banks your flow <b style="color:var(--cream)">here</b>, in your tally · <b style="color:var(--rose)">REDEEM</b> is the separate step that moves the tokens <b style="color:var(--cream)">into your wallet</b>, on chain</div>
+      <div id="dropclockrow" style="font-family:var(--mono);font-size:13px;color:var(--dim);margin-top:10px" hidden>
+        today's million completes in <b id="dropcount" style="color:var(--gold);font-size:18px;letter-spacing:.08em">--:--:--</b>
+      </div>
+      <div class="taskmsg" id="dropseason" hidden></div>
+      <div class="taskmsg" id="dropmsg">checking your LUVdrip…</div>
+      <div class="taskmsg ok" id="dropfull" hidden>🎁 <b>today's 1,000,000 LUV is complete</b> — saved to your tally · <b>sign in again to start the next million</b> · thanks a million ❤
+        <a href="https://twitter.com/intent/tweet?text=the%20LUVdrip%20is%20flowing%20%E2%80%94%20a%20million%20LUV%20a%20day%20just%20for%20logging%20in%20%E2%9D%A4%20HOLD%20LUV%20to%20watch%20LUV%20grow%20%40shambaluv%20%23SHAMBALUV%20https%3A%2F%2Fluv.pythai.net" target="_blank" rel="noopener">𝕏 tweet to earn more LUV →</a></div>
+
+      <div class="holdrow">
+        <div class="holdcard lead">
+          <div class="hk">collected — yours, waiting</div>
+          <div class="hv"><span id="accluv">—</span><span class="hu"> LUV</span></div>
+          <div class="hsub" id="accusd"></div>
+        </div>
+        <div class="holdcard">
+          <div class="hk">in your wallet — on chain</div>
+          <div class="hv"><span id="holdluv">—</span><span class="hu"> LUV</span></div>
+          <div class="hsub" id="holdsub">delivered and yours to hold</div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;font-size:14px"><b id="dropreward" style="color:var(--rose)">1,000,000</b> LUV a day — dripping at <b style="color:var(--gold)">11.574 LUV/s</b> for a <b>full 24 hours</b> from your log in ❤</div>
+      <div style="color:var(--dim);font-size:13px"><b style="color:var(--cream)">Logging in earns the million.</b> The drip keeps running whether or not this tab is open. <b style="color:var(--cream)">COLLECT</b> banks what has flowed and starts your million over from that moment — free, and yours to press whenever you like. <b style="color:var(--cream)">REDEEM</b> is the only step that touches the chain, so it is the only one that costs gas.</div>
+
+      <!-- and underneath it all: the one step that reaches the chain -->
+      <div class="redeemfoot">
+        <div class="rf-k">REDEEM — the separate step that <b>moves your LUV into your wallet</b></div>
+        <div class="rf-note">Collecting banks your flow in the tally above; it does not move a token. <b>REDEEM sends it
+          on chain</b>, out of the ledger and into the wallet you hold — where it is yours to send, hold, or trade, and
+          where reflections start growing it. Two acts, deliberately separate: collect as often as you like, redeem when
+          you want the tokens in hand.</div>
+        <button class="bigbtn redeem wide" id="redeemsponsorbtn" type="button" disabled>🚌 REDEEM on the LUVbus
+          <small>moves your LUV into your wallet · no ETH needed · the bus pays the gas</small></button>
+        <div class="sponsorline">or send it yourself, from a wallet that holds ETH:
+          <button class="btn" id="redeemselfbtn" type="button" disabled style="font-size:12px;padding:6px 12px">💎 REDEEM with my own ETH</button></div>
+        <div style="color:var(--dim);font-size:13px;margin-top:8px;font-family:var(--mono)" id="accgas">estimating the redeem gas…</div>
+        <div class="taskmsg" id="accheld" hidden></div>
+        <div class="taskmsg" id="redeemmsg"></div>
+      </div>
+      <div style="margin-top:10px;color:var(--dim);font-size:13px"><b style="color:var(--gold)">HOLD LUV to watch LUV grow</b> — 3% of every trade reflects to every holder, automatically ❤</div>
+    </div>
+    <div class="panel" style="margin-top:16px" id="tradepanel">
+      <div class="k">Phase 2 — trade LUV</div>
+      <div class="comingsoon" style="border-color:#FF007A">🦄 <b>LUV is live on Uniswap</b> — buy &amp; sell the gesture on the open market ❤
+        <span>Trade the LUV/ETH pair directly. Set slippage to <b>~8–12%</b> — LUV carries a 5% reflection fee, so a lower tolerance will bounce the swap.</span>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <a class="uni-cta" data-luv-emit href="https://app.uniswap.org/swap?chain=mainnet&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img class="uni-logo" src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap"> · buy &amp; sell <b>LUV</b> live</a>
+      <button type="button" class="btn mmbtn" data-luv-watchasset><img src="gfx/heart-512.png" alt="" height="14" aria-hidden="true"> add LUV to MetaMask</button>
+        <a class="btn candlehover" href="view.html">📈 live chart</a>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:16px" id="taskspanel">
+      <div class="k">share the LUV — earn more</div>
+      <div class="comingsoon" style="border-color:rgba(126,226,160,.55)">✨ <b>Sharing is Caring</b> ❤
+        <span>Your daily <b>LUVdrip</b> flows above — <b>a million LUV a day, earned by logging in</b>. Want more? <b>Tweet about LUV</b> — sharing IS the marketing, and the earn rail rewards it.</span>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <a class="btn" href="https://twitter.com/intent/tweet?text=the%20LUVdrip%20is%20flowing%20%E2%80%94%20a%20million%20LUV%20a%20day%20%E2%9D%A4%20HOLD%20LUV%20to%20watch%20LUV%20grow%20%40shambaluv%20%23SHAMBALUV%20https%3A%2F%2Fluv.pythai.net" target="_blank" rel="noopener">𝕏 tweet to earn LUV</a>
+      </div>
+    </div>
+    <div class="dashfoot">
+      <button class="btn" id="addtoken2" type="button" hidden>add LUV to MetaMask</button>
+      <button class="btn" id="logout" type="button">sign out</button>
+    </div>
+  </div>
+
+  <!-- ═══ LANDING (signed out) — the classic SHAMBA LUV welcome ═══ -->
+  <div class="hero landing-only">
+    <img class="logo" src="gfx/heart-512.png" alt="SHAMBA LUV" width="512" height="512">
+    <h1>SHAMBA LUV</h1>
+    <div class="phase"><span style="color:#7ee2a0;font-weight:800">✅ Phase 2 complete</span> · 🌕 <a href="https://app.uniswap.org/swap?chain=mainnet&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" data-luv-emit target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1px solid rgba(255,0,122,.5)">Phase 3 — The Price of LUV · <span style="color:var(--gold);font-weight:800">LIVE</span></a> ✨</div>
+    <div class="lockline"><b>LUV <a href="https://etherscan.io/address/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31" target="_blank" rel="noopener" title="the LUV/WETH pair — where the price is created">liquidity</a> is now <a href="liqlock.html" title="the live proof — your own browser reads the chain">LOCKED</a> 🔒</b></div>
+    <div class="lockline mmline">🦊 <b>the price of LUV is now <a href="faq.html#metamask-price" title="wallet price feeds carry LUV — the details, on the FAQ">in MetaMask</a></b> · <button type="button" class="mmlink" data-luv-watchasset title="EIP-747 — your wallet offers to track LUV">add LUV to MetaMask ❤</button></div>
+    <div class="claimhero soldout">
+      <span class="tag">💧 the LUVdrip is flowing</span>
+      <div class="amt">1,000,000&nbsp;LUV&nbsp;/&nbsp;DAY</div>
+      <div class="cap">The one-year <b>principal</b> airdrop has concluded — every trillion has found its home,
+      <b>thank you to everyone</b> who joined the gesture. ❤ Now LUV <b>accrues</b>:
+      <b>log in and earn a million LUV a day</b>. One sign-in starts <b>1,000,000 LUV</b> dripping at
+      11.574 LUV a second and it keeps dripping for the <b>whole 24 hours</b> — tab open or closed —
+      until the full million has landed. <b>The next million starts with your next log in.</b>
+      Your tally accumulates for free; delivering it on-chain is one transaction, whose gas you pay
+      in ETH — or the LUV project sponsors it for you. And LUV is <b>live on Uniswap</b>.
+      To the original community: <b>LUV returns to POL</b> — the same deterministic contract address,
+      deploying back to Polygon where LUV first lived — and <b>all LUV from the Polygon snapshot
+      will be honoured</b> ❤</div>
+    </div>
+    <a class="collect" id="tradebtn" data-luv-emit href="https://app.uniswap.org/swap?chain=mainnet&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img class="uni-logo" src="gfx/brand/uniswap_horizontal_white.svg" alt="Uniswap"> <span>Trade LUV LIVE ❤</span></a>
+    <div class="connect" style="margin-top:10px">start your LUVdrip — <button class="wordbtn" data-open-login type="button">sign in to your wallet ❤</button> · trading? set slippage ~8–12% (5% reflection fee)</div>
+  </div>
+
+
+  <!-- The airdrop CTA (the classic card) -->
+  <section id="gesture" class="landing-only">
+    <div class="gesture">
+      <div class="sechead" style="margin-bottom:10px">🎉 stage one complete — thank you 🎉</div>
+      <h2>the LUV drop has <b>concluded</b> — stage two is <b>thanks a million LUV</b></h2>
+      <p><b>Stage one — the LUV drop — is finished.</b> For one year, anyone could sign in and receive a free
+      <b>1 trillion LUV</b> — one person, one wallet, one trillion, so the gesture reached real people, not wallet
+      farms. That chapter is complete, <b>every trillion has found its home</b>, and LUV now trades live on
+      Uniswap. Thank you to everyone who joined. ❤</p>
+      <p><b>Stage two: thanks a million LUV. Log in daily to collect a million LUV for the next 100 days.</b> Sign in and a million LUV starts
+      dripping — 11.574 LUV a second, all the way through the next 24 hours, tab open or closed — until the whole
+      million has landed. The next million starts with your next log in. Your tally accumulates for free; you
+      deliver it on-chain when you say it's worth the gas, or we sponsor the gas for you.</p>
+      <p><b>Stage three: share the LUV.</b> The incentive distributor pays for real social sharing — tweet and post
+      about LUV and the earn rail rewards it, on-chain, on published terms. Sharing IS the marketing.</p>
+      <p>Already claimed in stage one? Sign in any time to your wallet — send, receive, hold LUV, and start your
+      daily million.</p>
+      <div class="gesturebtns" id="providers">
+        <a class="uni-cta" data-luv-emit href="https://app.uniswap.org/swap?chain=mainnet&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img class="uni-logo" src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap"> · buy &amp; sell <b>LUV</b> live</a>
+        <button type="button" data-open-login>sign in to your wallet ❤</button>
+      </div>
+      <div class="fineprint">Redeemed is redeemed • trading live on Uniswap • set slippage ~8–12% (5% reflection fee)</div>
+    </div>
+  </section>
+
+  <!-- emotonomics -->
+  <section class="landing-only">
+    <div class="sechead">emotonomics</div>
+    <div class="cards">
+      <div class="card"><div class="n">3%</div>
+        <h3>Reflections</h3>
+        <p>Every trade reflects <b>3%</b> to all holders — hold LUV, earn LUV.</p></div>
+      <div class="card"><div class="n">1%</div>
+        <h3>Liquidity</h3>
+        <p><b>1%</b> deepens the market automatically.</p></div>
+      <div class="card"><div class="n">1%</div>
+        <h3>Incentives</h3>
+        <p><b>1%</b> funds community incentives — fees can only ever be lowered.</p></div>
+      <div class="card"><div class="n">0%</div>
+        <h3>P2P fees</h3>
+        <p>Wallet-to-wallet is <b>always free</b>. Share the LUV.</p></div>
+    </div>
+    <div class="sechead">LUV indicators — community actions are the measure of community sentiment</div>
+    <div class="cards">
+      <div class="card"><div class="n">GVI</div>
+        <h3>Gesture velocity</h3>
+        <p>Gestures per holder per period — the circulation rate of feeling.</p></div>
+      <div class="card"><div class="n">CRD</div>
+        <h3>Resonance depth</h3>
+        <p>How far a gesture propagates — breadth of appreciation, not just amount.</p></div>
+      <div class="card"><div class="n">eROI</div>
+        <h3>Reciprocity</h3>
+        <p>Gestures received over gestures given — the health of giving.</p></div>
+      <div class="card"><div class="n">Δ</div>
+        <h3>sentiment.shift</h3>
+        <p>The derivative: indicator change per <b>blocktime</b>, normalized by average blocktime — including <b>speed to return from ping</b>.</p></div>
+      <a class="card" href="luvchart.html" title="the LUVchart — the price of LUV drawn from the pair itself · price every minute, full refresh every 5"><div class="n"><img class="cardcoin" src="gfx/logo-transparent.png" alt="" width="36" height="36"></div>
+        <h3>LUVchart <span class="livetag">● LIVEchart</span></h3>
+        <p>Price as sentiment: fundamentals are fixed at genesis, so the chart reads as a pure feeling series. <b>open the LUVchart →</b></p></a>
+    </div>
+    <div class="paperrow">
+      <a class="btn" href="faq.html">💬 FAQ</a>
+      <a class="btn" href="firstluv.html">❤ firstLUV — your first LUV, and the key that holds it</a>
+      <a class="btn" href="emotonomics.html">🎓 EMOTONOMICS — the field paper</a>
+      <a class="btn" href="engine.html">⚙️ THE LUV ENGINE — the engine paper</a>
+      <a class="btn" href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/EMOTONOMICS.md" rel="noopener">📜 read EMOTONOMICS</a>
+      <a class="btn" href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/LUVPAPER.md" rel="noopener">❤ read the LUVPAPER</a>
+      <a class="btn" href="sentiment.html">🎭 SENTIMENT — the measurement paper</a>
+      <a class="btn" href="wei.html">⚖️ the WEI of LUV</a>
+      <a class="btn" href="exabyte.html">💾 THE EXABYTE, THE ETHER &amp; THE LUV — the identity paper</a>
+      <a class="btn" href="luveth.html">Ξ LUV / ETH — the pair page</a>
+      <a class="btn" href="docs.html">📚 THE DOCS — the complete map</a>
+    </div>
+  </section>
+
+  <div class="landing-only">
+    <div class="strip" id="strip">
+      <span class="badge live" id="statebadge">live on ethereum</span>
+      <span class="addr" id="luvaddr">0x2711111111683B8708cb9a48cBf36a51315F8254</span>
+      <button class="btn" id="copyaddr" type="button">copy</button>
+      <a class="btn scanmark" id="explorelink" href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254" rel="noopener" title="the LUV contract on Etherscan"><img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="11"> contract ↗</a>
+      <button class="btn" id="addtoken" type="button" hidden>add LUV to MetaMask</button>
+      <span class="note">Ethereum first — and this address is deterministic: LUV lives here on <em>every</em> chain it opens on.</span>
+    </div>
+  </div>
+
+  <!-- VERIFIED — the green checkmark; ledger + standard details live in the FAQ & docs -->
+  <section class="landing-only" style="text-align:center">
+    <a class="vbadge" href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254#code" rel="noopener"
+       title="verified means the green checkmark: published source compiled and matched against the deployed bytecode on Etherscan">
+      <span class="vcheck">✓</span>VERIFIED · cypherpunk2048 compliant</a>
+    <p class="vnote">in-house contracts, all open — <a href="faq.html#contracts">the full ledger in the FAQ 📜</a> · <a href="docs.html">the docs 📚</a></p>
+  </section>
+
+  <!-- The roadmap — from priceless to multi-billion (emotonomics) -->
+  <section class="landing-only">
+    <div class="sechead gold">the roadmap — from priceless to multi-billion</div>
+    <div class="roadmap" style="display:grid;gap:12px;margin-top:6px">
+      <div class="rmp" style="border-left:3px solid #21a45d;padding:12px 16px;background:rgba(0,0,0,.15);border-radius:8px">
+        <b>Phase 1 — LUV is Priceless.</b> <span style="display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#7ee2a0;border:1px solid rgba(126,226,160,.55);border-radius:999px;padding:2px 10px;vertical-align:2px">✓ complete</span> The gesture is born: a fixed 111-quadrillion supply, fee-free
+        wallet-to-wallet, and a free <b>1-trillion-LUV</b> airdrop to everyone who arrives. Abundance over
+        scarcity — LUV enters the world priceless, in as many hands as will hold it.
+      </div>
+      <div class="rmp" style="border-left:3px solid #21a45d;padding:12px 16px;background:rgba(0,0,0,.15);border-radius:8px">
+        <b>Phase 2 — The Value of LUV.</b> <span style="display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#7ee2a0;border:1px solid rgba(126,226,160,.55);border-radius:999px;padding:2px 10px;vertical-align:2px">✓ complete</span> Connection earns a price: the LUV/ETH market opened seeded at
+        <b>the absolute maximum a Uniswap V2 pair can hold — 2¹¹²−1 wei ≈ 5.19 quadrillion LUV</b>
+        (V2 reserves are uint112 by protocol law, so the roadmap's full 100Q cannot fit one pair).
+        The gesture meets the market — tradable, discoverable, real — every trade feeds the 3%
+        reflections, the treasury's remaining circulating supply backs the market as depth grows,
+        and <b>locking the liquidity into LUVLocker is the standing priority</b>.
+      </div>
+      <div class="rmp" style="border-left:3px solid #FF007A;padding:12px 16px;background:rgba(0,0,0,.15);border-radius:8px">
+        <b>Phase 3 — The Price of LUV.</b> <a href="https://app.uniswap.org/swap?chain=mainnet&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" data-luv-emit target="_blank" rel="noopener" style="display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#FF007A;border:1px solid #FF007A;border-radius:999px;padding:2px 10px;vertical-align:2px;text-decoration:none">live now ↗</a>
+        <b>1 LUV now has a price — created from attention.</b> Attention became connection, connection
+        became the gesture, the gesture met the market: the price is
+        <b>created by the liquidity pair and expressed on Uniswap</b> — and the site
+        learns to speak it in every denomination: the <a href="LUV.html">price expression</a>
+        (ETH · USDC · WEI/LUV · LUV/ETH), the <a href="view.html">live view</a> with its
+        unit-toggled chart and the <b>emotonomic dial</b>, the
+        <a href="exabyte.html">identity converter</a> on the 10¹⁸ lattice, and
+        <a href="engine.html">the engine</a> that measures it all — luv.oracle reading the pair
+        on-chain, chronos-anchored, every minute. LUV entered the world priceless; now it carries
+        a price to all eighteen decimals.
+      </div>
+      <div class="rmp" style="border-left:3px solid var(--gold);padding:12px 16px;background:rgba(0,0,0,.15);border-radius:8px">
+        <b>Phase 4 — SHARE the LUV.</b> Sharing IS the marketing — <b>thanks a million millions</b> <button type="button" data-luv-copy="view.html" style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#FF007A;background:transparent;border:1px solid #FF007A;border-radius:999px;padding:2px 10px;cursor:pointer;vertical-align:2px">⎘ copy the link</button>:
+        attention becomes capital and <b>the earn rail opens (the IncentiveDistributor)</b>:
+        <b>integration with existing social media channels</b> — a like, a post, a share becomes a
+        verifiable on-chain gesture that earns LUV. The emotional economy scales to where attention
+        already lives, and every share carries the gesture: <b>1,000,000 LUV — the standard gesture</b>.
+      </div>
+      <div class="rmp" style="border-left:3px solid var(--gold);padding:12px 16px;background:rgba(0,0,0,.15);border-radius:8px">
+        <b>Phase 5 — LUV Immersive.</b> <b>Integration with DeltaVerse immersive technology</b> — spatial,
+        3D worlds where a gesture is something you make, not just click. LUV becomes the social currency of
+        presence itself.
+      </div>
+      <div class="rmp" style="border-left:3px solid var(--blush);padding:14px 16px;background:var(--wine);border-radius:8px">
+        <b>The horizon — a multi-billion-dollar valuation.</b> Each phase widens the circle, deepens
+        liquidity, and raises engagement velocity — and value follows <b>connection, not scarcity</b>. As
+        gestures multiply from thousands to millions to the mainstream, LUV's network value scales with the
+        emotional economy it creates. The future of value is not scarcity — it is <b>connection</b>. ❤
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:14px"><a class="btn" href="faq.html#roadmap">read the full roadmap in the FAQ 💬</a></div>
+  </section>
+
+  <div class="landing-only" style="text-align:center;margin-top:44px">
+    <div class="claimed-count" id="claimed-count">🎁 <b>MAX</b> LUVdrops received</div>
+    <a class="uni-cta" data-luv-emit href="https://app.uniswap.org/swap?chain=mainnet&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">
+      <img class="uni-logo" src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap"> · buy &amp; sell <b>LUV</b> <span class="soon" style="color:#FF007A;border-color:#FF007A">live now</span>
+    </a>
+  </div>
+
+  <div class="phasebanner">
+    ✅ <b>Phase 2 — The Value of LUV</b> <span class="soon" style="color:#7ee2a0;border-color:rgba(126,226,160,.55)">complete</span> · 🌕 <b>Phase 3 — The Price of LUV</b> <a class="soon" href="https://app.uniswap.org/swap?chain=mainnet&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" data-luv-emit target="_blank" rel="noopener" style="color:#FF007A;border-color:#FF007A;text-decoration:none">live now ↗</a>
+    <span class="sub">1 LUV now has a price — created from attention ❤ the pair creates it · Uniswap expresses it · the oracle measures it ·
+      <a href="view.html">📈 live view</a> · <a href="LUV.html">💱 the price expression</a> · <a href="exabyte.html">💾 the converter</a>
+      <span data-weiperluv style="display:block;margin-top:5px;font-family:var(--mono);color:var(--gold);letter-spacing:.05em">1 LUV = … WEI</span></span>
+  </div>
+
+  <!-- ═══ the emotonomic dial — measured feeling, from revealed on-chain acts ═══ -->
+  <section style="padding:34px 16px 8px;border-top:1px solid var(--seam);text-align:center">
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:14px">
+      ☯ the emotonomic dial · measured feeling</div>
+    <div data-emotonomic></div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:10px">
+      the instrument is specified in <a href="sentiment.html" style="color:var(--blush)">MEASURED FEELING — the sentiment paper</a> ·
+      read live from <a href="view.html" style="color:var(--blush)">the pair that creates the price</a></div>
+  </section>
+
+  <!-- the standard moved to the FAQ, where the questions it answers already live.
+       What stays here is the way in — deliberately loud, because a FAQ nobody finds
+       is a FAQ nobody reads. -->
+  <section class="faqdoor">
+    <a class="faqdoor-card" href="faq.html">
+      <span class="fd-k">engineered to a standard</span>
+      <span class="fd-h">Built to <b>cypherpunk2048</b>. Now building to <b>cypherpunk4096</b>.</span>
+      <span class="fd-p">Determinism as identity · zero dependencies · verification over trust ·
+        precision without approximation — the whole standard, the contract ledger, the roadmap and
+        every answer we have, in one place. Including <b style="color:var(--candle)">what is not done
+        yet</b>: the open list of what has been promised and not delivered, each item with what the
+        chain says today.</span>
+      <span class="fd-go">read the FAQ →</span>
+    </a>
+  </section>
+</main>
+
+<!-- login modal (self-hosted — replaces the old vendor connect modal) -->
+<div id="loginmodal" role="dialog" aria-modal="true" aria-labelledby="modaltitle">
+  <div class="modalcard">
+    <h3 id="modaltitle">❤ SHAMBA <b>LUV</b></h3>
+    <div class="sub">connect to collect — your own smart wallet, and your daily LUVdrip</div>
+    <div class="modalproviders" id="modalproviders">
+      <div class="soon">the gesture desk opens at launch</div>
+    </div>
+    <button class="close" id="modalclose" type="button">close</button>
+    <div class="fine">self-hosted login · your wallet is yours · no third-party wallet vendor</div>
+  </div>
+</div>
+
+<!-- TRADE — the last thing on the page before the footer: both routes into LUV, preloaded,
+     under Uniswap's own mark. The pair is where the price is made; everything else is a mirror. -->
+<section class="tradefoot">
+  <div class="wrap">
+    <div class="tf-k">trade LUV — live on Uniswap</div>
+    <div class="tf-row">
+      <a class="uni-cta" data-luv-emit rel="noopener" target="_blank"
+         href="https://app.uniswap.org/swap?chain=mainnet&amp;inputCurrency=ETH&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254">
+        <img class="uni-logo" src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap"> · <b>ETH → LUV</b></a>
+      <a class="uni-cta" data-luv-emit rel="noopener" target="_blank"
+         href="https://app.uniswap.org/swap?chain=mainnet&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254">
+        <img class="uni-logo" src="gfx/brand/uniswap_horizontal_pink.svg" alt="Uniswap"> · <b>USDC →</b>
+        <img class="luv-mark" src="gfx/heart-512.png" alt="" aria-hidden="true"><b>LUV</b></a>
+    </div>
+    <div class="tf-note">set slippage <b>~8–12%</b> — LUV carries a 5% reflection fee, and a tighter tolerance bounces the swap.
+      The auto-router does not quote fee-on-transfer tokens; the Universal Router does.
+      <a class="tf-scan" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"
+         title="the LUV token on Etherscan — verified source, the green checkmark"><img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="12"> the contract ↗</a>
+      <a class="tf-scan" href="https://etherscan.io/address/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31" target="_blank" rel="noopener"
+         title="the LUV/WETH Uniswap V2 pair on Etherscan"><img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="12"> the pair ↗</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>❤ LUV is priceless</span>
+    <span class="spacer"></span>
+    <a href="faq.html">FAQ</a>
+    <a href="docs.html">docs</a>
+    <a href="view.html">live view</a>
+    <a href="https://github.com/SHAMBA-LUV/LUV" rel="noopener">source &amp; audit</a>
+    <a href="https://github.com/SHAMBA-LUV" rel="noopener">SHAMBA-LUV</a>
+    <a href="https://github.com/cypherpunk4096" target="_blank" rel="noopener" title="the cypherpunk4096 organization — the standard, SCIEN·TIFIC, and the commons (2¹²)">⟁ cypherpunk4096</a>
+    <a href="https://github.com/cypherpunk4096/scientific" target="_blank" rel="noopener" title="SCIEN·TIFIC — the reference deployment: scientific-maximum ERC-20, deterministic at one address on every chain, verified on-chain">🔬 SCIEN·TIFIC</a>
+    <a href="https://rage.pythai.net/giving-uniswap-the-luv/" target="_blank" rel="noopener" title="Giving Uniswap the LUV — the liquidity of record, with the record playing: Music 4 Robots 2 Dance 2 and the crewbus Lab 2025 Shambhala Mix Series">▶ playlist</a>
+    <a href="/shambalha-2026-schedule.pdf" target="_blank" rel="noopener" title="SHAMBALHA 2026 — the lineup, kept in the archive">🎪 lineup archive</a>
+    <a class="brandmark" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="verified means the green checkmark: source code verified on Etherscan · Powered by Etherscan.io APIs">
+      <img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="14">
+      <span>Powered by Etherscan.io APIs</span>
+    </a>
+    <span>SHAMBA © 2026 LUV</span>
+    <a class="mailmark" href="mailto:luv@pythai.net" title="write to us — luv@pythai.net">✉ luv@pythai.net</a>
+  <style>.fieldnav{border-top:1px solid var(--seam);margin-top:22px;padding-top:16px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em}.fieldnav .fn-k{color:var(--gold);text-transform:uppercase;letter-spacing:.18em;font-size:10px;width:100%;margin-bottom:2px}.fieldnav a{color:var(--dim);text-decoration:none;border-bottom:1px solid transparent}.fieldnav a:hover{color:var(--rose);border-bottom-color:var(--rose)}</style>
+<nav class="fieldnav" aria-label="the field"><span class="fn-k">the field</span><a href="firstluv.html">firstLUV</a><a href="view.html">live view</a><a href="LUV.html">the price</a><a href="luvstory.html">the story</a><a href="engine.html">the engine</a><a href="emotonomics.html">emotonomics</a><a href="sentiment.html">sentiment</a><a href="wei.html">wei</a><a href="exabyte.html">exabyte</a><a href="rainbow.html">rainbow</a><a href="luvbus.html">LUVbus</a><a href="faq.html">FAQ</a><a href="docs.html">docs</a></nav>
+</div>
+</footer>
+
+<!-- Receive LUV -->
+<div class="wmodal" id="recvmodal" role="dialog" aria-modal="true">
+  <div class="modalcard">
+    <h3>↓ Receive <b>LUV</b></h3>
+    <div class="sub">Share this address to receive LUV (or ETH) on Ethereum.</div>
+    <div class="recv-addr" id="recv-addr">…</div>
+    <div class="row" style="justify-content:center">
+      <button class="btn" id="recv-copy" type="button">copy address</button>
+      <a class="btn scanmark" id="recv-explorer" href="#" target="_blank" rel="noopener" title="your wallet on Etherscan"><img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="11"> wallet ↗</a>
+    </div>
+    <button class="close" id="recv-close" type="button">close</button>
+  </div>
+</div>
+
+<!-- Send LUV -->
+<div class="wmodal" id="sendmodal" role="dialog" aria-modal="true">
+  <div class="modalcard">
+    <h3>↑ Send <b>LUV</b></h3>
+    <div class="sub">Send LUV from your wallet to any Ethereum address. Gas is covered for you.</div>
+    <label for="send-to">to address</label>
+    <input id="send-to" type="text" placeholder="0x…" spellcheck="false" autocomplete="off">
+    <label for="send-amt">amount (LUV)</label>
+    <input id="send-amt" type="text" inputmode="decimal" placeholder="e.g. 1000000000" autocomplete="off">
+    <button class="claimnow" id="send-go" type="button" style="margin-top:16px">Send LUV ❤</button>
+    <div class="taskmsg" id="send-msg"></div>
+    <button class="close" id="send-close" type="button">cancel</button>
+  </div>
+</div>
+
+<!-- ?v= busts the immutable .js cache — bump it whenever luv.app.js changes -->
+<script src="substrate/luv-drip.js?v=3"></script>
+<script src="luv.app.js?v=40"></script>
+<script src="substrate/heart.js?v=2"></script>
+<script src="substrate/luv-pulse.js?v=1"></script>
+<script src="substrate/emotonomic.js?v=1"></script>
+<script src="substrate/luv-wei.js?v=1"></script>
+<script src="substrate/luv-engine.js?v=12"></script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chart — SHAMBA LUV</title>
+<meta name="description" content="The LUV price, drawn from the Uniswap V2 pair reserves every minute, and the arithmetic that makes it: where the price comes from, why a trillion is the unit, what the fee and slippage do, and how the oracle reads it.">
+<link rel="canonical" href="https://luv.pythai.net/chart.html">
+<meta name="keywords" content="LUV price, LUV chart, LUV/WETH pair, Uniswap V2 price, price per trillion LUV, wei per LUV, luv.oracle">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+<meta name="author" content="SHAMBA LUV">
+<meta name="theme-color" content="#0b0712">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SHAMBA LUV">
+<meta property="og:locale" content="en_US">
+<meta property="og:url" content="https://luv.pythai.net/chart.html">
+<meta property="og:title" content="Chart — SHAMBA LUV">
+<meta property="og:description" content="The LUV price, drawn from the Uniswap V2 pair reserves every minute, and the arithmetic that makes it: where the price comes from, why a trillion is the unit, what the fee and slippage do, and how the oracle reads it.">
+<meta property="og:image" content="https://luv.pythai.net/gfx/og-card.png">
+<meta property="og:image:secure_url" content="https://luv.pythai.net/gfx/og-card.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="SHAMBA LUV: the gold binary heart. LUV is priceless. 1 LUV == 1 LUV.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@shambaluv">
+<meta name="twitter:creator" content="@shambaluv">
+<meta name="twitter:title" content="Chart — SHAMBA LUV">
+<meta name="twitter:description" content="The LUV price, drawn from the Uniswap V2 pair reserves every minute, and the arithmetic that makes it: where the price comes from, why a trillion is the unit, what the fee and slippage do, and how the oracle reads it.">
+<meta name="twitter:image" content="https://luv.pythai.net/gfx/og-card.png">
+<meta name="twitter:image:alt" content="SHAMBA LUV: the gold binary heart. LUV is priceless. 1 LUV == 1 LUV.">
+<link rel="me" href="https://x.com/shambaluv">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://luv.pythai.net/"},{"@type":"ListItem","position":2,"name":"Chart","item":"https://luv.pythai.net/chart.html"}]},{"@type":"WebPage","url":"https://luv.pythai.net/chart.html","name":"Chart — SHAMBA LUV","isPartOf":{"@id":"https://luv.pythai.net/#site"}},{"@type":"Dataset","name":"LUV price, minute series","description":"USD and ETH price of LUV read from the Uniswap V2 LUV/WETH pair reserves every minute by luv.oracle.","url":"https://luv.pythai.net/chart.html","license":"https://creativecommons.org/publicdomain/zero/1.0/","creator":{"@id":"https://luv.pythai.net/#org"},"distribution":[{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://luv.pythai.net/market-history.json"},{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://luv.pythai.net/market.json"}]}]}</script>
+
+<link rel="icon" href="gfx/heart.svg" type="image/svg+xml">
+<link rel="stylesheet" href="site.css?v=7">
+</head>
+<body>
+<nav class="nav"><div class="wrap">
+  <a class="brand" href="index.html"><img src="gfx/logo-transparent.png" alt="">SHAMBA LUV</a>
+  <a class="link" href="faq.html">FAQ</a>
+  <a class="link" href="chart.html">Chart</a>
+  <a class="link" href="roadmap.html">Roadmap</a>
+  <a class="link" href="app.html">Sign in</a>
+  <a class="buy" href="https://app.uniswap.org/swap?chain=mainnet&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img src="gfx/brand/uniswap_icon_white.svg" alt=""><span>Buy LUV</span></a>
+</div></nav>
+
+<header class="hero" style="padding-bottom:0"><div class="wrap" style="display:block">
+  <p class="kicker">The price of LUV</p>
+  <h1><span data-luv-1t>…</span> per trillion LUV</h1>
+  <p class="lede">Read from the LUV/WETH pair on Ethereum, not from a listing. <span data-luv-h24></span>, <span data-luv-block></span>, measured <span data-luv-at>…</span>.</p>
+  <div class="stat">
+    <div><b data-luv-wei>…</b><span>per LUV</span></div>
+    <div><b data-luv-x>…</b><span>UP from launch</span></div>
+    <div><b data-luv-mcap>…</b><span>market cap, burned supply excluded</span></div>
+    <div><b data-luv-liq>…</b><span>liquidity in the pair, 100% of it locked</span></div>
+    <div><b data-luv-per-usd>…</b><span>for one US dollar</span></div>
+    <div><b data-luv-eth>…</b><span>ETH/USD, the median of two on-chain pairs and one mirror</span></div>
+  </div>
+</div></header>
+
+<section class="plain"><div class="wrap">
+  <div class="chartbox tv">
+    <div class="tv-bar">
+      <div class="tv-group" id="luv-ranges" role="group" aria-label="time range"></div>
+      <div class="tv-group" id="luv-units" role="group" aria-label="price unit"></div>
+      <div class="tv-group" id="luv-intervals" role="group" aria-label="candle interval"></div>
+      <div class="tv-group" id="luv-type" role="group" aria-label="chart type"></div>
+      <div class="tv-group" id="luv-scale" role="group" aria-label="price scale"></div>
+      <button type="button" id="luv-fit" class="tv-fit" title="fit the latest bars to the width">fit</button>
+    </div>
+    <div class="tv-bar"><span class="tv-lbl">indicators</span><div class="tv-group" id="luv-indicators" role="group" aria-label="indicators"></div></div>
+    <div class="tv-legend" id="luvlegend" aria-live="polite"></div>
+    <div id="luvchart" aria-label="LUV price chart"></div>
+    <p class="tv-conv" id="luvconv"></p>
+    <p class="small" id="luvsrc" style="margin:4px 0 0"></p>
+    <p class="tv-help">scroll to zoom, drag to pan, hover for the bar. Candles are built from every swap on the pair since the seed fused with the minute samples of luv.oracle; a bar with no LUV trade still moves in dollars, because the pair prices LUV in ETH and ETH moves; the LUV/ETH unit shows the pair alone. Choose "vs ETH" to see which of the two moved. Indicators read the USD close whatever unit is on the axis, because momentum belongs to the asset, not the unit. Units: 1 luvwei = 10⁻¹⁸ LUV and 1 wei = 10⁻¹⁸ ETH, so luvwei/wei is numerically ETH per LUV.</p>
+  </div>
+  <div class="grid2" style="margin-top:22px;align-items:center">
+    <div class="chartbox" style="text-align:center">
+      <p class="kicker" style="text-align:left">The emotonomic dial</p>
+      <div data-emotonomic></div>
+      <p class="small" style="margin:10px auto 0;max-width:46ch">Measured feeling: momentum, the 24-hour change, pool depth from the seed, and the buy share of the last day, equal-weighted on a dial from fear to LUV. Revealed acts only, never self-report. A proposed instrument, specified in <a href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/SENTIMENT.md" target="_blank" rel="noopener">Measured feeling</a>.</p>
+    </div>
+    <div>
+      <p class="small">For every trade as a table, candles by other vendors, and the pair itself: <a href="https://app.uniswap.org/explore/tokens/ethereum/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">Uniswap</a>, <a href="https://dexscreener.com/ethereum/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31" target="_blank" rel="noopener">Dexscreener</a>, <a href="https://etherscan.io/address/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31" target="_blank" rel="noopener">Etherscan</a>. The raw data this chart draws from: <a href="market.json">market.json</a>, <a href="market-history.json">market-history.json</a>, <a href="market-trades.json">market-trades.json</a>.</p>
+    </div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Where the price comes from</h2>
+  <p class="lede">There is no listing price and no market maker. The pool is the price.</p>
+  <div class="grid2" style="margin-top:22px">
+    <details class="depth" open><summary><span class="jewel"></span><span><span class="t">The pair</span><span class="s">LUV on one side, ETH on the other</span></span></summary><div class="body">
+      <p>A Uniswap V2 pair holds two reserves and keeps their product constant. The price of LUV in ETH is simply the ETH reserve divided by the LUV reserve. Every buy takes LUV out and puts ETH in, so the ratio rises; every sell does the opposite.</p>
+      <p class="formula">price = reserve<sub>ETH</sub> ÷ reserve<sub>LUV</sub></p>
+      <details><summary>the seed</summary><p>The pool was seeded at the protocol maximum, 2¹¹²−1 wei of LUV against 0.0519 ETH. Everything since is the market's own doing. The "×" figure above is today's price divided by that seed.</p>
+      <details><summary>the actuality</summary><ul class="acts"><li class="chain"><span class="k">✓</span><a href="https://etherscan.io/tx/0x9f8e0bf6e566e809ca78eb18730b8f4305534e755a98a78f7924794757d4ff13" target="_blank" rel="noopener">the seed transaction</a></li><li class="chain"><span class="k">✓</span><a href="https://etherscan.io/address/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31#readContract" target="_blank" rel="noopener">getReserves, read it yourself</a></li><li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/WEI_OF_LUV.md" target="_blank" rel="noopener">The WEI of LUV</a></li></ul></details></details>
+    </div></details>
+    <details class="depth" open><summary><span class="jewel"></span><span><span class="t">Why a trillion</span><span class="s">the natural unit of a 111-quadrillion supply</span></span></summary><div class="body">
+      <p>One LUV is a very small fraction of a very large supply, so its dollar price is a long string of zeros. A trillion LUV is one hundred-thousandth of the supply, a sensible thing to hold, and the unit the free gesture was given in. So the site quotes USD per trillion, and the wallet-native unit is wei per LUV, which is exact.</p>
+      <details><summary>the actuality</summary><ul class="acts"><li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/TRILLIONS_CALCULATION.md" target="_blank" rel="noopener">TRILLIONS_CALCULATION.md</a> · <a href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/THE_EXABYTE_THE_ETHER_AND_THE_LUV.md" target="_blank" rel="noopener">the 10¹⁸ lattice</a></li></ul></details>
+    </div></details>
+    <details class="depth"><summary><span class="jewel"></span><span><span class="t">The fee and the slippage</span><span class="s">why you set 10%, and where the 5% goes</span></span></summary><div class="body">
+      <p>Every trade through the pair carries a 5% fee, taken in LUV by the token contract: 3% to holders, 1% to the pool, 1% to the team. Your quote therefore lands about 5% below the raw pool price, and a young pool moves further while your order fills. Slippage at 10% covers both; lower settings fail.</p>
+      <details><summary>how the fee changes the price</summary><p>The 1% liquidity point is added to the pool, so every trade leaves the pair deeper than it found it: less price impact per exit for everyone who remains. The 3% reflection point shrinks the reflected supply, so every holder's balance ticks up in the same block the trade lands.</p>
+      <details><summary>the actuality</summary><ul class="acts"><li class="chain"><span class="k">✓</span><a href="https://etherscan.io/tx/0xb3b93b9d82d8710839c05dd870bc2dc7e7bcd42951ec48a22b5dcbab890fc715" target="_blank" rel="noopener">a real buy, with the fee slice visible</a></li><li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/REFLECTIONS.md" target="_blank" rel="noopener">REFLECTIONS.md</a></li></ul></details></details>
+    </div></details>
+    <details class="depth"><summary><span class="jewel"></span><span><span class="t">The oracle</span><span class="s">reserves first, a block number on every measurement</span></span></summary><div class="body">
+      <p>Once a minute, luv.oracle reads the pair's reserves straight from an Ethereum node and computes the price. ETH/USD is the median of the USDC/WETH pair, the DAI/WETH pair and one external mirror, so no single feed can move it. Every measurement records the block it was read at. Aggregators are enrichment; the pair is the source.</p>
+      <details><summary>the actuality</summary><ul class="acts"><li class="page"><span class="k">◉</span><a href="market.json">market.json, the live measurement</a> · <a href="market-history.json">market-history.json</a></li><li class="doc"><span class="k">📄</span><a href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/SENTIMENT.md" target="_blank" rel="noopener">Measured feeling: the instruments</a> · <a href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/LUV_ENGINE.md" target="_blank" rel="noopener">The LUV engine</a></li></ul></details>
+    </div></details>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>What moves it</h2>
+  <p>Buys and sells, and nothing else. There is no team wallet selling into the pool: the treasury's LP is locked, the team's fee share arrives as ETH from the fee engine, and the marketing and community allocations are earmarked and listed on the open list until they are locked. The pool is thin today, which means the price moves a lot per trade in both directions, and every trade permanently deepens it.</p>
+  <p style="margin-top:14px"><a class="buy" href="https://app.uniswap.org/swap?chain=mainnet&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener"><img src="gfx/brand/uniswap_icon_white.svg" alt="">Buy LUV on Uniswap</a> &nbsp; <a class="addmm" href="#add-to-metamask" role="button" title="adds LUV (0x2711…8254, 18 decimals) with its mark to MetaMask on Ethereum mainnet"><img src="gfx/brand/metamask-fox.svg" alt="">Add LUV to MetaMask</a> &nbsp; <a class="alt" href="liqlock.html">see the lock</a></p>
+</div></section>
+
+<footer><div class="wrap">
+  <div><p class="mark">SHAMBA LUV</p><ul><li>LUV <a class="addr" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">0x2711111111683B8708cb9a48cBf36a51315F8254</a></li><li>Built to the <a href="https://github.com/cypherpunk4096/standard" target="_blank" rel="noopener">cypherpunk4096</a> standard.</li></ul></div>
+  <div><p class="mark">Read</p><ul><li><a href="index.html">home</a> · <a href="faq.html">FAQ</a> · <a href="roadmap.html">roadmap</a> · <a href="liqlock.html">the lock</a></li><li><a href="app.html">sign in to collect and share</a></li>
+    <li><a href="https://github.com/SHAMBA-LUV" target="_blank" rel="noopener">github.com/SHAMBA-LUV</a></li></ul></div>
+  <div><p class="mark">Follow</p><ul><li><a href="https://x.com/shambaluv" target="_blank" rel="noopener">@shambaluv</a> · <a href="https://t.me/+yTfFYQlH53pmODcx" target="_blank" rel="noopener">Telegram</a></li><li><a href="mailto:luv@pythai.net">luv@pythai.net</a></li></ul></div>
+</div></footer>
+<script src="site.js?v=7"></script>
+<script src="luvchart.js?v=10"></script>
+<script src="emotonomic.js?v=1"></script>
+</body>
+</html>

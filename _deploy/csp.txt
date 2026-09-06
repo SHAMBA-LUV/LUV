@@ -1,0 +1,3 @@
+# luv.pythai.net — Content-Security-Policy for the second site (replace the header line in the vhost)
+# Adds: eth.blockscout.com (the pair's Swap log), api.binance.com + coins.llama.fi (ETH/USD history) to connect-src.
+Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://ethereum-rpc.publicnode.com https://eth.blockscout.com https://api.binance.com https://coins.llama.fi; frame-src 'self' https://dexscreener.com https://w.soundcloud.com; frame-ancestors 'self'"
