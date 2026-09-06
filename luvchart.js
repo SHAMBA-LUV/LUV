@@ -59,15 +59,22 @@
   // pair reserves as the newest point. ethAt(t) carries the last known value forward.
   var ethSeries = [];
   function readEth(fromMs) {
-    var out = [];
+    var out = [], fineFrom = Date.now() - 48 * 3600e3;
+    function pageFine(start) {
+      return fetch("https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1m&limit=1000&startTime=" + start).then(function (r) { return r.json(); }).then(function (rows) {
+        if (!Array.isArray(rows) || !rows.length) return;
+        rows.forEach(function (k) { out.push([Number(k[0]) + 59e3, Number(k[4])]); });
+        if (rows.length === 1000 && out.length < 40000) return pageFine(Number(rows[rows.length - 1][0]) + 1);
+      });
+    }
     function page(start) {
-      return fetch("https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1h&limit=1000&startTime=" + start).then(function (r) { return r.json(); }).then(function (rows) {
+      return fetch("https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1h&limit=1000&startTime=" + start + "&endTime=" + fineFrom).then(function (r) { return r.json(); }).then(function (rows) {
         if (!Array.isArray(rows) || !rows.length) return;
         rows.forEach(function (k) { var t0 = Number(k[0]), o = Number(k[1]), h = Number(k[2]), l = Number(k[3]), c = Number(k[4]); out.push([t0 + 1, o]); if (c >= o) { out.push([t0 + 1200e3, l]); out.push([t0 + 2400e3, h]); } else { out.push([t0 + 1200e3, h]); out.push([t0 + 2400e3, l]); } out.push([t0 + 3599e3, c]); });
         if (rows.length === 1000 && out.length < 20000) return page(Number(rows[rows.length - 1][0]) + 1);
       });
     }
-    return page(fromMs).then(function () { if (!out.length) throw new Error("no binance"); return out; }).catch(function () {
+    return page(fromMs).then(function () { return pageFine(fineFrom); }).then(function () { if (!out.length) throw new Error("no binance"); return out; }).catch(function () {
       return fetch("https://coins.llama.fi/chart/coingecko:ethereum?start=" + Math.floor(fromMs / 1000) + "&span=500&period=2h").then(function (r) { return r.json(); }).then(function (d) { var c = d.coins && d.coins["coingecko:ethereum"]; return c ? c.prices.map(function (x) { return [x.timestamp * 1000, x.price]; }) : []; }).catch(function () { return []; });
     });
   }
@@ -127,12 +134,12 @@
       var trades = tr && tr.trades ? Promise.resolve(tr.trades) : readSwaps(ethUsd).catch(function () { return []; });
       return trades.then(function (rows) {
         var t = [];
-        rows.forEach(function (r) { var nat = Number(r[6]), luv = Number(r[3]), weth = Number(r[4]), e = ethAt(r[0]) || ethUsd, usd = Number(r[5]) > 0 && tr ? Number(r[5]) : weth * e; var pu = e > 0 ? nat * e : (luv > 0 && usd > 0 ? usd / luv : NaN); if (nat > 0 && pu > 0) t.push({ t: r[0], usd: pu, nat: nat, vol: usd, buy: r[2] === "b", trade: true, maker: r[7] }); });
-        if (hist && hist.points) hist.points.forEach(function (p) { if (p[1] > 0 && p[2] > 0) t.push({ t: p[0], usd: Number(p[1]), nat: Number(p[2]), vol: 0, buy: null, trade: false }); });
+        rows.forEach(function (r) { var nat = Number(r[6]), luv = Number(r[3]), weth = Number(r[4]), e = ethAt(r[0]) || ethUsd, usd = weth * e; var pu = e > 0 ? nat * e : (luv > 0 && usd > 0 ? usd / luv : NaN); if (nat > 0 && pu > 0) t.push({ t: r[0], usd: pu, nat: nat, vol: usd, buy: r[2] === "b", trade: true, maker: r[7] }); });
+        if (hist && hist.points) hist.points.forEach(function (p) { if (p[1] > 0 && p[2] > 0) { var e = ethAt(p[0]); t.push({ t: p[0], usd: e ? Number(p[2]) * e : Number(p[1]), nat: Number(p[2]), vol: 0, buy: null, trade: false }); } });
         if (liveM) { t.push({ t: liveM.t, usd: liveM.priceUsd, nat: liveM.priceNative, vol: 0, buy: null, trade: false, live: true }); liveAt = liveM.t; }
         t.sort(function (a, b) { return a.t - b.t; });
         // ETH ticks: at every ETH/USD sample, LUV's dollar price = the last pair price × ETH then — the pair moves with ETH
-        if (ethSeries.length && t.length) { var minuteFrom = (hist && hist.points && hist.points.length) ? hist.points[0][0] : Infinity, k = 0, lastNat = null, ticks = []; ethSeries.forEach(function (e) { while (k < t.length && t[k].t <= e[0]) { lastNat = t[k].nat; k++; } if (lastNat && e[0] < minuteFrom && e[0] > t[0].t) ticks.push({ t: e[0], usd: lastNat * e[1], nat: lastNat, vol: 0, buy: null, trade: false, ethTick: true }); }); t = t.concat(ticks).sort(function (a, b) { return a.t - b.t; }); }
+        if (ethSeries.length && t.length) { var k = 0, lastNat = null, ticks = []; ethSeries.forEach(function (e) { while (k < t.length && t[k].t <= e[0]) { lastNat = t[k].nat; k++; } var near = (k > 0 && e[0] - t[k - 1].t < 30e3) || (k < t.length && t[k].t - e[0] < 30e3); if (lastNat && !near && e[0] > t[0].t) ticks.push({ t: e[0], usd: lastNat * e[1], nat: lastNat, vol: 0, buy: null, trade: false, ethTick: true }); }); t = t.concat(ticks).sort(function (a, b) { return a.t - b.t; }); }
         tape = t;
         // 24H change + txns from the tape when the mirror did not supply them
         if (!m0 && t.length) { var cut = Date.now() - 86400e3, first = null, buys = 0, sells = 0; t.forEach(function (x) { if (x.t >= cut) { if (first === null) first = x.usd; if (x.trade) { if (x.buy) buys++; else sells++; } } }); if (first === null) first = t[0].usd; market.priceChange = { h24: first > 0 ? (market.priceUsd / first - 1) * 100 : 0 }; market.txns = { h24: { buys: buys, sells: sells } }; }
@@ -248,8 +255,11 @@
     if (geo.macd) { var gm = geo.macd, mm = 0; vis.forEach(function (b) { var a = S.macd.macd[b.i], s2 = S.macd.signal[b.i], h2 = S.macd.hist[b.i]; if (a != null) mm = Math.max(mm, Math.abs(a)); if (s2 != null) mm = Math.max(mm, Math.abs(s2)); if (h2 != null) mm = Math.max(mm, Math.abs(h2)); }); mm = mm || 1; var Ym = function (v) { return gm.top + 12 + (mm - v) / (2 * mm) * (gm.h - 20); }; label(gm, "MACD 12·26·9 (on the USD close)"); ctx.strokeStyle = C.grid; ctx.beginPath(); ctx.moveTo(PAD.l, Ym(0)); ctx.lineTo(PAD.l + pw, Ym(0)); ctx.stroke(); vis.forEach(function (b) { var h2 = S.macd.hist[b.i]; if (h2 == null) return; var x = X(b.i); ctx.fillStyle = h2 >= 0 ? C.up : C.dn; ctx.globalAlpha = .7; ctx.fillRect(x - Math.max(1, bw * .5) / 2, Math.min(Ym(0), Ym(h2)), Math.max(1, bw * .5), Math.abs(Ym(h2) - Ym(0))); ctx.globalAlpha = 1; }); [[S.macd.macd, C.gold], [S.macd.signal, C.pink]].forEach(function (pair) { ctx.strokeStyle = pair[1]; ctx.lineWidth = 1.4; ctx.beginPath(); var on2 = false; vis.forEach(function (b) { var v = pair[0][b.i]; if (v == null) { on2 = false; return; } var x = X(b.i), y = Ym(v); if (!on2) { ctx.moveTo(x, y); on2 = true; } else ctx.lineTo(x, y); }); ctx.stroke(); ctx.lineWidth = 1; }); sep(gm); }
     if (geo.pressure) { var gp = geo.pressure, Yp = function (v) { return gp.top + 12 + (1 - v) / 2 * (gp.h - 20); }; label(gp, "emotonomic pressure · (buys − sells) ÷ volume per bar, +1 all entries, −1 all exits"); ctx.strokeStyle = C.grid; ctx.beginPath(); ctx.moveTo(PAD.l, Yp(0)); ctx.lineTo(PAD.l + pw, Yp(0)); ctx.stroke(); vis.forEach(function (b) { if (!b.vol) return; var p = (b.bvol - b.svol) / b.vol, x = X(b.i); ctx.fillStyle = p >= 0 ? C.up : C.dn; ctx.globalAlpha = .8; ctx.fillRect(x - Math.max(1, bw * .6) / 2, Math.min(Yp(0), Yp(p)), Math.max(1, bw * .6), Math.abs(Yp(p) - Yp(0))); ctx.globalAlpha = 1; }); sep(gp); axisRight(gp, ["+1", "−1"], [Yp(1) + 4, Yp(-1) - 4]); }
     // ── time axis ──
-    var ax = H - PAD.axis, every = Math.max(1, Math.ceil(70 / bw)); ctx.strokeStyle = C.grid; ctx.beginPath(); ctx.moveTo(PAD.l, ax); ctx.lineTo(PAD.l + pw, ax); ctx.stroke(); ctx.fillStyle = C.muted; ctx.textAlign = "center"; ctx.textBaseline = "top";
-    vis.forEach(function (b, j) { if (j % every) return; var lb = tlabel(b.t, S.interval), lw = ctx.measureText(lb).width, lx = X(b.i); if (lx - lw / 2 < PAD.l || lx + lw / 2 > PAD.l + pw) return; ctx.fillText(lb, lx, ax + 7); });
+    var ax = H - PAD.axis; ctx.strokeStyle = C.grid; ctx.beginPath(); ctx.moveTo(PAD.l, ax); ctx.lineTo(PAD.l + pw, ax); ctx.stroke(); ctx.fillStyle = C.muted; ctx.textAlign = "center"; ctx.textBaseline = "top";
+    var STEPS = [60e3, 300e3, 900e3, 1800e3, 3600e3, 7200e3, 14400e3, 21600e3, 43200e3, 86400e3, 2 * 86400e3, 7 * 86400e3, 14 * 86400e3, 30 * 86400e3], msPerPx = S.interval / bw, step = STEPS[STEPS.length - 1];
+    for (var si = 0; si < STEPS.length; si++) if (STEPS[si] / msPerPx >= 90) { step = STEPS[si]; break; }
+    var t0 = Math.ceil(vis[0].t / step) * step, lastX = -Infinity;
+    for (var tt = t0; tt <= vis[n - 1].t; tt += step) { var bi = Math.round((tt - vis[0].t) / S.interval) + vis[0].i; var lx = X(bi), d = new Date(tt), lb = step >= 86400e3 || (d.getUTCHours() === 0 && d.getUTCMinutes() === 0) ? (d.getUTCMonth() + 1) + "/" + d.getUTCDate() : ("0" + d.getUTCHours()).slice(-2) + ":" + ("0" + d.getUTCMinutes()).slice(-2); var lw = ctx.measureText(lb).width; if (lx - lw / 2 < PAD.l || lx + lw / 2 > PAD.l + pw || lx - lastX < lw + 12) continue; ctx.strokeStyle = C.grid; ctx.beginPath(); ctx.moveTo(lx, ax); ctx.lineTo(lx, ax + 4); ctx.stroke(); ctx.fillText(lb, lx, ax + 7); lastX = lx; }
     ctx.textBaseline = "middle";
     // ── crosshair ──
     if (hover) { var hb = bars[hover.i]; if (hb) { var hx = X(hb.i); ctx.strokeStyle = C.cross; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(hx, PAD.top); ctx.lineTo(hx, ax); ctx.stroke(); if (hover.y >= g.top && hover.y <= g.bot) { ctx.beginPath(); ctx.moveTo(PAD.l, hover.y); ctx.lineTo(PAD.l + pw, hover.y); ctx.stroke(); var pv = Yinv(hover.y); tag(PAD.l + pw + 2, hover.y, U.axis(pv, dec), C.tag, "#0a0d14"); } ctx.setLineDash([]); ctx.textAlign = "center"; ctx.textBaseline = "top"; var tl = full(hb.t), tw = ctx.measureText(tl).width + 10; ctx.fillStyle = C.tag; ctx.fillRect(Math.min(Math.max(hx - tw / 2, PAD.l), PAD.l + pw - tw), ax + 3, tw, 18); ctx.fillStyle = "#0a0d14"; ctx.fillText(tl, Math.min(Math.max(hx, PAD.l + tw / 2), PAD.l + pw - tw / 2), ax + 6); ctx.textBaseline = "middle";
