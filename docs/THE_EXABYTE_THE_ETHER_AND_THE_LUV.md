@@ -28,7 +28,7 @@ The identity is not a coincidence of marketing but of arithmetic: any system tha
 
 ## II. The two ladders
 
-**The current historical moment lives at the terabyte rung.** The pocket drive, the laptop, the phone — the terabyte is the unit a person can hold, and it is the anchor of comprehension for everything above it: a petabyte is **a thousand terabytes**; an exabyte is **a million**. Storage climbs two ladders at once — decimal (SI, powers of ten) and binary (IEC, powers of two) — agreeing at the atom and drifting forever after. From the bit to the largest prefix ever named, every figure exact:
+**The current historical moment lives at the terabyte rung.** The pocket drive, the laptop, the phone — the terabyte is the unit a person can hold, and it is the anchor of comprehension for everything above it: ; an exabyte is **one million terabyte**. Storage climbs two ladders at once — decimal (SI, powers of ten) and binary (IEC, powers of two) — agreeing at the atom and drifting forever after. From the bit to the largest prefix ever named, every figure exact:
 
 | rung | decimal (SI) | binary (IEC) | drift |
 |---|---|---|---|
