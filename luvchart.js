@@ -25,10 +25,13 @@
   // reserves NOW, straight from the pair: price, ETH/USD from the USDC/WETH pair, burned + supply from the token
   function readPair() {
     var sel = "0x0902f1ac", bal = "0x70a08231" + DEAD.slice(2).toLowerCase().padStart(64, "0");
-    return rpc([["eth_call", [{ to: PAIR, data: sel }, "latest"]], ["eth_call", [{ to: USDC_WETH, data: sel }, "latest"]], ["eth_call", [{ to: LUV, data: bal }, "latest"]], ["eth_blockNumber", []]]).then(function (r) {
-      var a = words(r[0]), b = words(r[1]), burned = toNum(words(r[2])[0], 18), block = parseInt(r[3], 16);
-      var luv = toNum(a[0], 18), weth = toNum(a[1], 18), usdc = toNum(b[0], 6), weth2 = toNum(b[1], 18);
-      var nat = weth / luv, ethUsd = usdc / weth2, usd = nat * ethUsd;
+    return rpc([["eth_call", [{ to: PAIR, data: sel }, "latest"]], ["eth_call", [{ to: USDC_WETH, data: sel }, "latest"]], ["eth_call", [{ to: LUV, data: bal }, "latest"]], ["eth_blockNumber", []], ["eth_call", [{ to: "0xA478c2975Ab1Ea89e8196811F51A7B7Ade33eB11", data: sel }, "latest"]], ["eth_call", [{ to: "0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640", data: "0x3850c7bd" }, "latest"]]]).then(function (r) {
+      var a = words(r[0]), b = words(r[1]), burned = toNum(words(r[2])[0], 18), block = parseInt(r[3], 16), c = words(r[4]);
+      var luv = toNum(a[0], 18), weth = toNum(a[1], 18);
+      // ETH/USD = median of V2 USDC/WETH, V2 DAI/WETH and the V3 USDC/WETH 0.05% pool (moves every block)
+      var e1 = toNum(b[0], 6) / toNum(b[1], 18), e2 = toNum(c[0], 18) / toNum(c[1], 18), sq = Number(BigInt("0x" + r[5].slice(2, 66))) / Math.pow(2, 96), e3 = 1e12 / (sq * sq);
+      var es = [e1, e2, e3].filter(function (x) { return isFinite(x) && x > 0; }).sort(function (x, y) { return x - y; }), ethUsd = es[Math.floor(es.length / 2)];
+      var nat = weth / luv, usd = nat * ethUsd;
       return { t: Date.now(), pair: PAIR, source: "reserves", priceUsd: usd, priceNative: nat, oneTrillionUsd: usd * 1e12, ethUsd: ethUsd, liquidity: { usd: weth * ethUsd * 2, base: luv, quote: weth }, reserves: { luv: luv, weth: weth }, totalSupply: SUPPLY, burned: burned, marketCap: usd * (SUPPLY - burned), fdv: usd * SUPPLY, priceX: nat / SEED_NATIVE, liqX: weth / SEED_WETH, priceChange: { h24: 0 }, txns: { h24: { buys: 0, sells: 0 } }, chronos: { block_number: block, observed_ms: Date.now() }, pairCreatedAt: 1785116795000 };
     });
   }

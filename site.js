@@ -48,12 +48,18 @@
     var body = JSON.stringify([
       { jsonrpc: "2.0", id: 1, method: "eth_call", params: [{ to: "0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31", data: "0x0902f1ac" }, "latest"] },
       { jsonrpc: "2.0", id: 2, method: "eth_call", params: [{ to: "0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc", data: "0x0902f1ac" }, "latest"] },
-      { jsonrpc: "2.0", id: 3, method: "eth_blockNumber", params: [] }]);
+      { jsonrpc: "2.0", id: 3, method: "eth_blockNumber", params: [] },
+      { jsonrpc: "2.0", id: 4, method: "eth_call", params: [{ to: "0xA478c2975Ab1Ea89e8196811F51A7B7Ade33eB11", data: "0x0902f1ac" }, "latest"] },
+      { jsonrpc: "2.0", id: 5, method: "eth_call", params: [{ to: "0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640", data: "0x3850c7bd" }, "latest"] }]);
     return fetch("https://ethereum-rpc.publicnode.com", { method: "POST", headers: { "content-type": "application/json" }, body: body }).then(function (r) { return r.json(); }).then(function (rs) {
       rs.sort(function (a, b) { return a.id - b.id; });
       var w = function (hex) { var h = hex.replace(/^0x/, ""), o = []; for (var i = 0; i + 64 <= h.length; i += 64) o.push(Number(BigInt("0x" + h.slice(i, i + 64)))); return o; };
-      var a = w(rs[0].result), b = w(rs[1].result), luv = a[0] / 1e18, weth = a[1] / 1e18, usdc = b[0] / 1e6, weth2 = b[1] / 1e18;
-      var nat = weth / luv, ethUsd = usdc / weth2, usd = nat * ethUsd;
+      var a = w(rs[0].result), b = w(rs[1].result), luv = a[0] / 1e18, weth = a[1] / 1e18;
+      // ETH/USD = the median of three on-chain markets: V2 USDC/WETH, V2 DAI/WETH, and the V3 USDC/WETH 0.05% pool (moves every block)
+      var e1 = (b[0] / 1e6) / (b[1] / 1e18), c = w(rs[3].result), e2 = (c[0] / 1e18) / (c[1] / 1e18);
+      var sq = Number(BigInt("0x" + rs[4].result.slice(2, 66))) / Math.pow(2, 96), e3 = 1e12 / (sq * sq);
+      var es = [e1, e2, e3].filter(function (x) { return isFinite(x) && x > 0; }).sort(function (x, y) { return x - y; }), ethUsd = es[Math.floor(es.length / 2)];
+      var nat = weth / luv, usd = nat * ethUsd;
       var m = lastMarket ? Object.assign({}, lastMarket) : { priceChange: { h24: 0 }, totalSupply: 111111111111111111, burned: 0 };
       m.t = Date.now(); m.priceUsd = usd; m.priceNative = nat; m.oneTrillionUsd = usd * 1e12; m.ethUsd = ethUsd; m.priceX = nat / SEED_NATIVE;
       m.liquidity = { usd: weth * ethUsd * 2, quote: weth, base: luv }; m.marketCap = usd * ((m.totalSupply || 111111111111111111) - (m.burned || 0));
