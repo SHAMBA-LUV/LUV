@@ -106,3 +106,7 @@ body:not(.authed) #dashboard{display:none}
 .wmodal .modalcard label{display:block;color:var(--muted);font-size:.85rem;margin-top:10px}
 .wmodal .modalcard input{width:100%;font:inherit;font-family:var(--mono);background:var(--ground);color:var(--ink);border:1px solid var(--seam);border-radius:8px;padding:10px 12px;margin-top:4px}
 .compat{display:none}
+
+.providers a,.providers button,.modalproviders a,.modalproviders button{font:700 .95rem var(--sans);background:var(--raised);color:#fff;border:1px solid var(--seam);padding:11px 18px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;text-decoration:none}
+.providers a:hover,.modalproviders a:hover{border-color:var(--gold);color:#fff}
+.providers img,.modalproviders img{width:18px;height:18px}

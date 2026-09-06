@@ -14,8 +14,8 @@
         rs.sort(function (a, b) { return a.id - b.id; });
         var luv = Number(words(rs[0].result)[0]) / 1e18, rv = words(rs[1].result), nat = Number(rv[1]) / Number(rv[0]);
         var sq = Number(BigInt("0x" + rs[2].result.slice(2, 66))) / Math.pow(2, 96), eth = 1e12 / (sq * sq), usd = luv * nat * eth, code = rs[4].result;
-        $("cbal").textContent = grp(luv, 0); $("cusd").textContent = "≈ $" + usd.toFixed(6) + " at the pair's mid price"; $("caddr").textContent = addr;
-        $("ckind").textContent = (code && code !== "0x" ? "smart account" : "wallet") + " on Ethereum, read live from the chain";
+        $("cbal").textContent = grp(luv, 0); $("cusd").textContent = "≈ $" + grp(usd, 2) + " at the pair's mid price"; $("caddr").textContent = addr;
+        $("ckind").textContent = (code && code !== "0x" ? (code.slice(0, 8).toLowerCase() === "0xef0100" ? "wallet (EIP-7702 delegated)" : "smart account") : "wallet") + " on Ethereum, read live from the chain";
         $("cblock").textContent = "block " + parseInt(rs[3].result, 16).toLocaleString();
         $("cscan").href = "https://etherscan.io/address/" + addr;
         try { var q = window.qrcode(0, "M"); q.addData("ethereum:" + addr); q.make(); $("cqr").innerHTML = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true }); } catch (e) {}

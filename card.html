@@ -26,9 +26,10 @@
 .luvcard .top img{width:64px;height:64px;border-radius:50%;box-shadow:0 8px 24px rgba(0,0,0,.5)}
 .luvcard .top b{font-family:var(--serif);font-weight:500;font-size:1.7rem;display:block}
 .luvcard .top span{color:var(--muted)}
-.luvcard .grid{display:grid;grid-template-columns:1fr auto;gap:22px;align-items:end;margin-top:22px}
+.luvcard .grid{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:22px;align-items:end;margin-top:22px}
+.luvcard .grid>div:first-child{min-width:0}
 @media (max-width:600px){.luvcard .grid{grid-template-columns:1fr}}
-.luvcard .bal{font-family:var(--serif);font-size:clamp(2rem,6vw,3rem);color:var(--gold-2);line-height:1.1}
+.luvcard .bal{font-family:var(--serif);font-size:clamp(1.5rem,4.2vw,2.4rem);color:var(--gold-2);line-height:1.1;overflow-wrap:anywhere}
 .luvcard .bal small{font-size:1rem;color:var(--muted);display:block;font-family:var(--sans)}
 .luvcard .usd{color:var(--ink-2);margin-top:6px}
 .luvcard .addr{font-family:var(--mono);font-size:.85rem;color:var(--gold-2);word-break:break-all;margin-top:14px;user-select:all}
@@ -94,7 +95,7 @@
   <div><p class="mark">Follow</p><ul><li><a href="https://x.com/shambaluv" target="_blank" rel="noopener">@shambaluv</a> · <a href="https://t.me/+yTfFYQlH53pmODcx" target="_blank" rel="noopener">Telegram</a></li></ul></div>
 </div></footer>
 <script src="substrate/qrcode.js?v=1"></script>
-<script src="card.js?v=1"></script>
+<script src="card.js?v=2"></script>
 <script src="site.js?v=13"></script>
 </body>
 </html>
