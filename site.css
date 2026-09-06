@@ -199,3 +199,10 @@ footer .mark{font-family:var(--serif);color:var(--ink-2);font-size:1.05rem;margi
 .addmm img{width:20px;height:20px}
 .addmm:hover{border-color:#f6851b;color:#fff}
 .addmm[data-done="1"]{border-color:var(--verified);color:var(--verified)} .addmm[data-done="0"]{border-color:#ff7b9c;color:#ff7b9c}
+
+/* the price tick: a brief colour on every change */
+@keyframes tickup{0%{color:var(--verified)}100%{color:var(--gold-2)}}
+@keyframes tickdn{0%{color:#ff7b9c}100%{color:var(--gold-2)}}
+.price .n.tick-up,h1 [data-luv-1t].tick-up{animation:tickup 1.6s ease-out}
+.price .n.tick-dn,h1 [data-luv-1t].tick-dn{animation:tickdn 1.6s ease-out}
+h1 [data-luv-tick].up{color:var(--verified)} h1 [data-luv-tick].dn{color:#ff7b9c}

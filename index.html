@@ -35,7 +35,7 @@
 
 <link rel="icon" href="gfx/heart.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="gfx/heart-512.png">
-<link rel="stylesheet" href="site.css?v=7">
+<link rel="stylesheet" href="site.css?v=8">
 </head>
 <body>
 <nav class="nav"><div class="wrap">
@@ -61,7 +61,8 @@
     <div class="copybox"><span class="lbl">the LUV contract, Ethereum mainnet</span><code class="full" id="luvaddr-home">0x2711111111683B8708cb9a48cBf36a51315F8254</code><div class="row"><button type="button" class="copybtn" data-copy="0x2711111111683B8708cb9a48cBf36a51315F8254">copy address</button><a class="alt" href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254#code" target="_blank" rel="noopener">verified on Etherscan</a></div></div>
     <p class="slip">Set slippage to 10%. The 5% trade fee is what pays holders, and a young pool moves when you enter it. A lower setting fails with "insufficient output".</p>
     <div class="price" aria-live="polite">
-      <span class="n" data-luv-1t>…</span><span class="u">per trillion LUV</span>
+      <span class="n" data-luv-1t>…</span><span class="d" data-luv-tick></span><span class="u">per trillion LUV</span>
+      <span class="d" data-luv-mix title="the pair prices LUV in ETH, so the dollar price moves with ETH between LUV trades"></span>
       <span class="d" data-luv-h24></span>
       <span class="d" data-luv-block></span>
       <a class="d" href="chart.html">how the price is made</a>
@@ -223,6 +224,6 @@
     <li><a href="mailto:luv@pythai.net">luv@pythai.net</a></li>
   </ul></div>
 </div></footer>
-<script src="site.js?v=8"></script>
+<script src="site.js?v=9"></script>
 </body>
 </html>

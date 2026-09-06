@@ -12,12 +12,20 @@
   }
 
   // 2. the price line — read from market.json (luv.oracle, same origin). Display only; the pair is the source.
-  const fmtUsd = (v) => v >= 1 ? "$" + v.toFixed(2) : "$" + v.toFixed(4);
+  const fmtUsd = (v) => v >= 1 ? "$" + v.toFixed(4) : "$" + v.toFixed(6);
+  let prevOneT = null;
   const fmtBig = (n) => { if (n >= 1e12) return (n / 1e12).toFixed(2) + " T"; if (n >= 1e9) return (n / 1e9).toFixed(2) + " B"; return Math.round(n).toLocaleString(); };
   const pct = (x) => (x >= 0 ? "+" : "") + x.toFixed(1) + "%";
   function paintPrice(m) {
     const oneT = m.oneTrillionUsd != null ? m.oneTrillionUsd : m.priceUsd * 1e12;
-    document.querySelectorAll("[data-luv-1t]").forEach((el) => (el.textContent = fmtUsd(oneT)));
+    document.querySelectorAll("[data-luv-1t]").forEach((el) => {
+      el.textContent = fmtUsd(oneT);
+      if (prevOneT !== null && oneT !== prevOneT) { el.classList.remove("tick-up", "tick-dn"); void el.offsetWidth; el.classList.add(oneT > prevOneT ? "tick-up" : "tick-dn"); }
+    });
+    document.querySelectorAll("[data-luv-tick]").forEach((el) => { if (prevOneT !== null && oneT !== prevOneT) { el.textContent = oneT > prevOneT ? "▲" : "▼"; el.className = "d " + (oneT > prevOneT ? "up" : "dn"); } });
+    prevOneT = oneT;
+    // the two factors: the pair's own price (moves only on a LUV trade) × ETH/USD (moves all the time)
+    document.querySelectorAll("[data-luv-mix]").forEach((el) => (el.textContent = (m.priceNative * 1e18).toFixed(4) + " wei per LUV × ETH $" + Number(m.ethUsd).toFixed(2)));
     document.querySelectorAll("[data-luv-mcap]").forEach((el) => (el.textContent = "$" + Math.round(m.marketCap).toLocaleString()));
     document.querySelectorAll("[data-luv-liq]").forEach((el) => (el.textContent = "$" + Math.round(m.liquidity.usd).toLocaleString()));
     document.querySelectorAll("[data-luv-x]").forEach((el) => (el.textContent = m.priceX.toFixed(2) + "x"));
