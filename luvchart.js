@@ -30,7 +30,7 @@
       var luv = toNum(a[0], 18), weth = toNum(a[1], 18);
       // ETH/USD = median of V2 USDC/WETH, V2 DAI/WETH and the V3 USDC/WETH 0.05% pool (moves every block)
       var e1 = toNum(b[0], 6) / toNum(b[1], 18), e2 = toNum(c[0], 18) / toNum(c[1], 18), sq = Number(BigInt("0x" + r[5].slice(2, 66))) / Math.pow(2, 96), e3 = 1e12 / (sq * sq);
-      var es = [e1, e2, e3].filter(function (x) { return isFinite(x) && x > 0; }).sort(function (x, y) { return x - y; }), ethUsd = es[Math.floor(es.length / 2)];
+      var es = [e1, e2, e3].filter(function (x) { return isFinite(x) && x > 0; }).sort(function (x, y) { return x - y; }), med = es[Math.floor(es.length / 2)], ethUsd = (isFinite(e3) && e3 > 0 && Math.abs(e3 / med - 1) < 0.02) ? e3 : med; // the V3 pool leads (it moves every block); the V2 pairs bound it
       var nat = weth / luv, usd = nat * ethUsd;
       return { t: Date.now(), pair: PAIR, source: "reserves", priceUsd: usd, priceNative: nat, oneTrillionUsd: usd * 1e12, ethUsd: ethUsd, liquidity: { usd: weth * ethUsd * 2, base: luv, quote: weth }, reserves: { luv: luv, weth: weth }, totalSupply: SUPPLY, burned: burned, marketCap: usd * (SUPPLY - burned), fdv: usd * SUPPLY, priceX: nat / SEED_NATIVE, liqX: weth / SEED_WETH, priceChange: { h24: 0 }, txns: { h24: { buys: 0, sells: 0 } }, chronos: { block_number: block, observed_ms: Date.now() }, pairCreatedAt: 1785116795000 };
     });

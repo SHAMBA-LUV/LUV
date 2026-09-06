@@ -63,7 +63,7 @@
       // ETH/USD = the median of three on-chain markets: V2 USDC/WETH, V2 DAI/WETH, and the V3 USDC/WETH 0.05% pool (moves every block)
       var e1 = (b[0] / 1e6) / (b[1] / 1e18), c = w(rs[3].result), e2 = (c[0] / 1e18) / (c[1] / 1e18);
       var sq = Number(BigInt("0x" + rs[4].result.slice(2, 66))) / Math.pow(2, 96), e3 = 1e12 / (sq * sq);
-      var es = [e1, e2, e3].filter(function (x) { return isFinite(x) && x > 0; }).sort(function (x, y) { return x - y; }), ethUsd = es[Math.floor(es.length / 2)];
+      var es = [e1, e2, e3].filter(function (x) { return isFinite(x) && x > 0; }).sort(function (x, y) { return x - y; }), med = es[Math.floor(es.length / 2)], ethUsd = (isFinite(e3) && e3 > 0 && Math.abs(e3 / med - 1) < 0.02) ? e3 : med; // the V3 pool leads (it moves every block); the V2 pairs bound it
       var nat = weth / luv, usd = nat * ethUsd;
       var m = lastMarket ? Object.assign({}, lastMarket) : { priceChange: { h24: 0 }, totalSupply: 111111111111111111, burned: 0 };
       m.t = Date.now(); m.priceUsd = usd; m.priceNative = nat; m.oneTrillionUsd = usd * 1e12; m.ethUsd = ethUsd; m.priceX = nat / SEED_NATIVE;
