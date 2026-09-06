@@ -33,8 +33,32 @@
       document.querySelectorAll("[data-luv-1t]").forEach((el) => (el.textContent = "priced on Uniswap"));
     });
   }
-  if (document.querySelector("[data-luv-1t]")) { loadPrice(); setInterval(loadPrice, 60000); }
-  document.addEventListener("luv:market", function (e) { if (e.detail) paintPrice(e.detail); });
+  // the 15-second tick: the pair's reserves and the USDC/WETH reserves, read straight from Ethereum, laid over the
+  // last market.json so the day's change and the market cap keep their fields. The chart page runs its own tick.
+  var lastMarket = null, SEED_NATIVE = 1e-17, SEED_WETH = 0.051922968585348276;
+  function readReserves() {
+    var body = JSON.stringify([
+      { jsonrpc: "2.0", id: 1, method: "eth_call", params: [{ to: "0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31", data: "0x0902f1ac" }, "latest"] },
+      { jsonrpc: "2.0", id: 2, method: "eth_call", params: [{ to: "0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc", data: "0x0902f1ac" }, "latest"] },
+      { jsonrpc: "2.0", id: 3, method: "eth_blockNumber", params: [] }]);
+    return fetch("https://ethereum-rpc.publicnode.com", { method: "POST", headers: { "content-type": "application/json" }, body: body }).then(function (r) { return r.json(); }).then(function (rs) {
+      rs.sort(function (a, b) { return a.id - b.id; });
+      var w = function (hex) { var h = hex.replace(/^0x/, ""), o = []; for (var i = 0; i + 64 <= h.length; i += 64) o.push(Number(BigInt("0x" + h.slice(i, i + 64)))); return o; };
+      var a = w(rs[0].result), b = w(rs[1].result), luv = a[0] / 1e18, weth = a[1] / 1e18, usdc = b[0] / 1e6, weth2 = b[1] / 1e18;
+      var nat = weth / luv, ethUsd = usdc / weth2, usd = nat * ethUsd;
+      var m = lastMarket ? Object.assign({}, lastMarket) : { priceChange: { h24: 0 }, totalSupply: 111111111111111111, burned: 0 };
+      m.t = Date.now(); m.priceUsd = usd; m.priceNative = nat; m.oneTrillionUsd = usd * 1e12; m.ethUsd = ethUsd; m.priceX = nat / SEED_NATIVE;
+      m.liquidity = { usd: weth * ethUsd * 2, quote: weth, base: luv }; m.marketCap = usd * ((m.totalSupply || 111111111111111111) - (m.burned || 0));
+      m.chronos = { block_number: parseInt(rs[2].result, 16) };
+      paintPrice(m);
+    }).catch(function () {});
+  }
+  if (document.querySelector("[data-luv-1t]")) {
+    var poll = function () { fetch("market.json", { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (m) { lastMarket = m; paintPrice(m); }).catch(function () {}); };
+    poll(); setInterval(poll, 60000);
+    if (!document.getElementById("luvchart")) { setTimeout(readReserves, 1500); setInterval(function () { if (!document.hidden) readReserves(); }, 15000); document.addEventListener("visibilitychange", function () { if (!document.hidden) readReserves(); }); }
+  }
+  document.addEventListener("luv:market", function (e) { if (e.detail) { lastMarket = e.detail; paintPrice(e.detail); } });
 
   // 3. copy the contract address (buttons carry the exact address; the code element is user-select:all as the no-JS fallback)
   document.querySelectorAll(".copybtn[data-copy]").forEach((b) => {
