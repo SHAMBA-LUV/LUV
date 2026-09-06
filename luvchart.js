@@ -100,7 +100,9 @@
   try { var saved = JSON.parse(localStorage.getItem("luvchart-v4") || "null"); if (saved) { if (UNITS[saved.unit]) S.unit = saved.unit; if (saved.interval) S.interval = saved.interval; if (saved.ind) for (var k in saved.ind) if (k in S.ind) S.ind[k] = !!saved.ind[k]; if (saved.type) S.type = saved.type; S.log = !!saved.log; if (saved.range) S.range = saved.range === "inf" ? Infinity : saved.range; } } catch (e) {}
   function save() { try { localStorage.setItem("luvchart-v4", JSON.stringify({ unit: S.unit, interval: S.interval, ind: S.ind, type: S.type, log: S.log, range: S.range === Infinity ? "inf" : S.range })); } catch (e) {} }
 
-  var market = null, tape = [], bars = [], view = { start: 0, count: 120 }, hover = null, dragging = null;
+  var market = null, tape = [], bars = [], view = { start: 0, count: 120 }, hover = null, dragging = null, firstLoad = true, liveAt = 0;
+  // keep the reader's zoom/pan across refreshes: a view pinned to the right edge stays pinned, any other view stays put
+  function keepView(prevLen) { var atEdge = view.start + view.count >= prevLen - 1; if (atEdge) view.start = Math.max(0, bars.length - view.count); else view.start = Math.min(view.start, Math.max(0, bars.length - view.count)); }
 
   // ── data: fuse trades + minute samples into one tape ──
   function load() {
@@ -124,7 +126,7 @@
         var t = [];
         rows.forEach(function (r) { var nat = Number(r[6]), luv = Number(r[3]), weth = Number(r[4]), e = ethAt(r[0]) || ethUsd, usd = Number(r[5]) > 0 && tr ? Number(r[5]) : weth * e; var pu = e > 0 ? nat * e : (luv > 0 && usd > 0 ? usd / luv : NaN); if (nat > 0 && pu > 0) t.push({ t: r[0], usd: pu, nat: nat, vol: usd, buy: r[2] === "b", trade: true, maker: r[7] }); });
         if (hist && hist.points) hist.points.forEach(function (p) { if (p[1] > 0 && p[2] > 0) t.push({ t: p[0], usd: Number(p[1]), nat: Number(p[2]), vol: 0, buy: null, trade: false }); });
-        if (liveM) t.push({ t: liveM.t, usd: liveM.priceUsd, nat: liveM.priceNative, vol: 0, buy: null, trade: false });
+        if (liveM) { t.push({ t: liveM.t, usd: liveM.priceUsd, nat: liveM.priceNative, vol: 0, buy: null, trade: false, live: true }); liveAt = liveM.t; }
         t.sort(function (a, b) { return a.t - b.t; });
         // ETH ticks: at every ETH/USD sample, LUV's dollar price = the last pair price × ETH then — the pair moves with ETH
         if (ethSeries.length && t.length) { var minuteFrom = (hist && hist.points && hist.points.length) ? hist.points[0][0] : Infinity, k = 0, lastNat = null, ticks = []; ethSeries.forEach(function (e) { while (k < t.length && t[k].t <= e[0]) { lastNat = t[k].nat; k++; } if (lastNat && e[0] < minuteFrom && e[0] > t[0].t) ticks.push({ t: e[0], usd: lastNat * e[1], nat: lastNat, vol: 0, buy: null, trade: false, ethTick: true }); }); t = t.concat(ticks).sort(function (a, b) { return a.t - b.t; }); }
@@ -132,7 +134,7 @@
         // 24H change + txns from the tape when the mirror did not supply them
         if (!m0 && t.length) { var cut = Date.now() - 86400e3, first = null, buys = 0, sells = 0; t.forEach(function (x) { if (x.t >= cut) { if (first === null) first = x.usd; if (x.trade) { if (x.buy) buys++; else sells++; } } }); if (first === null) first = t[0].usd; market.priceChange = { h24: first > 0 ? (market.priceUsd / first - 1) * 100 : 0 }; market.txns = { h24: { buys: buys, sells: sells } }; }
         // no minute samples (the chain path): open wide enough to see the whole tape, not the silence since the last trade
-        build(); fitView(); draw(); paintLine();
+        var prevLen = bars.length; build(); if (firstLoad) { fitView(); firstLoad = false; } else keepView(prevLen); draw(); paintLine();
         announce(market, t.filter(function (x) { return x.t >= Date.now() - 86400e3; }).map(function (x) { return [x.t, x.usd, x.nat]; }));
       });
     }).catch(function () { root.innerHTML = '<p style="padding:24px;color:#9b8bb0">The pair could not be read right now. The price is live on <a href="https://app.uniswap.org/explore/tokens/ethereum/0x2711111111683B8708cb9a48cBf36a51315F8254">Uniswap</a>.</p>'; });
@@ -261,7 +263,7 @@
     el.innerHTML = "";
     var v0 = bars[view.start], vN = bars[Math.min(bars.length - 1, view.start + view.count - 1)], rU = v0 && vN ? vN.cu / v0.cu - 1 : 0, rE = v0 && vN && v0.eth && vN.eth ? vN.eth / v0.eth - 1 : null, rN = v0 && vN ? vN.cn / v0.cn - 1 : 0;
     var rangeName = S.range === Infinity ? "all" : (RANGES.filter(function (r) { return r[1] === S.range; })[0] || ["view"])[0];
-    var parts = [["O", U.fmt(b.o)], ["H", U.fmt(b.h)], ["L", U.fmt(b.l)], ["C", U.fmt(b.c)], ["Δ", (chg >= 0 ? "+" : "") + chg.toFixed(2) + "%"], ["ETH", b.eth ? "$" + b.eth.toFixed(2) : "…"], ["vol", "$" + b.vol.toFixed(2)], ["trades", b.n + (b.n ? " (" + b.buys + "b/" + b.sells + "s)" : "")], ["makers", String(mk)], ["×", (b.cn / SEED_NATIVE).toFixed(2)], ["t", full(b.t)],
+    var parts = [["O", U.fmt(b.o)], ["H", U.fmt(b.h)], ["L", U.fmt(b.l)], ["C", U.fmt(b.c)], ["Δ", (chg >= 0 ? "+" : "") + chg.toFixed(2) + "%"], ["ETH", b.eth ? "$" + b.eth.toFixed(2) : "…"], ["vol", "$" + b.vol.toFixed(2)], ["trades", b.n + (b.n ? " (" + b.buys + "b/" + b.sells + "s)" : "")], ["makers", String(mk)], ["×", (b.cn / SEED_NATIVE).toFixed(2)], ["t", full(b.t)], ["live", liveAt ? "block " + (source.block ? source.block.toLocaleString() : "…") + ", " + Math.max(0, Math.round((Date.now() - liveAt) / 1000)) + "s ago" : "…"],
       [rangeName + " LUV/USDC", (rU >= 0 ? "+" : "") + (rU * 100).toFixed(2) + "%"], [rangeName + " ETH", rE == null ? "…" : (rE >= 0 ? "+" : "") + (rE * 100).toFixed(2) + "%"], [rangeName + " LUV/ETH", (rN >= 0 ? "+" : "") + (rN * 100).toFixed(2) + "%"]];
     parts.forEach(function (p) { var s = document.createElement("span"); s.innerHTML = "<i>" + p[0] + "</i> " + p[1]; if (p[0] === "Δ" || p[0] === "C") s.style.color = chg >= 0 ? C.up : C.dn; el.appendChild(s); });
   }
@@ -291,5 +293,21 @@
     chips("luv-indicators", INDICATORS.map(function (i) { return { key: i[0], label: i[1] }; }), function (it) { return !!S.ind[it.key]; }, function (it) { S.ind[it.key] = !S.ind[it.key]; draw(); });
     var fit = document.getElementById("luv-fit"); if (fit) fit.onclick = function () { fitView(); draw(); };
   }
-  paintControls(); load(); setInterval(function () { if (!document.hidden) load(); }, 60000);
+  function tickLive() {
+    if (document.hidden || !tape.length) return;
+    return readPair().then(function (m) {
+      if (!market) market = m;
+      else { ["priceUsd", "priceNative", "oneTrillionUsd", "reserves", "liquidity", "ethUsd", "marketCap", "priceX", "liqX", "chronos", "t", "burned"].forEach(function (k) { market[k] = m[k]; }); }
+      source.chain = true; source.block = m.chronos.block_number; liveAt = m.t;
+      if (m.ethUsd > 0) ethSeries.push([m.t, m.ethUsd]);
+      tape = tape.filter(function (x) { return !x.live; });
+      tape.push({ t: m.t, usd: m.priceUsd, nat: m.priceNative, vol: 0, buy: null, trade: false, live: true });
+      var prevLen = bars.length; build(); keepView(prevLen); draw(); paintLine();
+      announce(market, tape.filter(function (x) { return x.t >= Date.now() - 86400e3; }).map(function (x) { return [x.t, x.usd, x.nat]; }));
+    }).catch(function () {});
+  }
+  paintControls(); load();
+  setInterval(function () { if (!document.hidden) load(); }, 60000);
+  setInterval(tickLive, 15000);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) load(); });
 })();
