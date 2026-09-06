@@ -12,12 +12,17 @@
   }
 
   // 2. the price line — read from market.json (luv.oracle, same origin). Display only; the pair is the source.
-  const fmtUsd = (v) => v >= 1 ? "$" + v.toFixed(4) : "$" + v.toFixed(6);
+  const fmtUsd = (v) => "$" + Number(v).toFixed(6);   // six decimals of USDC precision
+  // the Uniswap quotes for ONE TRILLION LUV from the pair's reserves (V2 x·y=k, 0.3% pool fee, the trade's own impact)
+  const quotesFrom = (luv, weth, ethUsd) => { const T = 1e12, buyEth = (weth * T * 1000) / ((luv - T) * 997), sellEth = (weth * T * 997) / (luv * 1000 + T * 997); return { amountLuv: T, buy1T: { eth: buyEth, usd: buyEth * ethUsd }, sell1T: { eth: sellEth, usd: sellEth * ethUsd }, mid1T: { eth: (weth / luv) * T, usd: (weth / luv) * T * ethUsd }, poolFeeBps: 30 }; };
   let prevOneT = null;
   const fmtBig = (n) => { if (n >= 1e12) return (n / 1e12).toFixed(2) + " T"; if (n >= 1e9) return (n / 1e9).toFixed(2) + " B"; return Math.round(n).toLocaleString(); };
   const pct = (x) => (x >= 0 ? "+" : "") + x.toFixed(1) + "%";
   function paintPrice(m) {
-    const oneT = m.oneTrillionUsd != null ? m.oneTrillionUsd : m.priceUsd * 1e12;
+    if (!m.quotes && m.reserves && m.reserves.luv > 0 && m.ethUsd > 0) m.quotes = quotesFrom(m.reserves.luv, m.reserves.weth, m.ethUsd);
+    const oneT = m.quotes ? m.quotes.buy1T.usd : (m.oneTrillionUsd != null ? m.oneTrillionUsd : m.priceUsd * 1e12);
+    document.querySelectorAll("[data-luv-sell]").forEach((el) => (el.textContent = m.quotes ? "sell 1T " + fmtUsd(m.quotes.sell1T.usd) : ""));
+    document.querySelectorAll("[data-luv-mid]").forEach((el) => (el.textContent = m.quotes ? "mid " + fmtUsd(m.quotes.mid1T.usd) : ""));
     document.querySelectorAll("[data-luv-1t]").forEach((el) => {
       el.textContent = fmtUsd(oneT);
       if (prevOneT !== null && oneT !== prevOneT) { el.classList.remove("tick-up", "tick-dn"); void el.offsetWidth; el.classList.add(oneT > prevOneT ? "tick-up" : "tick-dn"); }
@@ -67,7 +72,7 @@
       var nat = weth / luv, usd = nat * ethUsd;
       var m = lastMarket ? Object.assign({}, lastMarket) : { priceChange: { h24: 0 }, totalSupply: 111111111111111111, burned: 0 };
       m.t = Date.now(); m.priceUsd = usd; m.priceNative = nat; m.oneTrillionUsd = usd * 1e12; m.ethUsd = ethUsd; m.priceX = nat / SEED_NATIVE;
-      m.liquidity = { usd: weth * ethUsd * 2, quote: weth, base: luv }; m.marketCap = usd * ((m.totalSupply || 111111111111111111) - (m.burned || 0));
+      m.liquidity = { usd: weth * ethUsd * 2, quote: weth, base: luv }; m.reserves = { luv: luv, weth: weth }; m.quotes = quotesFrom(luv, weth, ethUsd); m.marketCap = usd * ((m.totalSupply || 111111111111111111) - (m.burned || 0));
       m.chronos = { block_number: parseInt(rs[2].result, 16) };
       paintPrice(m);
     }).catch(function () {});

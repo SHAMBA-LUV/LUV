@@ -21,7 +21,7 @@
   function rpc(calls) { return fetch(RPC, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(calls.map(function (c, i) { return { jsonrpc: "2.0", id: i + 1, method: c[0], params: c[1] }; })) }).then(function (r) { return r.json(); }).then(function (rs) { return rs.sort(function (a, b) { return a.id - b.id; }).map(function (r) { if (r.error) throw new Error(r.error.message); return r.result; }); }); }
   function words(hex) { var h = hex.replace(/^0x/, ""), o = []; for (var i = 0; i + 64 <= h.length; i += 64) o.push(BigInt("0x" + h.slice(i, i + 64))); return o; }
   function toNum(bi, dec) { return Number(bi) / Math.pow(10, dec); }
-  var source = { mirror: false, chain: false, block: null };
+  var source = { mirror: false, chain: false, block: null }, buyFactor = 1.003;   // buy quote ÷ mid for 1T, refreshed from the reserves
   // reserves NOW, straight from the pair: price, ETH/USD from the USDC/WETH pair, burned + supply from the token
   function readPair() {
     var sel = "0x0902f1ac", bal = "0x70a08231" + DEAD.slice(2).toLowerCase().padStart(64, "0");
@@ -32,7 +32,10 @@
       var e1 = toNum(b[0], 6) / toNum(b[1], 18), e2 = toNum(c[0], 18) / toNum(c[1], 18), sq = Number(BigInt("0x" + r[5].slice(2, 66))) / Math.pow(2, 96), e3 = 1e12 / (sq * sq);
       var es = [e1, e2, e3].filter(function (x) { return isFinite(x) && x > 0; }).sort(function (x, y) { return x - y; }), med = es[Math.floor(es.length / 2)], ethUsd = (isFinite(e3) && e3 > 0 && Math.abs(e3 / med - 1) < 0.02) ? e3 : med; // the V3 pool leads (it moves every block); the V2 pairs bound it
       var nat = weth / luv, usd = nat * ethUsd;
-      return { t: Date.now(), pair: PAIR, source: "reserves", priceUsd: usd, priceNative: nat, oneTrillionUsd: usd * 1e12, ethUsd: ethUsd, liquidity: { usd: weth * ethUsd * 2, base: luv, quote: weth }, reserves: { luv: luv, weth: weth }, totalSupply: SUPPLY, burned: burned, marketCap: usd * (SUPPLY - burned), fdv: usd * SUPPLY, priceX: nat / SEED_NATIVE, liqX: weth / SEED_WETH, priceChange: { h24: 0 }, txns: { h24: { buys: 0, sells: 0 } }, chronos: { block_number: block, observed_ms: Date.now() }, pairCreatedAt: 1785116795000 };
+      var T = 1e12, buyEth = (weth * T * 1000) / ((luv - T) * 997), sellEth = (weth * T * 997) / (luv * 1000 + T * 997);
+      var quotes = { amountLuv: T, buy1T: { eth: buyEth, usd: buyEth * ethUsd }, sell1T: { eth: sellEth, usd: sellEth * ethUsd }, mid1T: { eth: nat * T, usd: usd * T }, poolFeeBps: 30 };
+      buyFactor = buyEth / (nat * T);
+      return { t: Date.now(), pair: PAIR, source: "reserves", quotes: quotes, priceUsd: usd, priceNative: nat, oneTrillionUsd: usd * 1e12, ethUsd: ethUsd, liquidity: { usd: weth * ethUsd * 2, base: luv, quote: weth }, reserves: { luv: luv, weth: weth }, totalSupply: SUPPLY, burned: burned, marketCap: usd * (SUPPLY - burned), fdv: usd * SUPPLY, priceX: nat / SEED_NATIVE, liqX: weth / SEED_WETH, priceChange: { h24: 0 }, txns: { h24: { buys: 0, sells: 0 } }, chronos: { block_number: block, observed_ms: Date.now() }, pairCreatedAt: 1785116795000 };
     });
   }
   // the pair's own Swap events from the Blockscout log index (CORS open, paginated 50 at a time)
@@ -94,7 +97,7 @@
   function sci(v, d) { return Number(v).toExponential(d); }
   function grp(n, d) { var s = Number(n).toFixed(d), p = s.split("."); return p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (p[1] ? "." + p[1] : ""); }
   var UNITS = {
-    t1usdc:   { label: "1T LUV / USDC", hint: "one trillion LUV priced in USDC — the measure of value", val: function (s) { return s.usd * 1e12; }, fmt: function (v) { return "$" + (v >= 1 ? v.toFixed(4) : v.toFixed(6)); }, axis: function (v, d) { return "$" + v.toFixed(d); } },
+    t1usdc:   { label: "1T LUV / USDC · buy", hint: "the Uniswap buy quote for one trillion LUV, in USDC (pool fee and the trade's own impact included, the way the router quotes it)", val: function (s) { return s.usd * 1e12 * buyFactor; }, fmt: function (v) { return "$" + (v >= 1 ? v.toFixed(4) : v.toFixed(6)); }, axis: function (v, d) { return "$" + v.toFixed(d); } },
     weiluv:   { label: "WEI / LUV", hint: "wei per ONE LUV", val: function (s) { return s.nat * 1e18; }, fmt: function (v) { return grp(v, 4) + " wei"; }, axis: function (v, d) { return v.toFixed(d); } },
     lwwei:    { label: "luvwei / wei", hint: "wei per ONE luvwei (10⁻¹⁸ LUV) — numerically ETH per LUV", val: function (s) { return s.nat; }, fmt: function (v) { return sci(v, 6) + " wei"; }, axis: function (v, d) { return sci(v, Math.min(d, 4)); } },
     lwusdc:   { label: "luvwei / USDC", hint: "USDC per ONE luvwei — the price at the bottom of the lattice", val: function (s) { return s.usd / 1e18; }, fmt: function (v) { return sci(v, 6) + " USDC"; }, axis: function (v, d) { return sci(v, Math.min(d, 4)); } },
@@ -127,7 +130,7 @@
     return Promise.all([mirrors, live, eth]).then(function (r) {
       var liveM = r[1];
       if (m0) market = m0; else if (liveM) market = liveM;
-      if (liveM && market !== liveM) { market.priceUsd = liveM.priceUsd; market.priceNative = liveM.priceNative; market.oneTrillionUsd = liveM.oneTrillionUsd; market.reserves = liveM.reserves; market.liquidity = liveM.liquidity; market.ethUsd = liveM.ethUsd; market.marketCap = liveM.marketCap; market.priceX = liveM.priceX; market.liqX = liveM.liqX; market.chronos = liveM.chronos; market.t = liveM.t; market.burned = liveM.burned; }
+      if (liveM && market !== liveM) { market.quotes = liveM.quotes; market.priceUsd = liveM.priceUsd; market.priceNative = liveM.priceNative; market.oneTrillionUsd = liveM.oneTrillionUsd; market.reserves = liveM.reserves; market.liquidity = liveM.liquidity; market.ethUsd = liveM.ethUsd; market.marketCap = liveM.marketCap; market.priceX = liveM.priceX; market.liqX = liveM.liqX; market.chronos = liveM.chronos; market.t = liveM.t; market.burned = liveM.burned; }
       if (!market) throw new Error("no source");
       var ethUsd = Number(market.ethUsd) || 0;
       if (ethUsd > 0) ethSeries.push([Date.now(), ethUsd]);
@@ -276,7 +279,7 @@
     el.innerHTML = "";
     var v0 = bars[view.start], vN = bars[Math.min(bars.length - 1, view.start + view.count - 1)], rU = v0 && vN ? vN.cu / v0.cu - 1 : 0, rE = v0 && vN && v0.eth && vN.eth ? vN.eth / v0.eth - 1 : null, rN = v0 && vN ? vN.cn / v0.cn - 1 : 0;
     var rangeName = S.range === Infinity ? "all" : (RANGES.filter(function (r) { return r[1] === S.range; })[0] || ["view"])[0];
-    var parts = [["O", U.fmt(b.o)], ["H", U.fmt(b.h)], ["L", U.fmt(b.l)], ["C", U.fmt(b.c)], ["Δ", (chg >= 0 ? "+" : "") + chg.toFixed(2) + "%"], ["ETH", b.eth ? "$" + b.eth.toFixed(2) : "…"], ["vol", "$" + b.vol.toFixed(2)], ["trades", b.n + (b.n ? " (" + b.buys + "b/" + b.sells + "s)" : "")], ["makers", String(mk)], ["×", (b.cn / SEED_NATIVE).toFixed(2)], ["t", full(b.t)], ["live", liveAt ? "block " + (source.block ? source.block.toLocaleString() : "…") + ", " + Math.max(0, Math.round((Date.now() - liveAt) / 1000)) + "s ago" : "…"],
+    var parts = [["O", U.fmt(b.o)], ["H", U.fmt(b.h)], ["L", U.fmt(b.l)], ["C", U.fmt(b.c)], ["Δ", (chg >= 0 ? "+" : "") + chg.toFixed(2) + "%"], ["ETH", b.eth ? "$" + b.eth.toFixed(2) : "…"], ["vol", "$" + b.vol.toFixed(2)], ["trades", b.n + (b.n ? " (" + b.buys + "b/" + b.sells + "s)" : "")], ["makers", String(mk)], ["×", (b.cn / SEED_NATIVE).toFixed(2)], ["t", full(b.t)], ["live", liveAt ? "block " + (source.block ? source.block.toLocaleString() : "…") + ", " + Math.max(0, Math.round((Date.now() - liveAt) / 1000)) + "s ago" : "…"], ["buy 1T", market && market.quotes ? "$" + market.quotes.buy1T.usd.toFixed(6) : "…"], ["sell 1T", market && market.quotes ? "$" + market.quotes.sell1T.usd.toFixed(6) : "…"],
       [rangeName + " LUV/USDC", (rU >= 0 ? "+" : "") + (rU * 100).toFixed(2) + "%"], [rangeName + " ETH", rE == null ? "…" : (rE >= 0 ? "+" : "") + (rE * 100).toFixed(2) + "%"], [rangeName + " LUV/ETH", (rN >= 0 ? "+" : "") + (rN * 100).toFixed(2) + "%"]];
     parts.forEach(function (p) { var s = document.createElement("span"); s.innerHTML = "<i>" + p[0] + "</i> " + p[1]; if (p[0] === "Δ" || p[0] === "C") s.style.color = chg >= 0 ? C.up : C.dn; el.appendChild(s); });
   }
@@ -310,7 +313,7 @@
     if (document.hidden || !tape.length) return;
     return readPair().then(function (m) {
       if (!market) market = m;
-      else { ["priceUsd", "priceNative", "oneTrillionUsd", "reserves", "liquidity", "ethUsd", "marketCap", "priceX", "liqX", "chronos", "t", "burned"].forEach(function (k) { market[k] = m[k]; }); }
+      else { ["quotes", "priceUsd", "priceNative", "oneTrillionUsd", "reserves", "liquidity", "ethUsd", "marketCap", "priceX", "liqX", "chronos", "t", "burned"].forEach(function (k) { market[k] = m[k]; }); }
       source.chain = true; source.block = m.chronos.block_number; liveAt = m.t;
       if (m.ethUsd > 0) ethSeries.push([m.t, m.ethUsd]);
       tape = tape.filter(function (x) { return !x.live; });
