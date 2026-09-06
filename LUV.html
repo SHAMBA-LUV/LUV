@@ -1,1 +1,255 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>moved — SHAMBA LUV</title><meta name="robots" content="noindex"><link rel="canonical" href="https://luv.pythai.net/chart.html"><meta http-equiv="refresh" content="0;url=https://luv.pythai.net/chart.html"><link rel="stylesheet" href="/site.css?v=7"></head><body><header class="hero"><div class="wrap" style="display:block"><p class="lede">This page moved. <a href="https://luv.pythai.net/chart.html">Continue</a>.</p></div></header></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LUV — the price, both ways — SHAMBA LUV</title>
+<meta name="description" content="The price of LUV both ways: how much ETH buys 1 trillion LUV, and how many WEI one LUV costs — read live from the pair reserves. The seed priced LUV at exactly 10 WEI.">
+<meta name="author" content="SHAMBA LUV">
+<link rel="canonical" href="https://luv.pythai.net/LUV.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SHAMBA LUV">
+<meta property="og:title" content="LUV — the price, both ways">
+<meta property="og:description" content="ETH → one trillion LUV, and WEI per LUV — live from the liquidity pair itself. Seeded at exactly 10 WEI.">
+<meta property="og:url" content="https://luv.pythai.net/LUV.html">
+<meta property="og:image" content="https://luv.pythai.net/gfx/og-card.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://luv.pythai.net/gfx/og-card.png">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:site" content="@shambaluv">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+<meta name="theme-color" content="#160a0f">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","name":"LUV \u2014 the price, both ways \u2014 SHAMBA LUV","description":"The price of LUV both ways: how much ETH buys 1 trillion LUV, and how many WEI one LUV costs \u2014 read live from the pair reserves. The seed priced LUV at exactly 10 WEI.","url":"https://luv.pythai.net/LUV.html","mainEntityOfPage":{"@type":"WebPage","@id":"https://luv.pythai.net/LUV.html"},"author":{"@type":"Organization","name":"SHAMBA LUV","url":"https://luv.pythai.net/","logo":{"@type":"ImageObject","url":"https://luv.pythai.net/gfx/logo.png"}},"publisher":{"@type":"Organization","name":"SHAMBA LUV","url":"https://luv.pythai.net/","logo":{"@type":"ImageObject","url":"https://luv.pythai.net/gfx/logo.png"}},"image":"https://luv.pythai.net/gfx/logo.png","inLanguage":"en","isPartOf":{"@type":"WebSite","name":"SHAMBA LUV","url":"https://luv.pythai.net/"}}
+</script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --ink:#160a0f;--wine:#2b111c;--seam:#4a1f30;--rose:#ff4d6d;--pink:#ff006e;--purple:#8338ec;
+  --blush:#ffb3c1;--cream:#f6e7eb;--dim:#b98da0;--gold:#e3b25f;
+  --mono:ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--ink);color:var(--cream);font-family:var(--sans);line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:var(--blush)}
+a:hover{color:var(--rose)}
+:focus-visible{outline:2px solid var(--rose);outline-offset:3px;border-radius:2px}
+.wrap{max-width:920px;margin:0 auto;padding:0 24px}
+header{border-bottom:1px solid var(--seam)}
+.bar{display:flex;align-items:center;gap:14px;padding:16px 0}
+.brand{font-family:var(--mono);font-size:15px;letter-spacing:.14em;color:var(--cream);text-decoration:none}
+.brand b{color:var(--rose)}
+.bar .spacer{flex:1}
+.bar a.back{font-family:var(--mono);font-size:12px;text-decoration:none;color:var(--dim)}
+.bar a.back:hover{color:var(--rose)}
+h1{margin:52px 0 6px;text-align:center;font-size:clamp(32px,6vw,52px);font-weight:800;
+  background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{text-align:center;color:var(--dim);margin-bottom:40px}
+@keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.08)}28%{transform:scale(1)}42%{transform:scale(1.06)}56%{transform:scale(1)}}
+.beat{display:inline-block;animation:heartbeat 1.4s ease-in-out infinite;color:var(--rose)}
+@media(prefers-reduced-motion:reduce){.beat{animation:none}}
+/* ── the two expressions ── */
+.expr{border:1px solid var(--seam);border-radius:16px;background:var(--wine);padding:34px 30px;margin-bottom:18px;text-align:center}
+.expr .k{font-family:var(--mono);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--rose);margin-bottom:16px}
+.expr .k.gold{color:var(--gold)}
+.expr .big{font-family:var(--mono);font-weight:800;font-size:clamp(17px,3.4vw,30px);line-height:1.35;word-break:break-all;
+  background:linear-gradient(100deg,var(--pink),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+.expr .eq{display:block;font-family:var(--mono);font-size:clamp(15px,2.6vw,22px);color:var(--dim);margin:8px 0}
+.expr .luvamt{font-family:var(--mono);font-weight:800;font-size:clamp(14px,2.6vw,24px);line-height:1.35;word-break:break-all;color:var(--cream)}
+.expr .luvamt b{color:var(--rose)}
+.expr .note{margin-top:14px;font-size:13.5px;color:var(--dim)}
+.expr .note b{color:var(--gold)}
+.expr .wei{font-family:var(--mono);font-weight:800;font-size:clamp(24px,5vw,44px);color:var(--gold)}
+.usdline{text-align:center;font-family:var(--mono);font-size:14px;color:var(--dim);margin:6px 0 26px}
+.usdline b{color:var(--blush)}
+.togglerow{display:flex;justify-content:center;gap:10px;margin-bottom:20px}
+.tbtn{font-family:var(--mono);font-size:13px;letter-spacing:.08em;color:var(--dim);background:var(--wine);
+  border:1px solid var(--seam);border-radius:999px;padding:9px 22px;cursor:pointer;transition:color .15s,border-color .15s}
+.tbtn:hover{color:var(--blush);border-color:var(--rose)}
+.tbtn.active{color:#fff;background:linear-gradient(100deg,var(--pink),var(--purple));border-color:transparent;font-weight:700}
+.convline{font-family:var(--mono);font-size:12px;color:var(--gold);text-align:center;margin:-6px 0 20px;overflow-wrap:anywhere}
+
+/* ── the daily summary ── */
+.daily{border:1px solid var(--seam);border-radius:16px;background:var(--wine);padding:20px 22px;margin:0 0 26px}
+.daily .d-k{font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:14px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.daily .d-sub{color:var(--dim);letter-spacing:.08em;font-size:10px;text-transform:none}
+.daily .d-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+.daily .d-cell{background:rgba(0,0,0,.22);border:1px solid var(--seam);border-radius:11px;padding:11px 13px}
+.daily .d-l{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:5px}
+.daily .d-v{font-family:var(--mono);font-size:16px;font-weight:800;color:var(--cream);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.daily .d-v.sm{font-size:12.5px}
+.daily .d-n{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:4px}
+.daily .d-foot{margin-top:13px;font-size:12px;color:var(--dim);line-height:1.6}
+.diag{font-family:var(--mono);font-size:13px}
+.drow{display:flex;gap:14px;padding:7px 0;border-top:1px solid rgba(74,31,48,.6);align-items:baseline}
+.drow:first-child{border-top:0}
+.dk{flex:none;width:9.5em;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.dv{color:var(--cream);word-break:break-word}
+.dv b{color:var(--gold)}
+.fineline{text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--dim);margin-top:6px}
+.ctarow{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;margin:30px 0 8px}
+.btn{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--blush);text-decoration:none;
+  border:1px solid var(--seam);border-radius:999px;padding:8px 18px;transition:color .15s,border-color .15s}
+.btn:hover{color:var(--rose);border-color:var(--rose)}
+button.btn{background:transparent;cursor:pointer;font-family:var(--mono);font-size:12px;line-height:normal}
+.mmbtn{display:inline-flex;align-items:center;gap:7px}
+.mmbtn img{display:block;border-radius:50%}
+.uni-cta{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:15px;color:var(--cream);text-decoration:none;
+  border:1px solid #FF007A;border-radius:999px;padding:12px 24px;transition:background .15s}
+.uni-cta:hover{background:rgba(255,0,122,.12);color:var(--cream)}
+.uni-cta img{height:18px;width:auto}
+.slipnote{text-align:center;font-size:13px;color:var(--dim)}
+.slipnote b{color:var(--gold)}
+footer{margin-top:64px;border-top:1px solid var(--seam);padding:26px 0 44px}
+footer .wrap{max-width:1180px;display:flex;flex-wrap:wrap;gap:18px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--dim)}
+footer a{text-decoration:none}
+footer .spacer{flex:1}
+footer .brandmark{display:inline-flex;align-items:center;gap:7px;color:var(--dim)}
+footer .brandmark img{height:14px;width:auto;display:block;opacity:.85}
+</style>
+
+<meta name="twitter:title" content="LUV — the price, both ways — SHAMBA LUV">
+<meta name="twitter:description" content="The price of LUV both ways: how much ETH buys 1 trillion LUV, and how many WEI one LUV costs — read live from the pair reserves. The seed priced LUV at exactly 10 WEI.">
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="/">❤ SHAMBA <b>LUV</b></a>
+    <span class="spacer"></span>
+    <a class="back" href="view.html">live view</a>
+    <a class="back" href="faq.html">FAQ</a>
+    <a class="back" href="/">← back to the doorway</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1>the price of LUV</h1>
+  <div class="sub">✨ the price is created by the liquidity pair — and expressed on Uniswap ✨</div>
+
+  <!-- denomination toggle: ETH/LUV is measured, ETH/USD is measured → USDC/LUV follows -->
+  <div class="togglerow" role="tablist" aria-label="price denomination">
+    <button type="button" class="tbtn active" id="lp-mode-eth" role="tab" aria-selected="true">Ξ in ETH</button>
+    <button type="button" class="tbtn" id="lp-mode-usdc" role="tab" aria-selected="false">$ in USDC</button>
+    <button type="button" class="tbtn" id="lp-mode-wei" role="tab" aria-selected="false">WEI / LUV</button>
+    <button type="button" class="tbtn" id="lp-mode-luveth" role="tab" aria-selected="false">LUV / ETH</button>
+  </div>
+
+  <!-- the identities, always in view — the toggle re-expresses the blocks below -->
+  <div class="convline" id="lp-conv"></div>
+
+  <!-- expression 1: <denom> → one trillion LUV -->
+  <div class="expr">
+    <div class="k" id="lp-k1">ETH → one trillion LUV</div>
+    <div class="big" id="lp-eth">…</div>
+    <span class="eq">=</span>
+    <div class="luvamt"><span class="beat">❤</span> <span id="lp-luv">1,000,000,000,000.000000000000000000 LUV</span></div>
+    <div class="note" id="lp-amt-note">one trillion LUV — a million millions, to the last of its eighteen decimals.
+    That is what the pool asks for it, right now.</div>
+  </div>
+
+  <div class="usdline" id="lp-usdline">≈ <b id="lp-usd">…</b> · the same trillion, in USDC</div>
+
+  <!-- the daily summary: price now, the day's change, and averages computed from samples -->
+  <div class="daily">
+    <div class="d-k">the day <span class="d-sub" id="lp-d-block">—</span></div>
+    <div class="d-grid">
+      <div class="d-cell"><div class="d-l">1T LUV now</div><div class="d-v" id="lp-d-price">—</div></div>
+      <div class="d-cell"><div class="d-l">24h change</div><div class="d-v" id="lp-d-chg">—</div></div>
+      <div class="d-cell"><div class="d-l">daily average</div><div class="d-v" id="lp-d-avg">—</div>
+        <div class="d-n" id="lp-d-samples">—</div></div>
+      <div class="d-cell"><div class="d-l">daily range</div><div class="d-v sm" id="lp-d-range">—</div></div>
+      <div class="d-cell"><div class="d-l">24h volume</div><div class="d-v" id="lp-d-vol">—</div>
+        <div class="d-n" id="lp-d-tx">—</div></div>
+      <div class="d-cell"><div class="d-l">pool depth</div><div class="d-v" id="lp-d-liq">—</div></div>
+      <div class="d-cell"><div class="d-l">market cap</div><div class="d-v" id="lp-d-mcap">—</div></div>
+    </div>
+    <div class="d-foot">Averages are reduced from the minute samples over the trailing 24 hours —
+    a snapshot is not an average, so when there are no samples this says so rather than
+    reprinting the spot price. Everything here is read from the pair;
+    <a href="view.html">the live view</a> carries the chart.</div>
+  </div>
+
+  <!-- expression 2: the smallest-unit inverse — WEI/LUV, or LUV/USDC -->
+  <div class="expr">
+    <div class="k gold" id="lp-k2">WEI / LUV</div>
+    <div class="wei" id="lp-wei">…</div>
+    <div class="note" id="lp-wei-note">the seed priced LUV at exactly <b>10 WEI</b></div>
+    <div class="note" id="lp-wei-note2">wei — the smallest unit of ETH, 10<sup>−18</sup>. LUV entered the world at
+    ten of them. Every wei above that is the market speaking.</div>
+  </div>
+
+  <!-- the actuals — diagnostics read live from the pair -->
+  <div class="expr" style="text-align:left">
+    <div class="k">the actuals — read from the pair</div>
+    <div class="diag">
+      <div class="drow"><span class="dk">pool reserves</span><span class="dv" id="lp-r">…</span></div>
+      <div class="drow"><span class="dk">ETH / USD</span><span class="dv" id="lp-ethusd">…</span></div>
+      <div class="drow"><span class="dk">price source</span><span class="dv" id="lp-src">…</span></div>
+      <div class="drow"><span class="dk">growth from seed</span><span class="dv" id="lp-x">…</span></div>
+      <div class="drow"><span class="dk">24H change</span><span class="dv" id="lp-h24">…</span></div>
+    </div>
+  </div>
+
+  <!-- the maximum print: 2^112 − 1 — protocol law -->
+  <div class="expr" style="text-align:left">
+    <div class="k gold">the maximum print — 2¹¹² − 1</div>
+    <div class="diag">
+      <div class="drow"><span class="dk">protocol law</span><span class="dv">Uniswap V2 reserves are <b>uint112</b> — a pair can never hold more than
+        <b>2¹¹² − 1</b> = 5,192,296,858,534,827.628530496329220095 tokens (18 decimals)
+        <a href="https://github.com/Uniswap/v2-core/blob/master/contracts/UniswapV2Pair.sol" rel="noopener">UniswapV2Pair.sol ↗</a></span></div>
+      <div class="drow"><span class="dk">the LUV print</span><span class="dv">the genesis seeded the pair at <b>the absolute maximum</b>: exactly 2¹¹²−1 raw units
+        ≈ <b>5.19 quadrillion LUV</b> — 4.673% of the 111-quadrillion supply. The roadmap's full 100Q
+        <em>cannot fit one pair</em>; the verse necessarily becomes many pools.</span></div>
+      <div class="drow"><span class="dk">the ETH print</span><span class="dv">the ETH leg is the same number, scaled: ⌊(2¹¹²−1) / 10¹⁷⌋ =
+        <b>51,922,968,585,348,276 wei</b> = 0.051922968585348276 ETH — which makes the seed price
+        <b>exactly 10 WEI per LUV</b>. ETH itself can never hit the ceiling (5.19×10¹⁵ ETH max vs ~1.2×10⁸ existing).</span></div>
+      <div class="drow"><span class="dk">verify</span><span class="dv"><a href="https://etherscan.io/tx/0x9f8e0bf6e566e809ca78eb18730b8f4305534e755a98a78f7924794757d4ff13" rel="noopener">the seed tx (addLiquidityETH, block 25620950) ↗</a> ·
+        <a href="https://etherscan.io/address/0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31#readContract" rel="noopener">getReserves() on the pair ↗</a> ·
+        <a href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254#code" rel="noopener">the verified LUV contract ↗</a> ·
+        <a href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254#balances" rel="noopener">the holders, on the actual contract ↗</a></span></div>
+    </div>
+  </div>
+
+  <div class="fineline" id="lp-depth">…</div>
+  <div class="fineline" id="lp-at"></div>
+
+  <div class="ctarow">
+    <a class="uni-cta" data-luv-emit href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">
+      <img src="gfx/brand/uniswap_horizontal_white.svg" alt="Uniswap"> <span>Buy LUV with USDC ❤</span>
+    </a>
+    <a class="btn" href="https://app.uniswap.org/swap?chain=ethereum&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener">Ξ or buy LUV with ETH</a>
+    <button type="button" class="btn mmbtn" data-luv-watchasset><img src="gfx/heart-512.png" alt="" height="14" aria-hidden="true"> add LUV to MetaMask</button>
+    <a class="btn" href="view.html">📈 live view — candles, RSI, MACD</a>
+    <a class="btn" href="emotonomics.html">🎓 the field paper</a>
+  </div>
+  <div class="slipnote">set slippage to <b>~10%</b> — LUV carries a 5% reflection fee · the pair is preset, the amount is yours to choose</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>❤ LUV is priceless</span>
+    <span class="spacer"></span>
+    <a href="/">the doorway</a>
+    <a href="view.html">live view</a>
+    <a href="faq.html">FAQ</a>
+    <a href="https://github.com/cypherpunk4096" target="_blank" rel="noopener" title="the cypherpunk4096 organization — the standard, SCIEN·TIFIC, and the commons (2¹²)">⟁ cypherpunk4096</a>
+    <a href="https://github.com/cypherpunk4096/scientific" target="_blank" rel="noopener" title="SCIEN·TIFIC — the reference deployment: scientific-maximum ERC-20, deterministic at one address on every chain, verified on-chain">🔬 SCIEN·TIFIC</a>
+    <a class="brandmark" href="https://etherscan.io/token/0x2711111111683B8708cb9a48cBf36a51315F8254" target="_blank" rel="noopener" title="LUV verified on Etherscan · Powered by Etherscan.io APIs">
+      <img src="gfx/brand/etherscan_wordmark_light.svg" alt="Etherscan" height="14">
+      <span>Powered by Etherscan.io APIs</span>
+    </a>
+    <span>SHAMBA © 2026 LUV · luv@pythai.net</span>
+  <style>.fieldnav{border-top:1px solid var(--seam);margin-top:22px;padding-top:16px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em}.fieldnav .fn-k{color:var(--gold);text-transform:uppercase;letter-spacing:.18em;font-size:10px;width:100%;margin-bottom:2px}.fieldnav a{color:var(--dim);text-decoration:none;border-bottom:1px solid transparent}.fieldnav a:hover{color:var(--rose);border-bottom-color:var(--rose)}</style>
+<nav class="fieldnav" aria-label="the field"><span class="fn-k">the field</span><a href="/">the doorway</a><a href="view.html">live view</a><a href="luvstory.html">the story</a><a href="engine.html">the engine</a><a href="emotonomics.html">emotonomics</a><a href="sentiment.html">sentiment</a><a href="wei.html">wei</a><a href="exabyte.html">exabyte</a><a href="rainbow.html">rainbow</a><a href="luvbus.html">LUVbus</a><a href="faq.html">FAQ</a><a href="docs.html">docs</a></nav>
+</div>
+</footer>
+
+<script src="substrate/luv-price.js?v=8"></script>
+<script src="substrate/luv-pulse.js?v=1"></script>
+<script src="substrate/luv-frame.js?v=5"></script>
+<script src="substrate/luv-engine.js?v=12"></script>
+</body>
+</html>
