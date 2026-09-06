@@ -271,7 +271,7 @@ router.post('/wallet/verify', async (req, res) => {
 router.get('/me', requireAuth, async (req, res) => {
   const { identityKey, provider } = req.identity;
   const r = await db.query(
-    `SELECT i.email, w.address, w.smart_account
+    `SELECT i.email, w.address, w.smart_account, w.custody, w.relinquished_at
        FROM identities i
        LEFT JOIN wallets w ON w.identity_key = i.identity_key
       WHERE i.identity_key = $1`,
@@ -288,6 +288,9 @@ router.get('/me', requireAuth, async (req, res) => {
     walletAddress: row.smart_account || row.address || selfWallet,
     ownerAddress: row.address || selfWallet,
     smartAccount: row.smart_account || null,
+    // custody: 'platform' (we hold an encrypted copy of the owner key) · 'participant' (handed off, our copy destroyed) · 'external' (MetaMask)
+    custody: provider === 'metamask' ? 'external' : (row.custody || 'platform'),
+    relinquishedAt: row.relinquished_at || null,
     // Do not echo the raw identity key publicly beyond what the session already holds.
     email: row.email || null,
   });
@@ -313,9 +316,35 @@ router.post('/wallet/export', requireAuth, async (req, res) => {
     res.json({ address: w.address, privateKey: w.privateKey });
   } catch (e) {
     // eslint-disable-next-line no-console
+    if (e && e.code === 'relinquished') return res.status(410).json({ error: 'relinquished' });
     console.error('[auth] wallet export failed:', e.message);
     res.status(500).json({ error: 'export_failed' });
   }
+});
+
+// ── Relinquish: the cypherpunk4096 handoff ─────────────────────────────────────────────────────
+// The participant has revealed and saved the owner key and now tells us to destroy our encrypted
+// copy. Irreversible: enc_* are blanked, custody flips to 'participant'. From here the platform can
+// deliver LUV to the address but can never sign for it. Confirmation = the last six characters of
+// the owner address, typed by the participant. MetaMask identities have nothing to relinquish.
+router.post('/wallet/relinquish', requireAuth, async (req, res) => {
+  const { identityKey, provider } = req.identity;
+  if (provider === 'metamask') return res.status(400).json({ error: 'external_wallet' });
+  const confirm = String((req.body && req.body.confirm) || '').trim().toLowerCase();
+  const r = await db.query('SELECT address, custody FROM wallets WHERE identity_key = $1', [identityKey]);
+  if (r.rowCount === 0) return res.status(404).json({ error: 'no_wallet' });
+  const address = r.rows[0].address;
+  if (r.rows[0].custody === 'participant') return res.json({ ok: true, custody: 'participant', address });
+  if (confirm !== address.slice(-6).toLowerCase()) return res.status(400).json({ error: 'confirm_mismatch' });
+  await db.query(
+    `UPDATE wallets SET enc_ciphertext = '', enc_iv = '', enc_tag = '', custody = 'participant', relinquished_at = now()
+      WHERE identity_key = $1 AND custody <> 'participant'`,
+    [identityKey]
+  );
+  // eslint-disable-next-line no-console
+  console.log('[auth] custody relinquished to the participant:', address);
+  res.set('Cache-Control', 'no-store');
+  res.json({ ok: true, custody: 'participant', address });
 });
 
 // ── Send LUV from the custodial wallet (the LUV wallet's Send button) ─────────────────────────

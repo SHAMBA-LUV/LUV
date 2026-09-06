@@ -29,8 +29,14 @@ CREATE TABLE IF NOT EXISTS wallets (
     -- salt)). The gesture is delivered HERE while the account has no code (0-fee window);
     -- `address` above stays the owner EOA (the signing key). NULL on pre-AA rows.
     smart_account   TEXT        UNIQUE,
+    -- cypherpunk4096 handoff: 'platform' while we hold the encrypted owner key; 'participant' once the
+    -- participant has taken the key and told us to destroy our copy (enc_* are blanked, irreversibly).
+    custody         TEXT        NOT NULL DEFAULT 'platform',
+    relinquished_at TIMESTAMPTZ,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+ALTER TABLE wallets ADD COLUMN IF NOT EXISTS custody TEXT NOT NULL DEFAULT 'platform';
+ALTER TABLE wallets ADD COLUMN IF NOT EXISTS relinquished_at TIMESTAMPTZ;
 
 -- Idempotent upgrade for databases created before the ERC-4337 wallet rail.
 ALTER TABLE wallets ADD COLUMN IF NOT EXISTS smart_account TEXT UNIQUE;

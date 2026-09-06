@@ -154,6 +154,7 @@ async function getUserSigner(identityKey, provider) {
     [identityKey]
   );
   if (row.rowCount === 0) throw new Error('No wallet for identity');
+  if (!row.rows[0].enc_ciphertext) { const e = new Error('relinquished'); e.code = 'relinquished'; throw e; }
   const pk = decryptPrivateKey(identityKey, {
     ciphertext: row.rows[0].enc_ciphertext,
     iv: row.rows[0].enc_iv,
