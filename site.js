@@ -30,7 +30,12 @@
     document.querySelectorAll("[data-luv-liq]").forEach((el) => (el.textContent = "$" + Math.round(m.liquidity.usd).toLocaleString()));
     document.querySelectorAll("[data-luv-x]").forEach((el) => (el.textContent = m.priceX.toFixed(2) + "x"));
     document.querySelectorAll("[data-luv-wei]").forEach((el) => (el.textContent = (m.priceNative * 1e18).toFixed(2) + " wei"));
-    document.querySelectorAll("[data-luv-eth]").forEach((el) => (el.textContent = "$" + Math.round(m.ethUsd).toLocaleString()));
+    document.querySelectorAll("[data-luv-eth]").forEach((el) => {
+      const v = Number(m.ethUsd), prev = el.dataset.prev ? Number(el.dataset.prev) : null;
+      el.textContent = "$" + v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      if (prev !== null && v !== prev) { el.classList.remove("tick-up", "tick-dn"); void el.offsetWidth; el.classList.add(v > prev ? "tick-up" : "tick-dn"); const t = el.parentElement.querySelector("[data-luv-eth-tick]"); if (t) { t.textContent = v > prev ? "▲" : "▼"; t.className = v > prev ? "up" : "dn"; } }
+      el.dataset.prev = String(v);
+    });
     document.querySelectorAll("[data-luv-h24]").forEach((el) => { const c = (m.priceChange && m.priceChange.h24) || 0; el.textContent = pct(c) + " 24h"; el.classList.toggle("up", c >= 0); el.classList.toggle("dn", c < 0); });
     document.querySelectorAll("[data-luv-block]").forEach((el) => (el.textContent = "block " + (m.chronos && m.chronos.block_number ? m.chronos.block_number.toLocaleString() : "…")));
     document.querySelectorAll("[data-luv-per-usd]").forEach((el) => (el.textContent = fmtBig(1 / m.priceUsd) + " LUV"));

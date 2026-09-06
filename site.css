@@ -206,3 +206,14 @@ footer .mark{font-family:var(--serif);color:var(--ink-2);font-size:1.05rem;margi
 .price .n.tick-up,h1 [data-luv-1t].tick-up{animation:tickup 1.6s ease-out}
 .price .n.tick-dn,h1 [data-luv-1t].tick-dn{animation:tickdn 1.6s ease-out}
 h1 [data-luv-tick].up{color:var(--verified)} h1 [data-luv-tick].dn{color:#ff7b9c}
+
+/* the ETH card — the other asset, in its own identity */
+.stat .eth-card{position:relative;overflow:hidden;background:linear-gradient(135deg,#0f1a3a,#151c3d 60%,#1b2350);border:1px solid #3b4fa8;box-shadow:inset 0 1px 0 rgba(201,209,250,.15),0 12px 30px -16px rgba(95,115,217,.8)}
+.stat .eth-card::after{content:"";position:absolute;inset:-40% -30% auto auto;width:70%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(138,156,240,.28),transparent 60%);pointer-events:none}
+.stat .eth-card .eth-mark{position:absolute;right:14px;top:12px;height:46px;width:auto;opacity:.9;filter:drop-shadow(0 4px 10px rgba(95,115,217,.6))}
+.stat .eth-card b{color:#c9d1fa;font-family:var(--mono);font-weight:700;font-size:1.45rem;letter-spacing:.01em}
+.stat .eth-card i{font-style:normal;font-family:var(--mono);font-size:1rem;margin-left:6px;vertical-align:middle}
+.stat .eth-card i.up{color:var(--verified)} .stat .eth-card i.dn{color:#ff7b9c}
+.stat .eth-card span{color:#aeb8ee}
+.stat .eth-card b.tick-up{animation:ethup 1.6s ease-out} .stat .eth-card b.tick-dn{animation:ethdn 1.6s ease-out}
+@keyframes ethup{0%{color:var(--verified)}100%{color:#c9d1fa}} @keyframes ethdn{0%{color:#ff7b9c}100%{color:#c9d1fa}}
