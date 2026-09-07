@@ -1,0 +1,2 @@
+nicegui==1.4.29
+# the Highcharts element (bundles Highcharts 11.1 — see its licence): pip install -e <checkout of gnugui/nicegui-highcharts>
