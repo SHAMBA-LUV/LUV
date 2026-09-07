@@ -10,12 +10,14 @@ RANGES = [("24H", 86400e3, 300e3), ("7D", 7 * 86400e3, 3600e3), ("30D", 30 * 864
 INTERVALS = [("1m", 60e3), ("5m", 300e3), ("15m", 900e3), ("1h", 3600e3), ("4h", 14400e3), ("1D", 86400e3)]
 GOLD, PINK, PURPLE, UP, DN, MUTED, SURFACE, GROUND, INK = "#e3b25f", "#ff006e", "#8338ec", "#0ecb81", "#ff4d6d", "#9b8bb0", "#150d22", "#0b0712", "#f7f2f9"
 
-def options(unit: str, interval: float, ind: dict):
+def options(unit: str, interval: float, ind: dict, range_ms=None):
     label, _, fmt = UNITS[unit]; cs = candles(M, int(interval), unit)
+    cut = (time.time() * 1000 - range_ms) if range_ms else 0
+    vmax = max([b["vol"] for b in cs if b["t"] >= cut] or [1.0]) or 1.0
     ohlc = [[b["t"], b["o"], b["h"], b["l"], b["c"]] for b in cs]; vol = [{"x": b["t"], "y": b["vol"], "color": UP if b["bvol"] >= b["svol"] else DN} for b in cs]
     closes_u = [b["c"] for b in cs]; closes_usd = [b["cu"] for b in cs]; ts = [b["t"] for b in cs]
     axes = [{"id": "price", "height": "60%", "labels": {"format": fmt, "align": "left", "x": 4, "style": {"color": MUTED}}, "gridLineColor": "rgba(247,242,249,.07)", "crosshair": {"label": {"enabled": True, "format": fmt, "backgroundColor": INK, "style": {"color": GROUND}}}, "opposite": True, "title": {"text": None}},
-            {"id": "vol", "top": "62%", "height": "10%", "labels": {"enabled": False}, "gridLineWidth": 0, "title": {"text": None}, "opposite": True}]
+            {"id": "vol", "top": "62%", "height": "10%", "min": 0, "max": vmax * 1.05, "labels": {"enabled": False}, "gridLineWidth": 0, "title": {"text": None}, "opposite": True}]
     series = [{"type": "candlestick", "id": "luv", "name": label, "data": ohlc, "yAxis": "price", "color": DN, "upColor": UP, "lineColor": DN, "upLineColor": UP, "lastPrice": {"enabled": True, "color": GOLD, "label": {"enabled": True, "backgroundColor": GOLD, "style": {"color": GROUND}, "format": fmt}}, "tooltip": {"pointFormat": "O {point.open:.6f} · H {point.high:.6f} · L {point.low:.6f} · C {point.close:.6f}"}},
               {"type": "column", "id": "vol", "name": "volume, USD", "data": vol, "yAxis": "vol", "tooltip": {"valuePrefix": "$", "valueDecimals": 2}}]
     if ind.get("ribbon"):
@@ -39,7 +41,7 @@ def options(unit: str, interval: float, ind: dict):
             "credits": {"enabled": False}, "title": {"text": None}, "rangeSelector": {"enabled": False}, "navigator": {"enabled": True, "series": {"color": GOLD, "lineWidth": 1}, "outlineColor": "#2c1f45", "maskFill": "rgba(227,178,95,.12)", "xAxis": {"labels": {"style": {"color": MUTED}}}},
             "scrollbar": {"enabled": False}, "legend": {"enabled": False}, "tooltip": {"split": False, "shared": True, "backgroundColor": INK, "style": {"color": GROUND}, "xDateFormat": "%Y-%m-%d %H:%M UTC"},
             "time": {"useUTC": True}, "xAxis": {"labels": {"style": {"color": MUTED}}, "gridLineColor": "rgba(247,242,249,.07)", "crosshair": {"label": {"enabled": True, "backgroundColor": INK, "style": {"color": GROUND}}}, "lineColor": "#2c1f45", "tickColor": "#2c1f45"},
-            "yAxis": axes, "plotOptions": {"candlestick": {"pointPadding": .1, "groupPadding": .1}, "series": {"dataGrouping": {"enabled": False}, "animation": False}},
+            "yAxis": axes, "plotOptions": {"candlestick": {"pointPadding": .1, "groupPadding": .1}, "column": {"pointPadding": .05, "groupPadding": .05, "borderWidth": 0}, "series": {"dataGrouping": {"enabled": False}, "animation": False, "cropThreshold": 100000}},
             "series": series}
 
 @ui.page("/stock", title="LUV stock chart — SHAMBA LUV", dark=True, response_timeout=60)
@@ -59,16 +61,19 @@ async def stock_page():
         with ui.row().classes("items-center gap-2"):
             ui.label("indicators").style(f"color:{MUTED}")
             checks = {k: ui.checkbox(lbl, value=False).props("dense color=pink-7") for k, lbl in (("ribbon", "EMA ribbon"), ("bb", "Bollinger"), ("rsi", "RSI"), ("macd", "MACD"))}
-        chart = highchart(options(state["unit"], state["interval"], state["ind"]), type="stockChart", extras=["stock", "price-indicator", "drag-panes", "full-screen", "exporting"]).classes("w-full")
+        box = ui.element("div").classes("w-full")
+        with box: highchart(options(state["unit"], state["interval"], state["ind"], RANGES[state["range"]][1]), type="stockChart", extras=["stock", "price-indicator", "drag-panes", "full-screen", "exporting"]).classes("w-full")
         note = ui.label("Highcharts Stock via NiceGUI · the price is the Uniswap buy quote for one trillion LUV · reserves read every 15 s · ETH/USD: V3 USDC/WETH pool bounded by the V2 pairs").style(f"color:{MUTED};font-size:.85rem")
     def paint_head():
         q = M.live["quotes"]; head.text = f"${q['buy1T']:.6f} per trillion LUV"
         sub.text = f"buy ${q['buy1T']:.6f} · sell ${q['sell1T']:.6f} · mid ${q['mid1T']:.6f} · {M.live['nat']*1e18:.4f} wei per LUV × ETH ${M.live['eth']:.2f} · block {M.live['block']:,}"
     def redraw():
         state["ind"] = {k: c.value for k, c in checks.items()}
-        o = options(state["unit"], state["interval"], state["ind"]); r = RANGES[state["range"]]
+        r = RANGES[state["range"]]; o = options(state["unit"], state["interval"], state["ind"], r[1])
         if r[1]: o["xAxis"]["min"] = int(time.time() * 1000 - r[1])
-        chart.options.clear(); chart.options.update(o); chart.update(); paint_head()
+        box.clear()
+        with box: highchart(o, type="stockChart", extras=["stock", "price-indicator", "drag-panes", "full-screen", "exporting"]).classes("w-full")
+        paint_head()
     def on_range(e):
         state["range"] = e.value
         if not state["pinned"]: state["interval"] = RANGES[e.value][2]; itv.value = state["interval"]
