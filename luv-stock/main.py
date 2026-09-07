@@ -41,7 +41,7 @@ def options(unit: str, interval: float, ind: dict, range_ms=None):
             "credits": {"enabled": False}, "title": {"text": None}, "rangeSelector": {"enabled": False}, "navigator": {"enabled": True, "series": {"color": GOLD, "lineWidth": 1}, "outlineColor": "#2c1f45", "maskFill": "rgba(227,178,95,.12)", "xAxis": {"labels": {"style": {"color": MUTED}}}},
             "scrollbar": {"enabled": False}, "legend": {"enabled": False}, "tooltip": {"split": False, "shared": True, "backgroundColor": INK, "style": {"color": GROUND}, "xDateFormat": "%Y-%m-%d %H:%M UTC"},
             "time": {"useUTC": True}, "xAxis": {"labels": {"style": {"color": MUTED}}, "gridLineColor": "rgba(247,242,249,.07)", "crosshair": {"label": {"enabled": True, "backgroundColor": INK, "style": {"color": GROUND}}}, "lineColor": "#2c1f45", "tickColor": "#2c1f45"},
-            "yAxis": axes, "plotOptions": {"candlestick": {"pointPadding": .1, "groupPadding": .1}, "column": {"pointPadding": .05, "groupPadding": .05, "borderWidth": 0}, "series": {"dataGrouping": {"enabled": False}, "animation": False, "cropThreshold": 100000}},
+            "yAxis": axes, "plotOptions": {"candlestick": {"pointPadding": .1, "groupPadding": .1}, "column": {"pointPadding": .05, "groupPadding": .05, "borderWidth": 0}, "series": {"dataGrouping": {"enabled": False}, "animation": False, "cropThreshold": 100000, "turboThreshold": 0}},
             "series": series}
 
 @ui.page("/stock", title="LUV stock chart — SHAMBA LUV", dark=True, response_timeout=60)
@@ -66,7 +66,10 @@ async def stock_page():
         note = ui.label("Highcharts Stock via NiceGUI · the price is the Uniswap buy quote for one trillion LUV · reserves read every 15 s · ETH/USD: V3 USDC/WETH pool bounded by the V2 pairs").style(f"color:{MUTED};font-size:.85rem")
     def paint_head():
         q = M.live["quotes"]; head.text = f"${q['buy1T']:.6f} per trillion LUV"
-        sub.text = f"buy ${q['buy1T']:.6f} · sell ${q['sell1T']:.6f} · mid ${q['mid1T']:.6f} · {M.live['nat']*1e18:.4f} wei per LUV × ETH ${M.live['eth']:.2f} · block {M.live['block']:,}"
+        o = M.oracle or {}; pc = (o.get("priceChange") or {}).get("h24"); liq = (o.get("liquidity") or {}).get("usd"); mc = o.get("marketCap"); oq = (o.get("quotes") or {}).get("buy1T") or {}
+        sub.text = (f"buy ${q['buy1T']:.6f} · sell ${q['sell1T']:.6f} · mid ${q['mid1T']:.6f} · {M.live['nat']*1e18:.4f} wei per LUV × ETH ${M.live['eth']:.2f} · block {M.live['block']:,}"
+                    + (f"  ·  oracle.luv: {pc:+.2f}% 24h" if pc is not None else "") + (f" · liquidity ${liq:,.0f}" if liq else "") + (f" · market cap ${mc:,.0f}" if mc else "")
+                    + (f" · oracle buy ${oq['usd']:.6f} at block {(o.get('chronos') or {}).get('block_number', 0):,}" if oq.get("usd") else ""))
     def redraw():
         state["ind"] = {k: c.value for k, c in checks.items()}
         r = RANGES[state["range"]]; o = options(state["unit"], state["interval"], state["ind"], r[1])

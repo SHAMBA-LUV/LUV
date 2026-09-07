@@ -52,7 +52,7 @@ def read_eth() -> list[tuple[int, float]]:
     return sorted(out)
 
 class Market:
-    def __init__(self): self.tape = []; self.live = None; self.eth = []; self.loaded_at = 0
+    def __init__(self): self.tape = []; self.live = None; self.eth = []; self.loaded_at = 0; self.oracle = None
     def eth_at(self, t):
         a = self.eth
         if not a: return None
@@ -65,6 +65,8 @@ class Market:
         return a[lo][1]
     def load(self):
         self.eth = read_eth(); self.live = read_pair(); self.eth.append((self.live["t"], self.live["eth"]))
+        try: self.oracle = _get(f"{SITE}/market.json")
+        except Exception: pass
         trades = _get(f"{SITE}/market-trades.json").get("trades", []); hist = _get(f"{SITE}/market-history.json").get("points", [])
         tape = []
         for r in trades:
@@ -84,6 +86,8 @@ class Market:
         tape.append({"t": self.live["t"], "nat": self.live["nat"], "usd": self.live["usd"], "vol": 0, "buy": None, "trade": False, "live": True})
         self.tape = tape; self.loaded_at = time.time()
     def tick(self):
+        try: self.oracle = _get(f"{SITE}/market.json")
+        except Exception: pass
         self.live = read_pair(); self.eth.append((self.live["t"], self.live["eth"]))
         self.tape = [x for x in self.tape if not x.get("live")] + [{"t": self.live["t"], "nat": self.live["nat"], "usd": self.live["usd"], "vol": 0, "buy": None, "trade": False, "live": True}]
 
