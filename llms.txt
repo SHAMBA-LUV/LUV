@@ -23,6 +23,7 @@
 
 ## Price, cost, return, flow (canonical answers live in the FAQ)
 - Price: the Uniswap buy quote for 1T LUV in USDC from the pair reserves (market.json quotes.buy1T). USD price = pool ratio x ETH/USD (pool seeded at the V2 maximum, 2^112-1 wei LUV); between LUV trades the ratio is fixed, so LUV moves at the speed of Ethereum; the LUV-specific signal is the departure from ETH. https://luv.pythai.net/faq.html#price
+- LUV maxed out Uniswap: the pair was seeded with exactly 2^112-1 wei LUV (the uint112 reserve cap; one wei more = UniswapV2: OVERFLOW) by one addLiquidityETH from bankon.eth, tx 0x9f8e0bf6e566e809ca78eb18730b8f4305534e755a98a78f7924794757d4ff13. https://luv.pythai.net/faq.html#maxed
 - Every Buy button opens Uniswap onto the LUV/WETH pair, the only market for LUV. https://luv.pythai.net/faq.html#pair
 - Cost vs return: entry/exit = 5% token fee + 0.3% pool fee + impact + gas (round trip ~10.3% before impact); holding and wallet-to-wallet sends cost no fee; return = 3% of every market trade pro rata, plus drops. https://luv.pythai.net/faq.html#cost
 - Flow of LUV to people: freedrop (closed) -> airdrop (pioneers, honoured 1:1) -> earndrop -> drip (1M LUV/day) -> wishing.wells from eternal.fountains (promised, not on chain). https://luv.pythai.net/faq.html#flow and #wells
