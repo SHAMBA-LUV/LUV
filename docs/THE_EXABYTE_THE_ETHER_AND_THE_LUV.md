@@ -114,3 +114,7 @@ python3 -c "print(111111111111111111111111111111111111 / 10**30)"
 ```
 
 *Companions: [THE WEI OF LUV](https://luv.pythai.net/wei.html) (the arithmetic paper) · [SENTIMENT](https://luv.pythai.net/sentiment.html) (the measurement paper) · [EMOTONOMICS](https://luv.pythai.net/emotonomics.html) (the field paper) · the [live measure](https://luv.pythai.net/view.html). References: BIPM (2022), Resolution 3 of the 27th CGPM (ronna/quetta); IEC 80000-13 (binary prefixes kibi…yobi); Wood, G. (2014), "Ethereum: A Secure Decentralised Generalised Transaction Ledger" (the Yellow Paper, defining wei); Nakamoto, S. (2008), "Bitcoin: A Peer-to-Peer Electronic Cash System" (the 10^8-satoshi denomination); Dai, W. (1998), "b-money"; Circle, "USDC" — [stablecoin-evm source](https://github.com/circlefin/stablecoin-evm) (6 decimals).*
+
+---
+
+<sub>made with [LUV ❤](https://luv.pythai.net/)</sub>

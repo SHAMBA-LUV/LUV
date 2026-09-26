@@ -65,3 +65,7 @@ calldata; sign from bankon.eth offline):
 3. `node scripts/luvdrop-admin.mjs unpause`. Old vouchers signed by the previous key are now invalid.
 
 `node scripts/luvdrop-admin.mjs status` shows owner / signer / paused / claimed / pool balance at a glance.
+
+---
+
+<sub>made with [LUV ❤](https://luv.pythai.net/)</sub>

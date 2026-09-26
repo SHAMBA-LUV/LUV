@@ -482,3 +482,7 @@ The token is also a **deploy choice** in the DeltaVerse: `shambaluv/suites.json`
 `deploy/artifacts/community-luv/ShambaLuv.json`, and the `verse.html` tokens panel.
 
 — *Share the ❤️. Hold LUV, earn LUV.*
+
+---
+
+<sub>made with [LUV ❤](https://luv.pythai.net/)</sub>

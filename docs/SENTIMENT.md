@@ -277,3 +277,6 @@ Sentiment research began as an insult ("animal spirits"), matured into a factor,
 
 <p align="center">The measurement is read from what the community verifiably does on-chain. Join it at <a href="https://luv.pythai.net"><b>luv.pythai.net</b></a>, or <a href="https://app.uniswap.org/swap?chain=mainnet&inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254"><b>buy LUV on Uniswap</b></a> (set slippage ~10%).</p>
 
+---
+
+<sub>made with [LUV ❤](https://luv.pythai.net/)</sub>

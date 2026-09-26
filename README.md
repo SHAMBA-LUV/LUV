@@ -87,3 +87,7 @@ node deploy/deploy-luv-anvil.mjs                 # LUV first-light rehearsal
 > standalone project.
 
 — *Share the ❤️.*
+
+---
+
+<sub>made with [LUV ❤](https://luv.pythai.net/)</sub>

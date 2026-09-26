@@ -312,3 +312,7 @@ ok  - the participant received 2,000,000 LUV on-chain
 ok  - and PAID THE GAS themselves: 0.000141057535396601 ETH (138101 gas × 1021408501 wei)
 ok  - the ETH-less participant received 1,000,000 LUV — gas paid by the project
 ```
+
+---
+
+<sub>made with [LUV ❤](https://luv.pythai.net/)</sub>

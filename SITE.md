@@ -28,3 +28,7 @@ Mirrors first (`market.json`, `market-history.json`, `market-trades.json`, writt
 
 ## SEO
 Every indexable page carries: title, description, canonical, keywords, robots (max-image-preview:large), theme-color, full Open Graph (type, site_name, locale, url, title, description, image 1200×630 with type/size/alt) and Twitter card tags, `rel=me` to @shambaluv, and JSON-LD (`Organization` + `WebSite` on the landing, `FAQPage` with all 26 questions on the FAQ, `Dataset` for the price series on the chart, `BreadcrumbList` everywhere). `sitemap.xml` carries lastmod + image entries; `app.html` and redirect stubs are `noindex`. liqlock.html wears the DeltaVerse `$` favicon (`gfx/dollar.ico`).
+
+---
+
+<sub>made with [LUV ❤](https://luv.pythai.net/)</sub>

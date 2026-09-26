@@ -134,3 +134,7 @@ In `auth/src/auth/strategies.js` copy the GitHub block: require the provider str
   never in the frontend — the browser only ever sees the public client_id in the
   provider redirect.
 - Rotate a leaked secret in the provider console, update BOTH copies, restart.
+
+---
+
+<sub>made with [LUV ❤](https://luv.pythai.net/)</sub>

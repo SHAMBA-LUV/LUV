@@ -187,3 +187,7 @@ auth/
 ```
 
 — *Share the ❤️. One real signup, one trillion LUV.*
+
+---
+
+<sub>made with [LUV ❤](https://luv.pythai.net/)</sub>

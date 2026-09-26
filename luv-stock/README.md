@@ -17,3 +17,7 @@ highcharts.com is required for commercial use. Highcharts itself is not in this 
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt && .venv/bin/pip install -e ../../nicegui-highcharts
 .venv/bin/python main.py   # http://127.0.0.1:8793/stock
 ```
+
+---
+
+<sub>made with [LUV ❤](https://luv.pythai.net/)</sub>

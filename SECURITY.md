@@ -66,3 +66,7 @@ Removing a file from the default branch does not remove it from git history, fro
 or from anything that already mirrored it. Where previously published material described
 live exposures, the durable remedy is remediation of the contracts themselves, not
 deletion of the document. That work is tracked under OVERLORD access.
+
+---
+
+<sub>made with [LUV ❤](https://luv.pythai.net/)</sub>

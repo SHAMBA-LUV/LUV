@@ -319,3 +319,7 @@ suite.
 
 *Reproduce:* `cd ~/DeltaVerse/shambaluv && forge test`  ·  *Generated 2026-08-05 during the full
 security audit. Findings and the new-test backlog are held under OVERLORD access.*
+
+---
+
+<sub>made with [LUV ❤](https://luv.pythai.net/)</sub>

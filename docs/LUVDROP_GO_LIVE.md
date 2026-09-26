@@ -199,3 +199,7 @@ one transaction:
 - **Boundary:** the bus never replaces the distributor — earn stays policy-gated and
   per-identity; the bus is owner-driven and cohort-wide. Both fee-exempt, separate
   accounting.
+
+---
+
+<sub>made with [LUV ❤](https://luv.pythai.net/)</sub>

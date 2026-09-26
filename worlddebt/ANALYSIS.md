@@ -84,3 +84,7 @@ python worlddebt/diagnostics.py
   trajectory something real-sized to be measured against — not to predict either line.
 * Debt and market cap are not the same kind of quantity. One is an obligation stock, the other a
   price times a supply. Drawing them on one axis compares *magnitudes*, and nothing more.
+
+---
+
+<sub>made with [LUV ❤](https://luv.pythai.net/)</sub>

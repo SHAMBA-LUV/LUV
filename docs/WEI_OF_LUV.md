@@ -153,3 +153,7 @@ cast call 0x2711...8254 "isExcludedFromReflection(address)" 0x000000000000000000
 ```
 
 *Companions: [SENTIMENT.md](https://luv.pythai.net/sentiment.html) (the measurement paper) · [EMOTONOMICS](https://luv.pythai.net/emotonomics.html) (the field paper) · the [live measure](https://luv.pythai.net/view.html). References: Wood, G. (2014), "Ethereum: A Secure Decentralised Generalised Transaction Ledger" (the Yellow Paper, defining wei); Dai, W. (1998), "b-money"; Adams, H., Zinsmeister, N., & Robinson, D. (2020), "Uniswap v2 Core" (uint112 reserves); Nakamoto, S. (2008), "Bitcoin: A Peer-to-Peer Electronic Cash System" (the 10^8-satoshi denomination); Circle, "USDC" — [stablecoin-evm source](https://github.com/circlefin/stablecoin-evm) (6 decimals). ETH/USD reference data: DeFiLlama, CoinGecko, CoinMarketCap (2026-08-05).*
+
+---
+
+<sub>made with [LUV ❤](https://luv.pythai.net/)</sub>

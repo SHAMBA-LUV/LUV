@@ -108,3 +108,7 @@ status) enters the AgenticPlace verified database (`agenticplace.pythai.net/allc
 keyed by `(chainId, address)` — the `chainId` the unit itself reports via `chainId()`. The
 allchain board then renders the rail across every chain it lives on: one skill, every chain,
 one map.
+
+---
+
+<sub>made with [LUV ❤](https://luv.pythai.net/)</sub>

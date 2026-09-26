@@ -402,3 +402,7 @@ fixed by a standards body, the official designation is given verbatim.
 [wei.html](https://luv.pythai.net/wei.html)), and this paper's canonical source
 ([`docs/LUV_ENGINE.md`](https://github.com/SHAMBA-LUV/LUV/blob/main/docs/LUV_ENGINE.md) /
 [engine.html](https://luv.pythai.net/engine.html)).
+
+---
+
+<sub>made with [LUV ❤](https://luv.pythai.net/)</sub>
