@@ -18,7 +18,7 @@
 
 > Preface. Emotonomics defined the field (see *Emotonomics: An Extension of Economics
 > for the Knowledge Economy*, published as
-> [EMOTONOMICS_FIELD.md](https://github.com/Professor-Codephreak/emotonomics/blob/master/docs/EMOTONOMICS_FIELD.md), with the whitepaper [EMOTONOMICS.md](https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/EMOTONOMICS.md)
+> [EMOTONOMICS, the field paper](https://github.com/cypherpunk4096/emotonomics/blob/main/EMOTONOMICS.md), with the whitepaper [EMOTONOMICS.md](https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/EMOTONOMICS.md)
 > and [LUVPAPER.md](https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/LUVPAPER.md); the companion markdown
 > sources live in [`SHAMBA-LUV/LUV/docs`](https://github.com/SHAMBA-LUV/LUV/tree/main/docs)).
 > This document states what LUV builds **with** the field: an engine — not adopted from
@@ -396,7 +396,7 @@ fixed by a standards body, the official designation is given verbatim.
 | "Three Flashes or Below Threshold (Level A)" | English (normative) | [W3C WCAG 2.1, SC 2.3.1](https://www.w3.org/WAI/WCAG21/Understanding/three-flashes-or-below-threshold.html) |
 
 *Companion papers:* the field definition
-([EMOTONOMICS_FIELD.md](https://github.com/Professor-Codephreak/emotonomics/blob/master/docs/EMOTONOMICS_FIELD.md)), the whitepapers ([EMOTONOMICS.md](https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/EMOTONOMICS.md) ·
+([EMOTONOMICS, the field paper](https://github.com/cypherpunk4096/emotonomics/blob/main/EMOTONOMICS.md)), the whitepapers ([EMOTONOMICS.md](https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/EMOTONOMICS.md) ·
 [LUVPAPER.md](https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/LUVPAPER.md)), the measurement paper
 ([`docs/SENTIMENT.md`](https://github.com/SHAMBA-LUV/LUV/blob/main/docs/SENTIMENT.md)), the arithmetic paper
 ([`docs/WEI_OF_LUV.md`](https://github.com/SHAMBA-LUV/LUV/blob/main/docs/WEI_OF_LUV.md)), and this paper's canonical source
