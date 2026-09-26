@@ -2,7 +2,7 @@
 
 *Frequency output from heart pulsation at 60 bpm — the pulse as attention's clock*
 
-**Live web publication:** [luv.pythai.net/engine.html](https://luv.pythai.net/engine.html) · standard publication: [github.com/cypherpunk4096/engine](https://github.com/cypherpunk4096/engine)
+**Home:** [luv.pythai.net](https://luv.pythai.net) · live chart: [luv.pythai.net/chart.html](https://luv.pythai.net/chart.html) · standard publication: [github.com/cypherpunk4096/engine](https://github.com/cypherpunk4096/engine)
 
 <p align="center">
   <a href="https://app.uniswap.org/swap?chain=ethereum&amp;inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amp;outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" title="Uniswap preset — USDC → LUV on Ethereum mainnet"><img src="https://luv.pythai.net/gfx/logo.png" alt="SHAMBA LUV — the gold binary heart" width="168" height="168"></a>
@@ -12,13 +12,14 @@
   <sub><a href="https://etherscan.io/token/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48">USDC <code>0xA0b8…eB48</code></a> ·
   <a href="https://etherscan.io/address/0x2711111111683B8708cb9a48cBf36a51315F8254#code">LUV <code>0x2711…8254</code> ✅ verified</a> ·
   <a href="https://app.uniswap.org/tokens/ethereum/0x2711111111683B8708cb9a48cBf36a51315F8254">token page</a> ·
-  <a href="https://luv.pythai.net/view.html">live chart</a> ·
+  <a href="https://luv.pythai.net/chart.html">live chart</a> ·
   set slippage ~8–12% (LUV carries a 5% reflection fee)</sub>
 </p>
 
 > Preface. Emotonomics defined the field (see *Emotonomics: An Extension of Economics
-> for the Knowledge Economy*, published at
-> [emotonomics.html](https://luv.pythai.net/emotonomics.html); the companion markdown
+> for the Knowledge Economy*, published as
+> [EMOTONOMICS_FIELD.md](https://github.com/Professor-Codephreak/emotonomics/blob/master/docs/EMOTONOMICS_FIELD.md), with the whitepaper [EMOTONOMICS.md](https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/EMOTONOMICS.md)
+> and [LUVPAPER.md](https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/LUVPAPER.md); the companion markdown
 > sources live in [`SHAMBA-LUV/LUV/docs`](https://github.com/SHAMBA-LUV/LUV/tree/main/docs)).
 > This document states what LUV builds **with** the field: an engine — not adopted from
 > game middleware, not borrowed from a rendering tradition, but derived organ by organ
@@ -395,13 +396,11 @@ fixed by a standards body, the official designation is given verbatim.
 | "Three Flashes or Below Threshold (Level A)" | English (normative) | [W3C WCAG 2.1, SC 2.3.1](https://www.w3.org/WAI/WCAG21/Understanding/three-flashes-or-below-threshold.html) |
 
 *Companion papers:* the field definition
-([emotonomics.html](https://luv.pythai.net/emotonomics.html)), the measurement paper
-([`docs/SENTIMENT.md`](https://github.com/SHAMBA-LUV/LUV/blob/main/docs/SENTIMENT.md) /
-[sentiment.html](https://luv.pythai.net/sentiment.html)), the arithmetic paper
-([`docs/WEI_OF_LUV.md`](https://github.com/SHAMBA-LUV/LUV/blob/main/docs/WEI_OF_LUV.md) /
-[wei.html](https://luv.pythai.net/wei.html)), and this paper's canonical source
-([`docs/LUV_ENGINE.md`](https://github.com/SHAMBA-LUV/LUV/blob/main/docs/LUV_ENGINE.md) /
-[engine.html](https://luv.pythai.net/engine.html)).
+([EMOTONOMICS_FIELD.md](https://github.com/Professor-Codephreak/emotonomics/blob/master/docs/EMOTONOMICS_FIELD.md)), the whitepapers ([EMOTONOMICS.md](https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/EMOTONOMICS.md) ·
+[LUVPAPER.md](https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/LUVPAPER.md)), the measurement paper
+([`docs/SENTIMENT.md`](https://github.com/SHAMBA-LUV/LUV/blob/main/docs/SENTIMENT.md)), the arithmetic paper
+([`docs/WEI_OF_LUV.md`](https://github.com/SHAMBA-LUV/LUV/blob/main/docs/WEI_OF_LUV.md)), and this paper's canonical source
+([`docs/LUV_ENGINE.md`](https://github.com/SHAMBA-LUV/LUV/blob/main/docs/LUV_ENGINE.md)).
 
 ---
 

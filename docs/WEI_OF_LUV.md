@@ -2,9 +2,9 @@
 
 **On the smallest units of currencies — the satoshi, the wei, and the wei of LUV — the exact arithmetic of the LUV/ETH price, and where the pool's ETH comes from**
 
-*SHAMBA LUV research series — companion to SENTIMENT.md and EMOTONOMICS.md*
+*SHAMBA LUV research series — companion to [SENTIMENT.md](https://github.com/SHAMBA-LUV/LUV/blob/main/docs/SENTIMENT.md), [EMOTONOMICS.md](https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/EMOTONOMICS.md), and [LUVPAPER.md](https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/LUVPAPER.md)*
 
-**Live web publication:** https://luv.pythai.net/wei.html · live market: https://luv.pythai.net/view.html · standard publication: https://github.com/cypherpunk4096/wei
+**Live web publication:** https://github.com/SHAMBA-LUV/LUV/blob/main/docs/WEI_OF_LUV.md · live market: https://luv.pythai.net/chart.html · standard publication: https://github.com/cypherpunk4096/wei
 
 All figures verified on-chain as of 2026-08-05 (pair reserves read directly via `getReserves()` on `0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31`). ETH/USD reference: DeFiLlama / CoinGecko / CoinMarketCap, same instant. Every calculation below is reproducible from the appendix.
 
@@ -152,7 +152,7 @@ cast call 0x2711...8254 "balanceOf(address)" 0x000000000000000000000000000000000
 cast call 0x2711...8254 "isExcludedFromReflection(address)" 0x000000000000000000000000000000000000dEaD
 ```
 
-*Companions: [SENTIMENT.md](https://luv.pythai.net/sentiment.html) (the measurement paper) · [EMOTONOMICS](https://luv.pythai.net/emotonomics.html) (the field paper) · the [live measure](https://luv.pythai.net/view.html). References: Wood, G. (2014), "Ethereum: A Secure Decentralised Generalised Transaction Ledger" (the Yellow Paper, defining wei); Dai, W. (1998), "b-money"; Adams, H., Zinsmeister, N., & Robinson, D. (2020), "Uniswap v2 Core" (uint112 reserves); Nakamoto, S. (2008), "Bitcoin: A Peer-to-Peer Electronic Cash System" (the 10^8-satoshi denomination); Circle, "USDC" — [stablecoin-evm source](https://github.com/circlefin/stablecoin-evm) (6 decimals). ETH/USD reference data: DeFiLlama, CoinGecko, CoinMarketCap (2026-08-05).*
+*Companions: [SENTIMENT.md](https://github.com/SHAMBA-LUV/LUV/blob/main/docs/SENTIMENT.md) (the measurement paper) · [EMOTONOMICS_FIELD](https://github.com/Professor-Codephreak/emotonomics/blob/master/docs/EMOTONOMICS_FIELD.md) (the field paper) · [EMOTONOMICS.md](https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/EMOTONOMICS.md) (the whitepaper) · [LUVPAPER.md](https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/LUVPAPER.md) (the LUV paper) · the [live measure](https://luv.pythai.net/chart.html). References: Wood, G. (2014), "Ethereum: A Secure Decentralised Generalised Transaction Ledger" (the Yellow Paper, defining wei); Dai, W. (1998), "b-money"; Adams, H., Zinsmeister, N., & Robinson, D. (2020), "Uniswap v2 Core" (uint112 reserves); Nakamoto, S. (2008), "Bitcoin: A Peer-to-Peer Electronic Cash System" (the 10^8-satoshi denomination); Circle, "USDC" — [stablecoin-evm source](https://github.com/circlefin/stablecoin-evm) (6 decimals). ETH/USD reference data: DeFiLlama, CoinGecko, CoinMarketCap (2026-08-05).*
 
 ---
 

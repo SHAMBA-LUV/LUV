@@ -37,7 +37,7 @@ throughout; rounding is display-only (cypherpunk4096: *precision without approxi
 
 Because 86,400 = 2⁷·3³·5² and 3³ never divides a power of ten, the exact per-second rate does not
 terminate — which is precisely why nothing is ever minted or credited per second. See
-[the engine paper](https://luv.pythai.net/engine.html#s3) and [WEI_OF_LUV](WEI_OF_LUV.md).
+[the engine paper](https://github.com/SHAMBA-LUV/LUV/blob/main/docs/LUV_ENGINE.md#iii-the-standard-cypherpunk2048) and [WEI_OF_LUV](WEI_OF_LUV.md).
 
 ## The window
 

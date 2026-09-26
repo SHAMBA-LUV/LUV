@@ -2,9 +2,9 @@
 
 **One number, three units — 10^18 as the shared atomic resolution of information and value**
 
-*SHAMBA LUV research series — companion to WEI_OF_LUV.md, SENTIMENT.md, and EMOTONOMICS.md*
+*SHAMBA LUV research series — companion to [WEI_OF_LUV.md](https://github.com/SHAMBA-LUV/LUV/blob/main/docs/WEI_OF_LUV.md), [SENTIMENT.md](https://github.com/SHAMBA-LUV/LUV/blob/main/docs/SENTIMENT.md), [EMOTONOMICS.md](https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/EMOTONOMICS.md), and [LUVPAPER.md](https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/LUVPAPER.md)*
 
-**Live web publication:** https://luv.pythai.net/exabyte.html · the arithmetic paper: https://luv.pythai.net/wei.html · standard publication: https://github.com/cypherpunk4096/exabyte
+**Live web publication:** https://github.com/SHAMBA-LUV/LUV/blob/main/docs/THE_EXABYTE_THE_ETHER_AND_THE_LUV.md · the arithmetic paper: https://github.com/SHAMBA-LUV/LUV/blob/main/docs/WEI_OF_LUV.md · standard publication: https://github.com/cypherpunk4096/exabyte
 
 Every figure below is exact — computed, not quoted — and reproducible from the appendix. Approximation is a display decision, never a storage decision.
 
@@ -113,7 +113,7 @@ python3 -c "print(5**12)"                            # 244140625
 python3 -c "print(111111111111111111111111111111111111 / 10**30)"
 ```
 
-*Companions: [THE WEI OF LUV](https://luv.pythai.net/wei.html) (the arithmetic paper) · [SENTIMENT](https://luv.pythai.net/sentiment.html) (the measurement paper) · [EMOTONOMICS](https://luv.pythai.net/emotonomics.html) (the field paper) · the [live measure](https://luv.pythai.net/view.html). References: BIPM (2022), Resolution 3 of the 27th CGPM (ronna/quetta); IEC 80000-13 (binary prefixes kibi…yobi); Wood, G. (2014), "Ethereum: A Secure Decentralised Generalised Transaction Ledger" (the Yellow Paper, defining wei); Nakamoto, S. (2008), "Bitcoin: A Peer-to-Peer Electronic Cash System" (the 10^8-satoshi denomination); Dai, W. (1998), "b-money"; Circle, "USDC" — [stablecoin-evm source](https://github.com/circlefin/stablecoin-evm) (6 decimals).*
+*Companions: [THE WEI OF LUV](https://github.com/SHAMBA-LUV/LUV/blob/main/docs/WEI_OF_LUV.md) (the arithmetic paper) · [SENTIMENT](https://github.com/SHAMBA-LUV/LUV/blob/main/docs/SENTIMENT.md) (the measurement paper) · [EMOTONOMICS_FIELD](https://github.com/Professor-Codephreak/emotonomics/blob/master/docs/EMOTONOMICS_FIELD.md) (the field paper) · [EMOTONOMICS.md](https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/EMOTONOMICS.md) (the whitepaper) · [LUVPAPER.md](https://github.com/SHAMBA-LUV/SHAMBALUV/blob/main/docs/LUVPAPER.md) (the LUV paper) · the [live measure](https://luv.pythai.net/chart.html). References: BIPM (2022), Resolution 3 of the 27th CGPM (ronna/quetta); IEC 80000-13 (binary prefixes kibi…yobi); Wood, G. (2014), "Ethereum: A Secure Decentralised Generalised Transaction Ledger" (the Yellow Paper, defining wei); Nakamoto, S. (2008), "Bitcoin: A Peer-to-Peer Electronic Cash System" (the 10^8-satoshi denomination); Dai, W. (1998), "b-money"; Circle, "USDC" — [stablecoin-evm source](https://github.com/circlefin/stablecoin-evm) (6 decimals).*
 
 ---
 
