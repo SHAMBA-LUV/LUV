@@ -4,7 +4,9 @@
 
 *SHAMBA LUV research series — companion to EMOTONOMICS.md and LUVPAPER.md*
 
-**Live web publication:** https://luv.pythai.net/sentiment.html · companion field paper: https://luv.pythai.net/emotonomics.html · live measurement stack: https://luv.pythai.net/view.html · standard publication: https://github.com/cypherpunk4096/sentiment · the in-house Bitcoin rainbow: https://luv.pythai.net/rainbow.html
+**Home:** https://luv.pythai.net · live measurement stack: https://luv.pythai.net/chart.html · companion field paper: https://github.com/Professor-Codephreak/emotonomics/blob/master/docs/EMOTONOMICS_FIELD.md · standard publication: https://github.com/cypherpunk4096/sentiment · the in-house Bitcoin rainbow: https://luv.pythai.net/rainbow.html
+
+<p align="center"><a href="https://luv.pythai.net"><b>luv.pythai.net</b></a> &nbsp;·&nbsp; <a href="https://app.uniswap.org/swap?chain=mainnet&inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254" title="Uniswap, preset USDC to LUV. Set slippage to 10%."><img src="../gfx/brand/uniswap_horizontal_pink.svg" alt="Buy LUV on Uniswap" height="28"></a><br><sub>Buy LUV on Uniswap: preset USDC → LUV · set slippage ~10% (5% market-trade fee + pool impact)</sub></p>
 
 ---
 
@@ -114,7 +116,7 @@ An economy denominated in feeling requires sentiment instruments in the *nationa
 
 **The LUVchart: price as a sentiment indicator.** The fifth instrument is the oldest one, relabeled honestly: the continuously-plotted price of SHAMBA LUV — the LUVchart — read *as revealed sentiment*. Section II established the theoretical warrant: in the noise-trader framework, price movements in an asset whose fundamentals are deliberately fixed (supply immutable at genesis, no mint, no burn schedule, no earnings) are dominated by the sentiment factor, and Baker and Stein (2004) supply the companion result that market liquidity itself indicates sentiment. LUV instantiates the limiting case: with fundamentals held constant by construction, the LUVchart approaches a *pure* sentiment series — every candle is the community's aggregate feeling about the gesture economy, priced. The chart is block-stamped at source, which makes it natively compatible with sentiment.shift: its first difference in normalized blocktime is the market-side shift reading.
 
-To these ledger-native measures the live system adds market-side instruments already deployed on the SHAMBA LUV measurement stack (luv.pythai.net/view.html): the *single-line measure* (one trillion LUV priced continuously in USDC), interval percent-change fields duplicating the practitioner standard (5M/1H/6H/24H), and the *X multiplier* — price and liquidity expressed as multiples of the genesis seed, which was deliberately placed at the round point 10⁻¹⁷ ETH per LUV so that every subsequent multiplier is a direct read. The X multiplier deserves theoretical note: by fixing an arbitrary but *public and permanent* baseline, it converts price into a self-normalizing sentiment series — design lesson (ii) of Section III.4 implemented at genesis.
+To these ledger-native measures the live system adds market-side instruments already deployed on the SHAMBA LUV measurement stack (luv.pythai.net/chart.html): the *single-line measure* (one trillion LUV priced continuously in USDC), interval percent-change fields duplicating the practitioner standard (5M/1H/6H/24H), and the *X multiplier* — price and liquidity expressed as multiples of the genesis seed, which was deliberately placed at the round point 10⁻¹⁷ ETH per LUV so that every subsequent multiplier is a direct read. The X multiplier deserves theoretical note: by fixing an arbitrary but *public and permanent* baseline, it converts price into a self-normalizing sentiment series — design lesson (ii) of Section III.4 implemented at genesis.
 
 ### IV.3 A LUV Fear & Greed composite (proposed)
 
@@ -269,4 +271,9 @@ Sentiment research began as an insult ("animal spirits"), matured into a factor,
 - Zelizer, Viviana A. 1994. *The Social Meaning of Money*. New York: Basic Books. https://scholar.google.com/scholar?q=The%20Social%20Meaning%20of%20Money%20Zelizer
 - Zweig, Martin E. 1973. "An Investor Expectations Stock Price Predictive Model Using Closed-End Fund Premiums." *Journal of Finance* 28(1): 67–78. https://scholar.google.com/scholar?q=Zweig%20investor%20expectations%20closed-end%20fund%20premiums%201973
 
-*Internal sources: EMOTONOMICS.md (the emotonomics whitepaper), LUVPAPER.md, LUV_LIVE_PROOF.md (the mainnet deployment record), and the live measurement stack at luv.pythai.net/view.html.*
+*Internal sources: EMOTONOMICS.md (the emotonomics whitepaper), LUVPAPER.md, LUV_LIVE_PROOF.md (the mainnet deployment record), and the live measurement stack at [luv.pythai.net/chart.html](https://luv.pythai.net/chart.html).*
+
+---
+
+<p align="center">The measurement is read from what the community verifiably does on-chain. Join it at <a href="https://luv.pythai.net"><b>luv.pythai.net</b></a>, or <a href="https://app.uniswap.org/swap?chain=mainnet&inputCurrency=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&outputCurrency=0x2711111111683B8708cb9a48cBf36a51315F8254"><b>buy LUV on Uniswap</b></a> (set slippage ~10%).</p>
+
