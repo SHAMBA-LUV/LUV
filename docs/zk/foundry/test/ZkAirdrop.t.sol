@@ -7,6 +7,8 @@ import {AirdropProofB} from "./fixtures/AirdropProofB.sol"; // member #2 → 0xC
 import {MembershipVerifier} from "../src/verifiers/MembershipVerifier.sol";
 import {IMembershipVerifier} from "../src/interfaces/IMembershipVerifier.sol";
 import {ZkAirdrop, IERC20Minimal} from "../src/ZkAirdrop.sol";
+import {OwnerRoots} from "../src/OwnerRoots.sol";
+import {IRootSource} from "../src/interfaces/IRootSource.sol";
 
 contract ZkAirdropTest is ZkTest {
     uint256 constant ROUND = 1; // = AIRDROP_SCOPE in circom/make-inputs.mjs
@@ -17,6 +19,7 @@ contract ZkAirdropTest is ZkTest {
     MockToken token;
     MembershipVerifier verifier;
     ZkAirdrop drop;
+    OwnerRoots roots;
     Actor relayer;
     Actor stranger;
     uint256 root;
@@ -24,11 +27,14 @@ contract ZkAirdropTest is ZkTest {
     function setUp() public {
         token = new MockToken(10 * AMOUNT);
         verifier = new MembershipVerifier();
-        drop = new ZkAirdrop(IERC20Minimal(address(token)), IMembershipVerifier(address(verifier)), ROUND, AMOUNT);
+        roots = new OwnerRoots();
+        drop = new ZkAirdrop(
+            IERC20Minimal(address(token)), IMembershipVerifier(address(verifier)), IRootSource(address(roots)), ROUND, AMOUNT
+        );
         token.transfer(address(drop), 10 * AMOUNT);
         (,,, uint256[4] memory pub) = AirdropProofA.get();
         root = pub[0];
-        drop.addRoot(root);
+        roots.addRoot(root);
         relayer = new Actor();
         stranger = new Actor();
     }
@@ -69,20 +75,20 @@ contract ZkAirdropTest is ZkTest {
     }
 
     function test_unknownRootReverts() public {
-        drop.revokeRoot(root);
+        roots.revokeRoot(root);
         expectRevert(relayer, address(drop), _claimA(BOB), ZkAirdrop.UnknownRoot.selector);
     }
 
     /// The same member's proof for round 1 is useless in round 2 (scope is a public signal).
     function test_otherRoundRejectsProof() public {
-        ZkAirdrop round2 =
-            new ZkAirdrop(IERC20Minimal(address(token)), IMembershipVerifier(address(verifier)), 2, AMOUNT);
-        round2.addRoot(root);
+        ZkAirdrop round2 = new ZkAirdrop(
+            IERC20Minimal(address(token)), IMembershipVerifier(address(verifier)), IRootSource(address(roots)), 2, AMOUNT
+        );
         expectRevert(relayer, address(round2), _claimA(BOB), ZkAirdrop.InvalidProof.selector);
     }
 
     function test_onlyOwnerManagesRoots() public {
-        expectRevert(stranger, address(drop), abi.encodeCall(ZkAirdrop.addRoot, (123)), ZkAirdrop.NotOwner.selector);
+        expectRevert(stranger, address(roots), abi.encodeCall(OwnerRoots.addRoot, (123)), OwnerRoots.NotOwner.selector);
     }
 
     function test_zeroRecipientReverts() public {

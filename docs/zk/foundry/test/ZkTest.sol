@@ -13,6 +13,9 @@ abstract contract ZkTest {
     error ExpectedRevert(bytes4 selector);
     error WrongRevert(bytes4 expected, bytes4 actual);
 
+    /// DSTest-style log: `forge test -vv` prints it, and so does evm/run-tests.mjs
+    event log_named_uint(string key, uint256 val);
+
     function assertEq(uint256 a, uint256 b) internal pure {
         if (a != b) revert AssertEq(a, b);
     }

@@ -52,6 +52,9 @@ for (const file of Object.values(out.contracts)) for (const c of Object.values(f
     errorNames[selector(sig)] = sig;
   }
 // solc reports function selectors but not error selectors: bytes4(keccak256(signature))
+function selectorFull(sig) {
+  return '0x' + Buffer.from(keccak_256(new TextEncoder().encode(sig))).toString('hex');
+}
 function selector(sig) {
   return '0x' + Buffer.from(keccak_256(new TextEncoder().encode(sig))).subarray(0, 4).toString('hex');
 }
@@ -71,7 +74,25 @@ async function deploy(vm, bytecode, caller = DEPLOYER) {
 }
 async function call(vm, to, data, caller = DEPLOYER) {
   const r = await vm.evm.runCall({ caller, to, data: hexToBytes(data), gasLimit: GAS, skipBalance: true });
-  return { ok: !r.execResult.exceptionError, ret: bytesToHex(r.execResult.returnValue), gas: r.execResult.executionGasUsed };
+  return {
+    ok: !r.execResult.exceptionError,
+    ret: bytesToHex(r.execResult.returnValue),
+    gas: r.execResult.executionGasUsed,
+    logs: decodeLogs(r.execResult.logs ?? []),
+  };
+}
+// DSTest-style `log_named_uint(string,uint256)` events, as printed by `forge test -vv`
+const LOG_NAMED_UINT = selectorFull('log_named_uint(string,uint256)');
+function decodeLogs(logs) {
+  const out = [];
+  for (const [, topics, data] of logs) {
+    if (!topics.length || bytesToHex(topics[0]) !== LOG_NAMED_UINT) continue;
+    const d = Buffer.from(data);
+    const val = BigInt('0x' + d.subarray(32, 64).toString('hex'));
+    const len = Number(BigInt('0x' + d.subarray(64, 96).toString('hex')));
+    out.push(`${d.subarray(96, 96 + len).toString('utf8')}: ${val}`);
+  }
+  return out;
 }
 const decodeRevert = (ret) => {
   const sel = ret.slice(0, 10);
@@ -79,6 +100,7 @@ const decodeRevert = (ret) => {
 };
 
 let passed = 0, failed = 0;
+const gasReport = [];
 for (const [file, contracts] of Object.entries(out.contracts)) {
   for (const [name, c] of Object.entries(contracts)) {
     const ids = c.evm.methodIdentifiers ?? {};
@@ -93,7 +115,11 @@ for (const [file, contracts] of Object.entries(out.contracts)) {
         if (!s.ok) { console.log(`  ✗ ${t}  (setUp reverted: ${decodeRevert(s.ret)})`); failed++; continue; }
       }
       const r = await call(vm, addr, '0x' + ids[t]);
-      if (r.ok) { passed++; console.log(`  ✓ ${t.replace('()', '')}  (gas: ${r.gas})`); }
+      if (r.ok) {
+        passed++;
+        console.log(`  ✓ ${t.replace('()', '')}  (gas: ${r.gas})`);
+        for (const l of r.logs) { console.log(`      ${l}`); gasReport.push(l); }
+      }
       else { failed++; console.log(`  ✗ ${t.replace('()', '')}  → ${decodeRevert(r.ret)}`); }
     }
   }
@@ -120,5 +146,6 @@ function check(cond, label, r) {
   if (cond) { passed++; console.log(`  ✓ ${label}`); } else { failed++; console.log(`  ✗ ${label} → ${decodeRevert(r.ret)}`); }
 }
 
+if (gasReport.length) console.log('\ngas report (measured with gasleft() around the call):\n  ' + gasReport.join('\n  '));
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);
