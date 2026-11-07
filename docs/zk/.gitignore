@@ -1,4 +1,4 @@
+node_modules
 circom/build/
-foundry/lib/
-foundry/proof/
-foundry/src/Groth16Verifier.sol
+foundry/out/
+foundry/cache/

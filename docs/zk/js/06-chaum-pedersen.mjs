@@ -48,4 +48,4 @@ console.log('✓ a tag from a different key is rejected');
 
 // Note: this DLEQ proof still reveals X, so it ties the nullifier to ONE known key. Hiding
 // *which* member acted needs a membership proof (Merkle path or ring) inside the ZK proof —
-// that is what Semaphore does in a SNARK circuit (see the guide, §8).
+// that is what Semaphore does in a SNARK circuit (see the guide, §10).

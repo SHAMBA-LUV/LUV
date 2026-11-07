@@ -20,7 +20,7 @@ interface IGroth16Verifier {
 /// ⚠ TEACHING CONTRACT — it deliberately shows the classic replay / front-running flaw:
 ///   the proof does not commit to msg.sender, so once one proof lands in the mempool anyone can
 ///   copy it. Real applications put the caller (or a nullifier + recipient) into the circuit's
-///   PUBLIC signals so a proof is only valid for one beneficiary and one use — see the guide §8.
+///   PUBLIC signals so a proof is only valid for one beneficiary and one use — see ZkAirdrop.sol and the guide §10.
 contract CubeGate {
     error WrongStatement();
     error InvalidProof();
