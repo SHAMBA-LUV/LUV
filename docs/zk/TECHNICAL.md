@@ -203,6 +203,12 @@ which dominates `join`.
 5. **Interop.** Deploy `KeyRegistry`, produce a proof with `js/08` bound to an EOA, and check
    that a front-runner's replay fails and the owner's registration succeeds.
 
+**Expected compiler warnings** (all harmless):
+- `ProofSystemsTest` exceeds the EIP-170 24,576-byte limit (24,957 B). It is a test contract
+  and is never deployed; forge and the runner both lift the limit for tests. Every deployable
+  contract fits. The largest is `CubeFflonkVerifier` at 13,658 B.
+- "Unused function parameter" in the snarkjs-generated PLONK and FFLONK verifiers.
+
 The tests use **no cheatcodes**. `Actor` contracts provide distinct `msg.sender`s,
 `expectRevert` does a low-level call plus a selector match, and `mustSucceed` bubbles up the
 real revert data. So the same files run under `forge test`. Exit code: non-zero on any
