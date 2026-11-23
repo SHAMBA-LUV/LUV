@@ -9,7 +9,7 @@
 
 ```bash
 node docs/zk/js/run-all.mjs                 # Node ≥ 18, zero dependencies: 8 protocol examples (~16 s)
-cd docs/zk && npm install && npm test       # + compile all .sol and run 50 tests on a real EVM
+cd docs/zk && npm install && npm test       # + compile all .sol and run 58 tests on a real EVM
 ```
 
 The JavaScript examples use only `BigInt` and `node:crypto`. The library
@@ -17,6 +17,9 @@ The JavaScript examples use only `BigInt` and `node:crypto`. The library
 before the examples run. The Solidity side (§9–10) has a full Circom → snarkjs → Solidity
 pipeline and a zero-dependency Foundry project whose tests also run on a plain EVM, so you
 don't need Foundry installed to check them.
+
+> **Companion docs:** [USAGE.md](zk/USAGE.md) (run, adapt, deploy checklist) ·
+> [TECHNICAL.md](zk/TECHNICAL.md) (specs, API, gas, internals).
 
 > ⚠ **Educational code.** It is correct but not constant-time and not audited. Never use it to
 > protect real value. Production libraries are listed in [§13](#13-complete-reference).
@@ -34,7 +37,7 @@ don't need Foundry installed to check them.
 7. [Commitments, hidden amounts and nullifiers](#7-commitments-hidden-amounts-and-nullifiers)
 8. [From programs to proofs: R1CS → QAP → zk-SNARK](#8-from-programs-to-proofs-r1cs--qap--zk-snark)
 9. [Building a real SNARK: Circom → snarkjs → Solidity → Foundry](#9-building-a-real-snark-circom--snarkjs--solidity--foundry)
-10. [Advanced use cases: anonymous airdrop, on-chain group, voting, key registry, private credentials](#10-advanced-use-cases)
+10. [Advanced use cases: anonymous airdrop, on-chain group, voting, key registry, private credentials, shielded pool](#10-advanced-use-cases)
 11. [Choosing a proof system](#11-choosing-a-proof-system)
 12. [Security checklist, including a live under-constrained circuit attack](#12-security-checklist)
 13. [Complete reference](#13-complete-reference)
@@ -458,7 +461,7 @@ into a Σ-protocol challenge (`KeyRegistry`).
 
 ## 10. Advanced use cases
 
-Five production patterns are implemented, proven and tested in [`docs/zk/foundry/`](zk/foundry/):
+Six production patterns are implemented, proven and tested in [`docs/zk/foundry/`](zk/foundry/):
 
 | contract | ZK technique | trusted setup | what it gives you |
 |---|---|---|---|
@@ -467,6 +470,7 @@ Five production patterns are implemented, proven and tested in [`docs/zk/foundry
 | [`ZkVote.sol`](zk/foundry/src/ZkVote.sol) | the **same** circuit, a different scope | reuses the above | anonymous one-member-one-vote polls |
 | [`KeyRegistry.sol`](zk/foundry/src/KeyRegistry.sol) + [`BN254.sol`](zk/foundry/src/BN254.sol) | Σ-protocol (Schnorr) on the BN254 precompiles | **none** | proof of key possession, bound to the sender (stops rogue keys) |
 | [`CredentialGate.sol`](zk/foundry/src/CredentialGate.sol) | **EdDSA verified in-circuit** + range proof | yes (circuit) | "an issuer says I'm ≥ 18", with no birth date revealed |
+| [`ShieldedPool.sol`](zk/foundry/src/ShieldedPool.sol) | membership circuit + on-chain tree, reused as notes | reuses the above | fixed-denomination private transfers: deposits are joins, withdrawals are claims |
 
 Plus a deliberately broken one, [`AgeGate.sol`](zk/foundry/src/AgeGate.sol), whose circuit is
 attacked in [§12.1](#121-anatomy-of-an-under-constrained-circuit-attack).
@@ -480,10 +484,11 @@ test/ZkVote.t.sol:ZkVoteTest                    6 passed   (vote incl. proof + t
 test/KeyRegistry.t.sol:KeyRegistryTest          7 passed   (register from an EOA ≈ 93k gas)
 test/Credential.t.sol:CredentialTest            6 passed   (Groth16 verify, 5 public inputs ≈ 225k gas)
 test/UnderConstrained.t.sol:UnderConstrainedTest 2 passed  (⚠ the forged proof IS accepted — §12.1)
+test/ShieldedPool.t.sol:ShieldedPoolTest        8 passed   (deposit ≈ 389k gas · private withdraw ≈ 276k gas)
 test/ProofSystems.t.sol:ProofSystemsTest        4 passed   (Groth16 198k · PLONK 271k · FFLONK 193k)
 test/CubeGate.t.sol:CubeGateTest                6 passed
 interop: JS prover → KeyRegistry                2 passed
-50 passed, 0 failed
+58 passed, 0 failed
 ```
 
 ### 10.1 One circuit, many applications: `membership.circom`
@@ -709,7 +714,56 @@ What the tests and `build.sh` show:
 - Groth16 verification with 5 public inputs costs **≈ 225k gas**. The EdDSA check costs
   nothing extra on-chain, because it lives inside the proof.
 
-### 10.7 More advanced patterns (with reference implementations)
+### 10.7 Private transfers: `ShieldedPool.sol`
+
+Source: [`foundry/src/ShieldedPool.sol`](zk/foundry/src/ShieldedPool.sol) ·
+tests: [`foundry/test/ShieldedPool.t.sol`](zk/foundry/test/ShieldedPool.t.sol)
+
+Once you have §10.1–10.3, private payments need **no new cryptography**. A shielded pool is
+the airdrop with money flowing in: a **deposit** pays a fixed amount and inserts
+`Poseidon(secret)` into the pool's own `ZkGroup`. A **withdrawal** is a membership proof
+(`message = recipient`, `scope = pool id`) that pays `denomination` to any address. The same
+circuit, verifier and ceremony are reused unchanged.
+
+```solidity
+function deposit(uint256 commitment) external {
+    if (!token.transferFrom(msg.sender, address(this), denomination)) revert TransferFailed();
+    tree.join(commitment);                       // the pool is its tree's registrar
+}
+
+function withdraw(uint256 root, uint256 nullifierHash, address recipient, …proof) external {
+    if (!tree.isKnownRoot(root)) revert UnknownRoot();
+    if (nullifierUsed[nullifierHash]) revert NullifierUsed();
+    uint256[4] memory pub = [root, nullifierHash, uint256(uint160(recipient)), scope];
+    if (!verifier.verifyProof(a, b, c, pub)) revert InvalidProof();
+    nullifierUsed[nullifierHash] = true;
+    token.transfer(recipient, denomination);
+}
+```
+
+The tests have eight separate depositor addresses pay in the eight commitments from
+`make-inputs.mjs`. The pool's on-chain root then equals the root inside the existing proofs,
+and those proofs withdraw to `0xB0B` and `0xCAFE`, addresses with no on-chain link to any
+depositor. Double withdrawals, redirected withdrawals and proofs against another pool's tree
+all revert. A deposit costs ≈ 389k gas, and a relayed withdrawal ≈ 276k.
+
+What makes it private, and what doesn't:
+- **The anonymity set** is every deposit made before the root you prove against. Few
+  deposits means little privacy.
+- **Fixed denominations** matter. A unique amount links a deposit to its withdrawal by value
+  alone.
+- **Timing and gas** leak too. A withdrawal sent from an address funded by the depositor
+  undoes everything, which is why the pool is **relayable**: anyone can submit, but only the
+  proven `recipient` is paid.
+
+> ⚠ Unrestricted mixers have been used for laundering and have been sanctioned. Production
+> designs add **compliance at the protocol level**.
+> [Privacy Pools](https://github.com/0xbow-io/privacy-pools-core) has withdrawers also prove
+> membership in an *association set* that excludes flagged deposits. That is a second
+> membership proof, the same building block again. Get legal review before deploying anything
+> that moves value privately.
+
+### 10.8 More advanced patterns (with reference implementations)
 
 These are beyond the scope of runnable code here, but each builds on the pieces above.
 
@@ -719,7 +773,7 @@ These are beyond the scope of runnable code here, but each builds on the pieces 
 | **ZK coprocessors** | prove a computation over historical chain data (e.g. "this address held ≥ X LUV at block N") and consume the result in a contract | membership proofs (storage tries) | [Axiom](https://github.com/axiom-crypto/axiom-eth) (archived), [Brevis](https://github.com/brevis-network/brevis-sdk) |
 | **ZK light clients / bridges** | prove another chain's consensus in a SNARK, so bridges trust math instead of a multisig. Relevant to LUV's multichain doctrine | zkVMs + Groth16 wrap | [SP1 Helios](https://github.com/succinctlabs/sp1-helios) |
 | **Proof of reserves / solvency** | commit to all balances in a Merkle-sum tree and prove each user's inclusion plus total liabilities ≤ assets, without publishing balances | §7 commitments, §10.1 Merkle proofs, range checks | [Summa](https://github.com/summa-dev/summa-solvency) |
-| **Private payments with compliance** | shielded pools where withdrawers prove membership in an *association set* that excludes illicit deposits | §10.1 membership + nullifiers | [Privacy Pools](https://github.com/0xbow-io/privacy-pools-core), [Zcash spec](https://zips.z.cash/protocol/protocol.pdf) |
+| **Private payments with compliance** | shielded pools (§10.7) where withdrawers *also* prove membership in an *association set* that excludes illicit deposits | §10.1 + §10.7, plus a second membership proof | [Privacy Pools](https://github.com/0xbow-io/privacy-pools-core), [Zcash spec](https://zips.z.cash/protocol/protocol.pdf) |
 | **Credentials from the real world** | prove facts about a passport, national ID, email (DKIM) or TLS session without revealing it ("over 18", "works at X") | signature verification in-circuit | [ZK Email](https://github.com/zkemail/zk-email-verify), [Anon Aadhaar](https://github.com/anon-aadhaar/anon-aadhaar), [ZKPassport](https://github.com/zkpassport) |
 | **zkML** | prove a model produced an output (or that a hidden model meets a benchmark) | arithmetised neural nets, lookups | [EZKL](https://github.com/zkonduit/ezkl) |
 | **Recursion / aggregation** | verify proofs inside proofs: many claims settle as one ~200k-gas verification | Halo / PLONK recursion, Groth16 wrap | [Halo2](https://github.com/zcash/halo2), [eprint 2019/1021](https://eprint.iacr.org/2019/1021) |
@@ -876,6 +930,9 @@ Most real-world ZK failures come from the bug classes below. The
 | [`docs/zk/js/08-schnorr-bn254.mjs`](zk/js/08-schnorr-bn254.mjs) | off-chain prover for `KeyRegistry`; the challenge matches the contract byte for byte |
 | [`docs/zk/js/run-all.mjs`](zk/js/run-all.mjs) | runs every JS example; fails loudly |
 | [`docs/zk/README.md`](zk/README.md) | quick start and folder map |
+| [`docs/zk/USAGE.md`](zk/USAGE.md) | how to run, rebuild, add a circuit, app recipes, LUV integration, mainnet checklist, troubleshooting |
+| [`docs/zk/TECHNICAL.md`](zk/TECHNICAL.md) | architecture, signal layouts, contract API, measured gas, harness internals, security model |
+| [`docs/zk/scripts/package.sh`](zk/scripts/package.sh) | builds and self-tests `complete zk.zip` (`npm run package`) |
 | [`docs/zk/package.json`](zk/package.json) | `npm run examples` · `npm run build` · `npm run test:evm` · `npm test` |
 | **circuits** | |
 | [`docs/zk/circom/cube.circom`](zk/circom/cube.circom) | the running example as a circuit (2 constraints) |
@@ -891,6 +948,7 @@ Most real-world ZK failures come from the bug classes below. The
 | [`ZkAirdrop.sol`](zk/foundry/src/ZkAirdrop.sol) | anonymous, relayable, front-run-proof one-per-member claims |
 | [`ZkGroup.sol`](zk/foundry/src/ZkGroup.sol) · [`OwnerRoots.sol`](zk/foundry/src/OwnerRoots.sol) · [`interfaces/IRootSource.sol`](zk/foundry/src/interfaces/IRootSource.sol) | the two root sources: on-chain Poseidon tree vs operator-published roots |
 | [`CredentialGate.sol`](zk/foundry/src/CredentialGate.sol) | private issuer-backed attribute check (age ≥ 18) |
+| [`ShieldedPool.sol`](zk/foundry/src/ShieldedPool.sol) | fixed-denomination private transfers on the membership circuit + `ZkGroup` |
 | [`AgeGate.sol`](zk/foundry/src/AgeGate.sol) | ⚠ a correct contract on a broken circuit, the §12.1 victim |
 | [`generated/PoseidonT3.sol`](zk/foundry/src/generated/PoseidonT3.sol) | Poseidon(2) bytecode + deployer, bit-identical to the circuit's hash |
 | [`ZkVote.sol`](zk/foundry/src/ZkVote.sol) | anonymous voting on the same circuit and verifier |
@@ -900,7 +958,7 @@ Most real-world ZK failures come from the bug classes below. The
 | [`verifiers/`](zk/foundry/src/verifiers/) | snarkjs-generated verifiers: Groth16 (Cube, Membership, Credential, AgeBuggy) + PLONK and FFLONK (Cube). **Dev ceremony, never deploy** |
 | **tests** (`docs/zk/foundry/test`) | |
 | [`ZkTest.sol`](zk/foundry/test/ZkTest.sol) | cheatcode-free test base: `Actor`, `expectRevert`, `MockToken` |
-| [`CubeGate.t.sol`](zk/foundry/test/CubeGate.t.sol) · [`ZkAirdrop.t.sol`](zk/foundry/test/ZkAirdrop.t.sol) · [`ZkGroup.t.sol`](zk/foundry/test/ZkGroup.t.sol) · [`ZkVote.t.sol`](zk/foundry/test/ZkVote.t.sol) · [`KeyRegistry.t.sol`](zk/foundry/test/KeyRegistry.t.sol) · [`Credential.t.sol`](zk/foundry/test/Credential.t.sol) · [`UnderConstrained.t.sol`](zk/foundry/test/UnderConstrained.t.sol) · [`ProofSystems.t.sol`](zk/foundry/test/ProofSystems.t.sol) | valid proofs, tampering, replay, front-running, double use, scope separation, on-chain/off-chain root equality, the forged-proof attack, credential binding, and a three-system gas comparison |
+| [`CubeGate.t.sol`](zk/foundry/test/CubeGate.t.sol) · [`ZkAirdrop.t.sol`](zk/foundry/test/ZkAirdrop.t.sol) · [`ZkGroup.t.sol`](zk/foundry/test/ZkGroup.t.sol) · [`ZkVote.t.sol`](zk/foundry/test/ZkVote.t.sol) · [`KeyRegistry.t.sol`](zk/foundry/test/KeyRegistry.t.sol) · [`Credential.t.sol`](zk/foundry/test/Credential.t.sol) · [`UnderConstrained.t.sol`](zk/foundry/test/UnderConstrained.t.sol) · [`ProofSystems.t.sol`](zk/foundry/test/ProofSystems.t.sol) · [`ShieldedPool.t.sol`](zk/foundry/test/ShieldedPool.t.sol) | valid proofs, tampering, replay, front-running, double use, scope separation, on-chain/off-chain root equality, the forged-proof attack, credential binding, and a three-system gas comparison |
 | [`fixtures/`](zk/foundry/test/fixtures/) | generated real proofs (Groth16, PLONK, FFLONK) and `ZkConstants.sol` (group members, issuer key) |
 | [`docs/zk/evm/run-tests.mjs`](zk/evm/run-tests.mjs) | forge-style runner on ethereumjs, plus a JS ↔ Solidity interop check |
 | [`contracts/ShambaLuvAirdrop.sol`](../contracts/ShambaLuvAirdrop.sol) | the signature-gated airdrop that §10.2 contrasts with `ZkAirdrop` |

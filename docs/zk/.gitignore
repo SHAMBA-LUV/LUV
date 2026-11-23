@@ -2,3 +2,4 @@ node_modules
 circom/build/
 foundry/out/
 foundry/cache/
+dist/
