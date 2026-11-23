@@ -2,10 +2,10 @@
 pragma solidity ^0.8.24;
 
 import {TwTest} from "./TwTest.sol";
-import {MockGem, MockFeed} from "./GoldMocks.sol";
-import {BasketGold} from "../contracts/gold/BasketGold.sol";
-import {PegSpotter} from "../contracts/gold/PegSpotter.sol";
-import {GoldVault} from "../contracts/gold/GoldVault.sol";
+import {MockGem, MockFeed, RevertingSpotter} from "./GoldMocks.sol";
+import {BasketGold} from "../src/BasketGold.sol";
+import {PegSpotter} from "../src/PegSpotter.sol";
+import {GoldVault} from "../src/GoldVault.sol";
 
 contract GoldVaultTest is TwTest {
     uint256 constant WAD = 1e18;
@@ -43,12 +43,12 @@ contract GoldVaultTest is TwTest {
         bxau.rely(address(vault));
         bxau.deny(address(this));
 
-        vault.init(PAXG, address(paxg), 18);
-        vault.init(XAUT, address(xaut), 6);
+        vault.init(PAXG, address(paxg));
+        vault.init(XAUT, address(xaut));
         bytes32[2] memory ids = [PAXG, XAUT];
         for (uint256 k; k < 2; ++k) {
+            vault.file(ids[k], "chop", 104e16); // 4%   (chop ≤ mat is enforced: set it first)
             vault.file(ids[k], "mat", 110e25); // 110%
-            vault.file(ids[k], "chop", 104e16); // 4%
             vault.file(ids[k], "line", 1000e18);
             vault.file(ids[k], "dust", 1e18);
             vault.file(ids[k], "floor", 95e16); // no new debt below 0.95 oz/token
@@ -295,8 +295,9 @@ contract GoldVaultTest is TwTest {
         vault.free(XAUT, 10e6);
 
         vault.thaw();
-        assertEq(vault.fix(PAXG), 0.5e18);
-        assertEq(vault.fix(XAUT), 0.5e18);
+        uint256[] memory q = vault.quoteCash(10e18);
+        assertEq(q[0], 5e18);
+        assertEq(q[1], 5e6);
 
         uint256 p0 = paxg.balanceOf(alice);
         uint256 x0 = xaut.balanceOf(alice);
@@ -310,6 +311,132 @@ contract GoldVaultTest is TwTest {
         assertEq(bxau.totalSupply(), 0);
         assertEq(vault.pool(PAXG), 0);
         assertEq(vault.pool(XAUT), 0);
+    }
+
+    // ─────────────────────────── review fixes ───────────────────────────
+
+    function testInitReadsDecimalsFromToken() public {
+        (, uint256 scale,,,,,,,,,) = vault.ilks(XAUT);
+        assertEq(scale, 1e12);
+        vm.expectRevert(GoldVault.BadParam.selector);
+        vault.init("EOA-A", address(0xBEEF)); // no code, no decimals()
+    }
+
+    function testChopCannotExceedMat() public {
+        vm.expectRevert(GoldVault.BadParam.selector);
+        vault.file(PAXG, "chop", 111e16); // 111% penalty > 110% ratio
+        vm.expectRevert(GoldVault.BadParam.selector);
+        vault.file(PAXG, "mat", 103e25); // 103% ratio < 104% penalty
+    }
+
+    function testDutyIsCapped() public {
+        uint256 maxDuty = vault.MAX_DUTY();
+        vm.expectRevert(GoldVault.BadParam.selector);
+        vault.file(PAXG, "duty", maxDuty + 1);
+        vault.file(PAXG, "duty", maxDuty); // ≈100% APY is the ceiling
+        _open(alice, XAUT, 20e6, 10e18);
+        vm.warp(block.timestamp + 10 * 365 days);
+        vault.drip(PAXG); // still no overflow a decade later
+        vault.cage();
+    }
+
+    /// Collateral worth more than the debt but less than debt·chop: the keeper repays the
+    /// whole debt and takes everything — the protocol books no bad debt.
+    function testBandLiquidationBooksNoBadDebt() public {
+        _open(alice, PAXG, 12e18, 10e18); // ink 11.9976
+        _open(bob, XAUT, 100e6, 50e18);
+        paxgUsd.set(3400e8); // 0.85 → 10.198 oz: > 10 debt, < 10.4 = debt·chop
+        vm.prank(bob);
+        (uint256 wad, uint256 gemOut) = vault.liquidate(PAXG, alice, type(uint256).max);
+        assertEq(wad, 10e18);
+        assertEq(gemOut, 11.9976e18);
+        assertEq(vault.sin(), 0);
+        assertEq(_art(PAXG, alice), 0);
+        _checkBooks();
+    }
+
+    function testLiquidationRespectsMaxWad() public {
+        vault.file(PAXG, "dust", 0); // isolate the max check from the dust rule
+        _open(alice, PAXG, 12e18, 10e18);
+        _open(bob, XAUT, 100e6, 50e18);
+        paxgUsd.set(3400e8);
+        vm.prank(bob); // 9.9 oz at a 4% discount needs more ink than exists → must repay all 10
+        vm.expectRevert(GoldVault.OverMax.selector);
+        vault.liquidate(PAXG, alice, 9.9e18);
+    }
+
+    function testViewsIncludeUndrippedFees() public {
+        vault.file(XAUT, "duty", DUTY_5PCT);
+        _open(alice, XAUT, 11.5e6, 10e18); // needs 11 oz → safe
+        _open(bob, XAUT, 100e6, 50e18);
+        vm.warp(block.timestamp + 365 days); // nobody drips
+        assertApproxEq(vault.owed(XAUT, alice), 10.5e18, 1e12);
+        assertFalse(vault.isSafe(XAUT, alice)); // 10.5 · 1.1 = 11.55 > 11.5
+        vm.prank(bob);
+        vault.liquidate(XAUT, alice, type(uint256).max); // and liquidate agrees
+        _checkBooks();
+    }
+
+    function testCageSurvivesRevertingSpotterAtLastGoodPrice() public {
+        paxgUsd.set(3920e8); // 0.98 oz / PAXG
+        _open(alice, PAXG, 12e18, 10e18);
+        vault.fileSpotter(address(new RevertingSpotter()));
+        vault.cage();
+        assertEq(vault.tag(PAXG), WAD * WAD / 0.98e18);
+        assertEq(vault.tag(XAUT), WAD); // never priced, never carried debt
+    }
+
+    function testThawWithNoSupplyLetsGovSweepFeeCollateral() public {
+        vault.file(XAUT, "duty", DUTY_5PCT);
+        vault.file(XAUT, "dust", 0);
+        _open(alice, XAUT, 20e6, 10e18);
+        vm.warp(block.timestamp + 365 days);
+        vm.prank(alice);
+        vault.wipe(XAUT, 10e18); // burns the whole supply; ~0.5 oz of fees remain as art
+        assertEq(bxau.totalSupply(), 0);
+
+        vault.cage();
+        vault.skim(XAUT, alice);
+        assertGt(vault.pool(XAUT), 0);
+        vault.thaw(); // no longer bricked by zero supply
+
+        vm.prank(alice);
+        vm.expectRevert(GoldVault.NotAuthorized.selector);
+        vault.sweep(XAUT, alice);
+        uint256 pooled = vault.pool(XAUT);
+        vault.sweep(XAUT, treasury);
+        assertEq(xaut.balanceOf(treasury) * 1e12, pooled);
+        assertEq(vault.pool(XAUT), 0);
+    }
+
+    function testCashDustIsNeverLost() public {
+        _open(alice, PAXG, 12e18, 10e18);
+        _open(bob, XAUT, 20e6, 10e18);
+        vault.cage();
+        vault.skim(PAXG, alice);
+        vault.skim(XAUT, bob);
+        vault.thaw();
+
+        vm.prank(alice); // too small to buy one wei of anything
+        vm.expectRevert(GoldVault.NothingToCash.selector);
+        vault.cash(1);
+
+        uint256 x0 = xaut.balanceOf(alice) + xaut.balanceOf(bob);
+        vm.prank(alice); // buys PAXG wei but rounds to 0 XAUT: that XAUT stays pooled …
+        vault.cash(1e12);
+        vm.prank(alice);
+        vault.cash(10e18 - 1e12);
+        vm.prank(bob); // … and the last redeemer collects every remaining unit
+        vault.cash(10e18);
+        assertEq(xaut.balanceOf(alice) + xaut.balanceOf(bob) - x0, 10e6);
+        assertEq(vault.pool(PAXG), 0);
+        assertEq(vault.pool(XAUT), 0);
+        assertEq(bxau.totalSupply(), 0);
+    }
+
+    function testSpotterRejectsFeedWithoutCode() public {
+        vm.expectRevert(PegSpotter.BadFeed.selector);
+        spotter.fileSrc(PAXG, address(0xBEEF), 1 hours, WAD);
     }
 
     // ───────────────────────────────── auth ────────────────────────────────

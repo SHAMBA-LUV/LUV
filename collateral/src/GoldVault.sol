@@ -11,10 +11,10 @@ pragma solidity ^0.8.24;
  *   Vat  (ilks, urns, rate, Art, line, Line, dust)  → this contract's storage
  *   GemJoin / DaiJoin                                → lock / free / draw / wipe
  *   Jug  (duty, rho, drip)                           → drip()
- *   Spotter (mat, spot)                              → PegSpotter + mat here
+ *   Spotter (mat, spot, poke)                        → PegSpotter + mat + poke() here
  *   Dog/Clipper (chop, bark)                         → liquidate(): fixed-discount, partial-OK
  *   Vow  (surplus, sin, heal, flap)                  → surplus / sin / heal() / flap()
- *   End  (cage, skim, thaw/flow, cash)               → cage() / skim() / thaw() / cash()
+ *   End  (cage, skim, thaw, cash)                    → cage() / skim() / thaw() / cash()
  *
  * Units (Maker's): WAD = 1e18, RAY = 1e27, RAD = WAD·RAY.
  *   ink    collateral, normalised to 18 decimals                     (WAD)
@@ -22,13 +22,17 @@ pragma solidity ^0.8.24;
  *   price  oz of gold per whole collateral token, from PegSpotter    (WAD)
  *   safe   ⇔  ink · price · RAY / mat  ≥  art · rate
  *
+ * Invariant (checked by the tests after every flow):
+ *   debt + sin == bXAU.totalSupply · RAY + surplus
+ *
  * Token handling: collateral received is measured by balance delta (PAXG charges a transfer
  * fee); transfers tolerate tokens that return no bool (XAUT is a Tether-style token).
  *
- * Self-contained (zero imports), Foundry tested in test/GoldVault.t.sol.
+ * Self-contained (zero imports). Foundry tests: test/GoldVault.t.sol.
  */
 interface IGem {
     function balanceOf(address) external view returns (uint256);
+    function decimals() external view returns (uint8);
 }
 
 interface IBasketGold {
@@ -44,6 +48,9 @@ interface ISpotter {
 contract GoldVault {
     uint256 internal constant WAD = 1e18;
     uint256 internal constant RAY = 1e27;
+    /// Upper bound on the stability fee: ln(2)/yr per second ≈ 100% APY. Keeps rpow and the
+    /// fee accrual far from overflow so one bad `file` can never brick drip() or cage().
+    uint256 public constant MAX_DUTY = 1000000021979553151239153027;
 
     struct Ilk {
         address gem; // collateral token
@@ -52,8 +59,8 @@ contract GoldVault {
         uint256 rate; // accumulated stability fee      [RAY]
         uint256 rho; // last drip
         uint256 duty; // per-second fee multiplier       [RAY]
-        uint256 mat; // liquidation ratio               [RAY]  e.g. 1.10e27 = 110%
-        uint256 chop; // liquidation penalty            [WAD]  e.g. 1.04e18 = 4%
+        uint256 mat; // liquidation ratio               [RAY]  e.g. 1.20e27 = 120%
+        uint256 chop; // liquidation penalty            [WAD]  e.g. 1.05e18 = 5%
         uint256 line; // ilk debt ceiling               [WAD oz]
         uint256 dust; // min debt per urn               [WAD oz]
         uint256 floor; // min peg price to draw          [WAD oz/token] depeg guard
@@ -70,6 +77,7 @@ contract GoldVault {
     mapping(address => uint256) public wards;
     mapping(bytes32 => Ilk) public ilks;
     mapping(bytes32 => mapping(address => Urn)) public urns;
+    mapping(bytes32 => uint256) public lastPrice; // last good oracle price  [WAD]
     bytes32[] public ilkList;
 
     uint256 public Line; // global debt ceiling   [WAD oz]
@@ -82,7 +90,6 @@ contract GoldVault {
     bool public thawed;
     mapping(bytes32 => uint256) public tag; // gem WAD per oz at cage
     mapping(bytes32 => uint256) public pool; // gem WAD held for bXAU holders
-    mapping(bytes32 => uint256) public fix; // gem WAD per bXAU at thaw
 
     uint256 private _lock = 1;
 
@@ -92,6 +99,7 @@ contract GoldVault {
     event File(bytes32 indexed ilk, bytes32 indexed what, uint256 data);
     event FileGlobal(bytes32 indexed what, uint256 data);
     event FileSpotter(address spotter);
+    event Poke(bytes32 indexed ilk, uint256 price);
     event Drip(bytes32 indexed ilk, uint256 rate, uint256 fee);
     event Lock(bytes32 indexed ilk, address indexed usr, uint256 amount);
     event Free(bytes32 indexed ilk, address indexed usr, uint256 amount);
@@ -106,6 +114,7 @@ contract GoldVault {
     event Skim(bytes32 indexed ilk, address indexed usr, uint256 taken, uint256 shortfall);
     event Thaw(uint256 supply);
     event Cash(address indexed usr, uint256 wad);
+    event Sweep(bytes32 indexed ilk, address indexed to, uint256 amount);
 
     error NotAuthorized();
     error NotLive();
@@ -121,11 +130,13 @@ contract GoldVault {
     error CeilingExceeded();
     error Dusty();
     error Insufficient();
+    error OverMax();
     error TransferFailed();
     error AlreadyThawed();
     error NotThawed();
     error Unskimmed();
-    error NoSupply();
+    error NothingToCash();
+    error HoldersRemain();
 
     modifier auth() {
         if (wards[msg.sender] != 1) revert NotAuthorized();
@@ -174,11 +185,18 @@ contract GoldVault {
         emit FileGlobal("Line", wad);
     }
 
-    /// Register a gold-peg collateral. Defaults: no fee, 150% mat, 13% chop, zero ceiling
-    /// (no borrowing until governance files a line).
-    function init(bytes32 ilk, address gem, uint8 decimals) external auth whenLive {
+    /// Register a gold-peg collateral; decimals are read from the token itself.
+    /// Defaults: no fee, 150% mat, 13% chop, zero ceiling (no borrowing until a line is filed).
+    function init(bytes32 ilk, address gem) external auth whenLive {
         if (ilks[ilk].rate != 0) revert IlkExists();
-        if (gem == address(0) || decimals > 18) revert BadParam();
+        if (gem == address(0) || gem.code.length == 0) revert BadParam();
+        uint8 decimals;
+        try IGem(gem).decimals() returns (uint8 d) {
+            decimals = d;
+        } catch {
+            revert BadParam();
+        }
+        if (decimals > 18) revert BadParam();
         Ilk storage i = ilks[ilk];
         i.gem = gem;
         i.scale = 10 ** (18 - decimals);
@@ -191,18 +209,20 @@ contract GoldVault {
         emit Init(ilk, gem, decimals);
     }
 
+    /// Risk parameters. The penalty may never exceed the liquidation ratio (chop ≤ mat):
+    /// a keeper's discount must fit inside the over-collateralisation buffer.
     function file(bytes32 ilk, bytes32 what, uint256 data) external auth whenLive {
         Ilk storage i = ilks[ilk];
         if (i.rate == 0) revert UnknownIlk();
         if (what == "duty") {
-            if (data < RAY) revert BadParam();
+            if (data < RAY || data > MAX_DUTY) revert BadParam();
             _drip(ilk); // settle at the old rate first
             i.duty = data;
         } else if (what == "mat") {
-            if (data < RAY) revert BadParam();
+            if (data < RAY || data < i.chop * 1e9) revert BadParam();
             i.mat = data;
         } else if (what == "chop") {
-            if (data < WAD) revert BadParam();
+            if (data < WAD || data * 1e9 > i.mat) revert BadParam();
             i.chop = data;
         } else if (what == "line") {
             i.line = data;
@@ -238,6 +258,34 @@ contract GoldVault {
         return next;
     }
 
+    // ────────────────────────────────── oracle ───────────────────────────────
+
+    /// Record the current oracle price (keepers call this so cage() has a fresh fallback).
+    function poke(bytes32 ilk) external whenLive returns (uint256) {
+        if (ilks[ilk].rate == 0) revert UnknownIlk();
+        return _price(ilk);
+    }
+
+    /// Read the oracle, revert if it is down, remember the price as last-known-good.
+    function _price(bytes32 ilk) internal returns (uint256 price) {
+        bool ok;
+        (price, ok) = _peek(ilk);
+        if (!ok) revert OracleDown();
+        if (lastPrice[ilk] != price) {
+            lastPrice[ilk] = price;
+            emit Poke(ilk, price);
+        }
+    }
+
+    /// Never reverts: a broken spotter reads as "oracle down".
+    function _peek(bytes32 ilk) internal view returns (uint256 price, bool ok) {
+        try spotter.peek(ilk) returns (uint256 p, bool o) {
+            return (p, o && p != 0);
+        } catch {
+            return (0, false);
+        }
+    }
+
     // ──────────────────────────────── positions ──────────────────────────────
 
     /// Deposit `amount` of the ilk's gem (native decimals). Fee-on-transfer safe.
@@ -263,8 +311,7 @@ contract GoldVault {
         if (u.art != 0) {
             if (live != 1) revert Unskimmed();
             uint256 rate = _drip(ilk);
-            (uint256 price, bool ok) = spotter.peek(ilk);
-            if (!ok) revert OracleDown();
+            uint256 price = _price(ilk);
             if (!_safe(u.ink, u.art, rate, price, i.mat)) revert NotSafe();
         }
         _safeTransfer(i.gem, msg.sender, amount);
@@ -276,8 +323,7 @@ contract GoldVault {
         Ilk storage i = ilks[ilk];
         if (i.rate == 0) revert UnknownIlk();
         uint256 rate = _drip(ilk);
-        (uint256 price, bool ok) = spotter.peek(ilk);
-        if (!ok) revert OracleDown();
+        uint256 price = _price(ilk);
         if (price < i.floor) revert Depegged();
 
         uint256 dart = _divUp(wad * RAY, rate);
@@ -334,8 +380,14 @@ contract GoldVault {
 
     /// Repay up to `maxWad` of an unsafe urn's debt and receive its collateral at a `chop`
     /// discount: every oz of bXAU burned buys chop oz worth of gem. Partial liquidations are
-    /// allowed as long as the remainder is not dust. If the collateral runs out first, the
-    /// residual debt is written off to `sin`.
+    /// allowed as long as the remainder is not dust.
+    ///
+    /// When the discount would need more collateral than the urn holds:
+    ///   · collateral worth ≥ the debt  → the keeper repays the WHOLE debt for all of it
+    ///     (their bonus shrinks to value/debt; the system takes no loss);
+    ///   · collateral worth < the debt  → the keeper repays value/chop for all of it and the
+    ///     residual is written off to `sin` (true insolvency only).
+    /// Reverts OverMax if that requires burning more than `maxWad`.
     function liquidate(bytes32 ilk, address usr, uint256 maxWad)
         external
         nonReentrant
@@ -345,8 +397,7 @@ contract GoldVault {
         Ilk storage i = ilks[ilk];
         if (i.rate == 0) revert UnknownIlk();
         uint256 rate = _drip(ilk);
-        (uint256 price, bool ok) = spotter.peek(ilk);
-        if (!ok) revert OracleDown();
+        uint256 price = _price(ilk);
         Urn storage u = urns[ilk][usr];
         if (u.art == 0 || _safe(u.ink, u.art, rate, price, i.mat)) revert Safe();
 
@@ -357,8 +408,9 @@ contract GoldVault {
         uint256 seize = wad * i.chop / price; // gem WAD
         if (seize >= u.ink) {
             seize = u.ink;
-            wad = _divUp(seize * price, i.chop);
-            if (wad > tab) wad = tab;
+            uint256 value = seize * price / WAD; // oz
+            wad = value >= tab ? tab : _divUp(value * WAD, i.chop);
+            if (wad > maxWad) revert OverMax();
         }
         gemOut = seize / i.scale;
         seize = gemOut * i.scale;
@@ -405,15 +457,17 @@ contract GoldVault {
 
     // ─────────────────────────────── shutdown (End) ──────────────────────────
 
-    /// Freeze the system at current peg prices. Ilks whose oracle is down are tagged at par
-    /// (1 token per oz), i.e. "from existing pegs".
+    /// Freeze the system. Each ilk is tagged at its current oracle price, or — if the oracle
+    /// is down — at the last good price the vault saw (every ilk that ever carried debt has
+    /// one, since draw requires a price). Cannot be blocked by a reverting spotter.
     function cage() external auth whenLive {
         uint256 n = ilkList.length;
         for (uint256 k; k < n; ++k) {
             bytes32 ilk = ilkList[k];
             _drip(ilk);
-            (uint256 price, bool ok) = spotter.peek(ilk);
-            tag[ilk] = ok ? WAD * WAD / price : WAD;
+            (uint256 price, bool ok) = _peek(ilk);
+            if (!ok) price = lastPrice[ilk];
+            tag[ilk] = price == 0 ? WAD : WAD * WAD / price;
         }
         live = 0;
         emit Cage();
@@ -440,7 +494,7 @@ contract GoldVault {
         emit Skim(ilk, usr, take, owe - take);
     }
 
-    /// Once every urn has been skimmed, fix the per-bXAU redemption basket.
+    /// Once every urn has been skimmed, open redemptions.
     function thaw() external {
         if (live == 1) revert StillLive();
         if (thawed) revert AlreadyThawed();
@@ -448,30 +502,47 @@ contract GoldVault {
         for (uint256 k; k < n; ++k) {
             if (ilks[ilkList[k]].Art != 0) revert Unskimmed();
         }
-        uint256 supply = bxau.totalSupply();
-        if (supply == 0) revert NoSupply();
-        for (uint256 k; k < n; ++k) {
-            bytes32 ilk = ilkList[k];
-            fix[ilk] = pool[ilk] * WAD / supply;
-        }
         thawed = true;
-        emit Thaw(supply);
+        emit Thaw(bxau.totalSupply());
     }
 
-    /// Burn `wad` bXAU for its pro-rata share of every peg in the basket.
+    /// Burn `wad` bXAU for its pro-rata share of what remains of every peg in the pool.
+    /// Shares are taken against the REMAINING pool and supply, so rounding dust is never lost:
+    /// it stays for later holders and the last redeemer receives everything left.
     function cash(uint256 wad) external nonReentrant {
         if (!thawed) revert NotThawed();
-        bxau.burn(msg.sender, wad);
+        uint256 supply = bxau.totalSupply();
+        if (wad == 0 || wad > supply) revert Insufficient();
         uint256 n = ilkList.length;
+        uint256[] memory outs = new uint256[](n);
+        bool any;
         for (uint256 k; k < n; ++k) {
             bytes32 ilk = ilkList[k];
-            Ilk storage i = ilks[ilk];
-            uint256 native = wad * fix[ilk] / WAD / i.scale;
-            if (native == 0) continue;
-            pool[ilk] -= native * i.scale;
-            _safeTransfer(i.gem, msg.sender, native);
+            uint256 native = pool[ilk] * wad / supply / ilks[ilk].scale;
+            if (native != 0) {
+                outs[k] = native;
+                pool[ilk] -= native * ilks[ilk].scale;
+                any = true;
+            }
+        }
+        if (!any) revert NothingToCash();
+        bxau.burn(msg.sender, wad);
+        for (uint256 k; k < n; ++k) {
+            if (outs[k] != 0) _safeTransfer(ilks[ilkList[k]].gem, msg.sender, outs[k]);
         }
         emit Cash(msg.sender, wad);
+    }
+
+    /// After thaw, once no bXAU remains, collateral left in the pool (accrued fees that were
+    /// never minted) belongs to the protocol: governance may sweep it to the treasury.
+    function sweep(bytes32 ilk, address to) external auth {
+        if (!thawed) revert NotThawed();
+        if (bxau.totalSupply() != 0) revert HoldersRemain();
+        Ilk storage i = ilks[ilk];
+        uint256 native = pool[ilk] / i.scale;
+        pool[ilk] -= native * i.scale;
+        if (native != 0) _safeTransfer(i.gem, to, native);
+        emit Sweep(ilk, to, native);
     }
 
     // ─────────────────────────────────── views ───────────────────────────────
@@ -480,27 +551,46 @@ contract GoldVault {
         return ilkList.length;
     }
 
-    /// Debt of an urn in oz (rounded up), at the last dripped rate.
-    function owed(bytes32 ilk, address usr) external view returns (uint256) {
-        return _divUp(urns[ilk][usr].art * ilks[ilk].rate, RAY);
+    /// The rate drip() would set right now.
+    function rateNow(bytes32 ilk) public view returns (uint256) {
+        Ilk storage i = ilks[ilk];
+        if (live != 1 || block.timestamp == i.rho) return i.rate;
+        return _rpow(i.duty, block.timestamp - i.rho) * i.rate / RAY;
     }
 
-    /// Whether an urn is safe at the current oracle price (false if the oracle is down).
+    /// Debt of an urn in oz right now, fees included (rounded up) — what wipeAll would burn.
+    function owed(bytes32 ilk, address usr) external view returns (uint256) {
+        return _divUp(urns[ilk][usr].art * rateNow(ilk), RAY);
+    }
+
+    /// Whether an urn is safe right now at the current oracle price, fees included
+    /// (false if the oracle is down) — i.e. whether liquidate() would reject it.
     function isSafe(bytes32 ilk, address usr) external view returns (bool) {
         Ilk storage i = ilks[ilk];
         Urn storage u = urns[ilk][usr];
         if (u.art == 0) return true;
-        (uint256 price, bool ok) = spotter.peek(ilk);
+        (uint256 price, bool ok) = _peek(ilk);
         if (!ok) return false;
-        return _safe(u.ink, u.art, i.rate, price, i.mat);
+        return _safe(u.ink, u.art, rateNow(ilk), price, i.mat);
+    }
+
+    /// What `cash(wad)` would pay out right now, per ilk in ilkList order (native units).
+    function quoteCash(uint256 wad) external view returns (uint256[] memory outs) {
+        uint256 n = ilkList.length;
+        outs = new uint256[](n);
+        uint256 supply = bxau.totalSupply();
+        if (supply == 0 || wad > supply) return outs;
+        for (uint256 k; k < n; ++k) {
+            bytes32 ilk = ilkList[k];
+            outs[k] = pool[ilk] * wad / supply / ilks[ilk].scale;
+        }
     }
 
     // ────────────────────────────────── internal ─────────────────────────────
 
     function _safe(uint256 ink, uint256 art, uint256 rate, uint256 price, uint256 mat) internal pure returns (bool) {
         uint256 spot = price * RAY / mat; // oz per gem, discounted by mat [WAD]
-        // ink[WAD] · spot[WAD] · 1e9  ==  RAD scale
-        return ink * spot * 1e9 >= art * rate;
+        return ink * spot * 1e9 >= art * rate; // WAD·WAD·1e9 == RAD
     }
 
     function _divUp(uint256 x, uint256 y) internal pure returns (uint256) {

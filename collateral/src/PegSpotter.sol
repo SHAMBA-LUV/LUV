@@ -39,12 +39,14 @@ contract PegSpotter {
     struct Src {
         address feed; // peg/USD aggregator, or address(0) = price at par
         uint32 maxAge; // staleness bound for `feed` (seconds)
+        uint8 dec; // feed decimals, cached at fileSrc
         uint256 par; // oz per whole token, WAD
     }
 
     address public owner;
     address public xauUsd; // XAU / USD aggregator
     uint32 public xauMaxAge;
+    uint8 public xauDec; // cached at fileXau
     mapping(bytes32 => Src) public srcs;
 
     event OwnershipTransferred(address indexed from, address indexed to);
@@ -53,6 +55,7 @@ contract PegSpotter {
 
     error NotOwner();
     error BadPar();
+    error BadFeed();
 
     modifier onlyOwner() {
         if (msg.sender != owner) revert NotOwner();
@@ -61,10 +64,8 @@ contract PegSpotter {
 
     constructor(address xauUsd_, uint32 xauMaxAge_) {
         owner = msg.sender;
-        xauUsd = xauUsd_;
-        xauMaxAge = xauMaxAge_;
         emit OwnershipTransferred(address(0), msg.sender);
-        emit FileXau(xauUsd_, xauMaxAge_);
+        _fileXau(xauUsd_, xauMaxAge_);
     }
 
     function transferOwnership(address to) external onlyOwner {
@@ -73,15 +74,32 @@ contract PegSpotter {
     }
 
     function fileXau(address feed, uint32 maxAge) external onlyOwner {
+        _fileXau(feed, maxAge);
+    }
+
+    /// Configure an ilk. `feed = address(0)` prices the peg at `par` (no market check).
+    function fileSrc(bytes32 ilk, address feed, uint32 maxAge, uint256 par) external onlyOwner {
+        if (par == 0) revert BadPar();
+        uint8 dec = feed == address(0) ? 0 : _decimals(feed);
+        srcs[ilk] = Src(feed, maxAge, dec, par);
+        emit FileSrc(ilk, feed, maxAge, par);
+    }
+
+    function _fileXau(address feed, uint32 maxAge) internal {
+        xauDec = _decimals(feed);
         xauUsd = feed;
         xauMaxAge = maxAge;
         emit FileXau(feed, maxAge);
     }
 
-    function fileSrc(bytes32 ilk, address feed, uint32 maxAge, uint256 par) external onlyOwner {
-        if (par == 0) revert BadPar();
-        srcs[ilk] = Src(feed, maxAge, par);
-        emit FileSrc(ilk, feed, maxAge, par);
+    function _decimals(address feed) internal view returns (uint8 d) {
+        if (feed.code.length == 0) revert BadFeed();
+        try IAggregatorV3(feed).decimals() returns (uint8 x) {
+            d = x;
+        } catch {
+            revert BadFeed();
+        }
+        if (d > 36) revert BadFeed();
     }
 
     /// @return price oz of gold per whole collateral token (WAD)
@@ -91,8 +109,8 @@ contract PegSpotter {
         if (s.par == 0) return (0, false);
         if (s.feed == address(0)) return (s.par, true);
 
-        (uint256 peg, bool okPeg) = _read(s.feed, s.maxAge);
-        (uint256 xau, bool okXau) = _read(xauUsd, xauMaxAge);
+        (uint256 peg, bool okPeg) = _read(s.feed, s.maxAge, s.dec);
+        (uint256 xau, bool okXau) = _read(xauUsd, xauMaxAge, xauDec);
         if (!okPeg || !okXau) return (0, false);
 
         price = peg * s.par / xau; // both normalised to WAD
@@ -100,17 +118,13 @@ contract PegSpotter {
         ok = price > 0;
     }
 
-    function _read(address feed, uint32 maxAge) internal view returns (uint256 wad, bool ok) {
+    function _read(address feed, uint32 maxAge, uint8 d) internal view returns (uint256 wad, bool ok) {
         if (feed == address(0)) return (0, false);
         try IAggregatorV3(feed).latestRoundData() returns (uint80, int256 answer, uint256, uint256 updatedAt, uint80) {
             if (answer <= 0 || updatedAt == 0 || updatedAt > block.timestamp) return (0, false);
             if (block.timestamp - updatedAt > maxAge) return (0, false);
-            try IAggregatorV3(feed).decimals() returns (uint8 d) {
-                wad = d <= 18 ? uint256(answer) * 10 ** (18 - d) : uint256(answer) / 10 ** (d - 18);
-                ok = wad > 0;
-            } catch {
-                return (0, false);
-            }
+            wad = d <= 18 ? uint256(answer) * 10 ** (18 - d) : uint256(answer) / 10 ** (d - 18);
+            ok = wad > 0;
         } catch {
             return (0, false);
         }

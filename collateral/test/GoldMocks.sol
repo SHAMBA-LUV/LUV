@@ -86,3 +86,10 @@ contract MockFeed {
         return (1, answer, updatedAt, updatedAt, 1);
     }
 }
+
+/// A spotter whose peek always reverts — cage() must survive it.
+contract RevertingSpotter {
+    function peek(bytes32) external pure returns (uint256, bool) {
+        revert("oracle exploded");
+    }
+}

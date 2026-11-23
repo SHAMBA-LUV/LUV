@@ -1,0 +1,15 @@
+# collateral — MakerDAO-style CDP for collateralised gold (bXAU). Self-contained: no libs.
+[profile.default]
+src = "src"
+test = "test"
+script = "script"
+out = "out"
+libs = []
+solc = "0.8.24"
+optimizer = true
+optimizer_runs = 200
+via_ir = true
+auto_detect_remappings = false
+
+[fmt]
+line_length = 120
