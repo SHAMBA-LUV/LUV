@@ -4,6 +4,9 @@ pragma solidity ^0.8.24;
 import {BasketGold} from "../src/BasketGold.sol";
 import {PegSpotter} from "../src/PegSpotter.sol";
 import {GoldVault} from "../src/GoldVault.sol";
+import {GoldTimelock} from "../src/GoldTimelock.sol";
+import {GoldGuardian} from "../src/GoldGuardian.sol";
+import {GoldFlash} from "../src/GoldFlash.sol";
 
 interface VmScript {
     function startBroadcast() external;
@@ -20,9 +23,14 @@ interface VmScript {
  *                  --account <keystore> --broadcast --verify
  *
  * Addresses were verified on-chain (Blockscout, 2026-11-07). Every risk parameter can be
- * overridden by an env var (see README). GOV (a multisig, ideally behind a timelock) receives
- * the vault wards and the spotter; the deployer key is removed and the script ASSERTS that it
- * holds no rights at the end, failing the whole run otherwise.
+ * overridden by an env var (see README).
+ *
+ * Final authority layout (asserted at the end — the run fails otherwise):
+ *   GoldTimelock (admin = GOV, delay = TIMELOCK_DELAY)  → vault ward, spotter owner, flash owner
+ *   GoldGuardian (owner = GOV)                          → vault ward, can ONLY cage()
+ *   bXAU minters                                        → vault + flash (net-zero per tx)
+ *   deployer key                                        → nothing
+ * GOV is never a direct ward: every governance change waits out the delay, except shutdown.
  */
 contract DeployGoldVault {
     VmScript internal constant vm = VmScript(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
@@ -44,7 +52,16 @@ contract DeployGoldVault {
         uint256 floor;
     }
 
-    function run() external returns (BasketGold bxau, PegSpotter spotter, GoldVault vault) {
+    struct Deployed {
+        BasketGold bxau;
+        PegSpotter spotter;
+        GoldVault vault;
+        GoldTimelock timelock;
+        GoldGuardian guardian;
+        GoldFlash flash;
+    }
+
+    function run() external returns (Deployed memory d) {
         address gov = vm.envOr("GOV", address(0));
         require(gov != address(0), "set GOV (multisig) env var");
 
@@ -70,15 +87,17 @@ contract DeployGoldVault {
         uint256 Line = vm.envOr("GOLD_LINE_GLOBAL", uint256(1_100e18));
         uint32 xauAge = _u32(vm.envOr("XAU_MAX_AGE", uint256(26 hours)), "XAU_MAX_AGE"); // heartbeat 24h
         uint32 pegAge = _u32(vm.envOr("PAXG_MAX_AGE", uint256(26 hours)), "PAXG_MAX_AGE");
+        uint256 delay = vm.envOr("TIMELOCK_DELAY", uint256(2 days));
+        uint256 flashMax = vm.envOr("FLASH_MAX", uint256(500e18)); // 500 oz per flash-mint
 
         vm.startBroadcast();
 
-        spotter = new PegSpotter(XAU_USD, xauAge);
+        PegSpotter spotter = new PegSpotter(XAU_USD, xauAge);
         spotter.fileSrc(ILK_PAXG, PAXG_USD, pegAge, 1e18);
         spotter.fileSrc(ILK_XAUT, address(0), 0, 1e18);
 
-        bxau = new BasketGold();
-        vault = new GoldVault(address(bxau), address(spotter));
+        BasketGold bxau = new BasketGold();
+        GoldVault vault = new GoldVault(address(bxau), address(spotter));
         bxau.rely(address(vault));
 
         // The account that deployed holds the constructor wards; prove we have the right key
@@ -93,19 +112,32 @@ contract DeployGoldVault {
         _risk(vault, ILK_XAUT, xaut);
         vault.fileLine(Line);
 
-        // bXAU gets NO governance ward: the vault is its only minter, so governance can never
-        // print unbacked gold — only accrued surplus, through flap().
-        vault.rely(gov);
+        GoldTimelock timelock = new GoldTimelock(gov, delay);
+        GoldGuardian guardian = new GoldGuardian(address(vault), gov);
+        GoldFlash flash = new GoldFlash(address(bxau), address(vault), deployer);
+        flash.setMax(flashMax);
+        bxau.rely(address(flash));
+
+        // Hand over. bXAU gets NO governance ward: only the vault (against collateral or
+        // surplus) and the flash module (net zero per transaction) can mint.
+        vault.rely(address(timelock));
+        vault.rely(address(guardian));
+        spotter.transferOwnership(address(timelock));
+        flash.transferOwnership(address(timelock));
         vault.deny(deployer);
         bxau.deny(deployer);
-        spotter.transferOwnership(gov);
 
         vm.stopBroadcast();
 
-        require(vault.wards(deployer) == 0, "deployer still a vault ward");
-        require(bxau.wards(deployer) == 0, "deployer still a bXAU ward");
-        require(bxau.wards(address(vault)) == 1 && vault.wards(gov) == 1, "wiring");
-        require(spotter.owner() == gov, "spotter owner");
+        require(vault.wards(deployer) == 0 && bxau.wards(deployer) == 0, "deployer kept wards");
+        require(spotter.owner() == address(timelock) && flash.owner() == address(timelock), "owners");
+        require(vault.wards(address(timelock)) == 1 && vault.wards(address(guardian)) == 1, "vault wards");
+        require(vault.wards(gov) == 0, "GOV must act through the timelock");
+        require(bxau.wards(address(vault)) == 1 && bxau.wards(address(flash)) == 1, "minters");
+        require(bxau.wards(gov) == 0 && bxau.wards(address(timelock)) == 0, "governance must not mint");
+        require(timelock.admin() == gov && timelock.delay() == delay && guardian.owner() == gov, "gov");
+
+        d = Deployed(bxau, spotter, vault, timelock, guardian, flash);
     }
 
     function _risk(GoldVault vault, bytes32 ilk, Risk memory r) internal {

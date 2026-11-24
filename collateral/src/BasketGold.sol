@@ -9,8 +9,8 @@ pragma solidity ^0.8.24;
  * and burned when those positions are repaid or liquidated.
  *
  * Self-contained (zero imports). Mint/burn are restricted to `wards` (Maker naming): after
- * deployment the deployer relies the vault and denies itself, leaving the vault as the only
- * minter.
+ * deployment the wards are exactly GoldVault (mints against collateral or surplus) and GoldFlash
+ * (mints and burns within one transaction). Governance holds no ward.
  */
 contract BasketGold {
     string public constant name = "Basket Gold";

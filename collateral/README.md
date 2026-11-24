@@ -9,8 +9,8 @@ Solidity 0.8.24.
 
 | | |
 |---|---|
-| Version | 0.2.0 (review fixes; see [Changelog](#changelog)) |
-| Tests | 27 Foundry tests, accounting invariant checked after every flow |
+| Version | 0.3.0 (timelock, guardian, flash-mint; see [Changelog](#changelog)) |
+| Tests | 38 Foundry tests, accounting invariant checked after every flow |
 | Chain | Ethereum mainnet (addresses verified on-chain on 2026-11-07) |
 | Status | **Not audited. Not deployed.** |
 
@@ -42,11 +42,15 @@ collateral/
 ├── src/
 │   ├── BasketGold.sol      bXAU: the debt token (ERC-20, 18 dec). Only the vault can mint.
 │   ├── PegSpotter.sol      Oracle: prices each peg in ounces using Chainlink.
-│   └── GoldVault.sol       CDP engine: positions, fees, liquidation, surplus, shutdown.
+│   ├── GoldVault.sol       CDP engine: positions, fees, liquidation, surplus, shutdown.
+│   ├── GoldTimelock.sol    Governance delay: GOV schedules, anyone executes after the delay.
+│   ├── GoldGuardian.sol    Emergency brake: GOV can cage() instantly, and nothing else.
+│   └── GoldFlash.sol       ERC-3156 flash-mint of bXAU for keepers (zero fee, net-zero supply).
 ├── script/
-│   └── DeployGoldVault.s.sol   Mainnet deployment; hands admin to GOV and asserts the deployer is removed.
+│   └── DeployGoldVault.s.sol   Mainnet deployment; sets up the authority layout and asserts it.
 ├── test/
 │   ├── GoldVault.t.sol         26 behaviour tests.
+│   ├── GoldGovernance.t.sol    11 tests: timelock, guardian, flash-mint, flash-liquidation.
 │   ├── DeployGoldVault.t.sol   Runs the real deploy script against stand-ins etched at mainnet addresses.
 │   ├── GoldMocks.sol           PAXG-like (fee-on-transfer), XAUT-like (6 dec, no-return) and feed mocks.
 │   └── TwTest.sol              Minimal test base (no forge-std).
@@ -66,6 +70,9 @@ Maker equivalents:
 | Dog / Clipper | `liquidate()`: fixed discount, partial fills allowed |
 | Vow | `surplus`, `sin`, `heal()`, `flap()` |
 | End | `cage()`, `skim()`, `thaw()`, `cash()`, `sweep()` |
+| DSPause | `GoldTimelock` |
+| ESM | `GoldGuardian` |
+| DssFlash | `GoldFlash` |
 
 ---
 
@@ -198,7 +205,7 @@ first.
 **Find unsafe positions.** Index `Lock` and `Draw` events, then call `isSafe(ilk, urn)`. It includes fees that
 have not been dripped yet, so it matches what `liquidate` will accept.
 
-**Liquidate**
+**Liquidate.** You need bXAU to burn, either held already or flash-minted (see below).
 
 ```bash
 cast send $BXAU  "approve(address,uint256)" $VAULT $(cast max-uint)
@@ -215,6 +222,31 @@ Every oz of bXAU you burn buys `chop` oz worth of collateral. For example, with 
 | Collateral worth < debt (true insolvency) | You repay value / chop for all of it. The rest is written to `sin`. |
 | `maxWad` too low | If taking all the collateral would require burning more than `maxWad`, the call reverts with `OverMax`. |
 
+**Liquidate with no bXAU (flash-mint).** `GoldFlash` is a standard ERC-3156 lender, so any ERC-3156 borrower
+works. Your contract's `onFlashLoan`:
+
+1. Approves the vault and calls `liquidate(ilk, urn, amount)`. It receives the seized collateral.
+2. Sells enough of that collateral on a DEX to buy back the `wad` the vault burned.
+3. Approves `GoldFlash` for `amount` and returns `keccak256("ERC3156FlashBorrower.onFlashLoan")`.
+
+`GoldFlash` then burns `amount` from your contract and you keep the rest of the collateral.
+`FlashLiquidator` in `test/GoldGovernance.t.sol` is a worked example.
+
+```solidity
+flash.flashLoan(myKeeper, address(bxau), amount, abi.encode(ilk, urn));
+```
+
+| Flash rule | |
+|---|---|
+| Fee | 0 |
+| Per-call ceiling | `max` (500 oz at launch, settable via the timelock). `maxFlashLoan(bXAU)` returns it. |
+| After cage | Disabled: `maxFlashLoan` returns 0 and `flashLoan` reverts with `NotLive`. |
+| Reentrancy | Nested flash loans revert. |
+| Supply | Minted and burned in the same transaction, so net supply change is zero. |
+
+In your callback, check `msg.sender == flash` and that `initiator` is your own contract, so nobody else can
+trigger it.
+
 **Housekeeping**
 
 | Call | Effect |
@@ -229,7 +261,38 @@ All three are permissionless.
 
 ## Usage: governance
 
-Governance is any address in `wards` on the vault, the `GOV` multisig after deployment.
+After deployment, authority is split three ways:
+
+| Who | Holds | Can do |
+|---|---|---|
+| `GoldTimelock` (admin = `GOV`) | Vault ward, spotter owner, flash owner | Everything in the tables below, **after a public delay** (2 days at launch) |
+| `GoldGuardian` (owner = `GOV`) | Vault ward | `cage()` **instantly**, and nothing else |
+| `GOV` itself | Nothing directly | Schedules or cancels timelock calls and fires the guardian |
+
+Nobody in governance can mint bXAU. Its only minters are the vault and the flash module.
+
+**Making a change.** Encode the call, schedule it, wait for the delay, then execute. Anyone can execute.
+
+```bash
+TL=<timelock>; DATA=$(cast calldata "file(bytes32,bytes32,uint256)" $ILK $(cast --format-bytes32-string line) 2000000000000000000000)
+ETA=$(( $(date +%s) + 2*24*3600 + 600 ))
+cast send $TL "schedule(address,uint256,bytes,uint256)" $VAULT 0 $DATA $ETA     # from GOV
+# … wait until ETA (and within 14 days of it) …
+cast send $TL "execute(address,uint256,bytes,uint256)"  $VAULT 0 $DATA $ETA     # anyone
+cast send $TL "cancel(address,uint256,bytes,uint256)"   $VAULT 0 $DATA $ETA     # GOV, any time before execution
+```
+
+| Timelock rule | |
+|---|---|
+| `eta` | Must be ≥ now + `delay`. |
+| Execution window | `eta` to `eta + GRACE` (14 days). After that the call expires. |
+| `setDelay` / `setAdmin` | Callable only by the timelock itself, through the same schedule and wait. `delay` ≤ 30 days. |
+| Watching | Users and monitors watch `Schedule` events to see changes coming. |
+
+**Emergency.** `GOV` calls `guardian.fire()`, which runs `vault.cage()` immediately. That can only freeze the
+system and start [shutdown](#emergency-shutdown); it cannot move funds anywhere else.
+
+**Vault functions (through the timelock)**
 
 | Call | Effect |
 |---|---|
@@ -241,11 +304,18 @@ Governance is any address in `wards` on the vault, the `GOV` multisig after depl
 | `fileLine(wad)` | Sets the global ceiling in oz. |
 | `fileSpotter(addr)` | Swaps the oracle. **Powerful**: put it behind a timelock. |
 | `flap(to, wad)` | Mints accrued surplus as bXAU to the treasury. Requires `sin == 0`, so call `heal()` first. |
-| `cage()` | Emergency shutdown. Irreversible. |
+| `cage()` | Emergency shutdown. Irreversible. Normally fired through the guardian. |
 | `sweep(ilk, to)` | After `thaw`, once all bXAU is gone, moves leftover fee collateral to the treasury. |
 | `rely(addr)` / `deny(addr)` | Adds or removes a ward. |
 
-**Spotter (owner)**
+**Flash module (owner = timelock)**
+
+| Call | Effect |
+|---|---|
+| `setMax(wad)` | Sets the per-call flash-mint ceiling. |
+| `transferOwnership(addr)` | Hands the module to a new owner. |
+
+**Spotter (owner = timelock)**
 
 | Call | Effect |
 |---|---|
@@ -296,7 +366,7 @@ cage()  →  skim(ilk, urn) for every indebted urn  →  urn owners free() the e
 |---|---|
 | Token | ERC-20, `name` "Basket Gold", `symbol` "bXAU", 18 decimals. |
 | `mint(to, v)`, `burn(from, v)` | Wards only. `burn` needs the holder's allowance unless `from == msg.sender`. |
-| Wards after deploy | The vault only. Governance has none, so it cannot print unbacked bXAU. |
+| Wards after deploy | The vault and `GoldFlash`. Governance has none, so it cannot print unbacked bXAU. |
 
 ### PegSpotter
 
@@ -305,6 +375,32 @@ cage()  →  skim(ilk, urn) for every indebted urn  →  urn owners free() the e
 | `peek(ilk) → (price, ok)` | Price in WAD oz per token. `ok = false` if the ilk is unknown or a feed is stale or invalid. Never reverts on feed errors. |
 | `srcs(ilk)` | Returns `(feed, maxAge, dec, par)`. |
 | `xauUsd`, `xauMaxAge`, `xauDec` | The XAU/USD feed, its staleness limit and its cached decimals. |
+
+### GoldTimelock
+
+| Function | Who | Notes |
+|---|---|---|
+| `schedule(target, value, data, eta) → id` | admin | `eta ≥ now + delay` |
+| `cancel(target, value, data, eta)` | admin | |
+| `execute(target, value, data, eta) → ret` | anyone | `eta ≤ now ≤ eta + GRACE`. Bubbles up reverts as `CallFailed(reason)`. |
+| `setDelay(d)`, `setAdmin(a)` | the timelock itself | `d ≤ MAX_DELAY` (30 days) |
+| `hashOf(...)`, `queued(id)`, `delay`, `admin`, `GRACE` | view | |
+
+### GoldGuardian
+
+| Function | Who | Notes |
+|---|---|---|
+| `fire()` | owner | Calls `vault.cage()`. |
+| `transferOwnership(to)` | owner | |
+
+### GoldFlash (ERC-3156)
+
+| Function | Notes |
+|---|---|
+| `flashLoan(receiver, token, amount, data)` | bXAU only, `amount ≤ max`, live only, no nesting |
+| `maxFlashLoan(token)` | `max`, or 0 for other tokens and after cage |
+| `flashFee(token, amount)` | 0 (reverts for other tokens) |
+| `setMax(wad)`, `transferOwnership(to)` | owner |
 
 ### GoldVault: state
 
@@ -366,15 +462,22 @@ make deploy   GOV=0xYourMultisig SENDER=0xDeployerAddr ACCOUNT=deployer
 1. Deploys `PegSpotter`, `BasketGold` and `GoldVault`, makes the vault bXAU's minter and configures both ilks.
 2. Checks that the broadcasting key really holds the constructor wards. If it doesn't, the run fails with
    `deployer != tx.origin; pass --sender`.
-3. Gives `GOV` the vault wards and the spotter, then removes the deployer.
-4. Asserts that the deployer holds **no** rights and that the wiring is correct. If any check fails, the whole
-   run fails.
+3. Deploys `GoldTimelock` (admin `GOV`, delay `TIMELOCK_DELAY`, default 2 days), `GoldGuardian` (owner `GOV`)
+   and `GoldFlash` (max `FLASH_MAX`, default 500 oz), and makes the flash module a bXAU minter.
+4. Hands over: the timelock gets a vault ward and ownership of the spotter and flash module, the guardian gets a
+   vault ward, and the deployer is removed.
+5. Asserts the final layout. If any check fails, the whole run fails:
+   - the deployer holds nothing;
+   - `GOV` is **not** a direct ward;
+   - neither `GOV` nor the timelock can mint bXAU;
+   - every owner and ward is as intended.
 
 **After deploying**
 
 1. Verify the contracts on Etherscan (`--verify` does this when `ETHERSCAN_API_KEY` is set).
 2. From `GOV`, run a small `lock` and `draw` on each ilk, then `wipeAll` and `free`.
-3. Point a keeper at the vault before raising any ceilings.
+3. Point a keeper at the vault, using a flash-mint borrower if it holds no bXAU, before raising any ceilings.
+   Raising a ceiling is a timelocked change, so schedule it early.
 
 ---
 
@@ -393,7 +496,8 @@ Launch defaults from the deploy script. Every one can be overridden with the env
 | Price source | PAXG/USD ÷ XAU/USD | **par** | |
 | Feed max age | 26 h | n/a | `PAXG_MAX_AGE`, `XAU_MAX_AGE` (s) |
 
-The global `Line` defaults to 1,100 oz (`GOLD_LINE_GLOBAL`).
+The global `Line` defaults to 1,100 oz (`GOLD_LINE_GLOBAL`). The timelock delay defaults to 2 days
+(`TIMELOCK_DELAY`, seconds, at most 30 days) and the flash-mint ceiling to 500 oz (`FLASH_MAX`, WAD).
 
 **Why XAUT is stricter:** mainnet has no Chainlink XAUT/USD feed, so XAUT is priced at par. An XAUT depeg is
 invisible on-chain: XAUT positions can never be liquidated on price, and the floor cannot fire. The small
@@ -406,18 +510,21 @@ ceiling and high ratio limit the damage. Once a feed exists, governance can call
 
 **Trust**
 
-- **Governance (`GOV`) is trusted and acts immediately.** It can swap the spotter, change ratios and cage the
-  system. There is no built-in delay like Maker's OSM or pause proxy. Put `GOV` behind a timelock, for example
-  a Safe with a delay module, before meaningful size goes in.
-- **Spotter owner.** It controls price sources. Transfer it to the same timelocked `GOV`, or renounce it once
-  the sources are final.
-- **bXAU.** Governance holds no minting rights. Supply only grows through `draw`, against collateral, or
-  `flap`, against accrued surplus.
+- **Governance (`GOV`) is trusted but delayed.** Every governance power, including swapping the spotter,
+  changing ratios, `flap` and the flash ceiling, goes through `GoldTimelock`. Each change is public for `delay`
+  (2 days) before it can execute, so users can leave first. The only instant power is the guardian's `cage()`,
+  which can freeze the system but not redirect funds.
+- **The timelock admin is `GOV`.** Whoever controls the multisig can still schedule anything, so the delay
+  protects users only if someone is watching `Schedule` events. Run a monitor.
+- **bXAU.** Governance holds no minting rights. Supply only grows through `draw` (against collateral) or `flap`
+  (against accrued surplus). The flash module mints and burns within one transaction.
+- **There is no price delay like Maker's OSM.** A fresh Chainlink price takes effect immediately.
 
 **Mechanism limits**
 
 - Liquidations use a fixed discount, not Dutch auctions, so price discovery in a crash depends on keepers.
-  Keepers must already hold bXAU, because there is no flash-mint.
+  Keepers can use `GoldFlash`, but a flash liquidation still needs a market where the seized peg can be sold
+  for bXAU.
 - XAUT is valued at par. See [Risk parameters](#risk-parameters).
 - Oracle risk is Chainlink's. A feed outage freezes priced actions, but users can still repay and add
   collateral.
@@ -432,7 +539,10 @@ ceiling and high ratio limit the damage. Once a feed exists, governance can call
 - `cage()` survives a reverting oracle by falling back to the last good price.
 - `init` reads decimals from the token itself.
 
-**Before mainnet:** get an independent audit, put a timelock on `GOV`, and have a keeper bot live.
+**Before mainnet:**
+- Get an independent audit.
+- Run a monitor on timelock `Schedule` events.
+- Have a keeper bot live, plus a bXAU market so flash liquidations can close.
 
 ---
 
@@ -450,13 +560,27 @@ forge test -vv
 | Liquidation | Full; partial with dust guard; buffer-band liquidation books no bad debt; true insolvency goes to `sin`; `OverMax`; safe urns protected; views include undripped fees |
 | Shutdown | Cage → skim → free → thaw → cash across both pegs; cage survives a reverting spotter at the last good price; zero-supply thaw plus `sweep`; cash dust is never lost |
 | Admin | Ward-only functions; `init` reads decimals; `chop ≤ mat` |
-| Deployment | The real script runs against etched mainnet addresses: wiring, parameters, deployer removed, governance not a bXAU minter |
+| Governance | Timelock delay, expiry, cancel and admin rules; `GOV` can't act directly; delay and admin changeable only through the timelock; spotter is timelocked; guardian cages instantly |
+| Flash-mint | Net-zero supply; bad callback return, missing approval and reentrancy rejected; ceiling, token and cage limits; a keeper holding zero bXAU flash-liquidates for profit |
+| Deployment | The real script runs against etched mainnet addresses: timelock, guardian and flash wiring; parameters; deployer removed; `GOV` not a direct ward; governance not a bXAU minter |
 
 Each flow also asserts the books identity, `debt + sin == supply · RAY + surplus`.
 
 ---
 
 ## Changelog
+
+### 0.3.0
+
+Governance and keeper infrastructure.
+
+| Area | Change |
+|---|---|
+| `GoldTimelock` | All governance goes through a public delay: 2 days by default, 14-day execution window, delay ≤ 30 days. The delay and admin can only change through the timelock itself. |
+| `GoldGuardian` | `GOV` can trigger an instant `cage()` and nothing else. |
+| `GoldFlash` | ERC-3156 flash-mint of bXAU: zero fee, per-call ceiling, disabled after cage, reentrancy-locked. Keepers no longer need to hold bXAU. |
+| Deploy script | Builds this authority layout and asserts it: `GOV` is never a direct ward and governance can't mint. |
+| Tests | 11 new tests, including an end-to-end flash liquidation. |
 
 ### 0.2.0
 

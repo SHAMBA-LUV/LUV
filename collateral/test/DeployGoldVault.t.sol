@@ -6,6 +6,9 @@ import {DeployGoldVault} from "../script/DeployGoldVault.s.sol";
 import {BasketGold} from "../src/BasketGold.sol";
 import {PegSpotter} from "../src/PegSpotter.sol";
 import {GoldVault} from "../src/GoldVault.sol";
+import {GoldTimelock} from "../src/GoldTimelock.sol";
+import {GoldGuardian} from "../src/GoldGuardian.sol";
+import {GoldFlash} from "../src/GoldFlash.sol";
 
 interface VmDeploy {
     function etch(address, bytes calldata) external;
@@ -43,7 +46,7 @@ contract DeployGoldVaultTest is TwTest {
     VmDeploy constant vmd = VmDeploy(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
     address constant GOV = address(0x6060);
 
-    function testDeployScriptWiresEverythingAndDropsDeployer() public {
+    function testDeployScriptWiresTimelockGuardianFlashAndDropsDeployer() public {
         vmd.warp(1_800_000_000);
         vmd.etch(0x45804880De22913dAFE09f4980848ECE6EcbAf78, address(new Dec18()).code); // PAXG
         vmd.etch(0x68749665FF8D2d112Fa859AA293F07A622782F38, address(new Dec6()).code); // XAUT
@@ -52,15 +55,27 @@ contract DeployGoldVaultTest is TwTest {
         vmd.setEnv("GOV", "0x0000000000000000000000000000000000006060");
 
         DeployGoldVault script = new DeployGoldVault();
-        (BasketGold bxau, PegSpotter spotter, GoldVault vault) = script.run();
+        DeployGoldVault.Deployed memory d = script.run();
+        BasketGold bxau = d.bxau;
+        PegSpotter spotter = d.spotter;
+        GoldVault vault = d.vault;
         address DEPLOYER = tx.origin; // the broadcaster, as in `forge script --sender`
 
         assertEq(vault.wards(DEPLOYER), 0);
         assertEq(bxau.wards(DEPLOYER), 0);
-        assertEq(vault.wards(GOV), 1);
+        assertEq(vault.wards(GOV), 0); // GOV acts only through the timelock …
+        assertEq(vault.wards(address(d.timelock)), 1);
+        assertEq(vault.wards(address(d.guardian)), 1); // … or fires the guardian
+        assertEq(d.timelock.admin(), GOV);
+        assertEq(d.timelock.delay(), 2 days);
+        assertEq(d.guardian.owner(), GOV);
         assertEq(bxau.wards(GOV), 0); // governance can never mint directly
+        assertEq(bxau.wards(address(d.timelock)), 0);
         assertEq(bxau.wards(address(vault)), 1);
-        assertEq(spotter.owner(), GOV);
+        assertEq(bxau.wards(address(d.flash)), 1);
+        assertEq(d.flash.owner(), address(d.timelock));
+        assertEq(d.flash.max(), 500e18);
+        assertEq(spotter.owner(), address(d.timelock));
         assertEq(vault.ilkCount(), 2);
         assertEq(vault.Line(), 1_100e18);
 
