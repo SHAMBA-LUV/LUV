@@ -9,8 +9,8 @@ Solidity 0.8.24.
 
 | | |
 |---|---|
-| Version | 0.3.0 (timelock, guardian, flash-mint; see [Changelog](#changelog)) |
-| Tests | 38 Foundry tests, accounting invariant checked after every flow |
+| Version | 0.4.0 (keeper bot, monitor, FlashKeeper; see [Changelog](#changelog)) |
+| Tests | 43 Foundry tests plus 14 end-to-end checks on a live local chain |
 | Chain | Ethereum mainnet (addresses verified on-chain on 2026-11-07) |
 | Status | **Not audited. Not deployed.** |
 
@@ -27,11 +27,12 @@ Solidity 0.8.24.
 7. [Usage: governance](#usage-governance)
 8. [Emergency shutdown](#emergency-shutdown)
 9. [Contract reference](#contract-reference)
-10. [Deployment](#deployment)
-11. [Risk parameters](#risk-parameters)
-12. [Security model and known limits](#security-model-and-known-limits)
-13. [Tests](#tests)
-14. [Changelog](#changelog)
+10. [Keeper bot and monitor](#keeper-bot-and-monitor)
+11. [Deployment](#deployment)
+12. [Risk parameters](#risk-parameters)
+13. [Security model and known limits](#security-model-and-known-limits)
+14. [Tests](#tests)
+15. [Changelog](#changelog)
 
 ---
 
@@ -45,12 +46,19 @@ collateral/
 │   ├── GoldVault.sol       CDP engine: positions, fees, liquidation, surplus, shutdown.
 │   ├── GoldTimelock.sol    Governance delay: GOV schedules, anyone executes after the delay.
 │   ├── GoldGuardian.sol    Emergency brake: GOV can cage() instantly, and nothing else.
-│   └── GoldFlash.sol       ERC-3156 flash-mint of bXAU for keepers (zero fee, net-zero supply).
+│   ├── GoldFlash.sol       ERC-3156 flash-mint of bXAU for keepers (zero fee, net-zero supply).
+│   └── FlashKeeper.sol     Capital-free liquidator: flash-mint → liquidate → sell on any DEX → repay.
+├── keeper/                 Off-chain bots (Node ≥ 18, ethers 6)
+│   ├── keeper.mjs          Finds unsafe urns and liquidates them (direct, or via FlashKeeper).
+│   ├── monitor.mjs         Governance and health alerts to stdout and a webhook.
+│   ├── e2e.mjs             Runs both against a local anvil with the full system deployed.
+│   └── lib.mjs, package.json
 ├── script/
 │   └── DeployGoldVault.s.sol   Mainnet deployment; sets up the authority layout and asserts it.
 ├── test/
 │   ├── GoldVault.t.sol         26 behaviour tests.
 │   ├── GoldGovernance.t.sol    11 tests: timelock, guardian, flash-mint, flash-liquidation.
+│   ├── FlashKeeper.t.sol       5 tests: profit, profit floor, repayment, access, router rules.
 │   ├── DeployGoldVault.t.sol   Runs the real deploy script against stand-ins etched at mainnet addresses.
 │   ├── GoldMocks.sol           PAXG-like (fee-on-transfer), XAUT-like (6 dec, no-return) and feed mocks.
 │   └── TwTest.sol              Minimal test base (no forge-std).
@@ -84,6 +92,7 @@ unzip collateral.zip && cd collateral
 make test           # or: forge test -vv
 make build          # contract sizes
 make gas            # gas report
+make e2e            # keeper + monitor end-to-end on a local anvil (needs Node ≥ 18)
 ```
 
 ---
@@ -230,7 +239,8 @@ works. Your contract's `onFlashLoan`:
 3. Approves `GoldFlash` for `amount` and returns `keccak256("ERC3156FlashBorrower.onFlashLoan")`.
 
 `GoldFlash` then burns `amount` from your contract and you keep the rest of the collateral.
-`FlashLiquidator` in `test/GoldGovernance.t.sol` is a worked example.
+For a ready-made version, deploy `src/FlashKeeper.sol` and run the [keeper bot](#keeper-bot-and-monitor),
+which builds the swap and drives it.
 
 ```solidity
 flash.flashLoan(myKeeper, address(bxau), amount, abi.encode(ilk, urn));
@@ -437,6 +447,102 @@ cage()  →  skim(ilk, urn) for every indebted urn  →  urn owners free() the e
 
 ---
 
+## Keeper bot and monitor
+
+Both bots live in `keeper/`. Install them with `cd keeper && npm ci`. They read the chain over any JSON-RPC
+endpoint and need no indexer.
+
+### keeper.mjs: liquidations
+
+Each pass works like this:
+
+1. Discovers every urn from the vault's `Lock` events.
+2. Checks each with `isSafe`, which includes fees not yet dripped.
+3. For each unsafe urn, predicts the bXAU it would burn and the collateral it would receive, using the same
+   maths as `liquidate()`.
+4. Picks a strategy:
+   - **Direct:** the signer already holds enough bXAU, so it calls `liquidate` itself.
+   - **Flash:** a `FlashKeeper` and a route are configured, so it builds the DEX swap, checks the estimated
+     profit and calls `FlashKeeper.run`.
+   - **Report only:** neither is available.
+
+Every transaction is simulated first and skipped if the simulation would revert. **The default is a dry run**;
+pass `--execute` to send transactions.
+
+```bash
+cd keeper
+RPC_URL=… VAULT=0x… node keeper.mjs --once                         # dry run: print the plan
+RPC_URL=… VAULT=0x… PRIVATE_KEY=… FLASH_KEEPER=0x… ROUTER=0x… ROUTE=./myroute.mjs \
+  node keeper.mjs --execute                                           # loop every INTERVAL s
+```
+
+| Env | Meaning |
+|---|---|
+| `RPC_URL`, `VAULT` | Required. |
+| `PRIVATE_KEY` | Signer. Needed only with `--execute`. Use a dedicated hot key holding only gas money. |
+| `FLASH_KEEPER`, `ROUTER`, `ROUTE` | Enable capital-free liquidation (see below). |
+| `FROM_BLOCK` | First block to scan. Set it to the vault's deploy block. |
+| `INTERVAL` | Seconds between passes. Default 30. |
+| `MIN_PROFIT` | Minimum collateral profit per flash job, in token units. Default 0, meaning any profit. |
+| `BUFFER_BPS` | Extra bXAU on top of `owed`, covering fees that accrue before inclusion. Default 10 (0.10%). |
+
+**Setting up flash liquidation**
+
+1. Deploy your own `FlashKeeper`. You are its owner, and only you can run jobs or withdraw profit with `sweep`:
+   ```bash
+   forge create src/FlashKeeper.sol:FlashKeeper --rpc-url $ETH_RPC_URL --account keeper \
+     --constructor-args $VAULT $FLASH $(cast wallet address --account keeper)
+   ```
+2. Pick a `ROUTER`, the DEX or aggregator that will buy the seized collateral for bXAU.
+3. Write a `ROUTE` module. It returns the calldata the `FlashKeeper` sends to the router:
+   ```js
+   // myroute.mjs: e.g. call an aggregator quote API, or encode a Uniswap exactOutput swap
+   export default async ({ provider, gem, bxau, router, gemOut, bxauNeeded }) => {
+     // sell at most gemOut of `gem` for at least bxauNeeded of `bxau`, recipient = msg.sender
+     return { data: '0x…', gemIn: /* collateral the swap will spend */ 0n };
+   };
+   ```
+
+`ROUTE=mockswap` is the built-in route used by the end-to-end test. Inside `FlashKeeper`, the whole
+transaction reverts unless the flash loan is repaid and the profit is at least `minProfit`. A bad route can
+cost gas, never principal.
+
+### monitor.mjs: governance and health
+
+The timelock only protects users if someone is reading its queue. Run the monitor beside the keeper:
+
+```bash
+RPC_URL=… VAULT=0x… TIMELOCK=0x… GUARDIAN=0x… FLASH=0x… WEBHOOK_URL=https://hooks… node monitor.mjs
+```
+
+| Severity | Raised for |
+|---|---|
+| **CRIT** | Guardian fired or vault caged; a new bXAU minter; vault ward changes; oracle replaced; an oracle down while it backs debt; books out of balance; a **scheduled** call that changes authority, the oracle or the delay |
+| **WARN** | Any other scheduled governance call; bad debt appearing; an ilk ceiling over `UTIL_WARN`% used (default 90); price-source, delay or owner changes |
+| **INFO** | Executed or cancelled calls; parameter changes; liquidations; flap; recoveries |
+
+- Scheduled calls are decoded into readable form, for example
+  `vault.fileSpotter(0x…) — executable from 2026-11-27T…`.
+- Health alerts fire only when a check changes state, so a stuck condition doesn't spam you.
+- WARN and CRIT alerts are POSTed as JSON to `WEBHOOK_URL` with a `text` field, which works with Slack and
+  Discord.
+- `--once` runs a single pass and exits with code 2 if any CRIT alert was raised, which makes it easy to run
+  from cron or CI.
+
+### e2e.mjs
+
+`make e2e`, or `forge build && cd keeper && npm ci && node e2e.mjs`, does the following:
+
+1. Starts anvil and deploys the whole system with the production authority layout.
+2. Opens positions and depegs PAXG.
+3. Checks that:
+   - the keeper's dry run plans exactly one flash liquidation and sends nothing;
+   - with `--execute`, a keeper holding **zero** bXAU clears the debt and keeps the profit;
+   - the monitor decodes a scheduled oracle swap as CRIT, flags the guardian's shutdown, and deduplicates
+     health alerts.
+
+Set `RPC_URL` to use an existing node, or `ANVIL` to point at a specific binary.
+
 ## Deployment
 
 **Mainnet addresses used** (each verified on-chain on 2026-11-07):
@@ -476,8 +582,11 @@ make deploy   GOV=0xYourMultisig SENDER=0xDeployerAddr ACCOUNT=deployer
 
 1. Verify the contracts on Etherscan (`--verify` does this when `ETHERSCAN_API_KEY` is set).
 2. From `GOV`, run a small `lock` and `draw` on each ilk, then `wipeAll` and `free`.
-3. Point a keeper at the vault, using a flash-mint borrower if it holds no bXAU, before raising any ceilings.
-   Raising a ceiling is a timelocked change, so schedule it early.
+3. Start [`monitor.mjs`](#monitormjs-governance-and-health) with `TIMELOCK`, `GUARDIAN`, `FLASH` and a
+   webhook.
+4. Deploy a `FlashKeeper`, write a route for a real bXAU market, and run [`keeper.mjs`](#keepermjs-liquidations)
+   in dry-run mode first.
+5. Only then raise ceilings. That is a timelocked change, so schedule it early.
 
 ---
 
@@ -541,8 +650,9 @@ ceiling and high ratio limit the damage. Once a feed exists, governance can call
 
 **Before mainnet:**
 - Get an independent audit.
-- Run a monitor on timelock `Schedule` events.
-- Have a keeper bot live, plus a bXAU market so flash liquidations can close.
+- Run `keeper/monitor.mjs` with a webhook.
+- Run `keeper/keeper.mjs` with a `FlashKeeper`, plus a bXAU market and a route for it so flash liquidations
+  can close.
 
 ---
 
@@ -562,6 +672,8 @@ forge test -vv
 | Admin | Ward-only functions; `init` reads decimals; `chop ≤ mat` |
 | Governance | Timelock delay, expiry, cancel and admin rules; `GOV` can't act directly; delay and admin changeable only through the timelock; spotter is timelocked; guardian cages instantly |
 | Flash-mint | Net-zero supply; bad callback return, missing approval and reentrancy rejected; ceiling, token and cage limits; a keeper holding zero bXAU flash-liquidates for profit |
+| FlashKeeper | Liquidates and keeps the profit; profit floor; under-selling cannot repay; only the owner can run or sweep; strangers can't trigger the callback; system contracts refused as router |
+| Bots, end to end (`make e2e`) | 14 checks on anvil: urn discovery, dry run, flash execution with zero capital, decoded CRIT schedule alert, guardian shutdown alert, alert deduplication |
 | Deployment | The real script runs against etched mainnet addresses: timelock, guardian and flash wiring; parameters; deployer removed; `GOV` not a direct ward; governance not a bXAU minter |
 
 Each flow also asserts the books identity, `debt + sin == supply · RAY + surplus`.
@@ -569,6 +681,18 @@ Each flow also asserts the books identity, `debt + sin == supply · RAY + surplu
 ---
 
 ## Changelog
+
+### 0.4.0
+
+Operations tooling.
+
+| Area | Change |
+|---|---|
+| `FlashKeeper.sol` | A production capital-free liquidator for any DEX router. Owner-only, rejects untrusted callbacks and system routers, enforces a profit floor, repays or reverts. |
+| `keeper/keeper.mjs` | Liquidation bot: event-based urn discovery, prediction matching `liquidate()`, direct or flash strategy, simulation before sending, dry run by default, pluggable routes. |
+| `keeper/monitor.mjs` | Governance and health monitor: decoded timelock queue, severity levels, webhook delivery, deduplicated health checks, exit code for cron. |
+| `keeper/e2e.mjs` | Both bots verified against a live anvil chain (14 checks). |
+| Mocks | `MockSwap` moved into `test/GoldMocks.sol`. |
 
 ### 0.3.0
 

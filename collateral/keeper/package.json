@@ -1,0 +1,16 @@
+{
+  "name": "collateral-keeper",
+  "version": "0.4.0",
+  "private": true,
+  "description": "Liquidation keeper and governance/health monitor for the collateral (bXAU) gold CDP",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "keeper": "node keeper.mjs",
+    "monitor": "node monitor.mjs",
+    "e2e": "node e2e.mjs"
+  },
+  "dependencies": {
+    "ethers": "6.16.0"
+  }
+}

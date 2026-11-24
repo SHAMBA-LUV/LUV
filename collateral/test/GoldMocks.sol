@@ -93,3 +93,24 @@ contract RevertingSpotter {
         revert("oracle exploded");
     }
 }
+
+interface IBxauMin {
+    function transfer(address, uint256) external returns (bool);
+}
+
+/// Sells a gold peg for bXAU at a fixed price out of its own inventory (stands in for a DEX).
+contract MockSwap {
+    IBxauMin public immutable bxau;
+    uint256 public bxauPerGem; // WAD
+
+    constructor(address bxau_, uint256 p) {
+        bxau = IBxauMin(bxau_);
+        bxauPerGem = p;
+    }
+
+    function sell(address gem, uint256 amount) external returns (uint256 out) {
+        MockGem(gem).transferFrom(msg.sender, address(this), amount);
+        out = amount * bxauPerGem / 1e18;
+        bxau.transfer(msg.sender, out);
+    }
+}

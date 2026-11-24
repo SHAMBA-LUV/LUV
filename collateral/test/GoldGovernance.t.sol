@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import {TwTest} from "./TwTest.sol";
-import {MockGem, MockFeed} from "./GoldMocks.sol";
+import {MockGem, MockFeed, MockSwap} from "./GoldMocks.sol";
 import {BasketGold} from "../src/BasketGold.sol";
 import {PegSpotter} from "../src/PegSpotter.sol";
 import {GoldVault} from "../src/GoldVault.sol";
@@ -45,23 +45,6 @@ contract ReentrantBorrower is IERC3156FlashBorrower {
     function onFlashLoan(address, address token, uint256 amount, uint256, bytes calldata) external returns (bytes32) {
         GoldFlash(msg.sender).flashLoan(this, token, amount, "");
         return keccak256("ERC3156FlashBorrower.onFlashLoan");
-    }
-}
-
-/// Sells a gold peg for bXAU at a fixed price out of its own inventory (stands in for a DEX).
-contract MockSwap {
-    IERC20Min public immutable bxau;
-    uint256 public bxauPerGem; // WAD
-
-    constructor(address bxau_, uint256 p) {
-        bxau = IERC20Min(bxau_);
-        bxauPerGem = p;
-    }
-
-    function sell(address gem, uint256 amount) external returns (uint256 out) {
-        MockGem(gem).transferFrom(msg.sender, address(this), amount);
-        out = amount * bxauPerGem / 1e18;
-        bxau.transfer(msg.sender, out);
     }
 }
 

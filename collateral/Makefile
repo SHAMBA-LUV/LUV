@@ -2,9 +2,10 @@
 #   make test                       run the full suite
 #   make simulate GOV=0x… SENDER=0x… ETH_RPC_URL=…   dry-run the mainnet deploy on a fork
 #   make deploy   GOV=0x… SENDER=0x… ACCOUNT=<keystore> ETH_RPC_URL=…
+#   make e2e                        keeper + monitor end-to-end on a local anvil
 #   make zip                        package ../collateral.zip
 
-.PHONY: build test gas fmt simulate deploy zip clean
+.PHONY: build test gas fmt simulate deploy keeper-install e2e zip clean
 
 build:
 	forge build --sizes
@@ -30,8 +31,15 @@ deploy:
 	GOV=$(GOV) forge script script/DeployGoldVault.s.sol --rpc-url $(ETH_RPC_URL) --sender $(SENDER) \
 		--account $(ACCOUNT) --broadcast --verify
 
+keeper-install:
+	cd keeper && npm ci --no-audit --no-fund
+
+e2e: build keeper-install
+	cd keeper && node e2e.mjs
+
 zip: clean
-	cd .. && rm -f collateral.zip && zip -rq collateral.zip collateral -x 'collateral/out/*' 'collateral/cache/*' 'collateral/broadcast/*' 'collateral/.env'
+	cd .. && rm -f collateral.zip && zip -rq collateral.zip collateral \
+		-x 'collateral/out/*' 'collateral/cache/*' 'collateral/broadcast/*' 'collateral/.env' 'collateral/keeper/node_modules/*'
 
 clean:
 	rm -rf out cache
