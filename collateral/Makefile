@@ -2,10 +2,11 @@
 #   make test                       run the full suite
 #   make simulate GOV=0x… SENDER=0x… ETH_RPC_URL=…   dry-run the mainnet deploy on a fork
 #   make deploy   GOV=0x… SENDER=0x… ACCOUNT=<keystore> ETH_RPC_URL=…
+#   make deploy-pools BXAU=0x… TIMELOCK=0x… GOV=0x… SENDER=0x… ACCOUNT=<keystore> ETH_RPC_URL=…
 #   make e2e                        keeper + monitor end-to-end on a local anvil
 #   make zip                        package ../collateral.zip
 
-.PHONY: build test gas fmt simulate deploy keeper-install e2e zip clean
+.PHONY: build test gas fmt simulate deploy deploy-pools keeper-install e2e zip clean
 
 build:
 	forge build --sizes
@@ -30,6 +31,12 @@ deploy:
 	@test -n "$(ACCOUNT)" || (echo "ACCOUNT (cast wallet keystore name) is required" && exit 1)
 	GOV=$(GOV) forge script script/DeployGoldVault.s.sol --rpc-url $(ETH_RPC_URL) --sender $(SENDER) \
 		--account $(ACCOUNT) --broadcast --verify
+
+deploy-pools:
+	@test -n "$(BXAU)" -a -n "$(TIMELOCK)" -a -n "$(GOV)" || (echo "BXAU, TIMELOCK and GOV are required" && exit 1)
+	@test -n "$(SENDER)" -a -n "$(ACCOUNT)" || (echo "SENDER and ACCOUNT are required" && exit 1)
+	BXAU=$(BXAU) TIMELOCK=$(TIMELOCK) GOV=$(GOV) forge script script/DeployGoldPools.s.sol --rpc-url $(ETH_RPC_URL) \
+		--sender $(SENDER) --account $(ACCOUNT) --broadcast --verify
 
 keeper-install:
 	cd keeper && npm ci --no-audit --no-fund

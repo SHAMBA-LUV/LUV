@@ -9,8 +9,8 @@ Solidity 0.8.24.
 
 | | |
 |---|---|
-| Version | 0.4.0 (keeper bot, monitor, FlashKeeper; see [Changelog](#changelog)) |
-| Tests | 43 Foundry tests plus 14 end-to-end checks on a live local chain |
+| Version | 0.5.0 (StableSwap pools, tiered LP rewards; see [Changelog](#changelog)) |
+| Tests | 69 Foundry tests plus 17 end-to-end checks on a live local chain |
 | Chain | Ethereum mainnet (addresses verified on-chain on 2026-11-07) |
 | Status | **Not audited. Not deployed.** |
 
@@ -27,12 +27,13 @@ Solidity 0.8.24.
 7. [Usage: governance](#usage-governance)
 8. [Emergency shutdown](#emergency-shutdown)
 9. [Contract reference](#contract-reference)
-10. [Keeper bot and monitor](#keeper-bot-and-monitor)
-11. [Deployment](#deployment)
-12. [Risk parameters](#risk-parameters)
-13. [Security model and known limits](#security-model-and-known-limits)
-14. [Tests](#tests)
-15. [Changelog](#changelog)
+10. [Liquidity pools and long-term rewards](#liquidity-pools-and-long-term-rewards)
+11. [Keeper bot and monitor](#keeper-bot-and-monitor)
+12. [Deployment](#deployment)
+13. [Risk parameters](#risk-parameters)
+14. [Security model and known limits](#security-model-and-known-limits)
+15. [Tests](#tests)
+16. [Changelog](#changelog)
 
 ---
 
@@ -47,18 +48,24 @@ collateral/
 │   ├── GoldTimelock.sol    Governance delay: GOV schedules, anyone executes after the delay.
 │   ├── GoldGuardian.sol    Emergency brake: GOV can cage() instantly, and nothing else.
 │   ├── GoldFlash.sol       ERC-3156 flash-mint of bXAU for keepers (zero fee, net-zero supply).
-│   └── FlashKeeper.sol     Capital-free liquidator: flash-mint → liquidate → sell on any DEX → repay.
+│   ├── FlashKeeper.sol     Capital-free liquidator: flash-mint → liquidate → sell on any DEX → repay.
+│   ├── GoldStablePool.sol  2-coin StableSwap (Curve invariant) for bXAU/PAXG and bXAU/XAUT; its own LP token.
+│   └── GoldLiquidityLocker.sol  Three-tier lock (30/180/365 d → 1×/2×/3×) sharing the pool's staker fees.
 ├── keeper/                 Off-chain bots (Node ≥ 18, ethers 6)
 │   ├── keeper.mjs          Finds unsafe urns and liquidates them (direct, or via FlashKeeper).
 │   ├── monitor.mjs         Governance and health alerts to stdout and a webhook.
+│   ├── routes/stablepool.mjs  Keeper route: sell seized pegs into a GoldStablePool.
 │   ├── e2e.mjs             Runs both against a local anvil with the full system deployed.
 │   └── lib.mjs, package.json
 ├── script/
-│   └── DeployGoldVault.s.sol   Mainnet deployment; sets up the authority layout and asserts it.
+│   ├── DeployGoldVault.s.sol   Mainnet deployment; sets up the authority layout and asserts it.
+│   └── DeployGoldPools.s.sol   Both pools and their lockers; timelock-owned, GOV may only pause.
 ├── test/
 │   ├── GoldVault.t.sol         26 behaviour tests.
 │   ├── GoldGovernance.t.sol    11 tests: timelock, guardian, flash-mint, flash-liquidation.
 │   ├── FlashKeeper.t.sol       5 tests: profit, profit floor, repayment, access, router rules.
+│   ├── GoldStablePool.t.sol    15 tests: maths, single-asset and paired liquidity, fees, decimals, safety.
+│   ├── GoldLiquidityLocker.t.sol  10 tests: tier weights, both entry paths, locks, relock, kick, fee carry-over.
 │   ├── DeployGoldVault.t.sol   Runs the real deploy script against stand-ins etched at mainnet addresses.
 │   ├── GoldMocks.sol           PAXG-like (fee-on-transfer), XAUT-like (6 dec, no-return) and feed mocks.
 │   └── TwTest.sol              Minimal test base (no forge-std).
@@ -447,6 +454,118 @@ cage()  →  skim(ilk, urn) for every indebted urn  →  urn owners free() the e
 
 ---
 
+## Liquidity pools and long-term rewards
+
+bXAU needs a market: borrowers buy it back to repay, and keepers sell seized collateral for it.
+`GoldStablePool` provides that market, and `GoldLiquidityLocker` rewards the third parties who supply its
+liquidity, paying more the longer they commit.
+
+### The pool: StableSwap
+
+bXAU, PAXG and XAUT are all claims on one troy ounce. The pool uses **Curve's StableSwap invariant**, the
+standard design for pegged assets. It trades close to 1:1 with very low slippage while the pool is roughly
+balanced, and prices move only as one side runs out. The maths follows Curve's 2-coin pools: `get_D`, `get_y`,
+`get_y_D`, imbalance fees and A ramping.
+
+Deployed pools:
+
+| Pool | A | Fee | Why |
+|---|---|---|---|
+| bXAU/PAXG | 200 | 4 bps | Both sides are market-priced 1-oz claims. |
+| bXAU/XAUT | 100 | 4 bps | XAUT is priced at par inside the vault. A lower A lets the pool price move earlier when XAUT goes lopsided, which is the depeg signal the vault cannot see. |
+
+**Providing liquidity directly.** Anyone can do this, and every LP earns fees.
+
+```bash
+# PAIRED: both coins, any ratio (a balanced deposit pays ~no fee)
+cast send $POOL "addLiquidity(uint256[2],uint256)" "[100e18,100e18]" $MIN_LP
+# SINGLE ASSET: one coin only, no swap needed; the imbalanced part pays half the swap fee
+cast send $POOL "addLiquidity(uint256[2],uint256)" "[0,100e18]" $(cast call $POOL "calcTokenAmount(uint256[2])(uint256)" "[0,100e18]")
+# exit: proportional (no fee) or to a single coin
+cast send $POOL "removeLiquidity(uint256,uint256[2])" $LP "[0,0]"
+cast send $POOL "removeLiquidityOneCoin(uint256,uint256,uint256)" $LP 1 $MIN_OUT
+# swap: coin index 0 = bXAU, 1 = the peg
+cast send $POOL "exchange(uint256,uint256,uint256,uint256)" 1 0 10e18 $(cast call $POOL "getDy(uint256,uint256,uint256)(uint256)" 1 0 10e18)
+```
+
+| View | Use |
+|---|---|
+| `getDy(i,j,dx)` | Quote for selling `dx` of coin `i`. |
+| `getDx(i,j,dy)` | Input needed to receive `dy`; used by the keeper route. |
+| `calcTokenAmount([a0,a1])` | LP minted by a deposit, fees included. |
+| `calcWithdrawOneCoin(lp,i)` | Coin received by a single-coin exit. |
+| `getVirtualPrice()` | Value of one LP token in oz. It rises with fees and never falls from trading. |
+
+### Fee sharing
+
+Every swap pays the pool fee (4 bps). Each fee is split in two:
+
+| Share | Goes to | How |
+|---|---|---|
+| `1 − stakerShare` (50%) | **Every LP** | Stays in the pool, so each LP token's virtual price rises. Nothing to claim. |
+| `stakerShare` (50%) | **Locked LPs**, by tier | Set aside in the pool and paid to `GoldLiquidityLocker`. |
+
+Imbalanced deposits and single-coin withdrawals pay half the fee on their imbalanced part, split the same way.
+
+### Three tiers for long-term provisioning
+
+| Tier | Lock | Weight per LP | Example: equal LP, staker stream split |
+|---|---|---|---|
+| **Bronze** (0) | 30 days | 1× | 1 part |
+| **Silver** (1) | 180 days | 2× | 2 parts |
+| **Gold** (2) | 365 days | 3× | 3 parts |
+
+- **The tiers are constants.** Governance cannot change multipliers or durations after you lock.
+- **Locked LPs earn twice.** They get their tier's share of the staker stream *and* the virtual-price growth,
+  because their LP tokens are still in the pool.
+- **Boosts end at expiry.** After unlock, anyone can `kick(id)` a position down to 1×, so expired boosts never
+  dilute active ones. `relock(id, tier)` renews into the same or a longer tier and never shortens a lock.
+- **No lost fees.** Fees that arrive while nobody is locked are held and paid to the next lockers. Late joiners
+  cannot capture fees earned before they locked.
+
+**Using the locker**
+
+```bash
+TIER=2   # 0 Bronze, 1 Silver, 2 Gold
+# ASSET PAIRING: deposit both coins → LP → locked, in one call
+cast send $LOCKER "provide(uint256[2],uint256,uint8)" "[100e18,100e18]" $MIN_LP $TIER
+# SINGLE ASSET: deposit one coin → LP → locked
+cast send $LOCKER "provideSingle(uint256,uint256,uint256,uint8)" 1 100e18 $MIN_LP $TIER
+# or lock LP you already hold
+cast send $LOCKER "lock(uint256,uint8)" $LP $TIER
+
+cast call $LOCKER "positionsOf(address)(uint256[])" $ME
+cast call $LOCKER "pending(uint256)(uint256,uint256)" $ID          # claimable bXAU, peg
+cast send $LOCKER "claim(uint256[])" "[$ID]"                        # any time
+cast send $LOCKER "relock(uint256,uint8)" $ID 2                     # extend or upgrade
+cast send $LOCKER "withdraw(uint256)" $ID                           # after unlock: LP + rewards
+cast send $LOCKER "withdrawOneCoin(uint256,uint256,uint256)" $ID 1 $MIN   # after unlock: straight to one coin
+```
+
+Approve the locker for the coins, or for the LP token when using `lock`. Locks are hard: there is no early
+exit.
+
+### Best practices built in
+
+| Practice | How |
+|---|---|
+| Withdrawals can never be paused | `pause` stops swaps and deposits only. The pauser (`GOV`) can pause instantly; only the timelock can unpause. |
+| No first-depositor inflation attack | The first deposit needs both coins and a meaningful size, and burns 1,000 LP wei to a dead address. |
+| Fee-on-transfer tokens credited correctly | Deposits are measured by balance delta (PAXG). Tokens that return no bool are supported (XAUT). |
+| Gradual, bounded governance | A changes only by a ramp of at least 1 day and at most 10×, once per day. The fee is capped at 1%. Every change goes through the 2-day timelock. |
+| Read-only reentrancy guard | `getVirtualPrice` reverts mid-call, so integrators can't read a manipulated price. |
+| Slippage bounds | Every swap, deposit and withdrawal takes a minimum-out. |
+| Immutable rewards contract | The locker has no owner, no admin and fixed tiers. |
+
+### Risks for liquidity providers
+
+- **Depeg exposure.** If PAXG or XAUT loses its peg, traders and keepers sell it into the pool, and LPs end up
+  holding more of the weaker asset. In the end-to-end test, a keeper liquidating during a 10% PAXG depeg kept
+  about 1.6 PAXG of profit partly because the pool still priced PAXG near par. That loss is borne by LPs.
+  Watch the monitor's imbalance alert.
+- **Lock risk.** Locked LP cannot leave before unlock, even during a depeg. Choose your tier accordingly.
+- **Not audited.**
+
 ## Keeper bot and monitor
 
 Both bots live in `keeper/`. Install them with `cd keeper && npm ci`. They read the chain over any JSON-RPC
@@ -503,7 +622,9 @@ RPC_URL=… VAULT=0x… PRIVATE_KEY=… FLASH_KEEPER=0x… ROUTER=0x… ROUTE=./
    };
    ```
 
-`ROUTE=mockswap` is the built-in route used by the end-to-end test. Inside `FlashKeeper`, the whole
+`ROUTE=stablepool` (with `ROUTER` set to the bXAU/peg pool) is built in. It sizes an exact-input
+`exchange` from the pool's `getDx`, adds `ROUTE_SLIPPAGE_BPS` (default 10), and sets `minDy` to the full amount
+that must be repaid. `ROUTE=mockswap` exists for tests. Inside `FlashKeeper`, the whole
 transaction reverts unless the flash loan is repaid and the profit is at least `minProfit`. A bad route can
 cost gas, never principal.
 
@@ -512,13 +633,13 @@ cost gas, never principal.
 The timelock only protects users if someone is reading its queue. Run the monitor beside the keeper:
 
 ```bash
-RPC_URL=… VAULT=0x… TIMELOCK=0x… GUARDIAN=0x… FLASH=0x… WEBHOOK_URL=https://hooks… node monitor.mjs
+RPC_URL=… VAULT=0x… TIMELOCK=0x… GUARDIAN=0x… FLASH=0x… POOLS=0xPaxgPool,0xXautPool WEBHOOK_URL=https://hooks… node monitor.mjs
 ```
 
 | Severity | Raised for |
 |---|---|
-| **CRIT** | Guardian fired or vault caged; a new bXAU minter; vault ward changes; oracle replaced; an oracle down while it backs debt; books out of balance; a **scheduled** call that changes authority, the oracle or the delay |
-| **WARN** | Any other scheduled governance call; bad debt appearing; an ilk ceiling over `UTIL_WARN`% used (default 90); price-source, delay or owner changes |
+| **CRIT** | Guardian fired or vault caged; a new bXAU minter; vault ward changes; oracle replaced; an oracle down while it backs debt; books out of balance; a pool paused or its fee receiver changed; a **scheduled** call that changes authority, the oracle, the delay or a pool's fee receiver or pauser |
+| **WARN** | Any other scheduled governance call; bad debt appearing; an ilk ceiling over `UTIL_WARN`% used (default 90); a pool's smaller side under `IMBALANCE_WARN`% (default 20), a likely depeg; pool fee, A-ramp or owner changes; price-source, delay or owner changes |
 | **INFO** | Executed or cancelled calls; parameter changes; liquidations; flap; recoveries |
 
 - Scheduled calls are decoded into readable form, for example
@@ -534,12 +655,16 @@ RPC_URL=… VAULT=0x… TIMELOCK=0x… GUARDIAN=0x… FLASH=0x… WEBHOOK_URL=ht
 `make e2e`, or `forge build && cd keeper && npm ci && node e2e.mjs`, does the following:
 
 1. Starts anvil and deploys the whole system with the production authority layout.
-2. Opens positions and depegs PAXG.
-3. Checks that:
+2. Deploys the bXAU/PAXG pool and locker, and seeds the pool.
+3. Has a third party add **single-asset** liquidity through the locker in the Gold tier.
+4. Opens positions and depegs PAXG.
+5. Checks that:
    - the keeper's dry run plans exactly one flash liquidation and sends nothing;
-   - with `--execute`, a keeper holding **zero** bXAU clears the debt and keeps the profit;
-   - the monitor decodes a scheduled oracle swap as CRIT, flags the guardian's shutdown, and deduplicates
-     health alerts.
+   - with `--execute`, a keeper holding **zero** bXAU clears the debt by selling into the **real pool**, and
+     keeps the profit;
+   - the third-party LP earns staker fees and the LP virtual price rises;
+   - the monitor decodes a scheduled oracle swap as CRIT, flags a pool pause and the guardian's shutdown, and
+     deduplicates health alerts.
 
 Set `RPC_URL` to use an existing node, or `ANVIL` to point at a specific binary.
 
@@ -584,9 +709,13 @@ make deploy   GOV=0xYourMultisig SENDER=0xDeployerAddr ACCOUNT=deployer
 2. From `GOV`, run a small `lock` and `draw` on each ilk, then `wipeAll` and `free`.
 3. Start [`monitor.mjs`](#monitormjs-governance-and-health) with `TIMELOCK`, `GUARDIAN`, `FLASH` and a
    webhook.
-4. Deploy a `FlashKeeper`, write a route for a real bXAU market, and run [`keeper.mjs`](#keepermjs-liquidations)
-   in dry-run mode first.
-5. Only then raise ceilings. That is a timelocked change, so schedule it early.
+4. Deploy the pools: `make deploy-pools BXAU=… TIMELOCK=… GOV=… SENDER=… ACCOUNT=…`.
+   - Seed each pool with a balanced first deposit; it needs both coins.
+   - Announce the locker tiers to LPs.
+   - Add `POOLS=` to the monitor.
+5. Deploy a `FlashKeeper` and run [`keeper.mjs`](#keepermjs-liquidations) with `ROUTE=stablepool
+   ROUTER=<pool>`, in dry-run mode first.
+6. Only then raise ceilings. That is a timelocked change, so schedule it early.
 
 ---
 
@@ -651,8 +780,7 @@ ceiling and high ratio limit the damage. Once a feed exists, governance can call
 **Before mainnet:**
 - Get an independent audit.
 - Run `keeper/monitor.mjs` with a webhook.
-- Run `keeper/keeper.mjs` with a `FlashKeeper`, plus a bXAU market and a route for it so flash liquidations
-  can close.
+- Seed the pools, then run `keeper/keeper.mjs` with a `FlashKeeper` and `ROUTE=stablepool`.
 
 ---
 
@@ -673,7 +801,10 @@ forge test -vv
 | Governance | Timelock delay, expiry, cancel and admin rules; `GOV` can't act directly; delay and admin changeable only through the timelock; spotter is timelocked; guardian cages instantly |
 | Flash-mint | Net-zero supply; bad callback return, missing approval and reentrancy rejected; ceiling, token and cage limits; a keeper holding zero bXAU flash-liquidates for profit |
 | FlashKeeper | Liquidates and keeps the profit; profit floor; under-selling cannot repay; only the owner can run or sweep; strangers can't trigger the callback; system contracts refused as router |
-| Bots, end to end (`make e2e`) | 14 checks on anvil: urn discovery, dry run, flash execution with zero capital, decoded CRIT schedule alert, guardian shutdown alert, alert deduplication |
+| StableSwap pool | First deposit mints D and burns the minimum; needs both coins; balanced deposits pay no fee; single-asset deposit and single-coin exit match their quotes; proportional exit; swaps near par with a 50/50 fee split; `getDx` inverts `exchange`; virtual price never falls under heavy two-way trading; slippage bounds; 6-decimal no-return coin; fee-on-transfer credited correctly; pause stops swaps and deposits but never withdrawals; fee cap; A-ramp bounds and interpolation; only the receiver collects; solvency after mixed activity |
+| Tiered locker | Tier table; Gold earns 3× Bronze for equal LP; `pending` is exact; pairing and single-asset entry; no lingering approvals; locked until expiry; withdraw to LP or one coin; relock only upgrades and extends; kick ends expired boosts; fees with no lockers go to the first lockers and not to late joiners; owner-only claim and withdraw; unlocked LPs still earn via virtual price |
+| Pool deployment | `DeployGoldPools` against etched mainnet addresses: owner is the timelock, pauser is `GOV`, lockers are the fee receivers, A, fee and share are as configured |
+| Bots, end to end (`make e2e`) | 17 checks on anvil: urn discovery; dry run; zero-capital flash liquidation through the real pool; a third-party single-asset Gold-tier LP earning fees; virtual price rising; decoded CRIT schedule alert; pool pause alert; guardian shutdown alert; alert deduplication |
 | Deployment | The real script runs against etched mainnet addresses: timelock, guardian and flash wiring; parameters; deployer removed; `GOV` not a direct ward; governance not a bXAU minter |
 
 Each flow also asserts the books identity, `debt + sin == supply · RAY + surplus`.
@@ -681,6 +812,20 @@ Each flow also asserts the books identity, `debt + sin == supply · RAY + surplu
 ---
 
 ## Changelog
+
+### 0.5.0
+
+Liquidity pools and long-term LP rewards.
+
+| Area | Change |
+|---|---|
+| `GoldStablePool` | 2-coin Curve StableSwap with its own LP token: paired and single-asset deposits, proportional and single-coin exits, `getDx` inverse quotes, 4 bps fee split 50/50 between all LPs and locked LPs. A ramping, fee cap, withdrawals never pausable, first-depositor protection, fee-on-transfer and no-return tokens supported, read-only reentrancy guard. |
+| `GoldLiquidityLocker` | Immutable three-tier lock: Bronze 30 d at 1×, Silver 180 d at 2×, Gold 365 d at 3×. Pairing and single-asset zaps, claim, relock, kick of expired boosts, withdraw to LP or one coin, carry-over of fees with no lockers. |
+| Deployment | `DeployGoldPools.s.sol` deploys bXAU/PAXG (A 200) and bXAU/XAUT (A 100); the timelock owns them and `GOV` may only pause. |
+| Keeper | `ROUTE=stablepool` sells seized pegs into the pool. |
+| Monitor | `POOLS=` adds pause, fee, A-ramp and receiver alerts plus an imbalance (depeg) warning. |
+| End to end | Now uses the real pool and a third-party Gold-tier LP (17 checks). |
+| Fix during development | `addLiquidity` copied a memory array by reference, which charged balanced deposits an imbalance fee. Caught by tests before release. |
 
 ### 0.4.0
 

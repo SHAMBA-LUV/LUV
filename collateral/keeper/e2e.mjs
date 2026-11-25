@@ -7,10 +7,14 @@
 // authority layout as the mainnet script (timelock + guardian + flash), opens positions,
 // depegs PAXG, then:
 //   1. keeper dry run   → plans exactly one flash liquidation, sends nothing
-//   2. keeper --execute → a keeper holding ZERO bXAU flash-liquidates for profit
-//   3. monitor          → decodes a scheduled oracle swap as CRIT, then the guardian's shutdown
+//   2. keeper --execute → a keeper holding ZERO bXAU flash-liquidates for profit, selling the
+//                         seized PAXG into the real bXAU/PAXG StableSwap pool
+//   3. a third-party single-asset LP, locked in the Gold tier, earns a share of that swap's fee
+//   4. monitor          → decodes a scheduled oracle swap as CRIT, flags a pool pause, then the
+//                         guardian's shutdown
 // Exits non-zero on any failed expectation.
 import { spawn } from 'node:child_process';
+import { createServer } from 'node:net';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -29,11 +33,20 @@ function expect(cond, msg) {
 
 async function startAnvil() {
   if (process.env.RPC_URL) return { url: process.env.RPC_URL, stop: () => {} };
-  const port = 18545 + Math.floor(Math.random() * 1000);
+  // ask the OS for a free port, so we never talk to some other node already on it
+  const port = await new Promise((res, rej) => {
+    const srv = createServer();
+    srv.once('error', rej);
+    srv.listen(0, '127.0.0.1', () => {
+      const p = srv.address().port;
+      srv.close(() => res(p));
+    });
+  });
   const bin = process.env.ANVIL ?? 'anvil';
   const proc = spawn(bin, ['--port', String(port), '--silent'], { stdio: 'ignore' });
   let spawnError = null;
   proc.on('error', (e) => (spawnError = e));
+  proc.on('exit', (code) => (spawnError ??= new Error(`exited early with code ${code}`)));
   const url = `http://127.0.0.1:${port}`;
   for (let i = 0; i < 50; i++) {
     if (spawnError) throw new Error(`cannot start ${bin}: ${spawnError.message} — install Foundry or set ANVIL / RPC_URL`);
@@ -68,7 +81,7 @@ async function main() {
   const node = await startAnvil();
   const provider = new ethers.JsonRpcProvider(node.url, undefined, { pollingInterval: 100 });
   try {
-    const [deployer, gov, alice, bob, op] = await Promise.all([0, 1, 2, 3, 4].map((i) => provider.getSigner(i)));
+    const [deployer, gov, alice, bob, op, carol] = await Promise.all([0, 1, 2, 3, 4, 5].map((i) => provider.getSigner(i)));
     const PAXG = ilkId('PAXG-A');
     const XAUT = ilkId('XAUT-A');
     console.log(`node ${node.url}\n— deploying`);
@@ -106,12 +119,20 @@ async function main() {
     await send(flash.transferOwnership(timelock.target));
     await send(vault.deny(await deployer.getAddress()));
     await send(bxau.deny(await deployer.getAddress()));
-    const startBlock = await provider.getBlockNumber();
 
-    // positions: alice 12.5 PAXG → 10 bXAU; bob 100 XAUT → 60 bXAU, seeds a DEX with 50
-    const swap = await deploy(deployer, 'GoldMocks.sol', 'MockSwap', bxau.target, 9n * 10n ** 17n); // 0.9 bXAU/PAXG
+    // bXAU/PAXG StableSwap pool + tiered locker (mirrors script/DeployGoldPools.s.sol)
+    const pool = await deploy(deployer, 'GoldStablePool.sol', 'GoldStablePool', bxau.target, paxg.target, 200,
+      4_000_000, 5_000_000_000, await deployer.getAddress(), 'bXAU/PAXG StableSwap', 'bXAU-PAXG');
+    const locker = await deploy(deployer, 'GoldLiquidityLocker.sol', 'GoldLiquidityLocker', pool.target);
+    await send(pool.setFeeReceiver(locker.target));
+    await send(pool.setPauser(await gov.getAddress()));
+    await send(pool.transferOwnership(timelock.target));
+
+    // positions: alice 12.5 PAXG → 10 bXAU; bob 100 XAUT → 60 bXAU and seeds the pool 50/50
     const keeperC = await deploy(op, 'FlashKeeper.sol', 'FlashKeeper', vault.target, flash.target, await op.getAddress());
     await send(paxg.mint(await alice.getAddress(), 100n * WAD));
+    await send(paxg.mint(await bob.getAddress(), 100n * WAD));
+    await send(paxg.mint(await carol.getAddress(), 100n * WAD));
     await send(xaut.mint(await bob.getAddress(), 1000n * 10n ** 6n));
     await send(paxg.connect(alice).approve(vault.target, ethers.MaxUint256));
     await send(xaut.connect(bob).approve(vault.target, ethers.MaxUint256));
@@ -119,23 +140,34 @@ async function main() {
     await send(vault.connect(alice).draw(PAXG, 10n * WAD));
     await send(vault.connect(bob).lock(XAUT, 100n * 10n ** 6n));
     await send(vault.connect(bob).draw(XAUT, 60n * WAD));
-    await send(bxau.connect(bob).transfer(swap.target, 50n * WAD));
+    await send(bxau.connect(bob).approve(pool.target, ethers.MaxUint256));
+    await send(paxg.connect(bob).approve(pool.target, ethers.MaxUint256));
+    await send(pool.connect(bob).addLiquidity([50n * WAD, 50n * WAD], 0));
+    // carol: third-party, SINGLE-ASSET liquidity (PAXG only), locked in the GOLD tier (365 d, 3×)
+    await send(paxg.connect(carol).approve(locker.target, ethers.MaxUint256));
+    await send(locker.connect(carol).provideSingle(1, 20n * WAD, 0, 2));
+    const carolId = (await locker.positionsOf(await carol.getAddress()))[0];
     console.log(`  vault ${vault.target}\n  flash keeper ${keeperC.target} (holds ${fmt(await bxau.balanceOf(keeperC.target))} bXAU)`);
 
-    // monitor baseline from the start: system healthy
-    const mcfg = { provider, vault: vault.target, timelock: timelock.target, guardian: guardian.target, flash: flash.target };
+    // monitor baseline, scanning from just after deployment (operators set FROM_BLOCK the same way)
+    const startBlock = (await provider.getBlockNumber()) + 1;
+    const mcfg = {
+      provider, vault: vault.target, timelock: timelock.target, guardian: guardian.target, flash: flash.target,
+      pools: [pool.target],
+    };
     const ms = monitorState(startBlock);
     const base = await pollOnce(mcfg, ms);
     console.log('— monitor baseline');
-    expect(!base.some((a) => a.severity === 'CRIT'), `healthy: no CRIT alerts (${base.length} alerts)`);
+    base.forEach((a) => console.log(`    ${a.severity} ${a.title} — ${a.detail}`));
+    expect(!base.some((a) => a.severity !== 'INFO'), `healthy: no WARN/CRIT alerts (${base.length} alerts)`);
 
     // depeg: PAXG to 0.90 oz → alice 11.25 oz < 12 oz required
     await send(paxgUsd.set(3600n * 10n ** 8n));
     console.log('— PAXG depegs to 0.90 oz');
 
     const kcfg = {
-      provider, signer: op, vault: vault.target, flashKeeper: keeperC.target, router: swap.target,
-      route: await loadRoute('mockswap'), minProfit: '0', bufferBps: 10, log: (m) => console.log(`    ${m}`),
+      provider, signer: op, vault: vault.target, flashKeeper: keeperC.target, router: pool.target,
+      route: await loadRoute('stablepool'), minProfit: '0', bufferBps: 10, log: (m) => console.log(`    ${m}`),
     };
     const ks = keeperState(0);
 
@@ -155,6 +187,11 @@ async function main() {
     expect(supply0 - (await bxau.totalSupply()) >= 10n * WAD, 'bXAU supply fell by the debt repaid');
     expect((await runOnce({ ...kcfg, execute: true }, ks)).length === 0, 'next pass finds nothing unsafe');
 
+    console.log('— liquidity: the keeper sold through the pool; third-party LPs earned the fee');
+    const [r0, r1] = await locker.pending(carolId);
+    expect(r0 + r1 > 0n, `carol's Gold-tier position earned ${fmt(r0)} bXAU + ${fmt(r1)} PAXG of staker fees`);
+    expect((await pool.getVirtualPrice()) > WAD, `LP virtual price rose to ${fmt(await pool.getVirtualPrice())}`);
+
     console.log('— governance: schedule an oracle swap, then fire the guardian');
     const data = vault.interface.encodeFunctionData('fileSpotter', [ethers.ZeroAddress]);
     const now = (await provider.getBlock('latest')).timestamp;
@@ -164,6 +201,11 @@ async function main() {
     expect(al.some((a) => a.severity === 'CRIT' && a.title.includes('SCHEDULED') && a.detail.includes('vault.fileSpotter(')),
       'scheduled oracle swap decoded and flagged CRIT');
     expect(al.some((a) => a.title === 'liquidation'), 'liquidation reported');
+
+    await send(pool.connect(gov).setPaused(true));
+    al = await pollOnce(mcfg, ms);
+    al.forEach((a) => console.log(`    ${a.severity} ${a.title} — ${a.detail}`));
+    expect(al.some((a) => a.severity === 'CRIT' && a.title.includes('PAUSED')), 'pool pause flagged CRIT');
 
     await send(guardian.connect(gov).fire());
     al = await pollOnce(mcfg, ms);

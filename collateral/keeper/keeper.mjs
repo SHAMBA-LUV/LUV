@@ -11,8 +11,9 @@
 //   PRIVATE_KEY     signer for --execute (never needed for a dry run)
 //   FLASH_KEEPER    FlashKeeper address owned by the signer (enables capital-free liquidation)
 //   ROUTER          DEX router the FlashKeeper sells seized pegs on
-//   ROUTE           how to build the swap: "mockswap" (built-in, for local tests) or a path to a
-//                   module whose default export is
+//   ROUTE           how to build the swap: "stablepool" (GoldStablePool — set ROUTER to the
+//                   bXAU/<peg> pool), "mockswap" (local tests), or a path to a module whose
+//                   default export is
 //                     async ({ provider, gem, bxau, router, gemOut, bxauNeeded }) => ({ data, gemIn })
 //   FROM_BLOCK      first block to scan for positions (default 0; set to the vault's deploy block)
 //   INTERVAL        seconds between passes (default 30)
@@ -53,6 +54,7 @@ async function mockswapRoute({ provider, gem, router, bxauNeeded }) {
 export async function loadRoute(spec) {
   if (!spec) return null;
   if (spec === 'mockswap') return mockswapRoute;
+  if (spec === 'stablepool') return (await import('./routes/stablepool.mjs')).default;
   const mod = await import(new URL(spec, `file://${process.cwd()}/`).href);
   return mod.default;
 }

@@ -11,6 +11,9 @@
 //                someone reads Schedule events)
 //   GUARDIAN     GoldGuardian address
 //   FLASH        GoldFlash address
+//   POOLS        comma-separated GoldStablePool addresses (pause, fee/A/receiver changes, imbalance)
+//   IMBALANCE_WARN  WARN when a pool's smaller side falls below this share, in % (default 20) —
+//                   in a pool of 1-oz claims, a lopsided pool is the market's depeg signal
 //   WEBHOOK_URL  POST target for WARN and CRIT alerts (Slack/Discord-compatible JSON body)
 //   FROM_BLOCK   first block to scan (default: latest − 1000)
 //   INTERVAL     seconds between passes (default 60)
@@ -25,6 +28,7 @@ import { ethers, ABI, RAY, b32, fmt, env, isMain, getLogs, webhook, sleep, headB
 
 const DANGEROUS = new Set([
   'fileSpotter', 'rely', 'deny', 'setAdmin', 'setDelay', 'transferOwnership', 'fileSrc', 'fileXau', 'cage',
+  'setFeeReceiver', 'setPauser',
 ]);
 
 const decoders = [
@@ -33,6 +37,7 @@ const decoders = [
   ['timelock', new ethers.Interface(ABI.timelock)],
   ['guardian', new ethers.Interface(ABI.guardian)],
   ['flash', new ethers.Interface(ABI.flash)],
+  ['pool', new ethers.Interface(ABI.pool)],
 ];
 
 function show(v) {
@@ -73,6 +78,15 @@ async function wire(cfg) {
       names[cfg[k].toLowerCase()] = k;
     }
   }
+  c.pools = [];
+  for (const addr of cfg.pools ?? []) {
+    const pool = new ethers.Contract(addr, ABI.pool, p);
+    const label = `pool:${await pool.symbol()}`;
+    const decs = [];
+    for (const i of [0, 1]) decs.push(await new ethers.Contract(await pool.coins(i), ABI.erc20, p).decimals());
+    c.pools.push({ pool, label, decs });
+    names[addr.toLowerCase()] = label;
+  }
   return c;
 }
 
@@ -88,7 +102,8 @@ export async function pollOnce(cfg, state) {
 
   // ── events ──
   if (state.from <= head) {
-    const sources = [w.vault, w.bxau, w.spotter, w.timelock, w.guardian, w.flash].filter(Boolean);
+    const sources = [w.vault, w.bxau, w.spotter, w.timelock, w.guardian, w.flash, ...w.pools.map((x) => x.pool)]
+      .filter(Boolean);
     const byAddr = new Map(sources.map((c) => [c.target.toLowerCase(), c]));
     const logs = await getLogs(provider, { address: [...byAddr.keys()] }, state.from, head);
     for (const l of logs) {
@@ -102,6 +117,19 @@ export async function pollOnce(cfg, state) {
       if (!ev) continue;
       const src = w.names[l.address.toLowerCase()];
       const a = ev.args;
+      if (src.startsWith('pool:')) {
+        const pa = {
+          Paused: () => push(a.paused ? 'CRIT' : 'INFO', `${src} ${a.paused ? 'PAUSED (swaps/deposits; withdrawals still open)' : 'unpaused'}`, '', l),
+          SetFee: () => push('WARN', `${src} fee changed`, `fee ${Number(a.fee) / 1e6} bps, staker share ${Number(a.stakerShare) / 1e8}%`, l),
+          SetFeeReceiver: () => push('CRIT', `${src} fee receiver changed`, a.receiver, l),
+          SetPauser: () => push('WARN', `${src} pauser changed`, a.pauser, l),
+          RampA: () => push('WARN', `${src} A ramp`, `${Number(a.oldA) / 100} → ${Number(a.newA) / 100} by ${new Date(Number(a.futureTime) * 1000).toISOString()}`, l),
+          StopRampA: () => push('INFO', `${src} A ramp stopped`, `A = ${Number(a.A) / 100}`, l),
+          OwnershipTransferred: () => push('WARN', `${src} owner changed`, `${a.from} → ${a.to}`, l),
+        }[ev.name];
+        if (pa) pa();
+        continue;
+      }
       switch (`${src}.${ev.name}`) {
         case 'timelock.Schedule': {
           const d = describeCall(a.target, a.data, w.names);
@@ -207,6 +235,16 @@ export async function pollOnce(cfg, state) {
         `${fmt(used)} / ${fmt(i.line)} oz`);
     }
   }
+  for (const { pool, label, decs } of w.pools) {
+    const [b0, b1, paused] = await Promise.all([pool.balances(0), pool.balances(1), pool.paused()]);
+    const n0 = b0 * 10n ** BigInt(18 - Number(decs[0]));
+    const n1 = b1 * 10n ** BigInt(18 - Number(decs[1]));
+    const tot = n0 + n1;
+    const minPct = tot === 0n ? 50 : Number(((n0 < n1 ? n0 : n1) * 10000n) / tot) / 100;
+    check(`imbalance:${label}`, tot > 0n && minPct < Number(cfg.imbalanceWarn ?? 20), 'WARN',
+      `${label} imbalanced: smaller side ${minPct}%`, `${fmt(n0)} / ${fmt(n1)} — possible depeg`);
+    check(`paused:${label}`, paused, 'CRIT', `${label} is paused`, 'swaps and deposits stopped');
+  }
   for (const h of health) {
     const prev = state.health.get(h.key) ?? false;
     if (h.bad !== prev) {
@@ -228,6 +266,8 @@ async function main() {
     guardian: process.env.GUARDIAN || null,
     flash: process.env.FLASH || null,
     utilWarn: Number(env('UTIL_WARN', '90')),
+    pools: (process.env.POOLS ?? '').split(',').map((x) => x.trim()).filter(Boolean),
+    imbalanceWarn: Number(env('IMBALANCE_WARN', '20')),
   };
   if (!cfg.timelock) console.error('WARN: TIMELOCK not set — scheduled governance calls will not be seen');
   const head = await headBlock(provider);

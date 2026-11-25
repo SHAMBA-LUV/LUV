@@ -9,11 +9,13 @@ import {GoldVault} from "../src/GoldVault.sol";
 import {GoldTimelock} from "../src/GoldTimelock.sol";
 import {GoldGuardian} from "../src/GoldGuardian.sol";
 import {GoldFlash} from "../src/GoldFlash.sol";
+import {DeployGoldPools} from "../script/DeployGoldPools.s.sol";
 
 interface VmDeploy {
     function etch(address, bytes calldata) external;
     function setEnv(string calldata, string calldata) external;
     function prank(address, address) external;
+    function toString(address) external pure returns (string memory);
     function warp(uint256) external;
 }
 
@@ -45,6 +47,7 @@ contract Dec6 {
 contract DeployGoldVaultTest is TwTest {
     VmDeploy constant vmd = VmDeploy(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
     address constant GOV = address(0x6060);
+    DeployGoldVault.Deployed internal lastVault;
 
     function testDeployScriptWiresTimelockGuardianFlashAndDropsDeployer() public {
         vmd.warp(1_800_000_000);
@@ -56,6 +59,7 @@ contract DeployGoldVaultTest is TwTest {
 
         DeployGoldVault script = new DeployGoldVault();
         DeployGoldVault.Deployed memory d = script.run();
+        lastVault = d;
         BasketGold bxau = d.bxau;
         PegSpotter spotter = d.spotter;
         GoldVault vault = d.vault;
@@ -91,5 +95,25 @@ contract DeployGoldVaultTest is TwTest {
         (uint256 p, bool ok) = spotter.peek("PAXG-A");
         assertTrue(ok);
         assertEq(p, 1e18);
+    }
+
+    function testDeployPoolsScriptWiresTimelockPauserAndLockers() public {
+        testDeployScriptWiresTimelockGuardianFlashAndDropsDeployer(); // etches + deploys the vault stack
+        DeployGoldVault.Deployed memory v = lastVault;
+        vmd.setEnv("BXAU", vmd.toString(address(v.bxau)));
+        vmd.setEnv("TIMELOCK", vmd.toString(address(v.timelock)));
+
+        DeployGoldPools.Deployed memory d = new DeployGoldPools().run();
+        assertEq(d.paxgPool.owner(), address(v.timelock));
+        assertEq(d.xautPool.owner(), address(v.timelock));
+        assertEq(d.paxgPool.pauser(), GOV);
+        assertEq(d.paxgPool.feeReceiver(), address(d.paxgLocker));
+        assertEq(d.xautPool.feeReceiver(), address(d.xautLocker));
+        assertEq(d.paxgPool.coin0(), address(v.bxau));
+        assertEq(d.paxgPool.coin1(), 0x45804880De22913dAFE09f4980848ECE6EcbAf78);
+        assertEq(d.paxgPool.A(), 200);
+        assertEq(d.xautPool.A(), 100);
+        assertEq(d.paxgPool.fee(), 4e6);
+        assertEq(d.paxgPool.stakerShare(), 5e9);
     }
 }
