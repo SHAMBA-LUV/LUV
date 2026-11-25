@@ -10,7 +10,8 @@
 //   2. keeper --execute → a keeper holding ZERO bXAU flash-liquidates for profit, selling the
 //                         seized PAXG into the real bXAU/PAXG StableSwap pool
 //   3. a third-party single-asset LP, locked in the Gold tier, earns a share of that swap's fee
-//   4. monitor          → decodes a scheduled oracle swap as CRIT, flags a pool pause, then the
+//   4. the PSM swaps PAXG ⇄ bXAU 1:1 and closes its mint gate while PAXG is depegged
+//   5. monitor          → decodes a scheduled oracle swap as CRIT, flags a pool pause, then the
 //                         guardian's shutdown
 // Exits non-zero on any failed expectation.
 import { spawn } from 'node:child_process';
@@ -18,7 +19,7 @@ import { createServer } from 'node:net';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ethers, WAD, ilkId, fmt, sleep } from './lib.mjs';
+import { ethers, WAD, ilkId, fmt, sleep, PaddedProvider } from './lib.mjs';
 import { runOnce, createState as keeperState, loadRoute } from './keeper.mjs';
 import { pollOnce, createState as monitorState } from './monitor.mjs';
 
@@ -79,7 +80,8 @@ async function send(p) {
 
 async function main() {
   const node = await startAnvil();
-  const provider = new ethers.JsonRpcProvider(node.url, undefined, { pollingInterval: 100 });
+  // padded gas: a transaction mined a second later than it was estimated needs slightly more
+  const provider = new PaddedProvider(node.url, undefined, { pollingInterval: 100 });
   try {
     const [deployer, gov, alice, bob, op, carol] = await Promise.all([0, 1, 2, 3, 4, 5].map((i) => provider.getSigner(i)));
     const PAXG = ilkId('PAXG-A');
@@ -107,12 +109,20 @@ async function main() {
       await send(vault.file(ilk, ilkId('line'), line * WAD));
       await send(vault.file(ilk, ilkId('dust'), WAD));
     }
-    await send(vault.fileLine(1100n * WAD));
+    const PSM = ilkId('PSM-PAXG-A');
+    await send(spotter.fileSrc(PSM, ethers.ZeroAddress, 0, WAD));
+    await send(vault.init(PSM, paxg.target));
+    await send(vault.file(PSM, ilkId('chop'), WAD));
+    await send(vault.file(PSM, ilkId('mat'), 10n ** 27n));
+    await send(vault.file(PSM, ilkId('line'), 500n * WAD));
+    await send(vault.fileLine(1600n * WAD));
     const timelock = await deploy(deployer, 'GoldTimelock.sol', 'GoldTimelock', await gov.getAddress(), 2 * 86400);
     const guardian = await deploy(deployer, 'GoldGuardian.sol', 'GoldGuardian', vault.target, await gov.getAddress());
     const flash = await deploy(deployer, 'GoldFlash.sol', 'GoldFlash', bxau.target, vault.target, await deployer.getAddress());
     await send(flash.setMax(500n * WAD));
     await send(bxau.rely(flash.target));
+    const psm = await deploy(deployer, 'GoldPsm.sol', 'GoldPsm', vault.target, PSM, PAXG, timelock.target,
+      await gov.getAddress(), 10n ** 15n, 10n ** 15n, 995n * 10n ** 15n);
     await send(vault.rely(timelock.target));
     await send(vault.rely(guardian.target));
     await send(spotter.transferOwnership(timelock.target));
@@ -153,7 +163,7 @@ async function main() {
     const startBlock = (await provider.getBlockNumber()) + 1;
     const mcfg = {
       provider, vault: vault.target, timelock: timelock.target, guardian: guardian.target, flash: flash.target,
-      pools: [pool.target],
+      pools: [pool.target], psm: psm.target,
     };
     const ms = monitorState(startBlock);
     const base = await pollOnce(mcfg, ms);
@@ -161,9 +171,24 @@ async function main() {
     base.forEach((a) => console.log(`    ${a.severity} ${a.title} — ${a.detail}`));
     expect(!base.some((a) => a.severity !== 'INFO'), `healthy: no WARN/CRIT alerts (${base.length} alerts)`);
 
+    console.log('— peg stability module');
+    await send(paxg.connect(carol).approve(psm.target, ethers.MaxUint256));
+    const c0 = await bxau.balanceOf(await carol.getAddress());
+    await send(psm.connect(carol).sellGem(10n * WAD, 0));
+    const minted = (await bxau.balanceOf(await carol.getAddress())) - c0;
+    expect(minted > 998n * 10n ** 16n && minted < 10n * WAD, `PSM minted ${fmt(minted)} bXAU for 10 PAXG`);
+    await send(bxau.connect(carol).approve(psm.target, ethers.MaxUint256));
+    await send(psm.connect(carol).buyGem(2n * WAD, ethers.MaxUint256));
+    const urn = await vault.urns(PSM, psm.target);
+    expect(urn.ink === urn.art && urn.ink > 0n, `PSM urn is exactly 1:1 (${fmt(urn.ink)} oz)`);
+
     // depeg: PAXG to 0.90 oz → alice 11.25 oz < 12 oz required
     await send(paxgUsd.set(3600n * 10n ** 8n));
     console.log('— PAXG depegs to 0.90 oz');
+
+    expect(!(await psm.pegHealthy()), 'PSM mint gate closed while PAXG is depegged');
+    let pegAlerts = await pollOnce(mcfg, ms);
+    expect(pegAlerts.some((a) => a.title.includes('PSM minting closed')), 'monitor reports the closed PSM gate');
 
     const kcfg = {
       provider, signer: op, vault: vault.target, flashKeeper: keeperC.target, router: pool.target,
@@ -175,7 +200,7 @@ async function main() {
     const dry = await runOnce({ ...kcfg, execute: false }, ks);
     expect(dry.length === 1 && dry[0].mode === 'flash' && dry[0].status === 'planned', 'plans one flash liquidation');
     expect((await vault.urns(PAXG, await alice.getAddress())).art > 0n, 'dry run sends nothing');
-    expect(ks.urns.size === 2, 'discovered both urns from Lock events');
+    expect(ks.urns.size === 3, 'discovered all three urns (two borrowers and the PSM) from Lock events');
 
     console.log('— keeper --execute');
     const supply0 = await bxau.totalSupply();

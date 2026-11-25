@@ -126,6 +126,24 @@ export const ABI = {
     'event StopRampA(uint256 A, uint256 t)',
     'event OwnershipTransferred(address indexed from, address indexed to)',
   ],
+  psm: [
+    'function tin() view returns (uint256)',
+    'function tout() view returns (uint256)',
+    'function floor() view returns (uint256)',
+    'function reserves() view returns (uint256)',
+    'function pegHealthy() view returns (bool)',
+    'function sellGem(uint256 gemAmt, uint256 minBxauOut) returns (uint256)',
+    'function buyGem(uint256 gemAmt, uint256 maxBxauIn) returns (uint256)',
+    'function collect() returns (uint256)',
+    'function setFees(uint256 tin, uint256 tout)',
+    'function setFloor(uint256 floor)',
+    'function setTreasury(address t)',
+    'function transferOwnership(address to)',
+    'event SetFees(uint256 tin, uint256 tout)',
+    'event SetFloor(uint256 floor)',
+    'event SetTreasury(address treasury)',
+    'event OwnershipTransferred(address indexed from, address indexed to)',
+  ],
   locker: [
     'function provide(uint256[2] amounts, uint256 minLp, uint8 tier) returns (uint256 id, uint256 lp)',
     'function provideSingle(uint256 i, uint256 amount, uint256 minLp, uint8 tier) returns (uint256 id, uint256 lp)',
@@ -190,6 +208,20 @@ export async function webhook(url, payload) {
     if (!r.ok) console.error(`webhook ${r.status}`);
   } catch (e) {
     console.error(`webhook failed: ${e.message}`);
+  }
+}
+
+/**
+ * JSON-RPC provider that pads every gas estimate (default +30%, env GAS_MARGIN_PCT).
+ *
+ * The vault does a little more work when a transaction is mined in a later second than the one
+ * it was estimated in (fee accrual writes a new timestamp and compounds over more seconds), so an
+ * exact estimate can run out of gas. Unused gas is refunded, so a margin costs nothing.
+ */
+export class PaddedProvider extends ethers.JsonRpcProvider {
+  async estimateGas(tx) {
+    const g = await super.estimateGas(tx);
+    return (g * (100n + BigInt(process.env.GAS_MARGIN_PCT ?? '30'))) / 100n;
   }
 }
 

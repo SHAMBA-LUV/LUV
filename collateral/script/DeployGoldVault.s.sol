@@ -7,6 +7,7 @@ import {GoldVault} from "../src/GoldVault.sol";
 import {GoldTimelock} from "../src/GoldTimelock.sol";
 import {GoldGuardian} from "../src/GoldGuardian.sol";
 import {GoldFlash} from "../src/GoldFlash.sol";
+import {GoldPsm} from "../src/GoldPsm.sol";
 
 interface VmScript {
     function startBroadcast() external;
@@ -28,6 +29,7 @@ interface VmScript {
  * Final authority layout (asserted at the end — the run fails otherwise):
  *   GoldTimelock (admin = GOV, delay = TIMELOCK_DELAY)  → vault ward, spotter owner, flash owner
  *   GoldGuardian (owner = GOV)                          → vault ward, can ONLY cage()
+ *   GoldPsm (owner = timelock, treasury = TREASURY)     → an ordinary urn owner, no wards
  *   bXAU minters                                        → vault + flash (net-zero per tx)
  *   deployer key                                        → nothing
  * GOV is never a direct ward: every governance change waits out the delay, except shutdown.
@@ -42,6 +44,7 @@ contract DeployGoldVault {
 
     bytes32 constant ILK_PAXG = "PAXG-A";
     bytes32 constant ILK_XAUT = "XAUT-A";
+    bytes32 constant ILK_PSM = "PSM-PAXG-A";
 
     struct Risk {
         uint256 mat;
@@ -59,6 +62,7 @@ contract DeployGoldVault {
         GoldTimelock timelock;
         GoldGuardian guardian;
         GoldFlash flash;
+        GoldPsm psm;
     }
 
     function run() external returns (Deployed memory d) {
@@ -84,7 +88,17 @@ contract DeployGoldVault {
             dust: vm.envOr("XAUT_DUST", uint256(1e18)),
             floor: 0 // meaningless at par
         });
-        uint256 Line = vm.envOr("GOLD_LINE_GLOBAL", uint256(1_100e18));
+        // PSM: PAXG ⇄ bXAU 1:1. 100% ratio, no fee, no dust, par price; its ceiling bounds how
+        // much bXAU can ever be backed by PAXG at face value.
+        Risk memory psmRisk = Risk({
+            mat: 1e27,
+            chop: 1e18,
+            duty: 1e27,
+            line: vm.envOr("PSM_LINE", uint256(500e18)), // 500 oz
+            dust: 0,
+            floor: 0
+        });
+        uint256 Line = vm.envOr("GOLD_LINE_GLOBAL", uint256(1_600e18));
         uint32 xauAge = _u32(vm.envOr("XAU_MAX_AGE", uint256(26 hours)), "XAU_MAX_AGE"); // heartbeat 24h
         uint32 pegAge = _u32(vm.envOr("PAXG_MAX_AGE", uint256(26 hours)), "PAXG_MAX_AGE");
         uint256 delay = vm.envOr("TIMELOCK_DELAY", uint256(2 days));
@@ -95,6 +109,7 @@ contract DeployGoldVault {
         PegSpotter spotter = new PegSpotter(XAU_USD, xauAge);
         spotter.fileSrc(ILK_PAXG, PAXG_USD, pegAge, 1e18);
         spotter.fileSrc(ILK_XAUT, address(0), 0, 1e18);
+        spotter.fileSrc(ILK_PSM, address(0), 0, 1e18);
 
         BasketGold bxau = new BasketGold();
         GoldVault vault = new GoldVault(address(bxau), address(spotter));
@@ -110,6 +125,8 @@ contract DeployGoldVault {
         vault.init(ILK_XAUT, XAUT);
         _risk(vault, ILK_PAXG, paxg);
         _risk(vault, ILK_XAUT, xaut);
+        vault.init(ILK_PSM, PAXG);
+        _risk(vault, ILK_PSM, psmRisk);
         vault.fileLine(Line);
 
         GoldTimelock timelock = new GoldTimelock(gov, delay);
@@ -117,6 +134,16 @@ contract DeployGoldVault {
         GoldFlash flash = new GoldFlash(address(bxau), address(vault), deployer);
         flash.setMax(flashMax);
         bxau.rely(address(flash));
+        GoldPsm psm = new GoldPsm(
+            address(vault),
+            ILK_PSM,
+            ILK_PAXG, // depeg guard reads PAXG's market price
+            address(timelock),
+            vm.envOr("TREASURY", gov),
+            vm.envOr("PSM_TIN", uint256(1e15)), // 0.10%
+            vm.envOr("PSM_TOUT", uint256(1e15)),
+            vm.envOr("PSM_FLOOR", uint256(995e15)) // mint only while PAXG ≥ 0.995 oz
+        );
 
         // Hand over. bXAU gets NO governance ward: only the vault (against collateral or
         // surplus) and the flash module (net zero per transaction) can mint.
@@ -137,7 +164,10 @@ contract DeployGoldVault {
         require(bxau.wards(gov) == 0 && bxau.wards(address(timelock)) == 0, "governance must not mint");
         require(timelock.admin() == gov && timelock.delay() == delay && guardian.owner() == gov, "gov");
 
-        d = Deployed(bxau, spotter, vault, timelock, guardian, flash);
+        require(psm.owner() == address(timelock) && vault.wards(address(psm)) == 0, "psm");
+        require(bxau.wards(address(psm)) == 0, "psm must not mint directly");
+
+        d = Deployed(bxau, spotter, vault, timelock, guardian, flash, psm);
     }
 
     function _risk(GoldVault vault, bytes32 ilk, Risk memory r) internal {

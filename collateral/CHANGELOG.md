@@ -1,5 +1,18 @@
 # Changelog
 
+### 0.7.0
+
+Peg stability module.
+
+| Area | Change |
+|---|---|
+| `GoldPsm` | Swaps PAXG and bXAU 1:1 for a 0.10% fee each way, which anchors bXAU's price. Implemented as an ordinary urn in a dedicated `PSM-PAXG-A` ilk (100% ratio, zero fee, par price), so every bXAU it mints is on the vault's books and counts against a 500 oz ceiling. Holds no minting rights. |
+| Depeg guard | Minting through the PSM requires PAXG's market price to be fresh and at least 0.995 oz. Redemption is never blocked. |
+| Deployment | `DeployGoldVault.s.sol` configures the PSM ilk and deploys the PSM, owned by the timelock. Global ceiling raised to 1,600 oz. |
+| Monitor | `PSM=` adds alerts for fee, floor and treasury changes and for the mint gate closing. |
+| Tests | 10 unit tests and 1 property test for the PSM (93 total); end-to-end run now has 21 checks. |
+| Fix: bot gas margin | The bots sent transactions with the exact gas estimate. The vault needs slightly more gas when a transaction is mined in a later second than it was estimated in, so about 1 run in 30 of the end-to-end test ran out of gas. This was the unexplained intermittent failure noted in 0.5.0. Every bot transaction now carries a 30% gas margin (`GAS_MARGIN_PCT`). |
+
 ### 0.6.1
 
 Patch release.

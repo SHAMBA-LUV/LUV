@@ -34,6 +34,7 @@ How the contracts and bots fit together. For usage, see the [README](../README.m
 | `GoldVault` | Positions, fees, liquidation, surplus, shutdown. | Wards: timelock (everything), guardian (cage only). |
 | `GoldTimelock` | Delays every governance call. | Admin: `GOV`. Delay and admin change only through itself. |
 | `GoldGuardian` | Instant shutdown. | Owner: `GOV`. |
+| `GoldPsm` | Swaps PAXG and bXAU 1:1; an ordinary urn owner in the `PSM-PAXG-A` ilk. | Owner: timelock (fees, floor, treasury). No wards, no mint rights. |
 | `GoldFlash` | ERC-3156 flash-mint of bXAU. | Owner: timelock (ceiling only). |
 | `FlashKeeper` | Capital-free liquidator, one per keeper operator. | Owner: the operator. |
 | `GoldStablePool` | StableSwap market for bXAU against a peg; its own LP token. | Owner: timelock. Pauser: `GOV` (pause only). Fee receiver: locker. |
@@ -43,6 +44,10 @@ How the contracts and bots fit together. For usage, see the [README](../README.m
 
 **Borrow.** `lock` credits collateral by balance delta. `draw` drips fees, reads the price, checks the
 depeg floor, both ceilings, dust and the liquidation ratio, then mints bXAU.
+
+**Peg.** `GoldPsm.sellGem` locks PAXG in its own 100%-ratio urn and draws the same number of bXAU,
+if PAXG's market price is at or above the floor. `buyGem` wipes and frees. Arbitrage against the PSM
+keeps bXAU within its fees of 1 oz.
 
 **Liquidate.** `liquidate` requires the position to be unsafe at the current price with fees included.
 The keeper burns bXAU and receives collateral worth `chop` times as much. If the collateral cannot cover

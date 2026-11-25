@@ -9,8 +9,8 @@ Solidity 0.8.24.
 
 | | |
 |---|---|
-| Version | 0.6.1 (slippage limits enforced on amounts actually received; see [CHANGELOG.md](CHANGELOG.md)) |
-| Tests | 82 Foundry tests (72 unit, 10 property/fuzz) plus 17 end-to-end checks on a live local chain |
+| Version | 0.7.0 (peg stability module; see [CHANGELOG.md](CHANGELOG.md)) |
+| Tests | 93 Foundry tests (82 unit, 11 property/fuzz) plus 21 end-to-end checks on a live local chain |
 | Docs | [Architecture](docs/ARCHITECTURE.md) · [Audit brief](docs/AUDIT.md) · [Changelog](CHANGELOG.md) |
 | Chain | Ethereum mainnet (addresses verified on-chain on 2026-11-07) |
 | Status | **Not audited. Not deployed.** |
@@ -28,13 +28,14 @@ Solidity 0.8.24.
 7. [Usage: governance](#usage-governance)
 8. [Emergency shutdown](#emergency-shutdown)
 9. [Contract reference](#contract-reference)
-10. [Liquidity pools and long-term rewards](#liquidity-pools-and-long-term-rewards)
-11. [Keeper bot and monitor](#keeper-bot-and-monitor)
-12. [Deployment](#deployment)
-13. [Risk parameters](#risk-parameters)
-14. [Security model and known limits](#security-model-and-known-limits)
-15. [Tests](#tests)
-16. [Changelog](#changelog)
+10. [Peg stability module](#peg-stability-module)
+11. [Liquidity pools and long-term rewards](#liquidity-pools-and-long-term-rewards)
+12. [Keeper bot and monitor](#keeper-bot-and-monitor)
+13. [Deployment](#deployment)
+14. [Risk parameters](#risk-parameters)
+15. [Security model and known limits](#security-model-and-known-limits)
+16. [Tests](#tests)
+17. [Changelog](#changelog)
 
 ---
 
@@ -50,6 +51,7 @@ collateral/
 │   ├── GoldGuardian.sol    Emergency brake: GOV can cage() instantly, and nothing else.
 │   ├── GoldFlash.sol       ERC-3156 flash-mint of bXAU for keepers (zero fee, net-zero supply).
 │   ├── FlashKeeper.sol     Capital-free liquidator: flash-mint → liquidate → sell on any DEX → repay.
+│   ├── GoldPsm.sol         Peg stability module: PAXG ⇄ bXAU 1:1 for a small fee, with a depeg guard.
 │   ├── GoldStablePool.sol  2-coin StableSwap (Curve invariant) for bXAU/PAXG and bXAU/XAUT; its own LP token.
 │   └── GoldLiquidityLocker.sol  Three-tier lock (30/180/365 d → 1×/2×/3×) sharing the pool's staker fees.
 ├── keeper/                 Off-chain bots (Node ≥ 18, ethers 6)
@@ -67,6 +69,7 @@ collateral/
 │   ├── FlashKeeper.t.sol       5 tests: profit, profit floor, repayment, access, router rules.
 │   ├── GoldStablePool.t.sol    16 tests: maths, single-asset and paired liquidity, fees, decimals, safety.
 │   ├── GoldLiquidityLocker.t.sol  12 tests: tier weights, both entry paths, locks, relock, kick, emergency exit.
+│   ├── GoldPsm.t.sol           10 tests plus 1 property test: 1:1 swaps, depeg guard, ceiling, shutdown.
 │   ├── fuzz/                   10 property tests: VaultFuzz, PoolFuzz, LockerFuzz (16 invariants).
 │   ├── DeployGoldVault.t.sol   Runs the real deploy script against stand-ins etched at mainnet addresses.
 │   ├── GoldMocks.sol           PAXG-like (fee-on-transfer), XAUT-like (6 dec, no-return) and feed mocks.
@@ -97,6 +100,7 @@ Maker equivalents:
 | DSPause | `GoldTimelock` |
 | ESM | `GoldGuardian` |
 | DssFlash | `GoldFlash` |
+| DssPsm | `GoldPsm` |
 
 ---
 
@@ -464,6 +468,46 @@ cage()  →  skim(ilk, urn) for every indebted urn  →  urn owners free() the e
 
 ---
 
+## Peg stability module
+
+`GoldPsm` is what holds bXAU at one ounce. It swaps PAXG and bXAU **1:1** for a small fee, in both directions:
+
+| Call | You give | You get | Effect on the peg |
+|---|---|---|---|
+| `sellGem(amount, minOut)` | PAXG | bXAU, 1:1 minus `tin` (0.10%) | Caps bXAU's price: if bXAU trades above 1 oz, anyone mints it here and sells it. |
+| `buyGem(amount, maxIn)` | bXAU, 1:1 plus `tout` (0.10%) | PAXG | Floors bXAU's price: if bXAU trades below 1 oz, anyone buys it and redeems here. |
+
+Without a PSM, the only way to create bXAU is a 120%-collateralised loan, which is a weak anchor. With it,
+arbitrage keeps bXAU within about 0.1% of PAXG, plus PAXG's own 0.02% transfer fee per hop.
+
+```bash
+cast send $PAXG "approve(address,uint256)" $PSM 10000000000000000000
+cast send $PSM  "sellGem(uint256,uint256)" 10000000000000000000 $MIN_BXAU_OUT    # 10 PAXG → ≈ 9.986 bXAU
+cast send $BXAU "approve(address,uint256)" $PSM $(cast max-uint)
+cast send $PSM  "buyGem(uint256,uint256)"  5000000000000000000 $MAX_BXAU_IN      # ≈ 5.005 bXAU → 5 PAXG (before PAXG's fee)
+cast call $PSM  "reserves()(uint256)"        # PAXG available to redeem
+cast call $PSM  "pegHealthy()(bool)"         # is minting open?
+```
+
+**How it stays on the books.** As in Maker, the PSM is an ordinary position owner in its own collateral type,
+`PSM-PAXG-A`, set to a 100% ratio, zero fee, zero minimum debt and a par price. Every bXAU it mints is vault
+debt backed 1:1 by PAXG locked in that position. It counts against that type's ceiling (500 oz at launch) and
+is settled like any other position at shutdown. The PSM holds no minting rights of its own.
+
+**Depeg guard.** A PSM accepts the peg at face value, so a depegging token would be dumped into it for good
+bXAU. Maker's PSM has no defence against this; this one does:
+
+- `sellGem` works only while PAXG's **market** price (the same Chainlink-based price the vault uses for
+  `PAXG-A`) is fresh and at least `floor`, 0.995 oz at launch. Otherwise it reverts with `Depegged`.
+- `buyGem` is never blocked, so holders can always redeem.
+- The ceiling bounds the worst case: at most 500 oz of bXAU can ever be backed by PAXG at face value.
+
+**Fees** accumulate as bXAU in the PSM. Anyone can call `collect()` to send them to the treasury.
+
+**Governance (through the timelock):** `setFees(tin, tout)` with each at most 1%, `setFloor`, `setTreasury`,
+and the ceiling through `vault.file("PSM-PAXG-A", "line", …)`. The stability fee of `PSM-PAXG-A` **must stay
+zero**: the 1:1 accounting assumes it.
+
 ## Liquidity pools and long-term rewards
 
 bXAU needs a market: borrowers buy it back to repay, and keepers sell seized collateral for it.
@@ -617,6 +661,7 @@ RPC_URL=… VAULT=0x… PRIVATE_KEY=… FLASH_KEEPER=0x… ROUTER=0x… ROUTE=./
 | `FROM_BLOCK` | First block to scan. Set it to the vault's deploy block. |
 | `INTERVAL` | Seconds between passes. Default 30. |
 | `MIN_PROFIT` | Minimum collateral profit per flash job, in token units. Default 0, meaning any profit. |
+| `GAS_MARGIN_PCT` | Extra gas on top of every estimate. Default 30. The vault needs slightly more gas when a transaction is mined in a later second than it was estimated in, and unused gas is refunded. |
 | `BUFFER_BPS` | Extra bXAU on top of `owed`, covering fees that accrue before inclusion. Default 10 (0.10%). |
 
 **Setting up flash liquidation**
@@ -647,13 +692,13 @@ cost gas, never principal.
 The timelock only protects users if someone is reading its queue. Run the monitor beside the keeper:
 
 ```bash
-RPC_URL=… VAULT=0x… TIMELOCK=0x… GUARDIAN=0x… FLASH=0x… POOLS=0xPaxgPool,0xXautPool WEBHOOK_URL=https://hooks… node monitor.mjs
+RPC_URL=… VAULT=0x… TIMELOCK=0x… GUARDIAN=0x… FLASH=0x… PSM=0x… POOLS=0xPaxgPool,0xXautPool WEBHOOK_URL=https://hooks… node monitor.mjs
 ```
 
 | Severity | Raised for |
 |---|---|
-| **CRIT** | Guardian fired or vault caged; a new bXAU minter; vault ward changes; oracle replaced; an oracle down while it backs debt; books out of balance; a pool paused or its fee receiver changed; a **scheduled** call that changes authority, the oracle, the delay or a pool's fee receiver or pauser |
-| **WARN** | Any other scheduled governance call; bad debt appearing; an ilk ceiling over `UTIL_WARN`% used (default 90); a pool's smaller side under `IMBALANCE_WARN`% (default 20), a likely depeg; pool fee, A-ramp or owner changes; price-source, delay or owner changes |
+| **CRIT** | Guardian fired or vault caged; a new bXAU minter; vault ward changes; oracle replaced; an oracle down while it backs debt; books out of balance; a pool paused or its fee receiver changed; the PSM treasury changed; a **scheduled** call that changes authority, the oracle, the delay or a pool's fee receiver or pauser |
+| **WARN** | Any other scheduled governance call; bad debt appearing; an ilk ceiling over `UTIL_WARN`% used (default 90); a pool's smaller side under `IMBALANCE_WARN`% (default 20), a likely depeg; the PSM's mint gate closing; PSM fee or floor changes; pool fee, A-ramp or owner changes; price-source, delay or owner changes |
 | **INFO** | Executed or cancelled calls; parameter changes; liquidations; flap; recoveries |
 
 - Scheduled calls are decoded into readable form, for example
@@ -670,9 +715,11 @@ RPC_URL=… VAULT=0x… TIMELOCK=0x… GUARDIAN=0x… FLASH=0x… POOLS=0xPaxgPo
 
 1. Starts anvil and deploys the whole system with the production authority layout.
 2. Deploys the bXAU/PAXG pool and locker, and seeds the pool.
-3. Has a third party add **single-asset** liquidity through the locker in the Gold tier.
+3. Has a third party add **single-asset** liquidity through the locker in the Gold tier, and swap through the
+   PSM in both directions.
 4. Opens positions and depegs PAXG.
 5. Checks that:
+   - the PSM's position stays exactly 1:1, and its mint gate closes once PAXG depegs;
    - the keeper's dry run plans exactly one flash liquidation and sends nothing;
    - with `--execute`, a keeper holding **zero** bXAU clears the debt by selling into the **real pool**, and
      keeps the profit;
@@ -704,11 +751,13 @@ make deploy   GOV=0xYourMultisig SENDER=0xDeployerAddr ACCOUNT=deployer
 
 **What the script does**
 
-1. Deploys `PegSpotter`, `BasketGold` and `GoldVault`, makes the vault bXAU's minter and configures both ilks.
+1. Deploys `PegSpotter`, `BasketGold` and `GoldVault`, makes the vault bXAU's minter and configures three ilks:
+   `PAXG-A`, `XAUT-A` and the PSM's `PSM-PAXG-A`.
 2. Checks that the broadcasting key really holds the constructor wards. If it doesn't, the run fails with
    `deployer != tx.origin; pass --sender`.
 3. Deploys `GoldTimelock` (admin `GOV`, delay `TIMELOCK_DELAY`, default 2 days), `GoldGuardian` (owner `GOV`)
-   and `GoldFlash` (max `FLASH_MAX`, default 500 oz), and makes the flash module a bXAU minter.
+   and `GoldFlash` (max `FLASH_MAX`, default 500 oz), and makes the flash module a bXAU minter. Deploys
+   `GoldPsm`, owned by the timelock.
 4. Hands over: the timelock gets a vault ward and ownership of the spotter and flash module, the guardian gets a
    vault ward, and the deployer is removed.
 5. Asserts the final layout. If any check fails, the whole run fails:
@@ -748,7 +797,10 @@ Launch defaults from the deploy script. Every one can be overridden with the env
 | Price source | PAXG/USD ÷ XAU/USD | **par** | |
 | Feed max age | 26 h | n/a | `PAXG_MAX_AGE`, `XAU_MAX_AGE` (s) |
 
-The global `Line` defaults to 1,100 oz (`GOLD_LINE_GLOBAL`). The timelock delay defaults to 2 days
+PSM (`PSM-PAXG-A`): ceiling 500 oz (`PSM_LINE`), `tin` and `tout` 0.10% (`PSM_TIN`, `PSM_TOUT`, WAD fractions),
+depeg floor 0.995 oz (`PSM_FLOOR`), fees paid to `TREASURY` (default `GOV`).
+
+The global `Line` defaults to 1,600 oz (`GOLD_LINE_GLOBAL`). The timelock delay defaults to 2 days
 (`TIMELOCK_DELAY`, seconds, at most 30 days) and the flash-mint ceiling to 500 oz (`FLASH_MAX`, WAD).
 
 **Why XAUT is stricter:** mainnet has no Chainlink XAUT/USD feed, so XAUT is priced at par. An XAUT depeg is
@@ -817,9 +869,10 @@ forge test -vv
 | FlashKeeper | Liquidates and keeps the profit; profit floor; under-selling cannot repay; only the owner can run or sweep; strangers can't trigger the callback; system contracts refused as router |
 | StableSwap pool | First deposit mints D and burns the minimum; needs both coins; balanced deposits pay no fee; single-asset deposit and single-coin exit match their quotes; proportional exit; swaps near par with a 50/50 fee split; `getDx` inverts `exchange`; virtual price never falls under heavy two-way trading; slippage bounds; 6-decimal no-return coin; fee-on-transfer credited correctly; pause stops swaps and deposits but never withdrawals; fee cap; A-ramp bounds and interpolation; only the receiver collects; solvency after mixed activity |
 | Tiered locker | Tier table; Gold earns 3× Bronze for equal LP; `pending` is exact; pairing and single-asset entry; no lingering approvals; locked until expiry; withdraw to LP or one coin; relock only upgrades and extends; kick ends expired boosts; fees with no lockers go to the first lockers and not to late joiners; owner-only claim and withdraw; unlocked LPs still earn via virtual price |
+| Peg stability module | 1:1 mint minus fee; 1:1 redeem plus fee; depeg guard blocks minting on a low or stale price but never redemption; ceiling; slippage bounds; can't redeem beyond reserves; fees to treasury; fee cap and owner checks; the PSM position can't be liquidated; shutdown settles it like any position. Property test: under random swaps, borrowing and price moves the PSM position stays exactly 1:1 and the books balance. |
 | Property tests (`test/fuzz/`) | Random action sequences check 16 invariants: vault books, per-ilk and global debt sums, collateral custody, draw ratio, no bad debt while solvent, shutdown always completes; pool virtual price never falls, solvency, exits never fail, no profitable round trips, quotes equal execution; locker weights add up, rewards conserved, every expired position can exit. See [docs/AUDIT.md](docs/AUDIT.md). |
 | Pool deployment | `DeployGoldPools` against etched mainnet addresses: owner is the timelock, pauser is `GOV`, lockers are the fee receivers, A, fee and share are as configured |
-| Bots, end to end (`make e2e`) | 17 checks on anvil: urn discovery; dry run; zero-capital flash liquidation through the real pool; a third-party single-asset Gold-tier LP earning fees; virtual price rising; decoded CRIT schedule alert; pool pause alert; guardian shutdown alert; alert deduplication |
+| Bots, end to end (`make e2e`) | 21 checks on anvil: PSM swaps and mint gate; urn discovery; dry run; zero-capital flash liquidation through the real pool; a third-party single-asset Gold-tier LP earning fees; virtual price rising; decoded CRIT schedule alert; pool pause alert; guardian shutdown alert; alert deduplication |
 | Deployment | The real script runs against etched mainnet addresses: timelock, guardian and flash wiring; parameters; deployer removed; `GOV` not a direct ward; governance not a bXAU minter |
 
 Each flow also asserts the books identity, `debt + sin == supply · RAY + surplus`.

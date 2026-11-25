@@ -10,6 +10,7 @@ Prepared for an independent reviewer. The code has **not** been audited.
 | `src/GoldStablePool.sol` | ~570 | Curve 2-coin StableSwap maths, re-implemented in Solidity. |
 | `src/GoldLiquidityLocker.sol` | ~340 | Reward accounting over two reward tokens. |
 | `src/PegSpotter.sol` | ~130 | Chainlink reads, staleness, par cap. |
+| `src/GoldPsm.sol` | ~230 | 1:1 swaps through a 100%-ratio urn; depeg guard. |
 | `src/GoldFlash.sol` | ~100 | ERC-3156 lender with mint rights. |
 | `src/FlashKeeper.sol` | ~145 | Arbitrary external call to an owner-chosen router. |
 | `src/GoldTimelock.sol` | ~100 | |
@@ -39,6 +40,7 @@ Each is enforced by a property test in `test/fuzz/` (500 runs by default; CI run
 | P3 | Proportional withdrawal never reverts | same |
 | P4 | Swap round trips and single-asset in/out never return more value than put in | `testFuzz_SwapRoundTripNeverProfits`, `testFuzz_SingleAssetInOutNeverProfits` |
 | P5 | `getDy`, `calcTokenAmount`, `calcWithdrawOneCoin` equal execution; `getDx` covers the target | `testFuzz_QuotesMatchExecution`, `testFuzz_GetDxCoversRequestedOutput` |
+| S1 | The PSM urn has `ink == art`, the PSM holds no peg tokens, and the vault books balance, under any mix of swaps, borrowing and price moves | `GoldPsm.t.sol: testFuzz_PsmStaysOneToOne` |
 | L1 | `totalWeight == Σ weight`, `totalLocked == Σ amount == LP held` | `LockerFuzz.testFuzz_RewardsConservedAndExitsAlwaysWork` |
 | L2 | Total rewards paid never exceed rewards harvested; every expired position can exit | same |
 
@@ -56,6 +58,8 @@ Each is enforced by a property test in `test/fuzz/` (500 runs by default; CI run
 - `GOV` is trusted, with a public delay on everything except shutdown and pool pause.
 - Chainlink XAU/USD and PAXG/USD are trusted within their staleness bounds. There is no additional
   price delay.
+- The PSM takes PAXG at face value up to its ceiling. The depeg guard depends on the PAXG/USD and XAU/USD
+  feeds; a depeg faster than the feeds update can be sold into the PSM up to the ceiling.
 - XAUT is valued at par inside the vault. A depeg is not visible on-chain; its ceiling is small and its
   ratio high for that reason.
 - PAXG and XAUT are upgradeable, pausable tokens with blacklists. If an issuer freezes the vault or a
@@ -73,7 +77,9 @@ Each is enforced by a property test in `test/fuzz/` (500 runs by default; CI run
 5. **`GoldLiquidityLocker._harvest`** balance-delta accounting when a coin is sent to the locker directly.
 6. **`FlashKeeper`** arbitrary router call: approvals are scoped to the seized amount and reset.
 7. **`GoldFlash`** holding mint rights: the only path is mint, callback, burn of the same amount.
-8. **Read-only reentrancy** through `getVirtualPrice` and the vault's views.
+8. **`GoldPsm`** relies on the PSM ilk's rate staying exactly 1 (zero stability fee) and on a par price.
+   Check what happens if governance mis-files `duty`, `mat` or the spotter source for that ilk.
+9. **Read-only reentrancy** through `getVirtualPrice` and the vault's views.
 
 ## Known limits (accepted)
 

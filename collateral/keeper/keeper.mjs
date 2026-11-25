@@ -18,13 +18,14 @@
 //   FROM_BLOCK      first block to scan for positions (default 0; set to the vault's deploy block)
 //   INTERVAL        seconds between passes (default 30)
 //   MIN_PROFIT      minimum peg profit per flash job, in peg units (default 0 = any profit)
+//   GAS_MARGIN_PCT  extra gas on top of every estimate, in % (default 30; unused gas is refunded)
 //   BUFFER_BPS      extra bXAU buffer on top of the owed amount, covers fees accruing between the
 //                   read and the inclusion of the tx (default 10 = 0.10%)
 //
 // Strategy per unsafe urn: if the signer holds enough bXAU, liquidate directly; otherwise, if a
 // FlashKeeper and a route are configured, flash-mint, liquidate and sell; otherwise report it.
 // Every transaction is simulated (eth_call) first and skipped if the simulation reverts.
-import { ethers, ABI, WAD, b32, fmt, divUp, env, isMain, getLogs, sleep, headBlock } from './lib.mjs';
+import { ethers, ABI, WAD, b32, fmt, divUp, env, isMain, getLogs, sleep, headBlock, PaddedProvider } from './lib.mjs';
 
 /** Mirror of GoldVault.liquidate's maths, to predict wad and gemOut for a full liquidation. */
 export function predict({ tab, ink, price, chop, scale }) {
@@ -188,7 +189,7 @@ async function main() {
   const args = new Set(process.argv.slice(2));
   const execute = args.has('--execute');
   const once = args.has('--once');
-  const provider = new ethers.JsonRpcProvider(env('RPC_URL'));
+  const provider = new PaddedProvider(env('RPC_URL')); // every transaction gets a gas margin
   const pk = process.env.PRIVATE_KEY;
   if (execute && !pk) throw new Error('--execute needs PRIVATE_KEY');
   const signer = pk ? new ethers.Wallet(pk, provider) : null;

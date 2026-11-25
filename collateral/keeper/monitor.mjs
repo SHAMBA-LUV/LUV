@@ -11,6 +11,7 @@
 //                someone reads Schedule events)
 //   GUARDIAN     GoldGuardian address
 //   FLASH        GoldFlash address
+//   PSM          GoldPsm address (fee, floor, treasury changes; mint gate closing on a depeg)
 //   POOLS        comma-separated GoldStablePool addresses (pause, fee/A/receiver changes, imbalance)
 //   IMBALANCE_WARN  WARN when a pool's smaller side falls below this share, in % (default 20) —
 //                   in a pool of 1-oz claims, a lopsided pool is the market's depeg signal
@@ -28,7 +29,7 @@ import { ethers, ABI, RAY, b32, fmt, env, isMain, getLogs, webhook, sleep, headB
 
 const DANGEROUS = new Set([
   'fileSpotter', 'rely', 'deny', 'setAdmin', 'setDelay', 'transferOwnership', 'fileSrc', 'fileXau', 'cage',
-  'setFeeReceiver', 'setPauser',
+  'setFeeReceiver', 'setPauser', 'setTreasury', 'setFloor',
 ]);
 
 const decoders = [
@@ -38,6 +39,7 @@ const decoders = [
   ['guardian', new ethers.Interface(ABI.guardian)],
   ['flash', new ethers.Interface(ABI.flash)],
   ['pool', new ethers.Interface(ABI.pool)],
+  ['psm', new ethers.Interface(ABI.psm)],
 ];
 
 function show(v) {
@@ -72,7 +74,7 @@ async function wire(cfg) {
   const spotter = new ethers.Contract(await vault.spotter(), ABI.spotter, p);
   const names = { [cfg.vault.toLowerCase()]: 'vault', [bxau.target.toLowerCase()]: 'bXAU', [spotter.target.toLowerCase()]: 'spotter' };
   const c = { vault, bxau, spotter, names };
-  for (const k of ['timelock', 'guardian', 'flash']) {
+  for (const k of ['timelock', 'guardian', 'flash', 'psm']) {
     if (cfg[k]) {
       c[k] = new ethers.Contract(cfg[k], ABI[k], p);
       names[cfg[k].toLowerCase()] = k;
@@ -102,7 +104,7 @@ export async function pollOnce(cfg, state) {
 
   // ── events ──
   if (state.from <= head) {
-    const sources = [w.vault, w.bxau, w.spotter, w.timelock, w.guardian, w.flash, ...w.pools.map((x) => x.pool)]
+    const sources = [w.vault, w.bxau, w.spotter, w.timelock, w.guardian, w.flash, w.psm, ...w.pools.map((x) => x.pool)]
       .filter(Boolean);
     const byAddr = new Map(sources.map((c) => [c.target.toLowerCase(), c]));
     const logs = await getLogs(provider, { address: [...byAddr.keys()] }, state.from, head);
@@ -199,6 +201,18 @@ export async function pollOnce(cfg, state) {
         case 'flash.OwnershipTransferred':
           push('WARN', `${src} owner changed`, `${a.from} → ${a.to}`, l);
           break;
+        case 'psm.SetFees':
+          push('WARN', 'PSM fees changed', `tin ${fmt(a.tin * 100n)}%, tout ${fmt(a.tout * 100n)}%`, l);
+          break;
+        case 'psm.SetFloor':
+          push('WARN', 'PSM depeg floor changed', `${fmt(a.floor)} oz/token`, l);
+          break;
+        case 'psm.SetTreasury':
+          push('CRIT', 'PSM treasury changed', a.treasury, l);
+          break;
+        case 'psm.OwnershipTransferred':
+          push('WARN', 'psm owner changed', `${a.from} → ${a.to}`, l);
+          break;
         case 'flash.SetMax':
           push('INFO', 'flash-mint ceiling changed', `${fmt(a.max)} bXAU`, l);
           break;
@@ -235,6 +249,10 @@ export async function pollOnce(cfg, state) {
         `${fmt(used)} / ${fmt(i.line)} oz`);
     }
   }
+  if (w.psm) {
+    check('psm:gate', !(await w.psm.pegHealthy()), 'WARN', 'PSM minting closed by the depeg guard',
+      'the peg is below the PSM floor or its feed is stale; redemptions remain open');
+  }
   for (const { pool, label, decs } of w.pools) {
     const [b0, b1, paused] = await Promise.all([pool.balances(0), pool.balances(1), pool.paused()]);
     const n0 = b0 * 10n ** BigInt(18 - Number(decs[0]));
@@ -266,6 +284,7 @@ async function main() {
     guardian: process.env.GUARDIAN || null,
     flash: process.env.FLASH || null,
     utilWarn: Number(env('UTIL_WARN', '90')),
+    psm: process.env.PSM || null,
     pools: (process.env.POOLS ?? '').split(',').map((x) => x.trim()).filter(Boolean),
     imbalanceWarn: Number(env('IMBALANCE_WARN', '20')),
   };

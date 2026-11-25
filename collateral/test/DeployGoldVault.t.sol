@@ -80,8 +80,20 @@ contract DeployGoldVaultTest is TwTest {
         assertEq(d.flash.owner(), address(d.timelock));
         assertEq(d.flash.max(), 500e18);
         assertEq(spotter.owner(), address(d.timelock));
-        assertEq(vault.ilkCount(), 2);
-        assertEq(vault.Line(), 1_100e18);
+        assertEq(vault.ilkCount(), 3);
+        assertEq(vault.Line(), 1_600e18);
+        (,,,,,, uint256 matS, uint256 chopS, uint256 lineS, uint256 dustS,) = vault.ilks("PSM-PAXG-A");
+        assertEq(matS, 1e27); // PSM ilk: exactly 100%, no penalty, no dust
+        assertEq(chopS, 1e18);
+        assertEq(lineS, 500e18);
+        assertEq(dustS, 0);
+        assertEq(d.psm.owner(), address(d.timelock));
+        assertEq(d.psm.treasury(), GOV);
+        assertEq(d.psm.tin(), 1e15);
+        assertEq(d.psm.floor(), 995e15);
+        assertEq(d.psm.gem(), 0x45804880De22913dAFE09f4980848ECE6EcbAf78);
+        assertTrue(d.psm.pegHealthy());
+        assertEq(bxau.wards(address(d.psm)), 0);
 
         (,,,,,, uint256 matP, uint256 chopP, uint256 lineP,,) = vault.ilks("PAXG-A");
         (, uint256 scaleX,,,,, uint256 matX,, uint256 lineX,,) = vault.ilks("XAUT-A");
