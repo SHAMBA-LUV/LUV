@@ -165,6 +165,40 @@ contract GoldStablePoolTest is TwTest {
         assertEq(p2.balances(1), pf.balanceOf(address(p2)));
     }
 
+    /// Minimum-out bounds are enforced on what the user actually receives, after the output
+    /// token's own transfer fee.
+    function testSlippageCheckedOnAmountActuallyReceived() public {
+        MockGem pf = new MockGem("PAX Gold", "PAXG", 18, 2, false); // 2 bps transfer fee
+        GoldStablePool p2 = new GoldStablePool(address(bx), address(pf), 200, FEE, SHARE, address(this), "x", "x");
+        _fund(p2, bx, pf, alice, 2000e18, 2000e18);
+        vm.prank(alice);
+        uint256 lp = p2.addLiquidity([uint256(1000e18), uint256(1000e18)], 0);
+
+        uint256 quote = p2.getDy(0, 1, 10e18); // what the pool will send
+        uint256 net = quote - quote * 2 / 10000; // what arrives after PAXG's fee
+        vm.prank(alice);
+        vm.expectRevert(GoldStablePool.Slippage.selector);
+        p2.exchange(0, 1, 10e18, quote);
+        uint256 before = pf.balanceOf(alice);
+        vm.prank(alice);
+        p2.exchange(0, 1, 10e18, net);
+        assertEq(pf.balanceOf(alice) - before, net);
+
+        uint256 q1 = p2.calcWithdrawOneCoin(lp / 10, 1);
+        vm.prank(alice);
+        vm.expectRevert(GoldStablePool.Slippage.selector);
+        p2.removeLiquidityOneCoin(lp / 10, 1, q1);
+        vm.prank(alice);
+        p2.removeLiquidityOneCoin(lp / 10, 1, q1 - q1 * 2 / 10000);
+
+        uint256 share = p2.balances(1) * (lp / 10) / p2.totalSupply(); // what the pool will send
+        vm.prank(alice);
+        vm.expectRevert(GoldStablePool.Slippage.selector);
+        p2.removeLiquidity(lp / 10, [uint256(0), share]);
+        vm.prank(alice);
+        p2.removeLiquidity(lp / 10, [uint256(0), share - share * 2 / 10000 - 1]);
+    }
+
     // ─────────────────────────────── safety ───────────────────────────────
 
     function testPauseStopsSwapsAndDepositsButNeverWithdrawals() public {

@@ -160,6 +160,20 @@ contract GoldLiquidityLockerTest is TwTest {
         assertTrue(px.balanceOf(alice) - before >= out);
     }
 
+    function testWithdrawOneCoinMinIsWhatTheOwnerReceives() public {
+        vm.prank(alice);
+        uint256 id = locker.lock(100e18, BRONZE);
+        vm.warp(block.timestamp + 30 days);
+        uint256 quote = pool.calcWithdrawOneCoin(100e18, 1);
+        vm.prank(alice);
+        vm.expectRevert(GoldLiquidityLocker.Slippage.selector);
+        locker.withdrawOneCoin(id, 1, quote + 1);
+        uint256 before = px.balanceOf(alice);
+        vm.prank(alice);
+        uint256 out = locker.withdrawOneCoin(id, 1, quote);
+        assertEq(px.balanceOf(alice) - before, out);
+    }
+
     function testRelockOnlyUpgradesAndExtends() public {
         vm.prank(alice);
         uint256 id = locker.lock(100e18, BRONZE);

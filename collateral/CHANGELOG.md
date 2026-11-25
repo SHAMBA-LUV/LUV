@@ -1,5 +1,15 @@
 # Changelog
 
+### 0.6.1
+
+Patch release.
+
+| Area | Change |
+|---|---|
+| Fix: pool slippage limits | `exchange`, `removeLiquidity` and `removeLiquidityOneCoin` checked the minimum-out against the amount the pool sent. With a fee-on-transfer output token (PAXG), the user could receive up to that fee less than their minimum. The check now uses the amount the recipient actually received. |
+| Fix: locker `withdrawOneCoin` | `minOut` and the return value are now the amount the owner actually receives, after both transfer hops. |
+| Tests | 2 new unit tests (82 total). |
+
 ### 0.6.0
 
 Property testing and project material.

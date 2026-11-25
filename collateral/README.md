@@ -9,8 +9,8 @@ Solidity 0.8.24.
 
 | | |
 |---|---|
-| Version | 0.6.0 (property tests, locker fix, audit brief; see [CHANGELOG.md](CHANGELOG.md)) |
-| Tests | 80 Foundry tests (70 unit, 10 property/fuzz) plus 17 end-to-end checks on a live local chain |
+| Version | 0.6.1 (slippage limits enforced on amounts actually received; see [CHANGELOG.md](CHANGELOG.md)) |
+| Tests | 82 Foundry tests (72 unit, 10 property/fuzz) plus 17 end-to-end checks on a live local chain |
 | Docs | [Architecture](docs/ARCHITECTURE.md) · [Audit brief](docs/AUDIT.md) · [Changelog](CHANGELOG.md) |
 | Chain | Ethereum mainnet (addresses verified on-chain on 2026-11-07) |
 | Status | **Not audited. Not deployed.** |
@@ -65,8 +65,8 @@ collateral/
 │   ├── GoldVault.t.sol         26 behaviour tests.
 │   ├── GoldGovernance.t.sol    11 tests: timelock, guardian, flash-mint, flash-liquidation.
 │   ├── FlashKeeper.t.sol       5 tests: profit, profit floor, repayment, access, router rules.
-│   ├── GoldStablePool.t.sol    15 tests: maths, single-asset and paired liquidity, fees, decimals, safety.
-│   ├── GoldLiquidityLocker.t.sol  11 tests: tier weights, both entry paths, locks, relock, kick, emergency exit.
+│   ├── GoldStablePool.t.sol    16 tests: maths, single-asset and paired liquidity, fees, decimals, safety.
+│   ├── GoldLiquidityLocker.t.sol  12 tests: tier weights, both entry paths, locks, relock, kick, emergency exit.
 │   ├── fuzz/                   10 property tests: VaultFuzz, PoolFuzz, LockerFuzz (16 invariants).
 │   ├── DeployGoldVault.t.sol   Runs the real deploy script against stand-ins etched at mainnet addresses.
 │   ├── GoldMocks.sol           PAXG-like (fee-on-transfer), XAUT-like (6 dec, no-return) and feed mocks.
@@ -500,7 +500,7 @@ cast send $POOL "exchange(uint256,uint256,uint256,uint256)" 1 0 10e18 $(cast cal
 
 | View | Use |
 |---|---|
-| `getDy(i,j,dx)` | Quote for selling `dx` of coin `i`. |
+| `getDy(i,j,dx)` | Quote for selling `dx` of coin `i`: the amount the pool sends. When the output is PAXG, set your minimum about 0.02% lower to allow for PAXG's own transfer fee. |
 | `getDx(i,j,dy)` | Input needed to receive `dy`; used by the keeper route. |
 | `calcTokenAmount([a0,a1])` | LP minted by a deposit, fees included. |
 | `calcWithdrawOneCoin(lp,i)` | Coin received by a single-coin exit. |
@@ -567,7 +567,7 @@ to the remaining lockers.
 | Fee-on-transfer tokens credited correctly | Deposits are measured by balance delta (PAXG). Tokens that return no bool are supported (XAUT). |
 | Gradual, bounded governance | A changes only by a ramp of at least 1 day and at most 10×, once per day. The fee is capped at 1%. Every change goes through the 2-day timelock. |
 | Read-only reentrancy guard | `getVirtualPrice` reverts mid-call, so integrators can't read a manipulated price. |
-| Slippage bounds | Every swap, deposit and withdrawal takes a minimum-out. |
+| Slippage bounds | Every swap, deposit and withdrawal takes a minimum-out. Output minimums are checked against what the recipient actually received, after any token transfer fee (PAXG charges 0.02%). |
 | Immutable rewards contract | The locker has no owner, no admin and fixed tiers. |
 | Rewards can never block principal | Reward maths rounds down so payouts never exceed what was collected, and `emergencyWithdraw` returns LP without any reward transfer. |
 

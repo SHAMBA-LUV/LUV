@@ -100,6 +100,7 @@ contract GoldLiquidityLocker {
     error NotExpired();
     error ZeroAmount();
     error TransferFailed();
+    error Slippage();
 
     modifier nonReentrant() {
         if (_lock != 1) revert Reentrancy();
@@ -191,14 +192,19 @@ contract GoldLiquidityLocker {
         if (!pool.transfer(msg.sender, amount)) revert TransferFailed();
     }
 
-    /// After unlock: rewards + the LP redeemed straight to one coin.
+    /// After unlock: rewards + the LP redeemed straight to one coin. `out` and `minOut` are the
+    /// amount the owner actually receives.
     function withdrawOneCoin(uint256 id, uint256 i, uint256 minOut) external nonReentrant returns (uint256 out) {
         uint256 amount = _close(id);
         address coin = i == 0 ? coin0 : coin1;
         uint256 before = IERC20L(coin).balanceOf(address(this));
-        pool.removeLiquidityOneCoin(amount, i, minOut);
-        out = IERC20L(coin).balanceOf(address(this)) - before;
-        _send(coin, msg.sender, out);
+        pool.removeLiquidityOneCoin(amount, i, 0);
+        uint256 got = IERC20L(coin).balanceOf(address(this)) - before;
+        // minOut is enforced on what the owner actually receives, after both transfer hops
+        uint256 ownerBefore = IERC20L(coin).balanceOf(msg.sender);
+        _send(coin, msg.sender, got);
+        out = IERC20L(coin).balanceOf(msg.sender) - ownerBefore;
+        if (out < minOut) revert Slippage();
     }
 
     /// Extend a position into the same or a longer tier (never shortens an existing lock).

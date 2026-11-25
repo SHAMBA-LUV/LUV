@@ -28,7 +28,8 @@ pragma solidity ^0.8.24;
  *   · tokens returning no bool are supported (XAUT)
  *   · A changes only by gradual ramp (≥ 1 day, ≤ 10× per ramp); fee capped at 1%
  *   · getVirtualPrice reverts while the pool is mid-call (read-only reentrancy guard)
- *   · every state-changing entry point takes a slippage bound
+ *   · every state-changing entry point takes a slippage bound, and output bounds are checked
+ *     against what the recipient ACTUALLY received (after any token transfer fee)
  *
  * Self-contained (zero imports). The pool is its own LP token (ERC-20, 18 decimals).
  */
@@ -213,12 +214,11 @@ contract GoldStablePool {
         uint256 supply = totalSupply;
         for (uint256 i; i < N; ++i) {
             out[i] = balances[i] * amount / supply;
-            if (out[i] < minAmounts[i]) revert Slippage();
             balances[i] -= out[i];
         }
         _burn(msg.sender, amount);
         for (uint256 i; i < N; ++i) {
-            _push(i, msg.sender, out[i]);
+            _pushMin(i, msg.sender, out[i], minAmounts[i]);
         }
         emit RemoveLiquidity(msg.sender, out, amount, totalSupply);
     }
@@ -232,18 +232,18 @@ contract GoldStablePool {
         if (i >= N) revert BadParam();
         uint256 dyFee;
         (dy, dyFee) = _calcWithdrawOneCoin(amount, i);
-        if (dy < minAmount) revert Slippage();
         uint256 sf = dyFee * stakerShare / FEE_DENOM;
         balances[i] -= dy + sf;
         stakerFees[i] += sf;
         _burn(msg.sender, amount);
-        _push(i, msg.sender, dy);
+        _pushMin(i, msg.sender, dy, minAmount);
         emit RemoveLiquidityOne(msg.sender, amount, i, dy, totalSupply);
     }
 
     // ═════════════════════════════════ swaps ═════════════════════════════════
 
-    /// Sell `dx` of coin i for at least `minDy` of coin j (sent to msg.sender).
+    /// Sell `dx` of coin i; msg.sender must actually receive at least `minDy` of coin j.
+    /// The return value is the amount the pool sent (before any transfer fee of coin j).
     function exchange(uint256 i, uint256 j, uint256 dx, uint256 minDy)
         external
         nonReentrant
@@ -257,11 +257,10 @@ contract GoldStablePool {
         uint256 dyFee;
         uint256 stakerPart;
         (dy, dyFee, stakerPart) = _dy(i, j, got, xp);
-        if (dy < minDy) revert Slippage();
         balances[i] = old[i] + got;
         balances[j] = old[j] - dy - stakerPart;
         stakerFees[j] += stakerPart;
-        _push(j, msg.sender, dy);
+        _pushMin(j, msg.sender, dy, minDy);
         emit TokenExchange(msg.sender, i, got, j, dy, dyFee);
     }
 
@@ -560,6 +559,14 @@ contract GoldStablePool {
         (bool ok, bytes memory ret) = t.call(abi.encodeWithSelector(0x23b872dd, msg.sender, address(this), amount));
         if (!ok || (ret.length != 0 && !abi.decode(ret, (bool)))) revert TransferFailed();
         return IERC20P(t).balanceOf(address(this)) - before;
+    }
+
+    /// Send `amount` and require that `to` actually received at least `min` (fee-on-transfer safe).
+    function _pushMin(uint256 i, address to, uint256 amount, uint256 min) internal {
+        address t = _coin(i);
+        uint256 before = IERC20P(t).balanceOf(to);
+        _push(i, to, amount);
+        if (IERC20P(t).balanceOf(to) - before < min) revert Slippage();
     }
 
     function _push(uint256 i, address to, uint256 amount) internal {

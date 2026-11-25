@@ -49,6 +49,7 @@ Each is enforced by a property test in `test/fuzz/` (500 runs by default; CI run
 | 0.2.0 | Ten review findings in the vault and deploy script (bad debt from solvent positions, par fallback at shutdown, unbounded fee bricking shutdown, stuck collateral, lost redemption dust, and others). | See `CHANGELOG.md`. |
 | 0.5.0 | `addLiquidity` aliased a memory array and charged balanced deposits an imbalance fee. | Explicit copy. |
 | 0.6.0 | **Locker could be 1 wei short.** The "reward debt" formula can over-pay by 1 wei per settlement, so the last withdrawal could revert and lock LP tokens. Found by fuzzing. | Rewards are now `weight × Δacc`, rounded down. `emergencyWithdraw` added so principal never depends on a reward transfer. |
+| 0.6.1 | Pool minimum-out limits were checked before the output token's transfer fee, so a user could receive slightly less than their minimum. | Limits are checked on the amount actually received. |
 
 ## Trust assumptions
 
@@ -67,7 +68,8 @@ Each is enforced by a property test in `test/fuzz/` (500 runs by default; CI run
 2. **`GoldVault.skim` / `cash`** with fee-on-transfer collateral: PAXG's fee is paid by recipients.
 3. **`GoldStablePool` maths** against Curve's reference for extreme imbalance and A ramps mid-trade.
    `getDx` is our own addition and is not in Curve's 2-coin pools.
-4. **Fee-on-transfer on pool outputs.** `minDy` is checked before PAXG's outbound fee is taken.
+4. **Fee-on-transfer on pool outputs.** Since 0.6.1 minimums are checked on the recipient's balance
+   delta. Check that no path still compares against the pre-fee amount.
 5. **`GoldLiquidityLocker._harvest`** balance-delta accounting when a coin is sent to the locker directly.
 6. **`FlashKeeper`** arbitrary router call: approvals are scoped to the seized amount and reset.
 7. **`GoldFlash`** holding mint rights: the only path is mint, callback, burn of the same amount.
