@@ -1,0 +1,33 @@
+# CI for the collateral project. Active when this folder is the root of its own repository.
+# Inside a larger repository, copy this file to <repo>/.github/workflows/ and set
+# `defaults.run.working-directory: collateral`.
+name: collateral
+on:
+  push:
+  pull_request:
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+      - run: forge fmt --check
+      - run: forge build --sizes
+      - run: forge test -vv
+      - name: Deep fuzz
+        run: FOUNDRY_FUZZ_RUNS=5000 forge test --match-path 'test/fuzz/*'
+
+  bots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: forge build
+      - run: npm ci --no-audit --no-fund
+        working-directory: keeper
+      - run: node e2e.mjs
+        working-directory: keeper

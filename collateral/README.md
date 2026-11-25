@@ -9,8 +9,9 @@ Solidity 0.8.24.
 
 | | |
 |---|---|
-| Version | 0.5.0 (StableSwap pools, tiered LP rewards; see [Changelog](#changelog)) |
-| Tests | 69 Foundry tests plus 17 end-to-end checks on a live local chain |
+| Version | 0.6.0 (property tests, locker fix, audit brief; see [CHANGELOG.md](CHANGELOG.md)) |
+| Tests | 80 Foundry tests (70 unit, 10 property/fuzz) plus 17 end-to-end checks on a live local chain |
+| Docs | [Architecture](docs/ARCHITECTURE.md) · [Audit brief](docs/AUDIT.md) · [Changelog](CHANGELOG.md) |
 | Chain | Ethereum mainnet (addresses verified on-chain on 2026-11-07) |
 | Status | **Not audited. Not deployed.** |
 
@@ -65,10 +66,18 @@ collateral/
 │   ├── GoldGovernance.t.sol    11 tests: timelock, guardian, flash-mint, flash-liquidation.
 │   ├── FlashKeeper.t.sol       5 tests: profit, profit floor, repayment, access, router rules.
 │   ├── GoldStablePool.t.sol    15 tests: maths, single-asset and paired liquidity, fees, decimals, safety.
-│   ├── GoldLiquidityLocker.t.sol  10 tests: tier weights, both entry paths, locks, relock, kick, fee carry-over.
+│   ├── GoldLiquidityLocker.t.sol  11 tests: tier weights, both entry paths, locks, relock, kick, emergency exit.
+│   ├── fuzz/                   10 property tests: VaultFuzz, PoolFuzz, LockerFuzz (16 invariants).
 │   ├── DeployGoldVault.t.sol   Runs the real deploy script against stand-ins etched at mainnet addresses.
 │   ├── GoldMocks.sol           PAXG-like (fee-on-transfer), XAUT-like (6 dec, no-return) and feed mocks.
 │   └── TwTest.sol              Minimal test base (no forge-std).
+├── docs/
+│   ├── ARCHITECTURE.md     Components, roles, flows and units.
+│   └── AUDIT.md            Scope, invariants, past findings and focus areas for reviewers.
+├── .github/workflows/ci.yml  Format, build, tests, deep fuzz, end-to-end.
+├── .env.example            Every environment variable used by the scripts and bots.
+├── CHANGELOG.md
+├── LICENSE                 MIT
 ├── foundry.toml
 ├── Makefile
 └── README.md
@@ -95,10 +104,11 @@ Maker equivalents:
 
 ```bash
 curl -L https://foundry.paradigm.xyz | bash && foundryup   # once
-unzip collateral.zip && cd collateral
+unzip collateralized.zip && cd collateral
 make test           # or: forge test -vv
 make build          # contract sizes
 make gas            # gas report
+make fuzz           # property tests, 5,000 runs each
 make e2e            # keeper + monitor end-to-end on a local anvil (needs Node ≥ 18)
 ```
 
@@ -540,10 +550,13 @@ cast send $LOCKER "claim(uint256[])" "[$ID]"                        # any time
 cast send $LOCKER "relock(uint256,uint8)" $ID 2                     # extend or upgrade
 cast send $LOCKER "withdraw(uint256)" $ID                           # after unlock: LP + rewards
 cast send $LOCKER "withdrawOneCoin(uint256,uint256,uint256)" $ID 1 $MIN   # after unlock: straight to one coin
+cast send $LOCKER "emergencyWithdraw(uint256)" $ID                  # after unlock: LP only, rewards forfeited
 ```
 
 Approve the locker for the coins, or for the LP token when using `lock`. Locks are hard: there is no early
-exit.
+exit. `emergencyWithdraw` exists for one case: a reward token that cannot be transferred (for example, frozen by
+its issuer). It returns your LP after unlock without touching the reward tokens, and your unclaimed rewards go
+to the remaining lockers.
 
 ### Best practices built in
 
@@ -556,6 +569,7 @@ exit.
 | Read-only reentrancy guard | `getVirtualPrice` reverts mid-call, so integrators can't read a manipulated price. |
 | Slippage bounds | Every swap, deposit and withdrawal takes a minimum-out. |
 | Immutable rewards contract | The locker has no owner, no admin and fixed tiers. |
+| Rewards can never block principal | Reward maths rounds down so payouts never exceed what was collected, and `emergencyWithdraw` returns LP without any reward transfer. |
 
 ### Risks for liquidity providers
 
@@ -803,6 +817,7 @@ forge test -vv
 | FlashKeeper | Liquidates and keeps the profit; profit floor; under-selling cannot repay; only the owner can run or sweep; strangers can't trigger the callback; system contracts refused as router |
 | StableSwap pool | First deposit mints D and burns the minimum; needs both coins; balanced deposits pay no fee; single-asset deposit and single-coin exit match their quotes; proportional exit; swaps near par with a 50/50 fee split; `getDx` inverts `exchange`; virtual price never falls under heavy two-way trading; slippage bounds; 6-decimal no-return coin; fee-on-transfer credited correctly; pause stops swaps and deposits but never withdrawals; fee cap; A-ramp bounds and interpolation; only the receiver collects; solvency after mixed activity |
 | Tiered locker | Tier table; Gold earns 3× Bronze for equal LP; `pending` is exact; pairing and single-asset entry; no lingering approvals; locked until expiry; withdraw to LP or one coin; relock only upgrades and extends; kick ends expired boosts; fees with no lockers go to the first lockers and not to late joiners; owner-only claim and withdraw; unlocked LPs still earn via virtual price |
+| Property tests (`test/fuzz/`) | Random action sequences check 16 invariants: vault books, per-ilk and global debt sums, collateral custody, draw ratio, no bad debt while solvent, shutdown always completes; pool virtual price never falls, solvency, exits never fail, no profitable round trips, quotes equal execution; locker weights add up, rewards conserved, every expired position can exit. See [docs/AUDIT.md](docs/AUDIT.md). |
 | Pool deployment | `DeployGoldPools` against etched mainnet addresses: owner is the timelock, pauser is `GOV`, lockers are the fee receivers, A, fee and share are as configured |
 | Bots, end to end (`make e2e`) | 17 checks on anvil: urn discovery; dry run; zero-capital flash liquidation through the real pool; a third-party single-asset Gold-tier LP earning fees; virtual price rising; decoded CRIT schedule alert; pool pause alert; guardian shutdown alert; alert deduplication |
 | Deployment | The real script runs against etched mainnet addresses: timelock, guardian and flash wiring; parameters; deployer removed; `GOV` not a direct ward; governance not a bXAU minter |
@@ -813,62 +828,4 @@ Each flow also asserts the books identity, `debt + sin == supply · RAY + surplu
 
 ## Changelog
 
-### 0.5.0
-
-Liquidity pools and long-term LP rewards.
-
-| Area | Change |
-|---|---|
-| `GoldStablePool` | 2-coin Curve StableSwap with its own LP token: paired and single-asset deposits, proportional and single-coin exits, `getDx` inverse quotes, 4 bps fee split 50/50 between all LPs and locked LPs. A ramping, fee cap, withdrawals never pausable, first-depositor protection, fee-on-transfer and no-return tokens supported, read-only reentrancy guard. |
-| `GoldLiquidityLocker` | Immutable three-tier lock: Bronze 30 d at 1×, Silver 180 d at 2×, Gold 365 d at 3×. Pairing and single-asset zaps, claim, relock, kick of expired boosts, withdraw to LP or one coin, carry-over of fees with no lockers. |
-| Deployment | `DeployGoldPools.s.sol` deploys bXAU/PAXG (A 200) and bXAU/XAUT (A 100); the timelock owns them and `GOV` may only pause. |
-| Keeper | `ROUTE=stablepool` sells seized pegs into the pool. |
-| Monitor | `POOLS=` adds pause, fee, A-ramp and receiver alerts plus an imbalance (depeg) warning. |
-| End to end | Now uses the real pool and a third-party Gold-tier LP (17 checks). |
-| Fix during development | `addLiquidity` copied a memory array by reference, which charged balanced deposits an imbalance fee. Caught by tests before release. |
-
-### 0.4.0
-
-Operations tooling.
-
-| Area | Change |
-|---|---|
-| `FlashKeeper.sol` | A production capital-free liquidator for any DEX router. Owner-only, rejects untrusted callbacks and system routers, enforces a profit floor, repays or reverts. |
-| `keeper/keeper.mjs` | Liquidation bot: event-based urn discovery, prediction matching `liquidate()`, direct or flash strategy, simulation before sending, dry run by default, pluggable routes. |
-| `keeper/monitor.mjs` | Governance and health monitor: decoded timelock queue, severity levels, webhook delivery, deduplicated health checks, exit code for cron. |
-| `keeper/e2e.mjs` | Both bots verified against a live anvil chain (14 checks). |
-| Mocks | `MockSwap` moved into `test/GoldMocks.sol`. |
-
-### 0.3.0
-
-Governance and keeper infrastructure.
-
-| Area | Change |
-|---|---|
-| `GoldTimelock` | All governance goes through a public delay: 2 days by default, 14-day execution window, delay ≤ 30 days. The delay and admin can only change through the timelock itself. |
-| `GoldGuardian` | `GOV` can trigger an instant `cage()` and nothing else. |
-| `GoldFlash` | ERC-3156 flash-mint of bXAU: zero fee, per-call ceiling, disabled after cage, reentrancy-locked. Keepers no longer need to hold bXAU. |
-| Deploy script | Builds this authority layout and asserts it: `GOV` is never a direct ward and governance can't mint. |
-| Tests | 11 new tests, including an end-to-end flash liquidation. |
-
-### 0.2.0
-
-Fixes from the code review of 0.1.0.
-
-| Area | Change |
-|---|---|
-| XAUT | Gets its own 100 oz ceiling and 150% ratio, because it is priced at par and cannot be liquidated on price. |
-| Liquidation | In the band where collateral is worth more than the debt but less than debt × chop, the keeper now repays the whole debt and the protocol books no bad debt. `chop ≤ mat` is enforced. `maxWad` is respected (`OverMax`). |
-| Cage with oracle down | `cage()` falls back to the last good price, not 1 token = 1 oz. `poke()` lets keepers refresh that price. |
-| Duty | Capped at `MAX_DUTY`, about 100%/yr. Spotter calls are wrapped, so one ilk or oracle can no longer block `cage()`. |
-| Zero supply at thaw | `thaw()` no longer reverts when supply is 0. Governance can `sweep` the leftover collateral. |
-| Cash rounding | `cash()` pays against the remaining pool, so rounding dust goes to later redeemers instead of being lost. Added `quoteCash`. |
-| Deploy script | Asserts the deployer holds no rights and that the wiring is correct; range-checks the max ages. |
-| `init` | Reads decimals from the token. |
-| Views | `owed` and `isSafe` include fees not yet dripped (`rateNow`). |
-| Spotter | Caches feed decimals and rejects feeds without code. |
-| Project | Now a standalone Foundry project in `collateral/`. |
-
-### 0.1.0
-
-Initial CDP: bXAU, PegSpotter and GoldVault, with PAXG-A and XAUT-A.
+See [CHANGELOG.md](CHANGELOG.md).

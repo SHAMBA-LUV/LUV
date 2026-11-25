@@ -13,3 +13,7 @@ auto_detect_remappings = false
 
 [fmt]
 line_length = 120
+
+[fuzz]
+runs = 500
+seed = "0xc011a7e2a1"

@@ -25,9 +25,16 @@ pragma solidity ^0.8.24;
  * position into the same or a longer tier. Once a position's lock has expired its boost ends:
  * anyone may kick(id) it down to the base 1× weight, so expired boosts never dilute active ones.
  *
- * Accounting is MasterChef-style per weight (two reward tokens: the pool's two coins). Fees that
- * arrive while nothing is locked are held and paid out to the next lockers, never stranded.
- * Rewards are measured by balance delta (PAXG charges a transfer fee).
+ * Accounting is reward-per-weight (two reward tokens: the pool's two coins). Each position
+ * stores the accumulator value at its last settlement and is paid weight × Δacc, ROUNDED DOWN,
+ * so the sum of all payouts can never exceed what was harvested (the classic "reward debt"
+ * form can over-pay by 1 wei per settlement, which would block the last exit). Fees that arrive
+ * while nothing is locked are held and paid out to the next lockers, never stranded. Rewards
+ * are measured by balance delta (PAXG charges a transfer fee).
+ *
+ * Principal is never hostage to rewards: after unlock, emergencyWithdraw(id) returns the LP
+ * without touching the reward tokens (e.g. if one of them is frozen), forfeiting the rewards
+ * to the remaining lockers.
  */
 interface IGoldStablePool {
     function coins(uint256) external view returns (address);
@@ -57,8 +64,8 @@ contract GoldLiquidityLocker {
         uint64 unlockAt;
         uint256 amount; // LP locked
         uint256 weight; // amount × multiplier
-        uint256 debt0; // reward debt, coin0
-        uint256 debt1; // reward debt, coin1
+        uint256 paid0; // acc0 at the last settlement
+        uint256 paid1; // acc1 at the last settlement
     }
 
     IGoldStablePool public immutable pool;
@@ -84,6 +91,7 @@ contract GoldLiquidityLocker {
     event Claimed(uint256 indexed id, address indexed owner, uint256 amount0, uint256 amount1);
     event Withdrawn(uint256 indexed id, address indexed owner, uint256 amount);
     event Harvested(uint256 amount0, uint256 amount1);
+    event EmergencyWithdrawn(uint256 indexed id, address indexed owner, uint256 amount, uint256 lost0, uint256 lost1);
 
     error Reentrancy();
     error BadTier();
@@ -165,6 +173,24 @@ contract GoldLiquidityLocker {
         if (!pool.transfer(msg.sender, amount)) revert TransferFailed();
     }
 
+    /// After unlock: LP back with NO reward transfer. Use only if a reward token cannot be
+    /// transferred; the forfeited rewards go to the remaining (or next) lockers.
+    function emergencyWithdraw(uint256 id) external nonReentrant returns (uint256 amount) {
+        Position storage p = positions[id];
+        if (p.owner != msg.sender) revert NotOwner();
+        if (block.timestamp < p.unlockAt) revert StillLocked();
+        uint256 lost0 = p.weight * (acc0 - p.paid0) / ACC;
+        uint256 lost1 = p.weight * (acc1 - p.paid1) / ACC;
+        undistributed0 += lost0;
+        undistributed1 += lost1;
+        amount = p.amount;
+        totalLocked -= amount;
+        totalWeight -= p.weight;
+        delete positions[id];
+        emit EmergencyWithdrawn(id, msg.sender, amount, lost0, lost1);
+        if (!pool.transfer(msg.sender, amount)) revert TransferFailed();
+    }
+
     /// After unlock: rewards + the LP redeemed straight to one coin.
     function withdrawOneCoin(uint256 id, uint256 i, uint256 minOut) external nonReentrant returns (uint256 out) {
         uint256 amount = _close(id);
@@ -217,8 +243,8 @@ contract GoldLiquidityLocker {
             a0 += (pool.stakerFees(0) + undistributed0) * ACC / totalWeight;
             a1 += (pool.stakerFees(1) + undistributed1) * ACC / totalWeight;
         }
-        r0 = p.weight * a0 / ACC - p.debt0;
-        r1 = p.weight * a1 / ACC - p.debt1;
+        r0 = p.weight * (a0 - p.paid0) / ACC;
+        r1 = p.weight * (a1 - p.paid1) / ACC;
     }
 
     // ═══════════════════════════════ internals ═══════════════════════════════
@@ -264,7 +290,7 @@ contract GoldLiquidityLocker {
         id = nextId++;
         uint256 w = amount * m / BPS;
         uint64 until = uint64(block.timestamp) + d;
-        positions[id] = Position(owner, tier, until, amount, w, w * acc0 / ACC, w * acc1 / ACC);
+        positions[id] = Position(owner, tier, until, amount, w, acc0, acc1);
         _positionsOf[owner].push(id);
         totalLocked += amount;
         totalWeight += w;
@@ -285,12 +311,10 @@ contract GoldLiquidityLocker {
     }
 
     function _settle(uint256 id, Position storage p) internal {
-        uint256 e0 = p.weight * acc0 / ACC;
-        uint256 e1 = p.weight * acc1 / ACC;
-        uint256 r0 = e0 - p.debt0;
-        uint256 r1 = e1 - p.debt1;
-        p.debt0 = e0;
-        p.debt1 = e1;
+        uint256 r0 = p.weight * (acc0 - p.paid0) / ACC;
+        uint256 r1 = p.weight * (acc1 - p.paid1) / ACC;
+        p.paid0 = acc0;
+        p.paid1 = acc1;
         if (r0 != 0) _send(coin0, p.owner, r0);
         if (r1 != 0) _send(coin1, p.owner, r1);
         if (r0 != 0 || r1 != 0) emit Claimed(id, p.owner, r0, r1);
@@ -300,8 +324,6 @@ contract GoldLiquidityLocker {
     function _reweight(Position storage p, uint256 w) internal {
         totalWeight = totalWeight - p.weight + w;
         p.weight = w;
-        p.debt0 = w * acc0 / ACC;
-        p.debt1 = w * acc1 / ACC;
     }
 
     function _send(address token, address to, uint256 amount) internal {

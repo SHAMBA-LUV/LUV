@@ -215,6 +215,36 @@ contract GoldLiquidityLockerTest is TwTest {
         assertEq(q0 + q1, 0); // late joiners cannot capture fees earned before they locked
     }
 
+    function testEmergencyWithdrawReturnsLpAndForfeitsRewardsToOthers() public {
+        vm.prank(alice);
+        uint256 a = locker.lock(100e18, BRONZE);
+        vm.prank(bob);
+        uint256 b = locker.lock(100e18, GOLD);
+        _trade(6);
+        vm.prank(alice);
+        locker.claim(_ids(a)); // harvest, so both have settled rewards on the books
+        _trade(6);
+        vm.prank(bob);
+        locker.claim(_ids(b));
+        (uint256 owed0, uint256 owed1) = locker.pending(a);
+        assertGt(owed0 + owed1, 0);
+
+        vm.prank(alice);
+        vm.expectRevert(GoldLiquidityLocker.StillLocked.selector);
+        locker.emergencyWithdraw(a);
+        vm.warp(block.timestamp + 30 days);
+        uint256 lp0 = pool.balanceOf(alice);
+        uint256 bx0 = bx.balanceOf(alice);
+        vm.prank(alice);
+        locker.emergencyWithdraw(a);
+        assertEq(pool.balanceOf(alice) - lp0, 100e18);
+        assertEq(bx.balanceOf(alice), bx0); // no reward transfer attempted
+        assertEq(locker.undistributed0() + locker.undistributed1(), owed0 + owed1);
+
+        (uint256 before0, uint256 before1) = locker.pending(b);
+        assertGe(before0 + before1 + 2, owed0 + owed1); // bob, still locked, inherits them
+    }
+
     function testOnlyOwnerClaimsOrWithdraws() public {
         vm.prank(alice);
         uint256 id = locker.lock(10e18, BRONZE);

@@ -4,15 +4,19 @@
 #   make deploy   GOV=0x… SENDER=0x… ACCOUNT=<keystore> ETH_RPC_URL=…
 #   make deploy-pools BXAU=0x… TIMELOCK=0x… GOV=0x… SENDER=0x… ACCOUNT=<keystore> ETH_RPC_URL=…
 #   make e2e                        keeper + monitor end-to-end on a local anvil
-#   make zip                        package ../collateral.zip
+#   make fuzz                       property tests, 5,000 runs each
+#   make zip                        package ../collateralized.zip
 
-.PHONY: build test gas fmt simulate deploy deploy-pools keeper-install e2e zip clean
+.PHONY: build test fuzz gas fmt simulate deploy deploy-pools keeper-install e2e zip clean
 
 build:
 	forge build --sizes
 
 test:
 	forge test -vv
+
+fuzz:
+	FOUNDRY_FUZZ_RUNS=5000 forge test --match-path 'test/fuzz/*'
 
 gas:
 	forge test --gas-report
@@ -45,7 +49,7 @@ e2e: build keeper-install
 	cd keeper && node e2e.mjs
 
 zip: clean
-	cd .. && rm -f collateral.zip && zip -rq collateral.zip collateral \
+	cd .. && rm -f collateralized.zip && zip -rq collateralized.zip collateral \
 		-x 'collateral/out/*' 'collateral/cache/*' 'collateral/broadcast/*' 'collateral/.env' 'collateral/keeper/node_modules/*'
 
 clean:
