@@ -147,4 +147,17 @@ if snarkjs groth16 fullprove "$B/withdrawFlagged.input.json" "$B/compliant_withd
 fi
 echo "   ✓ no association path exists for the flagged deposit — no proof exists"
 
+# 6. join-split with hidden amounts: deposit → private transfer → withdrawal (+ 3 attacks)
+setup transaction TransactionVerifier
+prove transaction tx1 TxDepositProof
+prove transaction tx2 TxTransferProof
+prove transaction tx3 TxWithdrawProof
+for attack in txInflate txNegative txSteal; do
+  echo "── transaction: $attack must NOT be provable"
+  if snarkjs groth16 fullprove "$B/$attack.input.json" "$B/transaction_js/transaction.wasm" "$B/transaction_final.zkey" "$B/$attack.proof.json" "$B/$attack.public.json" > /dev/null 2>&1; then
+    echo "   ✗ BUG: $attack produced a proof"; exit 1
+  fi
+  echo "   ✓ no witness satisfies the constraints — no proof exists"
+done
+
 echo "done → verifiers in $SRC, fixtures in $FIX. Next: npm run test:evm  (or: cd foundry && forge test)"

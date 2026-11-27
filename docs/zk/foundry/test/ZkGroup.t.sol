@@ -93,4 +93,32 @@ contract ZkGroupTest is ZkTest {
         expectRevert(me, address(g), abi.encodeCall(ZkGroup.join, (0)), ZkGroup.BadCommitment.selector);
         expectRevert(me, address(g), abi.encodeCall(ZkGroup.join, (FIELD)), ZkGroup.BadCommitment.selector);
     }
+
+    /// joinPair(a, b) gives exactly the root of join(a); join(b) — for half the hashes.
+    function test_joinPairEqualsTwoJoins() public {
+        ZkGroup one = new ZkGroup(hasher, address(this));
+        ZkGroup two = new ZkGroup(hasher, address(this));
+        uint256[8] memory m = ZkConstants.members();
+        uint256 g = gasleft();
+        for (uint256 i; i < 8; i += 2) one.joinPair(m[i], m[i + 1]);
+        uint256 pairGas = g - gasleft();
+        g = gasleft();
+        for (uint256 i; i < 8; ++i) two.join(m[i]);
+        uint256 singleGas = g - gasleft();
+        assertEq(one.root(), ZkConstants.GROUP_ROOT);
+        assertEq(two.root(), ZkConstants.GROUP_ROOT);
+        emit log_named_uint("gas: ZkGroup 8 members via 4 joinPair", pairGas);
+        emit log_named_uint("gas: ZkGroup 8 members via 8 join", singleGas);
+        assertTrue(pairGas < singleGas);
+    }
+
+    function test_joinPairNeedsEvenIndex() public {
+        Actor reg = new Actor();
+        ZkGroup g = new ZkGroup(hasher, address(reg));
+        mustSucceed(reg, address(g), abi.encodeCall(ZkGroup.join, (7))); // nextIndex = 1 (odd)
+        expectRevert(reg, address(g), abi.encodeCall(ZkGroup.joinPair, (11, 12)), ZkGroup.UnalignedPair.selector);
+        mustSucceed(reg, address(g), abi.encodeCall(ZkGroup.join, (8))); // nextIndex = 2 (even)
+        mustSucceed(reg, address(g), abi.encodeCall(ZkGroup.joinPair, (11, 12)));
+        assertEq(g.nextIndex(), 4);
+    }
 }

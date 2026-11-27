@@ -25,6 +25,7 @@ contract ZkGroup is IRootSource {
     error GroupFull();
     error BadCommitment();
     error AlreadyMember();
+    error UnalignedPair();
 
     event MemberAdded(uint256 indexed index, uint256 indexed commitment, uint256 root);
 
@@ -79,6 +80,46 @@ contract ZkGroup is IRootSource {
         nextIndex = index + 1;
         isMember[commitment] = true;
         emit MemberAdded(index, commitment, node);
+    }
+
+    /// Insert two leaves as SIBLINGS in one pass: they share every ancestor, so this costs
+    /// DEPTH hashes instead of 2·DEPTH. Requires an even nextIndex (VariablePool only ever
+    /// inserts pairs, so it always is). The resulting root equals two consecutive join()s.
+    function joinPair(uint256 left, uint256 right) external returns (uint256 index) {
+        if (registrar != address(0) && msg.sender != registrar) revert NotRegistrar();
+        _checkNew(left);
+        _checkNew(right);
+        if (left == right) revert AlreadyMember();
+        index = nextIndex;
+        if (index & 1 != 0) revert UnalignedPair();
+        if (index + 1 >= 2 ** DEPTH) revert GroupFull();
+
+        frontier[0] = left;
+        uint256 node = _hash(left, right); // level 1 parent of the pair
+        uint256 i = index >> 1;
+        for (uint256 level = 1; level < DEPTH; ++level) {
+            if (i & 1 == 0) {
+                frontier[level] = node;
+                node = _hash(node, zeros[level]);
+            } else {
+                node = _hash(frontier[level], node);
+            }
+            i >>= 1;
+        }
+
+        uint256 next = (currentRootIndex + 1) % ROOT_HISTORY_SIZE;
+        roots[next] = node;
+        currentRootIndex = next;
+        nextIndex = index + 2;
+        isMember[left] = true;
+        isMember[right] = true;
+        emit MemberAdded(index, left, node);
+        emit MemberAdded(index + 1, right, node);
+    }
+
+    function _checkNew(uint256 commitment) internal view {
+        if (commitment == 0 || commitment >= FIELD) revert BadCommitment();
+        if (isMember[commitment]) revert AlreadyMember();
     }
 
     function root() external view returns (uint256) {

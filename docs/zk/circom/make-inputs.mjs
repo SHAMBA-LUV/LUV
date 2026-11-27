@@ -3,6 +3,9 @@
 //   • age_buggy.circom  : a 10-year-old's honest input (the forger reuses it to lie)
 //   • credential.circom : issuer-signed (EdDSA/Poseidon) birth-year credentials for an adult
 //                         and a minor (the minor's must FAIL to prove)
+//   • compliant_withdraw : 8 deposits, an association set without the flagged member #3
+//   • transaction.circom : a 3-transaction join-split story (deposit → private transfer →
+//                          withdrawal with fee) + 3 attacks that must FAIL to prove
 //
 // Usage: node make-inputs.mjs <outDir> [fixturesDir]   (needs circomlibjs — see ../package.json)
 //
@@ -11,6 +14,7 @@
 // Poseidon(secret) — the identity commitment — to the group.
 
 import { buildPoseidon, buildEddsa } from 'circomlibjs';
+import { ZkClient, FIELD } from '../js/sdk/zk-client.mjs';
 import { createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
 
@@ -123,6 +127,45 @@ write('withdrawOk', withdrawal(5, approved.indexOf(commitments[5]), RECIPIENT_A)
 // do is borrow someone else's — which recomputes a different root, so witness generation fails
 write('withdrawFlagged', withdrawal(FLAGGED, 0, 0xbadn));
 
+// ── transaction (join-split): built with the client SDK, so fixtures and live proofs share code ──
+const zk = await ZkClient.create();
+let ctr = 0; // reproducible "randomness" for dummies and blindings
+const rand = () => BigInt('0x' + createHash('sha256').update(`LUV-ZK-GUIDE/tx-rand/${ctr++}`).digest('hex')) % FIELD;
+const E18 = 10n ** 18n;
+const alice = zk.createKeypair(BigInt('0x' + createHash('sha256').update('LUV-ZK-GUIDE/alice').digest('hex')) % FIELD);
+const bob = zk.createKeypair(BigInt('0x' + createHash('sha256').update('LUV-ZK-GUIDE/bob').digest('hex')) % FIELD);
+export const TX_RECIPIENT = 0xb0bn, TX_RELAYER = 0xfee1n;
+const strip = ({ _outputs, ...i }) => i;
+
+// tx1 — Alice deposits 100 as two notes (60 + 40). No inputs: two zero-value dummies.
+const A1 = zk.createNote(60n * E18, alice.pubKey, rand()), A2 = zk.createNote(40n * E18, alice.pubKey, rand());
+write('tx1', strip(zk.transactionInput({ leaves: [], outputs: [A1, A2], extData: { extAmount: 100n * E18 }, rand })));
+// tx2 — Alice pays Bob 70 privately, keeps 30. No public amount: an observer sees nothing.
+const B1 = zk.createNote(70n * E18, bob.pubKey, rand()), A3 = zk.createNote(30n * E18, alice.pubKey, rand());
+const leaves2 = [A1.commitment, A2.commitment];
+write('tx2', strip(zk.transactionInput({ leaves: leaves2, inputs: [{ note: A1, privKey: alice.privKey }, { note: A2, privKey: alice.privKey }], outputs: [B1, A3], rand })));
+// tx3 — Bob withdraws 40 to 0xB0B through relayer 0xFEE1 (fee 5), keeps 25.
+const B2 = zk.createNote(25n * E18, bob.pubKey, rand());
+const leaves3 = [...leaves2, B1.commitment, A3.commitment];
+const ext3 = { recipient: TX_RECIPIENT, extAmount: -40n * E18, relayer: TX_RELAYER, fee: 5n * E18 };
+write('tx3', strip(zk.transactionInput({ leaves: leaves3, inputs: [{ note: B1, privKey: bob.privKey }], outputs: [B2], extData: ext3, rand })));
+
+// must-FAIL witnesses (hand-built: the SDK itself refuses to make them)
+const base = strip(zk.transactionInput({ leaves: leaves2, inputs: [{ note: A1, privKey: alice.privKey }, { note: A2, privKey: alice.privKey }], outputs: [B1, A3], rand }));
+// (a) inflation: 100 in, 110 out, nothing paid in
+const big = zk.createNote(80n * E18, bob.pubKey, rand());
+write('txInflate', { ...base, outputCommitment: [String(big.commitment), base.outputCommitment[1]], outAmount: [String(big.amount), base.outAmount[1]], outPubKey: [String(big.pubKey), base.outPubKey[1]], outBlinding: [String(big.blinding), base.outBlinding[1]] });
+// (b) "negative" note: 110 + (p − 10) ≡ 100 (mod p) balances — only the range check stops it
+const neg = { amount: FIELD - 10n * E18, pubKey: alice.pubKey, blinding: rand() };
+neg.commitment = zk.hash(neg.amount, neg.pubKey, neg.blinding);
+const pos = zk.createNote(110n * E18, bob.pubKey, rand());
+write('txNegative', { ...base, outputCommitment: [String(pos.commitment), String(neg.commitment)], outAmount: [String(pos.amount), String(neg.amount)], outPubKey: [String(pos.pubKey), String(neg.pubKey)], outBlinding: [String(pos.blinding), String(neg.blinding)] });
+// (c) theft: Bob tries to spend Alice's change note A3 with HIS key (state after tx2)
+const steal = strip(zk.transactionInput({ leaves: leaves3, inputs: [{ note: A3, privKey: alice.privKey }], outputs: [zk.createNote(30n * E18, bob.pubKey, rand())], rand }));
+steal.inPrivKey = [String(bob.privKey), steal.inPrivKey[1]];
+steal.inputNullifier = [String(zk.hash(A3.commitment, bob.privKey)), steal.inputNullifier[1]];
+write('txSteal', steal);
+
 // ── Solidity constants the tests need (group members + issuer key) ───────────
 if (fixDir) {
   writeFileSync(`${fixDir}/ZkConstants.sol`, `// SPDX-License-Identifier: MIT
@@ -142,6 +185,9 @@ library ZkConstants {
     uint256 internal constant FLAGGED_SECRET = ${members[FLAGGED]};
     uint256 internal constant MEMBER5_SECRET = ${members[5]};
     uint256 internal constant CURRENT_YEAR = ${CURRENT_YEAR};
+    /// join-split story: tx1 deposit 100 → tx2 Alice pays Bob 70 → tx3 Bob withdraws 40 + fee 5
+    address internal constant TX_RECIPIENT = address(uint160(0x${TX_RECIPIENT.toString(16)}));
+    address internal constant TX_RELAYER = address(uint160(0x${TX_RELAYER.toString(16)}));
     uint256 internal constant MIN_AGE = ${MIN_AGE};
 
     /// identity commitments Poseidon(secret) of members #0..#7, in join order
@@ -151,4 +197,4 @@ ${members.map((sec, i) => `        c[${i}] = ${leaves[i]};`).join('\n')}
 }
 `);
 }
-console.log(`wrote membership, age, credential and withdrawal inputs to ${outDir}/`);
+console.log(`wrote membership, age, credential, withdrawal and transaction inputs to ${outDir}/`);

@@ -49,6 +49,7 @@ Everything is over the **BN254** (alt_bn128) curve and its scalar field
 |---|---|---|---|
 | `cube.circom` | 2 | `[out]` | `x` |
 | `membership.circom` (depth 10) | 6,143 | `[root, nullifierHash, message, scope]` | `secret, pathElements[10], pathIndices[10]` |
+| `transaction.circom` (depth 10, 2-in/2-out) | 15,196 | `[root, publicAmount, extDataHash, inputNullifier[0], inputNullifier[1], outputCommitment[0], outputCommitment[1]]` | per input: `inAmount, inPrivKey, inBlinding`, a Merkle path; per output: `outAmount, outPubKey, outBlinding` (52 private) |
 | `compliant_withdraw.circom` (depth 10) | 11,355 | `[depositRoot, associationRoot, nullifierHash, recipient, relayer, fee, scope]` | `secret`, two Merkle paths (`deposit…`, `association…`) |
 | `credential.circom` | 8,635 | `[issuerAx, issuerAy, currentYear, minAge, subject]` | `birthYear, sigR8x, sigR8y, sigS` |
 | ⚠ `age_buggy.circom` | 3 | `[isAdult, currentYear, minAge, subject]` (outputs come first) | `birthYear` |
@@ -73,19 +74,20 @@ Empty leaves are `0`, and an empty subtree of height *i+1* is `Poseidon(z_i, z_i
 
 **Scaling** (`npm run scaling`, compile-only):
 
-| depth | capacity | membership constraints | compliant_withdraw constraints | ptau power needed (compliant) |
-|---:|---:|---:|---:|---:|
-| 10 | 1,024 | 6,143 | 11,355 | 2^14 |
-| 16 | 65,536 | 9,269 | 17,607 | 2^15 |
-| 20 | 1,048,576 | 11,353 | 21,775 | 2^15 |
-| 24 | 16,777,216 | 13,437 | 25,943 | 2^15 |
-| 32 | 4,294,967,296 | 17,605 | 34,279 | 2^16 |
+| depth | capacity | membership | compliant_withdraw | transaction (2-in/2-out) | ptau power for the largest |
+|---:|---:|---:|---:|---:|---:|
+| 10 | 1,024 | 6,143 | 11,355 | 15,196 | 2^14 |
+| 16 | 65,536 | 9,269 | 17,607 | 21,448 | 2^15 |
+| 20 | 1,048,576 | 11,353 | 21,775 | 25,616 | 2^15 |
+| 24 | 16,777,216 | 13,437 | 25,943 | 29,784 | 2^15 |
+| 32 | 4,294,967,296 | 17,605 | 34,279 | 38,120 | 2^16 |
 
-That is about 521 constraints per level for membership, about 1,042 for the compliant withdrawal
-(two paths), and roughly 38k gas per level for `ZkGroup.join` (379,655 at depth 10).
+That is about 521 constraints per level for membership, and about 1,042 for the compliant
+withdrawal and the transaction (two paths each). `ZkGroup.join` costs roughly 38k gas per level
+(379,655 at depth 10); `joinPair` inserts two siblings for the price of about one.
 
 `MerkleRoot(depth)` lives in `circom/lib/merkle.circom` and is shared with
-`compliant_withdraw.circom`. Moving it there left `membership.r1cs` byte-identical.
+`compliant_withdraw.circom` and `transaction.circom`. Moving it there left `membership.r1cs` byte-identical.
 
 | app | `message` | `scope` |
 |---|---|---|
@@ -107,7 +109,28 @@ Fixture: 8 deposits (the 8 members); the association set is all but member #3 (f
 deposit order; member #5 withdraws to `0xB0B`, relayer `0xFEE1`, fee `10e18`, scope 1.
 `build.sh` asserts that proving for #3 fails.
 
-### 2.3 `credential.circom`
+### 2.3 `transaction.circom` (join-split)
+
+```
+per input i:   pubKey_i     = Poseidon(privKey_i)
+               commitment_i = Poseidon(amount_i, pubKey_i, blinding_i)
+               nullifier_i  = Poseidon(commitment_i, privKey_i)          === inputNullifier[i]
+               (MerkleRoot(commitment_i, path_i) − root) · amount_i === 0   dummies (amount 0) skip the tree
+               Num2Bits(120)(amount_i)
+per output j:  Poseidon(amount_j, pubKey_j, blinding_j)                 === outputCommitment[j]
+               Num2Bits(120)(amount_j)
+               inputNullifier[0] ≠ inputNullifier[1]                    (IsEqual === 0)
+               Σ amount_in + publicAmount === Σ amount_out              (mod r; exact thanks to the range checks)
+               extDataHash² constrained
+```
+
+`publicAmount = extAmount − fee mod r` (negative ⇒ `r − |x|`).
+`extDataHash = keccak256(abi.encode(address recipient, int256 extAmount, address relayer, uint256 fee)) mod r`.
+Fixture story: tx1 deposit 100 → notes 60 and 40 (Alice) · tx2 Alice → Bob 70, change 30 ·
+tx3 Bob withdraws 40 to `0xB0B`, fee 5 to `0xFEE1`, change 25. Must-fail: `txInflate`
+(fails at conservation), `txNegative` (fails at `Num2Bits`), `txSteal` (fails at the nullifier).
+
+### 2.4 `credential.circom`
 
 ```
 M = Poseidon(birthYear, subject)
@@ -119,7 +142,7 @@ GreaterEqThan(8)(age, minAge).out === 1
 Issuer signatures come from circomlibjs `eddsa.signPoseidon(prv, Poseidon(birthYear, subject))`.
 The demo issuer key is `sha256("LUV-ZK-GUIDE/issuer")`, a **published test key**.
 
-### 2.4 The under-constrained pair
+### 2.5 The under-constrained pair
 
 `age_buggy` computes `isAdult <-- (age >= minAge) ? 1 : 0` and constrains only
 `isAdult·(isAdult−1) = 0`. `age_forger` uses `isAdult <-- 1`. `build.sh` asserts
@@ -152,7 +175,7 @@ neither.
 - **Groth16:** `get() → (uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[N] pub)`. `b` has each
   Fp2 pair swapped (`[x.c1, x.c0]`), the order EIP-197 expects.
 - **PLONK:** `get() → (uint256[24] proof, uint256[N] pub)`. **FFLONK:** `(bytes32[24] proof, uint256[N] pub)`.
-- `ZkConstants.sol`: `GROUP_ROOT`, `ASSOCIATION_ROOT`, `FLAGGED_SECRET` and `MEMBER5_SECRET` (published test secrets, for ragequit), `ISSUER_AX/AY`, `CURRENT_YEAR`, `MIN_AGE`, `members()`
+- `ZkConstants.sol`: `GROUP_ROOT`, `ASSOCIATION_ROOT`, `FLAGGED_SECRET` and `MEMBER5_SECRET` (published test secrets, for ragequit), `ISSUER_AX/AY`, `CURRENT_YEAR`, `MIN_AGE`, `TX_RECIPIENT`, `TX_RELAYER`, `members()`
   (8 identity commitments in join order).
 
 ---
@@ -166,7 +189,7 @@ All contracts use custom errors, no external dependencies, and solc ^0.8.24.
 | contract | API | errors |
 |---|---|---|
 | `OwnerRoots` | `addRoot(root)`, `revokeRoot(root)` (owner), `isKnownRoot(root)` | `NotOwner` |
-| `ZkGroup` | `constructor(IPoseidonT3 hasher, address registrar)` (`0` = open) · `join(commitment) → index` · `root()` · `isKnownRoot(r)` (current + 31 previous) · `nextIndex()` · `isMember(c)` · `DEPTH = 10` · `ROOT_HISTORY_SIZE = 32` | `NotRegistrar`, `GroupFull`, `BadCommitment` (0 or ≥ r), `AlreadyMember` |
+| `ZkGroup` | `constructor(IPoseidonT3 hasher, address registrar)` (`0` = open) · `join(commitment) → index` · `joinPair(left, right) → index` (siblings, even index, one pass) · `root()` · `isKnownRoot(r)` (current + 31 previous) · `nextIndex()` · `isMember(c)` · `DEPTH = 10` · `ROOT_HISTORY_SIZE = 32` | `NotRegistrar`, `GroupFull`, `BadCommitment` (0 or ≥ r), `AlreadyMember`, `UnalignedPair` |
 
 ### Applications
 
@@ -175,6 +198,7 @@ All contracts use custom errors, no external dependencies, and solc ^0.8.24.
 | `ZkAirdrop` | `(token, IMembershipVerifier, IRootSource, scope, amount)` | `claim(root, nullifierHash, recipient, a, b, c)` · views `boundScope(round)`, `isScopeBound(round)` | recipient ≠ 0 → known root → unused nullifier → proof over `[root, nullifier, recipient, scope]` → mark → transfer | `ZeroAddress`, `UnknownRoot`, `NullifierUsed`, `InvalidProof`, `TransferFailed` |
 | `ShieldedPool` | `(token, denomination, IMembershipVerifier, IPoseidonT3, scope)`, which deploys its own `ZkGroup` | `deposit(commitment)` · `withdraw(root, nullifierHash, recipient, a, b, c)` · views `boundScope`, `isScopeBound` | deposit: `transferFrom` → `tree.join`. Withdraw: as `ZkAirdrop` | as above |
 | `CompliantPool` | `(token, denomination, maxFee, ICompliantWithdrawVerifier, IPoseidonT3, IPoseidonT2, IRootSource associations, scope)`; deploys its own `ZkGroup`; reverts if `maxFee > denomination` | `deposit(commitment)` (records `depositorOf`) · `withdraw(root, associationRoot, nullifierHash, recipient, relayer, fee, a, b, c)` · `ragequit(secret)` · views `boundScope`, `isScopeBound`, `depositorOf` | withdraw: recipient ≠ 0 → fee ≤ maxFee → known deposit root → accepted association root → unused nullifier → proof over the 7 signals → mark → pay recipient `denomination − fee` → pay relayer `fee`. Ragequit: secret < r → `Poseidon(secret)` deposited by `msg.sender` → nullifier `Poseidon(secret, scope)` unused → mark → pay depositor `denomination` | `ZeroAddress`, `FeeTooHigh`, `UnknownRoot`, `UnknownAssociationRoot`, `NullifierUsed`, `InvalidProof`, `TransferFailed`, `NotDepositor`, `SecretOutOfField` |
+| `VariablePool` | `(token, ITransactionVerifier, IPoseidonT3)`, which deploys its own `ZkGroup` | `transact(Proof p, ExtData ext)` with `Proof {a, b, c, root, publicAmount, extDataHash, inputNullifiers[2], outputCommitments[2]}` and `ExtData {recipient, int256 extAmount, relayer, fee}` · views `publicAmountOf(extAmount, fee)`, `extDataHashOf(ext)`, `MAX_AMOUNT = 2^120` | known root → distinct nullifiers → unused → `extDataHashOf(ext) == p.extDataHash` → `publicAmountOf == p.publicAmount` (bounds \|extAmount\|, fee < 2¹²⁰) → proof over the 7 signals → mark nullifiers → `joinPair(outputs)` → extAmount > 0: `transferFrom(msg.sender)`; < 0: pay `recipient`; fee: pay `relayer` | `UnknownRoot`, `DuplicateNullifier`, `NullifierUsed`, `InvalidExtData`, `InvalidPublicAmount`, `AmountTooLarge`, `InvalidProof`, `ZeroAddress`, `TransferFailed` |
 | `ZkVote` | `(IMembershipVerifier)` | `createProposal(id, groupRoot, options, deadline)` (owner) · `vote(id, nullifierHash, option, a, b, c)` | exists → open → option < options → unused → proof over `[groupRoot, nullifier, option, id]` | `NotOwner`, `ProposalExists`, `BadProposal`, `UnknownProposal`, `VotingClosed`, `BadOption`, `NullifierUsed`, `InvalidProof` |
 | `CredentialGate` | `(ICredentialVerifier, issuerAx, issuerAy, currentYear, minAge)` | `prove(subject, a, b, c)` | proof over `[Ax, Ay, year, minAge, subject]` | `InvalidProof` |
 | `KeyRegistry` | none | `register(X, R, s)` · `challenge(account, X, R)` · `keyOf(account)` · `ownerOfKey(keccak(X))` | X, R on curve and not ∞ → s < N → account unregistered → key unclaimed → `s·G == R + c·X` | `NotOnCurve`, `ScalarOutOfRange`, `AlreadyRegistered`, `KeyTaken`, `InvalidProof` |
@@ -219,7 +243,7 @@ The summary below adds context. Figures are measured with `gasleft()` around the
 | operation | gas | how measured |
 |---|---|---|
 | Groth16 `verifyProof`, 1 public input (cube) | **198,346** | `gasleft()` |
-| PLONK `verifyProof` (cube) | **271,686** (varies ~1k with the proof) | `gasleft()` |
+| PLONK `verifyProof` (cube) | **≈ 270,000** (varies ±1k with the proof; see GAS.md) | `gasleft()` |
 | FFLONK `verifyProof` (cube) | **192,936** | `gasleft()` |
 | Groth16 `verifyProof`, 5 public inputs (credential) | **225,278** | `gasleft()` |
 | `ZkAirdrop.claim` (proof + checks + ERC-20 transfer) | ≈ 280,000 | test tx |
@@ -230,6 +254,10 @@ The summary below adds context. Figures are measured with `gasleft()` around the
 | `ShieldedPool.deposit` (transferFrom + 10-level insert) | **389,173** | `gasleft()` |
 | live `ZkAirdrop.claim` with a fresh proof, bound scope | ≈ 270,000 | e2e tx |
 | `ZkGroup.join` (10 Poseidon hashes + storage) | **379,655** | `gasleft()` |
+| 8 members: 4 × `joinPair` vs 8 × `join` | **1,556,848** vs **2,853,240** | `gasleft()` |
+| `VariablePool` deposit (proof + pair insert + transferFrom) | **792,403** | `gasleft()` |
+| `VariablePool` private transfer | **665,600** | `gasleft()` |
+| `VariablePool` withdrawal + relayer fee | **714,239** | `gasleft()` |
 | `KeyRegistry.register` from an EOA | **93,450** | tx `executionGasUsed` |
 | tampered proof point (precompile failure) | **all forwarded gas** (~969M in a 1G-gas test) | test tx |
 
@@ -268,8 +296,8 @@ verifier, and checks that the original verifies. It then runs every single-point
 each proof word `+1 mod p`, each public signal `+1 mod r`, each public signal `+r`
 (a non-canonical alias of the same value), and, for Groth16, the G2 point un-swapped. Every
 mutant must return `false` or revert. Mutation calls get a 5M gas limit, because failing
-precompiles consume all forwarded gas. Current result: 10/10 fixtures clean, 190 of 190
-mutants rejected (200 calls including the originals). It runs as part of `npm test`.
+precompiles consume all forwarded gas. Current result: 13/13 fixtures clean, 259 of 259
+mutants rejected (272 calls including the originals). It runs as part of `npm test`.
 
 ### 6.2 Live flow: `evm/e2e.mjs` + `js/sdk/zk-client.mjs`
 
@@ -282,12 +310,18 @@ replay, redirect, cross-deployment reuse (a second deployment has another bound 
 history after later joins, and an anonymous vote with a flipped-option attempt. Section 7 runs
 a `CompliantPool` live: 5 deposits from random EOAs, an ASP that rebuilds the deposit log and
 flags one depositor, a relayed withdrawal with a fee and a redirect attempt, and the flagged
-depositor's ragequit. That makes 28 checks in all. It needs
-`circom/build/membership_final.zkey` and `.wasm` from the **same build** as the committed
-`MembershipVerifier.sol`, and exits 2 with a hint if they are missing.
+depositor's ragequit. Section 8 runs a `VariablePool` with fresh random keys: a deposit, a
+private Alice → Bob transfer (publicAmount 0), a theft attempt the SDK refuses, a redirected
+withdrawal (`InvalidExtData`), the real withdrawal with a fee, conservation (the pool keeps
+exactly the hidden change), and a replay. That makes 38 checks in all. It needs the zkeys and
+WASMs of `membership`, `compliant_withdraw` and `transaction` from the **same build** as the
+committed verifiers, and exits 2 with a hint if they are missing.
 
 SDK surface: `ZkClient.create()`, `createIdentity()`, `hash()`, `nullifier()`, `buildTree()`,
-`membershipInput()`, `proveMembership()`, `compliantWithdrawInput()`, `proveCompliantWithdraw()`, `verify()`, plus `deriveScope()`, `toSolidity()`,
+`membershipInput()`, `proveMembership()`, `compliantWithdrawInput()`, `proveCompliantWithdraw()`,
+`createKeypair()`, `createNote()`, `noteNullifier()`, `transactionInput()` (checks key ownership
+and conservation before proving), `proveTransaction()`, `verify()`, plus `deriveScope()`,
+`extDataHash()`, `publicAmount()`, `MAX_AMOUNT`, `toSolidity()`,
 `artifacts()`.
 
 The tests use **no cheatcodes**. `Actor` contracts provide distinct `msg.sender`s,
@@ -308,6 +342,7 @@ failure.
 | `ZkGroup` open mode | Sybil-prone. Use a registrar or a gated `join` |
 | `scope` values | fixed constants in the fixture tests (same proofs under any deployer). `ScopeLib` + `ZkAirdrop.boundScope` give the bound form, exercised live by `e2e.mjs`. The pools and `ZkVote` take the scope as a parameter: pass a bound one |
 | `ShieldedPool` | no relayer fee, no compliance layer. Depth 10 = 1,024 notes. Teaching only |
+| `VariablePool` | note data (amount, blinding) must reach the receiver out of band (production: encrypted events). No compliance layer. Depth 10 = 512 transactions. Teaching only |
 | `CompliantPool` | a single ASP (`IRootSource`). Depositor addresses are logged for the ASP. Ragequit reveals the note secret, so a secret must serve one note only. Teaching only |
 | `ZkVote` | anonymity without receipt-freeness (see MACI) |
 | `CredentialGate` | `currentYear` is a constructor constant. Issuer key is a published demo key |
@@ -323,15 +358,15 @@ failure.
 docs/zk/
 ├── README.md · TECHNICAL.md · USAGE.md · GAS.md (generated) · package.json · package-lock.json
 ├── js/            secp256k1.mjs · bn254.mjs · 01…08 examples · run-all.mjs · sdk/zk-client.mjs
-├── circom/        cube · membership · compliant_withdraw · credential · age_buggy (+ attack/age_forger) .circom
+├── circom/        cube · membership · compliant_withdraw · transaction · credential · age_buggy (+ attack/age_forger) .circom
 │                  lib/merkle.circom · scaling.sh
 │                  build.sh · make-inputs.mjs · gen-fixture.mjs · gen-fixture-calldata.mjs · gen-poseidon.mjs
 ├── foundry/
 │   ├── foundry.toml
-│   ├── src/       ZkAirdrop · ZkGroup · OwnerRoots · ShieldedPool · CompliantPool (+ ragequit) · ZkVote
+│   ├── src/       ZkAirdrop · ZkGroup (+ joinPair) · OwnerRoots · ShieldedPool · CompliantPool (+ ragequit) · VariablePool · ZkVote
 │   │              CredentialGate · KeyRegistry · BN254 · ScopeLib · CubeGate · AgeGate⚠
-│   │              interfaces/ (IMembershipVerifier, IRootSource) · generated/PoseidonT3, PoseidonT2 · verifiers/ (7)
-│   └── test/      ZkTest (base) · 10 suites · fixtures/ (10 proofs + ZkConstants)
+│   │              interfaces/ (IMembershipVerifier, IRootSource) · generated/PoseidonT3, PoseidonT2 · verifiers/ (8)
+│   └── test/      ZkTest (base) · 11 suites · fixtures/ (13 proofs + ZkConstants)
 ├── evm/           run-tests.mjs · mutation.mjs · e2e.mjs · lib.mjs
 └── scripts/package.sh       → complete zk.zip (self-tested)
 ```

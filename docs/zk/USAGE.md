@@ -26,7 +26,7 @@ solc-js, and contracts execute on ethereumjs.
 cd docs/zk
 node js/run-all.mjs      # 1. the 8 protocol examples: zero dependencies, ~16 s
 npm install              # 2. toolchain
-npm test                 # 3. examples + 74 Solidity tests on a real EVM + 200 mutation checks (~25 s)
+npm test                 # 3. examples + 87 Solidity tests on a real EVM + 272 mutation checks (~30 s)
 ```
 
 Expected tail of `npm test`:
@@ -37,10 +37,10 @@ gas report (measured with gasleft() around the call):
   gas: PLONK verifyProof: 270744
   gas: FFLONK verifyProof: 192936
   …
-74 passed, 0 failed
+87 passed, 0 failed
   ✓ CubeProof                groth16 original verifies: yes · 11/11 mutants rejected
   …
-mutation: 10/10 fixtures clean (200 verifier calls)
+mutation: 13/13 fixtures clean (272 verifier calls)
 ```
 
 ### All commands
@@ -52,8 +52,8 @@ mutation: 10/10 fixtures clean (200 verifier calls)
 | `npm run mutation` | mutation-test every committed proof: each proof word, each public signal, each non-canonical alias, un-swapped G2 | ~7 s |
 | `npm test` | examples + `test:evm` + `mutation` | ~30 s |
 | `npm run build` | compile all circuits; run the setup for new or changed ones (unchanged circuits keep their keys); regenerate proofs and fixtures; run the attack and the must-fail checks. `FORCE=1 npm run build` redoes every ceremony | ~1 min incremental, ~8 min from scratch |
-| `npm run e2e` | the **live** flow: deploy, join, generate fresh proofs with the SDK, claim, attack, vote, then a compliant pool with an ASP, a relayer fee and a ragequit (28 checks). Needs `npm run build` first | ~11 s |
-| `npm run scaling` | constraint counts for membership and compliant withdrawal at depths 10–32 (compile only) | ~12 s |
+| `npm run e2e` | the **live** flow: deploy, join, generate fresh proofs with the SDK, claim, attack, vote, then a compliant pool with an ASP, a relayer fee and a ragequit, then a hidden-amount pool with a private Alice → Bob payment (38 checks). Needs `npm run build` first | ~14 s |
+| `npm run scaling` | constraint counts for membership, compliant withdrawal and the join-split transaction at depths 10–32 (compile only) | ~20 s |
 | `npm run gas` | run the tests and regenerate [GAS.md](GAS.md) from the measurements | ~10 s |
 | `npm run package` | build `complete zk.zip` from git-tracked files, unpack it in a temp dir and run the tests there | ~30 s |
 | `cd foundry && forge test -vv` | the same Solidity tests under Foundry (prints the gas logs too) | — |
@@ -154,6 +154,34 @@ order (as `make-inputs.mjs` does), then pass `pathElements` / `pathIndices` for 
 **Relayers:** any address can submit a claim, withdrawal or vote. Funds only ever go to the
 proven `recipient`.
 
+### 3.5b Hidden-amount payments (VariablePool)
+
+```js
+import { ZkClient } from './js/sdk/zk-client.mjs';
+const zk = await ZkClient.create();
+const me = zk.createKeypair();                 // share me.pubKey to receive; keep me.privKey
+// leaves = commitments from NewCommitment events, in order
+
+// deposit 100 (approve the pool first; the submitter pays)
+const d = await zk.proveTransaction({ leaves, outputs: [zk.createNote(100n * E18, me.pubKey)],
+                                      extData: { extAmount: 100n * E18 } });
+// VariablePool.transact(Proof{d.a, d.b, d.c, d.root, d.publicAmount, d.extDataHash, d.nullifiers, d.commitments},
+//                       ExtData{0, 100e18, 0, 0})
+
+// pay Bob 70 privately (you need only bobPubKey), keep 30 as change
+const note = d.outputs[0];
+const t = await zk.proveTransaction({ leaves, inputs: [{ note, privKey: me.privKey }],
+  outputs: [zk.createNote(70n * E18, bobPubKey), zk.createNote(30n * E18, me.pubKey)] });
+// send Bob t.outputs[0] (amount + blinding) over an encrypted channel; anyone can submit t
+
+// withdraw 40 to `to` through a relayer charging 5
+const ext = { recipient: to, extAmount: -40n * E18, relayer, fee: 5n * E18 };
+```
+
+The SDK refuses to build a witness that cannot verify: a key that doesn't own the note, a note
+not in the tree, or outputs that don't balance. `transactionInput` pads with zero-value dummies,
+so 0, 1 or 2 inputs and outputs all work.
+
 ### 3.6 Register a key (no circuit, no setup)
 
 ```js
@@ -198,6 +226,8 @@ own issuer, deploy `CredentialGate` with that issuer's Baby Jubjub public key (`
 - [ ] **Tree depth** big enough for your population (depth 20 = 1M members). `npm run scaling`
       gives the constraint counts and the ptau power you'll need. Re-measure gas.
 - [ ] **Mutation-test** the production verifiers (`npm run mutation`, after regenerating fixtures).
+- [ ] **Hidden amounts:** keep `Num2Bits` on every amount and the contract's `MAX_AMOUNT` bounds.
+      `build.sh`'s `txNegative` must stay unprovable.
 - [ ] **Exit guarantee.** Any gate on private exit (an ASP) comes with a public exit (ragequit).
 - [ ] **Hasher.** Deploy `PoseidonT3` once and share it. Re-check the test vector on the
       target chain.
@@ -222,6 +252,8 @@ own issuer, deploy `CredentialGate` with that issuer's Baby Jubjub public key (`
 | a fixture suddenly fails `verifyProof` | verifier and fixture come from different build runs. Run `npm run build` again (it regenerates both) |
 | a proof verifies off-chain but not in Solidity | public-signal order (outputs first), or a missing G2 swap. Use `gen-fixture.mjs` / `soliditycalldata` |
 | a tampered proof costs a huge amount of gas | a failing BN254 precompile consumes all forwarded gas, which is expected. Relayers should `eth_call` first |
+| `InvalidExtData` from `VariablePool` | the `ExtData` you submit must be byte-identical to the one the proof was made for (recipient, signed `extAmount`, relayer, fee) |
+| `this key does not own the input note` (SDK) | you are spending someone else's note, or used the wrong `privKey` |
 | `NotDepositor` on ragequit | send it from the address that made the deposit. Ragequit never pays anyone else |
 | `UnknownRoot` after many joins | root history is 32. Rebuild the path against a recent root |
 | `forge test` can't find `forge-std` | it doesn't need it. Run from `docs/zk/foundry` (its own `foundry.toml`, `libs = []`) |

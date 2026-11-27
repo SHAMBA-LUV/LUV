@@ -27,7 +27,7 @@ export const selector = (sig) => selectorFull(sig).slice(0, 10);
 export const word = (v) => {
   if (typeof v === 'string' && v.startsWith('0x')) v = BigInt(v);
   if (typeof v === 'boolean') v = v ? 1n : 0n;
-  return BigInt(v).toString(16).padStart(64, '0');
+  return BigInt.asUintN(256, BigInt(v)).toString(16).padStart(64, '0'); // negatives → two's complement (int256)
 };
 /** encodeCall(contract, 'claim(uint256,…)', [args…]) — args may be nested arrays; all are flattened to words */
 export function encodeCall(contract, signature, args = []) {

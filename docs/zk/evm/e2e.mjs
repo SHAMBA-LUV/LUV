@@ -5,7 +5,9 @@
 //   events → generates fresh Groth16 proofs with snarkjs → relayed claims and a vote succeed;
 //   replays, redirects and cross-deployment reuse fail. Then a CompliantPool: deposits from
 //   random EOAs, an ASP builds its set from the Deposit log and flags one depositor, a relayed
-//   withdrawal pays recipient and relayer, the flagged depositor ragequits.
+//   withdrawal pays recipient and relayer, the flagged depositor ragequits. Finally a
+//   VariablePool with HIDDEN AMOUNTS: deposit, a private Alice → Bob transfer, a relayed
+//   withdrawal, a theft attempt and a replay.
 //
 // Run (from docs/zk):  npm run build   (once — needs circom/build/membership_final.zkey)
 //                      npm run e2e
@@ -21,7 +23,8 @@ import { ZkClient, deriveScope, artifacts } from '../js/sdk/zk-client.mjs';
 
 const files = artifacts('membership');
 const cfiles = artifacts('compliant_withdraw');
-if (![files.zkey, files.wasm, cfiles.zkey, cfiles.wasm].every(existsSync)) {
+const tfiles = artifacts('transaction');
+if (![files.zkey, files.wasm, cfiles.zkey, cfiles.wasm, tfiles.zkey, tfiles.wasm].every(existsSync)) {
   console.error('circuit artefacts missing — run `npm run build` first (they are not committed)');
   process.exit(2);
 }
@@ -40,7 +43,10 @@ const C = {
   cpool: get('src/CompliantPool.sol', 'CompliantPool'),
   cverifier: get('src/verifiers/CompliantWithdrawVerifier.sol', 'CompliantWithdrawVerifier'),
   asp: get('src/OwnerRoots.sol', 'OwnerRoots'),
+  vpool: get('src/VariablePool.sol', 'VariablePool'),
+  txverifier: get('src/verifiers/TransactionVerifier.sol', 'TransactionVerifier'),
 };
+const TRANSACT = 'transact((uint256[2],uint256[2][2],uint256[2],uint256,uint256,uint256,uint256[2],uint256[2]),(address,int256,address,uint256))';
 const CWITHDRAW = 'withdraw(uint256,uint256,uint256,address,address,uint256,uint256[2],uint256[2][2],uint256[2])';
 const CLAIM = 'claim(uint256,uint256,address,uint256[2],uint256[2][2],uint256[2])';
 const VOTE = 'vote(uint256,uint256,uint256,uint256[2],uint256[2][2],uint256[2])';
@@ -205,6 +211,58 @@ const r11 = await call(vm, cpool, encodeCall(C.cpool, 'ragequit(uint256)', [note
 ok(!r11.ok && decodeRevert(r11.ret).startsWith('NotDepositor'), 'someone else trying to ragequit #2\'s note → NotDepositor');
 const r12 = await call(vm, cpool, encodeCall(C.cpool, 'ragequit(uint256)', [notes[FLAG].secret]), address(notes[FLAG].from));
 ok(r12.ok && (await bal(notes[FLAG].from)) === DENOM, `#2 ragequits: full 1,000 back to the original address (${r12.gas} gas)`);
+
+// ── 8. hidden amounts: Alice deposits, pays Bob privately, Bob withdraws via a relayer ──
+console.log('8. variable pool: deposit 100 → Alice pays Bob 70 privately → Bob withdraws 40 (+5 fee)');
+const E18 = 10n ** 18n;
+const txverifier = await deploy(vm, C.txverifier.evm.bytecode.object);
+const vpool = await deploy(vm, C.vpool.evm.bytecode.object, [token.toString(), txverifier.toString(), hasher.toString()]);
+const aliceEOA = randomAddress();
+await call(vm, token, encodeCall(C.token, 'transfer(address,uint256)', [aliceEOA, 100n * E18]));
+await call(vm, token, encodeCall(C.token, 'approve(address,uint256)', [vpool.toString(), 100n * E18]), address(aliceEOA));
+const aliceKey = zk.createKeypair(), bobKey = zk.createKeypair(); // Bob shares only bobKey.pubKey
+const poolLeaves = [];
+const txArgs = (p, ext) => [p.a, p.b, p.c, p.root, p.publicAmount, p.extDataHash, p.nullifiers, p.commitments,
+  BigInt(ext.recipient ?? 0n), ext.extAmount ?? 0n, BigInt(ext.relayer ?? 0n), ext.fee ?? 0n];
+async function transact(p, ext, from) {
+  const r = await call(vm, vpool, encodeCall(C.vpool, TRANSACT, txArgs(p, ext)), address(from));
+  if (r.ok) for (const e of eventsOf(r.rawLogs, 'NewCommitment(uint256,uint256)')) poolLeaves.push(e.topics[1]);
+  return r;
+}
+
+const ext1 = { extAmount: 100n * E18 };
+const t1 = await zk.proveTransaction({ leaves: poolLeaves, outputs: [zk.createNote(60n * E18, aliceKey.pubKey), zk.createNote(40n * E18, aliceKey.pubKey)], extData: ext1 });
+const r13 = await transact(t1, ext1, aliceEOA);
+ok(r13.ok, `deposit of 100 accepted, split 60/40 in hidden notes (${r13.gas} gas)`);
+const vtree = address('0x' + (await view(vpool, C.vpool, 'tree()')).toString(16).padStart(40, '0'));
+ok(zk.buildTree(poolLeaves).root === (await view(vtree, C.group, 'root()')), 'SDK tree from NewCommitment events == pool tree root');
+
+const [A1, A2] = t1.outputs;
+const t2 = await zk.proveTransaction({ leaves: poolLeaves,
+  inputs: [{ note: A1, privKey: aliceKey.privKey }, { note: A2, privKey: aliceKey.privKey }],
+  outputs: [zk.createNote(70n * E18, bobKey.pubKey), zk.createNote(30n * E18, aliceKey.pubKey)] });
+const relayerEOA = randomAddress();
+const r14 = await transact(t2, {}, relayerEOA);
+ok(r14.ok && t2.publicAmount === 0n, `private transfer accepted, publicAmount 0: no amount, sender or receiver on-chain (${r14.gas} gas)`);
+
+const [B1, A3] = t2.outputs; // in production Bob receives B1's amount + blinding encrypted to him
+let stolen = false;
+let why = '';
+try { await zk.proveTransaction({ leaves: poolLeaves, inputs: [{ note: A3, privKey: bobKey.privKey }], outputs: [zk.createNote(30n * E18, bobKey.pubKey)] }); stolen = true; }
+catch (e) { why = e.message; }
+ok(!stolen && /does not own/.test(why), "Bob cannot spend Alice's change note with his own key (the circuit would reject it too: build.sh txSteal)");
+
+const payee = randomAddress();
+const ext3 = { recipient: payee, extAmount: -40n * E18, relayer: relayerEOA, fee: 5n * E18 };
+const t3 = await zk.proveTransaction({ leaves: poolLeaves, inputs: [{ note: B1, privKey: bobKey.privKey }], outputs: [zk.createNote(25n * E18, bobKey.pubKey)], extData: ext3 });
+const r15 = await transact(t3, { ...ext3, recipient: randomAddress() }, relayerEOA);
+ok(!r15.ok && decodeRevert(r15.ret).startsWith('InvalidExtData'), 'relayer swapping the recipient → InvalidExtData');
+const r16 = await transact(t3, ext3, relayerEOA);
+ok(r16.ok, `withdrawal accepted (${r16.gas} gas)`);
+ok((await bal(payee)) === 40n * E18 && (await bal(relayerEOA)) === 5n * E18, 'payee received 40, relayer 5');
+ok((await bal(vpool.toString())) === 55n * E18, 'pool holds 55 = Alice\'s 30 + Bob\'s 25, split invisible on-chain');
+const r17 = await transact(t3, ext3, relayerEOA);
+ok(!r17.ok && decodeRevert(r17.ret).startsWith('NullifierUsed'), 'replaying the withdrawal → NullifierUsed');
 
 console.log(`\n${failed ? `${failed} check(s) FAILED` : 'e2e: all checks passed'}`);
 process.exit(failed ? 1 : 0); // snarkjs keeps worker threads alive; exit explicitly

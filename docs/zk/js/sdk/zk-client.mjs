@@ -1,5 +1,5 @@
 // zk-client.mjs — a minimal client SDK for the membership apps (ZkAirdrop, ZkVote,
-// ShieldedPool, CompliantPool): everything a wallet or dapp does OFF-chain.
+// ShieldedPool, CompliantPool, VariablePool): everything a wallet or dapp does OFF-chain.
 //
 //   const zk = await ZkClient.create();
 //   const me = zk.createIdentity();                         // keep me.secret private
@@ -35,6 +35,21 @@ export const artifacts = (circuit) => ({
 });
 
 const word = (v) => Buffer.from(BigInt(v).toString(16).padStart(64, '0'), 'hex');
+// int256 two's complement, as abi.encode writes it
+const int256 = (v) => word(BigInt.asUintN(256, BigInt(v)));
+const randomField = () => BigInt('0x' + randomBytes(31).toString('hex'));
+
+/** Range bound shared by transaction.circom (Num2Bits(120)) and VariablePool.sol */
+export const MAX_AMOUNT = 2n ** 120n;
+
+/** VariablePool external data → the public extDataHash: keccak256(abi.encode(...)) mod FIELD */
+export function extDataHash({ recipient = 0n, extAmount = 0n, relayer = 0n, fee = 0n }) {
+  const packed = Buffer.concat([word(BigInt(recipient)), int256(extAmount), word(BigInt(relayer)), word(fee)]);
+  return BigInt('0x' + Buffer.from(keccak_256(packed)).toString('hex')) % FIELD;
+}
+
+/** extAmount − fee as a field element (negative ⇒ FIELD − |x|), exactly as the contract computes it */
+export const publicAmount = (extAmount, fee) => ((BigInt(extAmount) - BigInt(fee)) % FIELD + FIELD) % FIELD;
 
 /** ScopeLib.derive, off-chain: keccak256(abi.encode(chainId, app, round)) mod FIELD */
 export function deriveScope(chainId, app, round) {
@@ -158,6 +173,87 @@ export class ZkClient {
     const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, files.wasm, files.zkey);
     const pub = publicSignals.map(BigInt);
     return { ...toSolidity(proof), proof, publicSignals: pub, root: pub[0], associationRoot: pub[1], nullifierHash: pub[2] };
+  }
+
+  // ── join-split notes (transaction.circom / VariablePool.sol) ─────────────────
+
+  /** Spending key pair: share pubKey to get paid, keep privKey to spend. */
+  createKeypair(privKey = randomField()) {
+    return { privKey, pubKey: this.hash(privKey) };
+  }
+
+  /** A note of `amount` owned by `pubKey`. Only `commitment` goes on-chain. */
+  createNote(amount, pubKey, blinding = randomField()) {
+    amount = BigInt(amount);
+    if (amount < 0n || amount >= MAX_AMOUNT) throw new Error('amount out of range');
+    return { amount, pubKey, blinding, commitment: this.hash(amount, pubKey, blinding) };
+  }
+
+  noteNullifier(note, privKey) {
+    return this.hash(note.commitment, privKey);
+  }
+
+  /**
+   * Witness for transaction.circom.
+   * @param leaves   all commitments in the pool tree, in insertion order (from NewCommitment events)
+   * @param inputs   up to 2 × { note, privKey } being spent (padded with zero-value dummies)
+   * @param outputs  up to 2 notes being created (padded with zero-value notes)
+   * @param extData  { recipient, extAmount, relayer, fee }  (extAmount > 0 deposit, < 0 withdraw)
+   * @param rand     randomness source for dummies (override only for reproducible fixtures)
+   */
+  transactionInput({ leaves, inputs = [], outputs = [], extData = {}, rand = randomField }) {
+    if (inputs.length > 2 || outputs.length > 2) throw new Error('2-in / 2-out');
+    const tree = this.buildTree(leaves);
+    const leafIndex = new Map(leaves.map((c, i) => [BigInt(c), i]));
+    const ins = [...inputs];
+    while (ins.length < 2) {
+      const k = this.createKeypair(rand());
+      ins.push({ note: this.createNote(0n, k.pubKey, rand()), privKey: k.privKey, dummy: true });
+    }
+    const outs = [...outputs];
+    while (outs.length < 2) outs.push(this.createNote(0n, this.createKeypair(rand()).pubKey, rand()));
+    for (const { note, privKey, dummy } of ins) {
+      if (!dummy && this.hash(privKey) !== note.pubKey) throw new Error('this key does not own the input note');
+    }
+    const paths = ins.map(({ note, dummy }) => {
+      if (dummy) return { pathElements: Array(DEPTH).fill('0'), pathIndices: Array(DEPTH).fill('0') };
+      const i = leafIndex.get(note.commitment);
+      if (i === undefined) throw new Error('input note is not in the pool tree');
+      return tree.path(i);
+    });
+    const { extAmount = 0n, fee = 0n } = extData;
+    const sumIn = ins.reduce((t, x) => t + x.note.amount, 0n), sumOut = outs.reduce((t, n) => t + n.amount, 0n);
+    if (sumIn + BigInt(extAmount) - BigInt(fee) !== sumOut) throw new Error('value is not conserved');
+    return {
+      root: String(tree.root),
+      publicAmount: String(publicAmount(extAmount, fee)),
+      extDataHash: String(extDataHash(extData)),
+      inputNullifier: ins.map(({ note, privKey }) => String(this.noteNullifier(note, privKey))),
+      outputCommitment: outs.map((n) => String(n.commitment)),
+      inAmount: ins.map(({ note }) => String(note.amount)),
+      inPrivKey: ins.map(({ privKey }) => String(privKey)),
+      inBlinding: ins.map(({ note }) => String(note.blinding)),
+      inPathIndices: paths.map((p) => p.pathIndices),
+      inPathElements: paths.map((p) => p.pathElements),
+      outAmount: outs.map((n) => String(n.amount)),
+      outPubKey: outs.map((n) => String(n.pubKey)),
+      outBlinding: outs.map((n) => String(n.blinding)),
+      _outputs: outs, // the notes created (the receiver needs amount + blinding to spend later)
+    };
+  }
+
+  /**
+   * Generate a join-split proof.
+   * publicSignals = [root, publicAmount, extDataHash, nullifier0, nullifier1, commitment0, commitment1]
+   */
+  async proveTransaction(args, files = artifacts('transaction')) {
+    const { _outputs, ...input } = this.transactionInput(args);
+    const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, files.wasm, files.zkey);
+    const pub = publicSignals.map(BigInt);
+    return {
+      ...toSolidity(proof), proof, publicSignals: pub, outputs: _outputs,
+      root: pub[0], publicAmount: pub[1], extDataHash: pub[2], nullifiers: [pub[3], pub[4]], commitments: [pub[5], pub[6]],
+    };
   }
 
   /** Check a proof off-chain against the verification key (what a relayer does before paying gas). */

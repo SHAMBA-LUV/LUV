@@ -15,6 +15,9 @@ library ZkConstants {
     uint256 internal constant FLAGGED_SECRET = 9921288181285891809971837348728760545551016927114789688333901081115250128232;
     uint256 internal constant MEMBER5_SECRET = 2803881533311345482241525757417736235976524337362446663736990142617566341783;
     uint256 internal constant CURRENT_YEAR = 2026;
+    /// join-split story: tx1 deposit 100 → tx2 Alice pays Bob 70 → tx3 Bob withdraws 40 + fee 5
+    address internal constant TX_RECIPIENT = address(uint160(0xb0b));
+    address internal constant TX_RELAYER = address(uint160(0xfee1));
     uint256 internal constant MIN_AGE = 18;
 
     /// identity commitments Poseidon(secret) of members #0..#7, in join order
