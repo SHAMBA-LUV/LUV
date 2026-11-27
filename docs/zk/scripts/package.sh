@@ -30,5 +30,5 @@ echo "packed $(unzip -l "$OUT" | tail -1 | awk '{print $2}') files → $OUT"
 # 3. self-test from a clean unpack (re-uses this checkout's node_modules)
 mkdir "$STAGE/check" && (cd "$STAGE/check" && unzip -q "$OUT")
 ln -s "$(cd "$ZK/node_modules" && pwd -P)" "$STAGE/check/docs/zk/node_modules"
-(cd "$STAGE/check/docs/zk" && npm test --silent) | grep -E "examples passed|passed, "
+(cd "$STAGE/check/docs/zk" && npm test --silent) | grep -E "examples passed|passed, |mutation:"
 echo "✓ archive verified"
