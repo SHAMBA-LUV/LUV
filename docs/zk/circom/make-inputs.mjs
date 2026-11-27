@@ -31,26 +31,34 @@ const H = (...xs) => poseidon.F.toObject(poseidon(xs));
 
 const secretOf = (label) => BigInt('0x' + createHash('sha256').update(`LUV-ZK-GUIDE/member/${label}`).digest('hex')) % R;
 const members = Array.from({ length: 8 }, (_, i) => secretOf(i));
-const leaves = Array(2 ** DEPTH).fill(0n);
-members.forEach((s, i) => { leaves[i] = H(s); }); // identity commitment = Poseidon(secret)
+const commitments = members.map((s) => H(s)); // identity commitment = Poseidon(secret)
 
-// full binary tree, level by level
-const levels = [leaves];
-for (let d = 0; d < DEPTH; d++) {
-  const prev = levels[d], next = [];
-  for (let i = 0; i < prev.length; i += 2) next.push(H(prev[i], prev[i + 1]));
-  levels.push(next);
-}
-const root = levels[DEPTH][0];
-
-function path(index) {
-  const pathElements = [], pathIndices = [];
-  for (let d = 0, i = index; d < DEPTH; d++, i >>= 1) {
-    pathIndices.push(String(i & 1));
-    pathElements.push(String(levels[d][i ^ 1]));
+// A full depth-DEPTH Poseidon tree over `list` (empty leaves are 0), level by level.
+function buildTree(list) {
+  const leaves = Array(2 ** DEPTH).fill(0n);
+  list.forEach((c, i) => { leaves[i] = c; });
+  const levels = [leaves];
+  for (let d = 0; d < DEPTH; d++) {
+    const prev = levels[d], next = [];
+    for (let i = 0; i < prev.length; i += 2) next.push(H(prev[i], prev[i + 1]));
+    levels.push(next);
   }
-  return { pathElements, pathIndices };
+  return {
+    root: levels[DEPTH][0],
+    path(index) {
+      const pathElements = [], pathIndices = [];
+      for (let d = 0, i = index; d < DEPTH; d++, i >>= 1) {
+        pathIndices.push(String(i & 1));
+        pathElements.push(String(levels[d][i ^ 1]));
+      }
+      return { pathElements, pathIndices };
+    },
+  };
 }
+const group = buildTree(commitments);
+const root = group.root;
+const leaves = commitments; // (used by the Solidity constants below)
+const path = (i) => group.path(i);
 
 function input(memberIndex, scope, message) {
   const secret = members[memberIndex];
@@ -94,6 +102,27 @@ function credential(birthYear, subject) {
 write('credAdult', credential(1990n, ADULT));
 write('credMinor', credential(2015n, MINOR));
 
+// ── compliant_withdraw: deposit tree = all 8 members; the Association Set Provider has
+//    flagged member #3, so the association tree holds the other 7 (in deposit order) ──
+export const FLAGGED = 3, RELAYER = 0xfee1n, FEE = 10n * 10n ** 18n;
+const approved = commitments.filter((_, i) => i !== FLAGGED);
+const association = buildTree(approved);
+function withdrawal(memberIndex, associationIndex, recipient) {
+  const dep = group.path(memberIndex), asc = association.path(associationIndex);
+  return {
+    depositRoot: String(root), associationRoot: String(association.root),
+    nullifierHash: String(H(members[memberIndex], AIRDROP_SCOPE)),
+    recipient: String(recipient), relayer: String(RELAYER), fee: String(FEE), scope: String(AIRDROP_SCOPE),
+    secret: String(members[memberIndex]),
+    depositPathElements: dep.pathElements, depositPathIndices: dep.pathIndices,
+    associationPathElements: asc.pathElements, associationPathIndices: asc.pathIndices,
+  };
+}
+write('withdrawOk', withdrawal(5, approved.indexOf(commitments[5]), RECIPIENT_A));
+// the flagged depositor has a valid deposit path but NO association path; the best they can
+// do is borrow someone else's — which recomputes a different root, so witness generation fails
+write('withdrawFlagged', withdrawal(FLAGGED, 0, 0xbadn));
+
 // ── Solidity constants the tests need (group members + issuer key) ───────────
 if (fixDir) {
   writeFileSync(`${fixDir}/ZkConstants.sol`, `// SPDX-License-Identifier: MIT
@@ -103,6 +132,8 @@ pragma solidity ^0.8.24;
 library ZkConstants {
     /// root of the depth-${DEPTH} Poseidon tree whose first 8 leaves are the commitments below
     uint256 internal constant GROUP_ROOT = ${root};
+    /// root of the association tree: every member except the flagged #${FLAGGED}
+    uint256 internal constant ASSOCIATION_ROOT = ${association.root};
     /// Baby Jubjub public key of the demo credential issuer
     uint256 internal constant ISSUER_AX = ${Ax};
     uint256 internal constant ISSUER_AY = ${Ay};
@@ -116,4 +147,4 @@ ${members.map((sec, i) => `        c[${i}] = ${leaves[i]};`).join('\n')}
 }
 `);
 }
-console.log(`wrote membership, age and credential inputs to ${outDir}/`);
+console.log(`wrote membership, age, credential and withdrawal inputs to ${outDir}/`);

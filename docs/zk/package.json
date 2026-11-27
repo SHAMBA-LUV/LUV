@@ -8,7 +8,9 @@
     "build": "bash circom/build.sh",
     "test:evm": "node evm/run-tests.mjs",
     "test": "node js/run-all.mjs && node evm/run-tests.mjs",
-    "package": "bash scripts/package.sh"
+    "package": "bash scripts/package.sh",
+    "e2e": "node evm/e2e.mjs",
+    "gas": "node evm/run-tests.mjs --gas-md GAS.md"
   },
   "devDependencies": {
     "@ethereumjs/common": "^10.1.0",

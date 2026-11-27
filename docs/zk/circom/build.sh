@@ -53,11 +53,20 @@ rename() { sed -i.bak "s/contract $2 /contract $3 /" "$1" && rm -f "$1.bak"; }
 compile() { "${CIRCOM[@]}" "$1" --r1cs --wasm --sym -l "$B/lib" -o "$2"; }
 
 # setup <circuit> <VerifierContractName>   — Groth16: universal ptau + circuit-specific phase 2
+# Incremental: if the constraint system is unchanged since the last run, the existing keys and
+# verifier are kept (set FORCE=1 to redo everything). Editing only comments or `<--` hints
+# never changes the R1CS; editing a constraint always does.
 setup() {
-  local c=$1 vname=$2
+  local c=$1 vname=$2 sum
   echo "── $c: compile"
   compile "$c.circom" "$B"
   snarkjs r1cs info "$B/$c.r1cs"
+  sum="$(cksum < "$B/$c.r1cs")"
+  if [ -z "${FORCE:-}" ] && [ -f "$B/${c}_final.zkey" ] && [ -f "$SRC/$vname.sol" ] \
+     && [ "$(cat "$B/$c.r1cs.sum" 2>/dev/null)" = "$sum" ]; then
+    echo "── $c: constraints unchanged — keeping existing keys and $vname.sol"
+    return
+  fi
   echo "── $c: phase 2 (circuit-specific keys)"
   snarkjs groth16 setup "$B/$c.r1cs" "$PTAU" "$B/${c}_0000.zkey"
   snarkjs zkey contribute "$B/${c}_0000.zkey" "$B/${c}_final.zkey" --name="dev-2" -e="$(entropy)"
@@ -66,6 +75,7 @@ setup() {
   snarkjs zkey export solidityverifier "$B/${c}_final.zkey" "$SRC/$vname.sol"
   rename "$SRC/$vname.sol" Groth16Verifier "$vname"
   stamp "$SRC/$vname.sol"
+  echo "$sum" > "$B/$c.r1cs.sum"
 }
 
 # prove <circuit> <inputName> <FixtureLibraryName> [wasm]   — wasm overrides the witness generator
@@ -126,5 +136,14 @@ if snarkjs groth16 fullprove "$B/credMinor.input.json" "$B/credential_js/credent
   echo "   ✗ BUG: a minor produced a credential proof"; exit 1
 fi
 echo "   ✓ witness generation fails (adult.out === 1 is unsatisfiable) — no proof exists"
+
+# 5. shielded-pool withdrawal with a compliance (association-set) proof and a relayer fee
+setup compliant_withdraw CompliantWithdrawVerifier
+prove compliant_withdraw withdrawOk CompliantWithdrawProof
+echo "── compliant_withdraw: a FLAGGED depositor must NOT be able to prove"
+if snarkjs groth16 fullprove "$B/withdrawFlagged.input.json" "$B/compliant_withdraw_js/compliant_withdraw.wasm" "$B/compliant_withdraw_final.zkey" "$B/withdrawFlagged.proof.json" "$B/withdrawFlagged.public.json" > /dev/null 2>&1; then
+  echo "   ✗ BUG: a flagged depositor produced a withdrawal proof"; exit 1
+fi
+echo "   ✓ no association path exists for the flagged deposit — no proof exists"
 
 echo "done → verifiers in $SRC, fixtures in $FIX. Next: npm run test:evm  (or: cd foundry && forge test)"

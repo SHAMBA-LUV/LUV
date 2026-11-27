@@ -5,6 +5,8 @@ pragma solidity ^0.8.24;
 library ZkConstants {
     /// root of the depth-10 Poseidon tree whose first 8 leaves are the commitments below
     uint256 internal constant GROUP_ROOT = 5836001969890107080043573908548828055481510674973189023454616353564793035496;
+    /// root of the association tree: every member except the flagged #3
+    uint256 internal constant ASSOCIATION_ROOT = 6339661460342391858198345967214294554355749700668761206607294143036995515864;
     /// Baby Jubjub public key of the demo credential issuer
     uint256 internal constant ISSUER_AX = 14438288584632036862276351806537794564014736721499014093954830380441404853107;
     uint256 internal constant ISSUER_AY = 13045839166505783249965299474918740784226889811433209037039573578674167451364;

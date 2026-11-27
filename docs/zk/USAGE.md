@@ -26,7 +26,7 @@ solc-js, and contracts execute on ethereumjs.
 cd docs/zk
 node js/run-all.mjs      # 1. the 8 protocol examples: zero dependencies, ~16 s
 npm install              # 2. toolchain
-npm test                 # 3. examples + compile every .sol + 58 tests on a real EVM (~10 s)
+npm test                 # 3. examples + compile every .sol + 67 tests on a real EVM (~10 s)
 ```
 
 Expected tail of `npm test`:
@@ -37,7 +37,7 @@ gas report (measured with gasleft() around the call):
   gas: PLONK verifyProof: 270744
   gas: FFLONK verifyProof: 192936
   …
-58 passed, 0 failed
+67 passed, 0 failed
 ```
 
 ### All commands
@@ -47,7 +47,9 @@ gas report (measured with gasleft() around the call):
 | `npm run examples` | `js/run-all.mjs`: Schnorr, simulator, extractor, Fiat–Shamir, Pedersen, DLEQ, R1CS→QAP, BN254 Schnorr | ~16 s |
 | `npm run test:evm` | compile `foundry/` with solc 0.8.24 and run every `test_*` on ethereumjs, plus JS↔Solidity interop | ~10 s |
 | `npm test` | both of the above | ~25 s |
-| `npm run build` | regenerate **all** circuits, the dev ceremony, proofs, verifiers, fixtures, the attack and the must-fail check | ~5 min |
+| `npm run build` | compile all circuits; run the setup for new or changed ones (unchanged circuits keep their keys); regenerate proofs and fixtures; run the attack and the must-fail checks. `FORCE=1 npm run build` redoes every ceremony | ~1 min incremental, ~8 min from scratch |
+| `npm run e2e` | the **live** flow: deploy, join, generate fresh proofs with the SDK, claim, attack, vote. Needs `npm run build` first | ~10 s |
+| `npm run gas` | run the tests and regenerate [GAS.md](GAS.md) from the measurements | ~10 s |
 | `npm run package` | build `complete zk.zip` from git-tracked files, unpack it in a temp dir and run the tests there | ~30 s |
 | `cd foundry && forge test -vv` | the same Solidity tests under Foundry (prints the gas logs too) | — |
 | `node js/0N-*.mjs` | run one example | seconds |
@@ -72,8 +74,10 @@ the verifier from its own ceremony. After editing any `.circom` file:
 npm run build && npm run test:evm
 ```
 
-`build.sh` reuses `circom/build/pot14_final.ptau` if it exists. Delete `circom/build/` to
-regenerate the phase-1 ceremony too.
+`build.sh` is incremental. It reuses `circom/build/pot14_final.ptau`, and it skips phase 2 for
+any circuit whose `.r1cs` is unchanged (comments and `<--` hints don't change it; constraints
+do). Use `FORCE=1 npm run build` to redo every phase 2, or delete `circom/build/` to redo
+phase 1 as well. Afterwards run `npm run gas` so GAS.md matches.
 
 ### 3.3 Add your own circuit (end to end)
 
@@ -115,13 +119,18 @@ This needs the `build/` artefacts from a local `npm run build`. They are not com
 
 ### 3.5 Membership apps: create members, claim, vote, withdraw
 
-Off-chain, each user:
+Off-chain, each user, with the SDK in `js/sdk/zk-client.mjs` (`evm/e2e.mjs` is the full worked
+example):
 
 ```js
-import { buildPoseidon } from 'circomlibjs';
-const poseidon = await buildPoseidon();
-const secret = /* 31 random bytes as a BigInt, kept private */;
-const commitment = poseidon.F.toObject(poseidon([secret]));   // publish only this
+import { ZkClient, deriveScope } from './js/sdk/zk-client.mjs';
+const zk = await ZkClient.create();
+const me = zk.createIdentity();          // publish me.commitment; keep me.secret private
+
+// later: leaves = commitments from MemberAdded / Deposit events, in order
+const scope = deriveScope(chainId, appAddress, round);          // same value as ScopeLib on-chain
+const p = await zk.proveMembership({ secret: me.secret, leaves, message: BigInt(recipient), scope });
+// p.root, p.nullifierHash, p.a, p.b, p.c  → the contract call below
 ```
 
 On-chain:
@@ -131,6 +140,7 @@ On-chain:
 | admit a member (registrar) | `ZkGroup.join(commitment)` |
 | airdrop claim | `ZkAirdrop.claim(root, nullifierHash, recipient, a, b, c)` with input `message = recipient`, `scope = round` |
 | shielded deposit / withdraw | `ShieldedPool.deposit(commitment)` (approve first) · `withdraw(root, nullifierHash, recipient, a, b, c)` |
+| compliant withdraw | `CompliantPool.withdraw(root, associationRoot, nullifierHash, recipient, relayer, fee, a, b, c)`, proving with `compliant_withdraw.circom`. The association path comes from the ASP's published set |
 | vote | `ZkVote.vote(id, nullifierHash, option, a, b, c)` with `message = option`, `scope = id` |
 
 The prover needs the Merkle path: rebuild the tree from the `MemberAdded` / `Deposit` events in
@@ -176,8 +186,9 @@ own issuer, deploy `CredentialGate` with that issuer's Baby Jubjub public key (`
       signals (see the guide §12.1). Check every public input is bound.
 - [ ] **Contract audit.** Check the statement is built in-contract, the CEI order, nullifiers,
       root history and access control.
-- [ ] **Scope binding.** Use `scope = uint256(keccak256(abi.encode(block.chainid, address(this), round))) % r`,
-      and regenerate proofs with it.
+- [ ] **Scope binding.** Deploy with `scope = ScopeLib.derive(chainid, address(this), round)`
+      (predict the address from the deployer nonce or use CREATE2, as `evm/e2e.mjs` does), and
+      assert `isScopeBound(round)` after deployment.
 - [ ] **Tree depth** big enough for your population (depth 20 = 1M members). Re-measure
       constraints and gas.
 - [ ] **Hasher.** Deploy `PoseidonT3` once and share it. Re-check the test vector on the
@@ -198,6 +209,8 @@ own issuer, deploy `CredentialGate` with that issuer's Baby Jubjub public key (`
 | `error[P1014]: The file circomlib/... to be included has not been found` | WASM circom only reads under the current directory's ancestors. `build.sh` copies circomlib into `circom/build/lib`, so run it via `npm run build`, not from elsewhere |
 | `Invalid File format` on `groth16 setup` | the circuit has more constraints than the ptau supports. Raise the power and delete `circom/build/pot14*` |
 | `Assert Failed. Error in template …` during `fullprove` | your input violates a constraint, which is correct behaviour. Example: the minor's credential, by design |
+| `npm run e2e` says artefacts are missing | the zkey and WASM are not committed. Run `npm run build` once |
+| `npm run e2e` claim fails with `InvalidProof` | the local zkey and the committed `MembershipVerifier.sol` come from different builds. Run `FORCE=1 npm run build` |
 | a fixture suddenly fails `verifyProof` | verifier and fixture come from different build runs. Run `npm run build` again (it regenerates both) |
 | a proof verifies off-chain but not in Solidity | public-signal order (outputs first), or a missing G2 swap. Use `gen-fixture.mjs` / `soliditycalldata` |
 | a tampered proof costs a huge amount of gas | a failing BN254 precompile consumes all forwarded gas, which is expected. Relayers should `eth_call` first |

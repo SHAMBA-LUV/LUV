@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 
 import {IMembershipVerifier} from "./interfaces/IMembershipVerifier.sol";
 import {IRootSource} from "./interfaces/IRootSource.sol";
+import {ScopeLib} from "./ScopeLib.sol";
 
 interface IERC20Minimal {
     function transfer(address to, uint256 amount) external returns (bool);
@@ -27,8 +28,8 @@ interface IERC20Minimal {
 ///   • rounds are separated                — `scope` is a public signal; a proof for round 1
 ///                                            is useless in round 2 and in ZkVote
 ///
-/// ⚠ Production notes: derive `scope` from (chainid, address(this), round) so the same group
-///   cannot claim twice on two deployments; use verifiers from a real multi-party ceremony
+/// ⚠ Production notes: deploy with scope = boundScope(round) so the same group cannot claim
+///   twice on two deployments (verified live in evm/e2e.mjs); use verifiers from a real multi-party ceremony
 ///   (the committed verifiers come from a DEV ceremony); prefer ZkGroup over OwnerRoots so the
 ///   chain, not an operator, computes the group root.
 contract ZkAirdrop {
@@ -60,6 +61,19 @@ contract ZkAirdrop {
         roots = roots_;
         scope = scope_;
         amount = amount_;
+    }
+
+    /// The scope a production deployment should use for `round`: bound to this chain and this
+    /// contract (see ScopeLib). Deploy with `scope_ == boundScope(round)` — the address is known
+    /// in advance from the deployer's nonce or CREATE2 — and check it with isScopeBound.
+    /// (The fixture-based tests use a fixed scope so the same proofs run under any deployer;
+    /// evm/e2e.mjs deploys with a bound scope and fresh proofs.)
+    function boundScope(uint256 round) public view returns (uint256) {
+        return ScopeLib.derive(block.chainid, address(this), round);
+    }
+
+    function isScopeBound(uint256 round) external view returns (bool) {
+        return scope == boundScope(round);
     }
 
     /// @param root          a published group root the proof was made against
