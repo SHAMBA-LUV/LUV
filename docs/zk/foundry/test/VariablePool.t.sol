@@ -47,15 +47,15 @@ contract VariablePoolTest is ZkTest {
     }
 
     function _ext1() internal pure returns (VariablePool.ExtData memory) {
-        return VariablePool.ExtData(address(0), int256(100 * E18), address(0), 0);
+        return VariablePool.ExtData(address(0), int256(100 * E18), address(0), 0, "", "");
     }
 
     function _ext2() internal pure returns (VariablePool.ExtData memory) {
-        return VariablePool.ExtData(address(0), 0, address(0), 0);
+        return VariablePool.ExtData(address(0), 0, address(0), 0, "", "");
     }
 
     function _ext3() internal pure returns (VariablePool.ExtData memory) {
-        return VariablePool.ExtData(ZkConstants.TX_RECIPIENT, -int256(40 * E18), ZkConstants.TX_RELAYER, 5 * E18);
+        return VariablePool.ExtData(ZkConstants.TX_RECIPIENT, -int256(40 * E18), ZkConstants.TX_RELAYER, 5 * E18, "", "");
     }
 
     function _tx1() internal pure returns (bytes memory) {
@@ -137,6 +137,16 @@ contract VariablePoolTest is ZkTest {
         VariablePool.ExtData memory ext = _ext3();
         ext.fee = 6 * E18;
         expectRevert(relayer, address(pool), _tx3(ext), VariablePool.InvalidExtData.selector);
+    }
+
+    /// The note ciphertexts are bound too: a relayer cannot replace them to make the payment
+    /// undiscoverable for its receiver (or plant a decoy).
+    function test_relayerCannotSwapEncryptedNotes() public {
+        mustSucceed(alice, address(pool), _tx1());
+        VariablePool.ExtData memory ext = _ext2();
+        ext.encryptedOutput1 = hex"deadbeef";
+        (uint256[2] memory a, uint256[2][2] memory b, uint256[2] memory c, uint256[7] memory pub) = TxTransferProof.get();
+        expectRevert(relayer, address(pool), abi.encodeCall(VariablePool.transact, (_proof(a, b, c, pub), ext)), VariablePool.InvalidExtData.selector);
     }
 
     /// Lying about publicAmount (e.g. claiming a smaller withdrawal) is caught before the proof.

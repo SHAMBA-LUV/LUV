@@ -46,7 +46,7 @@ const C = {
   vpool: get('src/VariablePool.sol', 'VariablePool'),
   txverifier: get('src/verifiers/TransactionVerifier.sol', 'TransactionVerifier'),
 };
-const TRANSACT = 'transact((uint256[2],uint256[2][2],uint256[2],uint256,uint256,uint256,uint256[2],uint256[2]),(address,int256,address,uint256))';
+const TRANSACT = 'transact((uint256[2],uint256[2][2],uint256[2],uint256,uint256,uint256,uint256[2],uint256[2]),(address,int256,address,uint256,bytes,bytes))';
 const CWITHDRAW = 'withdraw(uint256,uint256,uint256,address,address,uint256,uint256[2],uint256[2][2],uint256[2])';
 const CLAIM = 'claim(uint256,uint256,address,uint256[2],uint256[2][2],uint256[2])';
 const VOTE = 'vote(uint256,uint256,uint256,uint256[2],uint256[2][2],uint256[2])';
@@ -212,55 +212,97 @@ ok(!r11.ok && decodeRevert(r11.ret).startsWith('NotDepositor'), 'someone else tr
 const r12 = await call(vm, cpool, encodeCall(C.cpool, 'ragequit(uint256)', [notes[FLAG].secret]), address(notes[FLAG].from));
 ok(r12.ok && (await bal(notes[FLAG].from)) === DENOM, `#2 ragequits: full 1,000 back to the original address (${r12.gas} gas)`);
 
-// ── 8. hidden amounts: Alice deposits, pays Bob privately, Bob withdraws via a relayer ──
-console.log('8. variable pool: deposit 100 → Alice pays Bob 70 privately → Bob withdraws 40 (+5 fee)');
+// ── 8. hidden amounts + encrypted notes: Alice pays Bob; Bob's wallet finds it by scanning ──
+console.log('8. variable pool: deposit 100 → Alice pays Bob 70 privately → Bob finds it by scanning → withdraws 40 (+5 fee)');
 const E18 = 10n ** 18n;
 const txverifier = await deploy(vm, C.txverifier.evm.bytecode.object);
 const vpool = await deploy(vm, C.vpool.evm.bytecode.object, [token.toString(), txverifier.toString(), hasher.toString()]);
 const aliceEOA = randomAddress();
 await call(vm, token, encodeCall(C.token, 'transfer(address,uint256)', [aliceEOA, 100n * E18]));
 await call(vm, token, encodeCall(C.token, 'approve(address,uint256)', [vpool.toString(), 100n * E18]), address(aliceEOA));
-const aliceKey = zk.createKeypair(), bobKey = zk.createKeypair(); // Bob shares only bobKey.pubKey
-const poolLeaves = [];
-const txArgs = (p, ext) => [p.a, p.b, p.c, p.root, p.publicAmount, p.extDataHash, p.nullifiers, p.commitments,
-  BigInt(ext.recipient ?? 0n), ext.extAmount ?? 0n, BigInt(ext.relayer ?? 0n), ext.fee ?? 0n];
+const aliceAcct = zk.createAccount(), bobAcct = zk.createAccount(), eveAcct = zk.createAccount();
+// Bob gives Alice ONLY his shielded address: { pubKey, encryptionKey }
+
+// the chain, as any wallet sees it: NewCommitment(commitment, index, encryptedOutput) + NewNullifier
+const chain = { commitments: [], nullifiers: new Set() };
+const leavesOf = () => chain.commitments.map((c) => c.commitment);
+const ENC_TOPIC = 'NewCommitment(uint256,uint256,bytes)';
+function ingest(rawLogs) {
+  for (const e of eventsOf(rawLogs, ENC_TOPIC)) {
+    const d = e.data.slice(2);
+    const index = Number(BigInt('0x' + d.slice(0, 64)));
+    const len = Number(BigInt('0x' + d.slice(128, 192)));
+    chain.commitments.push({ commitment: e.topics[1], index, encryptedOutput: '0x' + d.slice(192, 192 + 2 * len) });
+  }
+  for (const e of eventsOf(rawLogs, 'NewNullifier(uint256)')) chain.nullifiers.add(e.topics[1]);
+}
+// transact((Proof),(ExtData)) — ExtData has two `bytes`, so it is a DYNAMIC tuple: encode by hand
+function encodeTransact(p, ext) {
+  const id = C.vpool.evm.methodIdentifiers[TRANSACT];
+  const w = (v) => BigInt.asUintN(256, BigInt(v)).toString(16).padStart(64, '0');
+  const proofWords = [p.a, p.b, p.c, p.root, p.publicAmount, p.extDataHash, p.nullifiers, p.commitments].flat(Infinity).map(w).join('');
+  const bytesTail = (hex) => { const h = hex.replace(/^0x/, ''); const n = h.length / 2; return w(n) + h.padEnd(Math.ceil(n / 32) * 64, '0'); };
+  const t1 = bytesTail(ext.encryptedOutput1 ?? '0x'), t2 = bytesTail(ext.encryptedOutput2 ?? '0x');
+  const extHead = [BigInt(ext.recipient ?? 0n), ext.extAmount ?? 0n, BigInt(ext.relayer ?? 0n), ext.fee ?? 0n].map(w).join('')
+    + w(6 * 32) + w(6 * 32 + t1.length / 2);
+  // args: (static Proof: 15 words inline), (dynamic ExtData: offset = everything before it)
+  const headBytes = proofWords.length / 2 + 32;
+  return '0x' + id + proofWords + w(headBytes) + extHead + t1 + t2;
+}
 async function transact(p, ext, from) {
-  const r = await call(vm, vpool, encodeCall(C.vpool, TRANSACT, txArgs(p, ext)), address(from));
-  if (r.ok) for (const e of eventsOf(r.rawLogs, 'NewCommitment(uint256,uint256)')) poolLeaves.push(e.topics[1]);
+  const r = await call(vm, vpool, encodeTransact(p, ext), address(from));
+  if (r.ok) ingest(r.rawLogs);
   return r;
 }
 
-const ext1 = { extAmount: 100n * E18 };
-const t1 = await zk.proveTransaction({ leaves: poolLeaves, outputs: [zk.createNote(60n * E18, aliceKey.pubKey), zk.createNote(40n * E18, aliceKey.pubKey)], extData: ext1 });
+// tx1 — Alice deposits 100 as 60 + 40, both encrypted to herself
+const dep = [{ note: zk.createNote(60n * E18, aliceAcct.pubKey), to: aliceAcct.address }, { note: zk.createNote(40n * E18, aliceAcct.pubKey), to: aliceAcct.address }];
+const ext1 = { extAmount: 100n * E18, ...zk.encryptOutputs(dep) };
+const t1 = await zk.proveTransaction({ leaves: leavesOf(), outputs: dep.map((o) => o.note), extData: ext1 });
 const r13 = await transact(t1, ext1, aliceEOA);
-ok(r13.ok, `deposit of 100 accepted, split 60/40 in hidden notes (${r13.gas} gas)`);
+ok(r13.ok, `deposit of 100 accepted, split 60/40 in hidden, encrypted notes (${r13.gas} gas)${r13.ok ? '' : ' → ' + decodeRevert(r13.ret)}`);
 const vtree = address('0x' + (await view(vpool, C.vpool, 'tree()')).toString(16).padStart(40, '0'));
-ok(zk.buildTree(poolLeaves).root === (await view(vtree, C.group, 'root()')), 'SDK tree from NewCommitment events == pool tree root');
+ok(zk.buildTree(leavesOf()).root === (await view(vtree, C.group, 'root()')), 'SDK tree from NewCommitment events == pool tree root');
 
-const [A1, A2] = t1.outputs;
-const t2 = await zk.proveTransaction({ leaves: poolLeaves,
-  inputs: [{ note: A1, privKey: aliceKey.privKey }, { note: A2, privKey: aliceKey.privKey }],
-  outputs: [zk.createNote(70n * E18, bobKey.pubKey), zk.createNote(30n * E18, aliceKey.pubKey)] });
+// tx2 — Alice's wallet finds her notes by scanning, pays Bob 70 to his shielded address, keeps 30
+const aliceNotes = zk.scan(aliceAcct, chain.commitments, chain.nullifiers);
+ok(aliceNotes.balance === 100n * E18 && aliceNotes.notes.length === 2, "Alice's wallet scan: 2 notes, balance 100");
+const pay = [{ note: zk.createNote(70n * E18, bobAcct.address.pubKey), to: bobAcct.address }, { note: zk.createNote(30n * E18, aliceAcct.pubKey), to: aliceAcct.address }];
+const ext2 = { ...zk.encryptOutputs(pay) };
+const t2 = await zk.proveTransaction({ leaves: leavesOf(), inputs: aliceNotes.notes.map(({ note }) => ({ note, privKey: aliceAcct.privKey })), outputs: pay.map((o) => o.note), extData: ext2 });
 const relayerEOA = randomAddress();
-const r14 = await transact(t2, {}, relayerEOA);
-ok(r14.ok && t2.publicAmount === 0n, `private transfer accepted, publicAmount 0: no amount, sender or receiver on-chain (${r14.gas} gas)`);
+const swapped = await call(vm, vpool, encodeTransact(t2, { ...ext2, encryptedOutput1: zk.encryptOutputs([{ note: pay[0].note, to: eveAcct.address }]).encryptedOutput1 }), address(relayerEOA));
+ok(!swapped.ok && decodeRevert(swapped.ret).startsWith('InvalidExtData'), 'relayer re-encrypting Bob\'s note to someone else → InvalidExtData');
+const r14 = await transact(t2, ext2, relayerEOA);
+ok(r14.ok && t2.publicAmount === 0n, `private payment accepted, publicAmount 0 (${r14.gas} gas)`);
 
-const [B1, A3] = t2.outputs; // in production Bob receives B1's amount + blinding encrypted to him
-let stolen = false;
+// Bob received NOTHING out of band: his wallet scans the chain
+const bobView = zk.scan(bobAcct, chain.commitments, chain.nullifiers);
+ok(bobView.balance === 70n * E18 && bobView.notes.length === 1, "Bob's wallet scan finds the payment: balance 70 (from events alone)");
+ok(zk.scan(eveAcct, chain.commitments, chain.nullifiers).balance === 0n, 'Eve scans the same events: balance 0, learns nothing');
+// a decoy: a ciphertext that decrypts for Bob but promises a note that was never committed
+const decoy = { commitment: 12345n, index: 99, encryptedOutput: zk.encryptOutputs([{ note: zk.createNote(1_000_000n * E18, bobAcct.pubKey), to: bobAcct.address }]).encryptedOutput1 };
+ok(zk.scan(bobAcct, [...chain.commitments, decoy], chain.nullifiers).balance === 70n * E18,
+  'a decoy ciphertext promising Bob 1,000,000 is ignored: it does not match its commitment');
+ok(zk.scan(aliceAcct, chain.commitments, chain.nullifiers).balance === 30n * E18, "Alice's wallet: spent notes dropped via NewNullifier, balance 30");
+
 let why = '';
-try { await zk.proveTransaction({ leaves: poolLeaves, inputs: [{ note: A3, privKey: bobKey.privKey }], outputs: [zk.createNote(30n * E18, bobKey.pubKey)] }); stolen = true; }
-catch (e) { why = e.message; }
-ok(!stolen && /does not own/.test(why), "Bob cannot spend Alice's change note with his own key (the circuit would reject it too: build.sh txSteal)");
+try { await zk.proveTransaction({ leaves: leavesOf(), inputs: [{ note: bobView.notes[0].note, privKey: aliceAcct.privKey }], outputs: [] }); } catch (e) { why = e.message; }
+ok(/does not own/.test(why), "Alice cannot spend the note she sent Bob (it is his key's now)");
 
+// tx3 — Bob withdraws 40 via a relayer (fee 5) and keeps 25, encrypted to himself
 const payee = randomAddress();
-const ext3 = { recipient: payee, extAmount: -40n * E18, relayer: relayerEOA, fee: 5n * E18 };
-const t3 = await zk.proveTransaction({ leaves: poolLeaves, inputs: [{ note: B1, privKey: bobKey.privKey }], outputs: [zk.createNote(25n * E18, bobKey.pubKey)], extData: ext3 });
+const keep = [{ note: zk.createNote(25n * E18, bobAcct.pubKey), to: bobAcct.address }];
+const ext3 = { recipient: payee, extAmount: -40n * E18, relayer: relayerEOA, fee: 5n * E18, ...zk.encryptOutputs(keep) };
+const t3 = await zk.proveTransaction({ leaves: leavesOf(), inputs: [{ note: bobView.notes[0].note, privKey: bobAcct.privKey }], outputs: keep.map((o) => o.note), extData: ext3 });
 const r15 = await transact(t3, { ...ext3, recipient: randomAddress() }, relayerEOA);
 ok(!r15.ok && decodeRevert(r15.ret).startsWith('InvalidExtData'), 'relayer swapping the recipient → InvalidExtData');
 const r16 = await transact(t3, ext3, relayerEOA);
 ok(r16.ok, `withdrawal accepted (${r16.gas} gas)`);
 ok((await bal(payee)) === 40n * E18 && (await bal(relayerEOA)) === 5n * E18, 'payee received 40, relayer 5');
-ok((await bal(vpool.toString())) === 55n * E18, 'pool holds 55 = Alice\'s 30 + Bob\'s 25, split invisible on-chain');
+const finalA = zk.scan(aliceAcct, chain.commitments, chain.nullifiers).balance, finalB = zk.scan(bobAcct, chain.commitments, chain.nullifiers).balance;
+ok(finalA === 30n * E18 && finalB === 25n * E18 && (await bal(vpool.toString())) === finalA + finalB,
+  'wallet balances from events: Alice 30, Bob 25 — exactly what the pool holds (55)');
 const r17 = await transact(t3, ext3, relayerEOA);
 ok(!r17.ok && decodeRevert(r17.ret).startsWith('NullifierUsed'), 'replaying the withdrawal → NullifierUsed');
 

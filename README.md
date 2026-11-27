@@ -66,7 +66,7 @@ test/        19 forge tests (self-contained, no forge-std)
 deploy/      anvil deploy + a 29-check live hard-test (deploy-and-test-anvil.mjs)
 auth/        self-hosted social login → sovereign wallet → wallet-to-wallet 1T-LUV gesture
 LUV.md       complete contract guide   ·   SECURITY.md  posture + disclosure
-docs/ZERO_KNOWLEDGE_PROOFS.md  ZK proofs guide: runnable examples, 7 circuits, 13 contracts (incl. hidden-amount pool), client SDK, 87 EVM tests + mutation tests + live e2e (docs/zk/: USAGE.md, TECHNICAL.md, GAS.md)
+docs/ZERO_KNOWLEDGE_PROOFS.md  ZK proofs guide: runnable examples, 7 circuits, 13 contracts (incl. hidden-amount pool), client SDK, 88 EVM tests + mutation tests + live e2e with encrypted-note wallets (docs/zk/: USAGE.md, TECHNICAL.md, GAS.md)
 ```
 
 ## The gesture (the 1-Quadrillion campaign)

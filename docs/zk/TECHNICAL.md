@@ -125,7 +125,9 @@ per output j:  Poseidon(amount_j, pubKey_j, blinding_j)                 === outp
 ```
 
 `publicAmount = extAmount − fee mod r` (negative ⇒ `r − |x|`).
-`extDataHash = keccak256(abi.encode(address recipient, int256 extAmount, address relayer, uint256 fee)) mod r`.
+`extDataHash = keccak256(abi.encode(address recipient, int256 extAmount, address relayer, uint256 fee, bytes32 keccak256(encryptedOutput1), bytes32 keccak256(encryptedOutput2))) mod r`.
+The fixtures use empty ciphertexts, because encryption is randomised and fixtures must be
+reproducible. The live run uses real ones.
 Fixture story: tx1 deposit 100 → notes 60 and 40 (Alice) · tx2 Alice → Bob 70, change 30 ·
 tx3 Bob withdraws 40 to `0xB0B`, fee 5 to `0xFEE1`, change 25. Must-fail: `txInflate`
 (fails at conservation), `txNegative` (fails at `Num2Bits`), `txSteal` (fails at the nullifier).
@@ -198,7 +200,7 @@ All contracts use custom errors, no external dependencies, and solc ^0.8.24.
 | `ZkAirdrop` | `(token, IMembershipVerifier, IRootSource, scope, amount)` | `claim(root, nullifierHash, recipient, a, b, c)` · views `boundScope(round)`, `isScopeBound(round)` | recipient ≠ 0 → known root → unused nullifier → proof over `[root, nullifier, recipient, scope]` → mark → transfer | `ZeroAddress`, `UnknownRoot`, `NullifierUsed`, `InvalidProof`, `TransferFailed` |
 | `ShieldedPool` | `(token, denomination, IMembershipVerifier, IPoseidonT3, scope)`, which deploys its own `ZkGroup` | `deposit(commitment)` · `withdraw(root, nullifierHash, recipient, a, b, c)` · views `boundScope`, `isScopeBound` | deposit: `transferFrom` → `tree.join`. Withdraw: as `ZkAirdrop` | as above |
 | `CompliantPool` | `(token, denomination, maxFee, ICompliantWithdrawVerifier, IPoseidonT3, IPoseidonT2, IRootSource associations, scope)`; deploys its own `ZkGroup`; reverts if `maxFee > denomination` | `deposit(commitment)` (records `depositorOf`) · `withdraw(root, associationRoot, nullifierHash, recipient, relayer, fee, a, b, c)` · `ragequit(secret)` · views `boundScope`, `isScopeBound`, `depositorOf` | withdraw: recipient ≠ 0 → fee ≤ maxFee → known deposit root → accepted association root → unused nullifier → proof over the 7 signals → mark → pay recipient `denomination − fee` → pay relayer `fee`. Ragequit: secret < r → `Poseidon(secret)` deposited by `msg.sender` → nullifier `Poseidon(secret, scope)` unused → mark → pay depositor `denomination` | `ZeroAddress`, `FeeTooHigh`, `UnknownRoot`, `UnknownAssociationRoot`, `NullifierUsed`, `InvalidProof`, `TransferFailed`, `NotDepositor`, `SecretOutOfField` |
-| `VariablePool` | `(token, ITransactionVerifier, IPoseidonT3)`, which deploys its own `ZkGroup` | `transact(Proof p, ExtData ext)` with `Proof {a, b, c, root, publicAmount, extDataHash, inputNullifiers[2], outputCommitments[2]}` and `ExtData {recipient, int256 extAmount, relayer, fee}` · views `publicAmountOf(extAmount, fee)`, `extDataHashOf(ext)`, `MAX_AMOUNT = 2^120` | known root → distinct nullifiers → unused → `extDataHashOf(ext) == p.extDataHash` → `publicAmountOf == p.publicAmount` (bounds \|extAmount\|, fee < 2¹²⁰) → proof over the 7 signals → mark nullifiers → `joinPair(outputs)` → extAmount > 0: `transferFrom(msg.sender)`; < 0: pay `recipient`; fee: pay `relayer` | `UnknownRoot`, `DuplicateNullifier`, `NullifierUsed`, `InvalidExtData`, `InvalidPublicAmount`, `AmountTooLarge`, `InvalidProof`, `ZeroAddress`, `TransferFailed` |
+| `VariablePool` | `(token, ITransactionVerifier, IPoseidonT3)`, which deploys its own `ZkGroup` | `transact(Proof p, ExtData ext)` with `Proof {a, b, c, root, publicAmount, extDataHash, inputNullifiers[2], outputCommitments[2]}` (static, 15 words) and `ExtData {recipient, int256 extAmount, relayer, fee, bytes encryptedOutput1, bytes encryptedOutput2}` (dynamic). Events: `NewCommitment(commitment indexed, index, bytes encryptedOutput)`, `NewNullifier(nullifier indexed)` · views `publicAmountOf(extAmount, fee)`, `extDataHashOf(ext)`, `MAX_AMOUNT = 2^120` | known root → distinct nullifiers → unused → `extDataHashOf(ext) == p.extDataHash` → `publicAmountOf == p.publicAmount` (bounds \|extAmount\|, fee < 2¹²⁰) → proof over the 7 signals → mark nullifiers → `joinPair(outputs)` → extAmount > 0: `transferFrom(msg.sender)`; < 0: pay `recipient`; fee: pay `relayer` | `UnknownRoot`, `DuplicateNullifier`, `NullifierUsed`, `InvalidExtData`, `InvalidPublicAmount`, `AmountTooLarge`, `InvalidProof`, `ZeroAddress`, `TransferFailed` |
 | `ZkVote` | `(IMembershipVerifier)` | `createProposal(id, groupRoot, options, deadline)` (owner) · `vote(id, nullifierHash, option, a, b, c)` | exists → open → option < options → unused → proof over `[groupRoot, nullifier, option, id]` | `NotOwner`, `ProposalExists`, `BadProposal`, `UnknownProposal`, `VotingClosed`, `BadOption`, `NullifierUsed`, `InvalidProof` |
 | `CredentialGate` | `(ICredentialVerifier, issuerAx, issuerAy, currentYear, minAge)` | `prove(subject, a, b, c)` | proof over `[Ax, Ay, year, minAge, subject]` | `InvalidProof` |
 | `KeyRegistry` | none | `register(X, R, s)` · `challenge(account, X, R)` · `keyOf(account)` · `ownerOfKey(keccak(X))` | X, R on curve and not ∞ → s < N → account unregistered → key unclaimed → `s·G == R + c·X` | `NotOnCurve`, `ScalarOutOfRange`, `AlreadyRegistered`, `KeyTaken`, `InvalidProof` |
@@ -255,9 +257,9 @@ The summary below adds context. Figures are measured with `gasleft()` around the
 | live `ZkAirdrop.claim` with a fresh proof, bound scope | ≈ 270,000 | e2e tx |
 | `ZkGroup.join` (10 Poseidon hashes + storage) | **379,655** | `gasleft()` |
 | 8 members: 4 × `joinPair` vs 8 × `join` | **1,556,848** vs **2,853,240** | `gasleft()` |
-| `VariablePool` deposit (proof + pair insert + transferFrom) | **792,403** | `gasleft()` |
-| `VariablePool` private transfer | **665,600** | `gasleft()` |
-| `VariablePool` withdrawal + relayer fee | **714,239** | `gasleft()` |
+| `VariablePool` deposit (proof + pair insert + transferFrom) | **795,915** | `gasleft()` |
+| `VariablePool` private transfer | **669,121** | `gasleft()` |
+| `VariablePool` withdrawal + relayer fee | **717,662** | `gasleft()` |
 | `KeyRegistry.register` from an EOA | **93,450** | tx `executionGasUsed` |
 | tampered proof point (precompile failure) | **all forwarded gas** (~969M in a 1G-gas test) | test tx |
 
@@ -310,18 +312,24 @@ replay, redirect, cross-deployment reuse (a second deployment has another bound 
 history after later joins, and an anonymous vote with a flipped-option attempt. Section 7 runs
 a `CompliantPool` live: 5 deposits from random EOAs, an ASP that rebuilds the deposit log and
 flags one depositor, a relayed withdrawal with a fee and a redirect attempt, and the flagged
-depositor's ragequit. Section 8 runs a `VariablePool` with fresh random keys: a deposit, a
-private Alice → Bob transfer (publicAmount 0), a theft attempt the SDK refuses, a redirected
-withdrawal (`InvalidExtData`), the real withdrawal with a fee, conservation (the pool keeps
-exactly the hidden change), and a replay. That makes 38 checks in all. It needs the zkeys and
+depositor's ragequit. Section 8 runs a `VariablePool` with fresh **accounts**, each a
+spending key plus an X25519 encryption key. Alice deposits notes encrypted to herself. Her
+wallet finds them by `scan`ning `NewCommitment` events, and she pays Bob using only his shielded
+address. A relayer re-encrypting Bob's note to Eve is rejected (`InvalidExtData`). Bob's wallet
+finds the payment from events alone, Eve finds nothing, a decoy ciphertext is ignored, and spent
+notes drop out via `NewNullifier`. Bob withdraws through a relayer; a recipient swap and a
+replay are rejected. The final wallet balances (30 + 25) equal the pool's holdings. That makes
+44 checks in all. The script ABI-encodes the dynamic `ExtData` tuple by hand. It needs the zkeys and
 WASMs of `membership`, `compliant_withdraw` and `transaction` from the **same build** as the
 committed verifiers, and exits 2 with a hint if they are missing.
 
 SDK surface: `ZkClient.create()`, `createIdentity()`, `hash()`, `nullifier()`, `buildTree()`,
 `membershipInput()`, `proveMembership()`, `compliantWithdrawInput()`, `proveCompliantWithdraw()`,
-`createKeypair()`, `createNote()`, `noteNullifier()`, `transactionInput()` (checks key ownership
-and conservation before proving), `proveTransaction()`, `verify()`, plus `deriveScope()`,
-`extDataHash()`, `publicAmount()`, `MAX_AMOUNT`, `toSolidity()`,
+`createKeypair()`, `createAccount()` (keys + encryption key + shielded address), `createNote()`,
+`noteNullifier()`, `encryptOutputs()`, `scan()` (decrypt → re-check against the commitment → drop
+spent), `transactionInput()` (checks key ownership and conservation before proving),
+`proveTransaction()`, `verify()`, plus `deriveScope()`, `extDataHash()`, `publicAmount()`,
+`MAX_AMOUNT`, `createEncryptionKey()`, `encryptNote()`, `decryptNote()`, `toSolidity()`,
 `artifacts()`.
 
 The tests use **no cheatcodes**. `Actor` contracts provide distinct `msg.sender`s,
@@ -342,7 +350,7 @@ failure.
 | `ZkGroup` open mode | Sybil-prone. Use a registrar or a gated `join` |
 | `scope` values | fixed constants in the fixture tests (same proofs under any deployer). `ScopeLib` + `ZkAirdrop.boundScope` give the bound form, exercised live by `e2e.mjs`. The pools and `ZkVote` take the scope as a parameter: pass a bound one |
 | `ShieldedPool` | no relayer fee, no compliance layer. Depth 10 = 1,024 notes. Teaching only |
-| `VariablePool` | note data (amount, blinding) must reach the receiver out of band (production: encrypted events). No compliance layer. Depth 10 = 512 transactions. Teaching only |
+| `VariablePool` | note encryption is an educational X25519 + ChaCha20-Poly1305 construction, with the encryption key separate from the spending key (production: derive both from one seed, use an audited scheme). No compliance layer. Depth 10 = 512 transactions. Teaching only |
 | `CompliantPool` | a single ASP (`IRootSource`). Depositor addresses are logged for the ASP. Ragequit reveals the note secret, so a secret must serve one note only. Teaching only |
 | `ZkVote` | anonymity without receipt-freeness (see MACI) |
 | `CredentialGate` | `currentYear` is a constructor constant. Issuer key is a published demo key |
@@ -357,7 +365,7 @@ failure.
 ```
 docs/zk/
 ├── README.md · TECHNICAL.md · USAGE.md · GAS.md (generated) · package.json · package-lock.json
-├── js/            secp256k1.mjs · bn254.mjs · 01…08 examples · run-all.mjs · sdk/zk-client.mjs
+├── js/            secp256k1.mjs · bn254.mjs · 01…09 examples · run-all.mjs · sdk/ (zk-client.mjs, note-crypto.mjs)
 ├── circom/        cube · membership · compliant_withdraw · transaction · credential · age_buggy (+ attack/age_forger) .circom
 │                  lib/merkle.circom · scaling.sh
 │                  build.sh · make-inputs.mjs · gen-fixture.mjs · gen-fixture-calldata.mjs · gen-poseidon.mjs

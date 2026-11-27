@@ -24,9 +24,9 @@ solc-js, and contracts execute on ethereumjs.
 
 ```bash
 cd docs/zk
-node js/run-all.mjs      # 1. the 8 protocol examples: zero dependencies, ~16 s
+node js/run-all.mjs      # 1. the 9 protocol examples: zero dependencies, ~16 s
 npm install              # 2. toolchain
-npm test                 # 3. examples + 87 Solidity tests on a real EVM + 272 mutation checks (~30 s)
+npm test                 # 3. examples + 88 Solidity tests on a real EVM + 272 mutation checks (~30 s)
 ```
 
 Expected tail of `npm test`:
@@ -37,7 +37,7 @@ gas report (measured with gasleft() around the call):
   gas: PLONK verifyProof: 270744
   gas: FFLONK verifyProof: 192936
   …
-87 passed, 0 failed
+88 passed, 0 failed
   ✓ CubeProof                groth16 original verifies: yes · 11/11 mutants rejected
   …
 mutation: 13/13 fixtures clean (272 verifier calls)
@@ -47,12 +47,12 @@ mutation: 13/13 fixtures clean (272 verifier calls)
 
 | command | what it does | time |
 |---|---|---|
-| `npm run examples` | `js/run-all.mjs`: Schnorr, simulator, extractor, Fiat–Shamir, Pedersen, DLEQ, R1CS→QAP, BN254 Schnorr | ~16 s |
+| `npm run examples` | `js/run-all.mjs`: Schnorr, simulator, extractor, Fiat–Shamir, Pedersen, DLEQ, R1CS→QAP, BN254 Schnorr, note encryption | ~16 s |
 | `npm run test:evm` | compile `foundry/` with solc 0.8.24 and run every `test_*` on ethereumjs, plus JS↔Solidity interop | ~10 s |
 | `npm run mutation` | mutation-test every committed proof: each proof word, each public signal, each non-canonical alias, un-swapped G2 | ~7 s |
 | `npm test` | examples + `test:evm` + `mutation` | ~30 s |
 | `npm run build` | compile all circuits; run the setup for new or changed ones (unchanged circuits keep their keys); regenerate proofs and fixtures; run the attack and the must-fail checks. `FORCE=1 npm run build` redoes every ceremony | ~1 min incremental, ~8 min from scratch |
-| `npm run e2e` | the **live** flow: deploy, join, generate fresh proofs with the SDK, claim, attack, vote, then a compliant pool with an ASP, a relayer fee and a ragequit, then a hidden-amount pool with a private Alice → Bob payment (38 checks). Needs `npm run build` first | ~14 s |
+| `npm run e2e` | the **live** flow: deploy, join, generate fresh proofs with the SDK, claim, attack, vote, then a compliant pool with an ASP, a relayer fee and a ragequit, then a hidden-amount pool where Bob finds Alice's payment by scanning encrypted events (44 checks). Needs `npm run build` first | ~14 s |
 | `npm run scaling` | constraint counts for membership, compliant withdrawal and the join-split transaction at depths 10–32 (compile only) | ~20 s |
 | `npm run gas` | run the tests and regenerate [GAS.md](GAS.md) from the measurements | ~10 s |
 | `npm run package` | build `complete zk.zip` from git-tracked files, unpack it in a temp dir and run the tests there | ~30 s |
@@ -159,24 +159,31 @@ proven `recipient`.
 ```js
 import { ZkClient } from './js/sdk/zk-client.mjs';
 const zk = await ZkClient.create();
-const me = zk.createKeypair();                 // share me.pubKey to receive; keep me.privKey
-// leaves = commitments from NewCommitment events, in order
+const me = zk.createAccount();             // me.address = { pubKey, encryptionKey }: hand THIS out
+// events: commitments = [{ commitment, index, encryptedOutput }] from NewCommitment, nullifiers from NewNullifier
 
-// deposit 100 (approve the pool first; the submitter pays)
-const d = await zk.proveTransaction({ leaves, outputs: [zk.createNote(100n * E18, me.pubKey)],
-                                      extData: { extAmount: 100n * E18 } });
+// deposit 100 (approve the pool first; the submitter pays), encrypted to yourself
+const outs = [{ note: zk.createNote(100n * E18, me.pubKey), to: me.address }];
+const ext = { extAmount: 100n * E18, ...zk.encryptOutputs(outs) };
+const d = await zk.proveTransaction({ leaves, outputs: outs.map((o) => o.note), extData: ext });
 // VariablePool.transact(Proof{d.a, d.b, d.c, d.root, d.publicAmount, d.extDataHash, d.nullifiers, d.commitments},
-//                       ExtData{0, 100e18, 0, 0})
+//                       ExtData{0, 100e18, 0, 0, ext.encryptedOutput1, ext.encryptedOutput2})
 
-// pay Bob 70 privately (you need only bobPubKey), keep 30 as change
-const note = d.outputs[0];
-const t = await zk.proveTransaction({ leaves, inputs: [{ note, privKey: me.privKey }],
-  outputs: [zk.createNote(70n * E18, bobPubKey), zk.createNote(30n * E18, me.pubKey)] });
-// send Bob t.outputs[0] (amount + blinding) over an encrypted channel; anyone can submit t
+// your balance and spendable notes, from chain data alone
+const { notes, balance } = zk.scan(me, commitments, nullifiers);
+
+// pay Bob 70 (you need only bobAddress), keep 30; Bob's wallet finds it by scanning
+const pay = [{ note: zk.createNote(70n * E18, bobAddress.pubKey), to: bobAddress },
+             { note: zk.createNote(30n * E18, me.pubKey), to: me.address }];
+const t = await zk.proveTransaction({ leaves, inputs: notes.map(({ note }) => ({ note, privKey: me.privKey })),
+  outputs: pay.map((o) => o.note), extData: zk.encryptOutputs(pay) });   // anyone can submit t
 
 // withdraw 40 to `to` through a relayer charging 5
-const ext = { recipient: to, extAmount: -40n * E18, relayer, fee: 5n * E18 };
+const ext3 = { recipient: to, extAmount: -40n * E18, relayer, fee: 5n * E18, ...zk.encryptOutputs(changeOutputs) };
 ```
+
+`ExtData` has two `bytes` fields, which makes it a dynamic ABI tuple. Use ethers/viem, or see
+`encodeTransact` in `evm/e2e.mjs` for a hand encoder.
 
 The SDK refuses to build a witness that cannot verify: a key that doesn't own the note, a note
 not in the tree, or outputs that don't balance. `transactionInput` pads with zero-value dummies,
@@ -253,6 +260,7 @@ own issuer, deploy `CredentialGate` with that issuer's Baby Jubjub public key (`
 | a proof verifies off-chain but not in Solidity | public-signal order (outputs first), or a missing G2 swap. Use `gen-fixture.mjs` / `soliditycalldata` |
 | a tampered proof costs a huge amount of gas | a failing BN254 precompile consumes all forwarded gas, which is expected. Relayers should `eth_call` first |
 | `InvalidExtData` from `VariablePool` | the `ExtData` you submit must be byte-identical to the one the proof was made for (recipient, signed `extAmount`, relayer, fee) |
+| a payment doesn't show up in `scan` | the sender encrypted to the wrong `encryptionKey`, or you passed the wrong account. `scan` also silently skips ciphertexts that decrypt but don't match their commitment (decoys) |
 | `this key does not own the input note` (SDK) | you are spending someone else's note, or used the wrong `privKey` |
 | `NotDepositor` on ragequit | send it from the address that made the deposit. Ragequit never pays anyone else |
 | `UnknownRoot` after many joins | root history is 32. Rebuild the path against a recent root |

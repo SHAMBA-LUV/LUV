@@ -23,6 +23,8 @@ import { fileURLToPath } from 'node:url';
 import { buildPoseidon } from 'circomlibjs';
 import { keccak_256 } from '@noble/hashes/sha3.js';
 import * as snarkjs from 'snarkjs';
+import { createEncryptionKey, encryptNote, decryptNote } from './note-crypto.mjs';
+export { createEncryptionKey, encryptNote, decryptNote };
 
 export const FIELD = 21888242871839275222246405745257275088548364400416034343698204186575808495617n;
 export const DEPTH = 10; // must match Membership(10) and ZkGroup.DEPTH
@@ -42,9 +44,12 @@ const randomField = () => BigInt('0x' + randomBytes(31).toString('hex'));
 /** Range bound shared by transaction.circom (Num2Bits(120)) and VariablePool.sol */
 export const MAX_AMOUNT = 2n ** 120n;
 
-/** VariablePool external data → the public extDataHash: keccak256(abi.encode(...)) mod FIELD */
-export function extDataHash({ recipient = 0n, extAmount = 0n, relayer = 0n, fee = 0n }) {
-  const packed = Buffer.concat([word(BigInt(recipient)), int256(extAmount), word(BigInt(relayer)), word(fee)]);
+/** VariablePool external data → the public extDataHash, exactly as VariablePool.extDataHashOf:
+ *  keccak256(abi.encode(recipient, extAmount, relayer, fee, keccak256(enc1), keccak256(enc2))) mod FIELD */
+export function extDataHash({ recipient = 0n, extAmount = 0n, relayer = 0n, fee = 0n, encryptedOutput1 = '0x', encryptedOutput2 = '0x' }) {
+  const h = (hex) => Buffer.from(keccak_256(Buffer.from(hex.replace(/^0x/, ''), 'hex')));
+  const packed = Buffer.concat([word(BigInt(recipient)), int256(extAmount), word(BigInt(relayer)), word(fee),
+    h(encryptedOutput1), h(encryptedOutput2)]);
   return BigInt('0x' + Buffer.from(keccak_256(packed)).toString('hex')) % FIELD;
 }
 
@@ -180,6 +185,45 @@ export class ZkClient {
   /** Spending key pair: share pubKey to get paid, keep privKey to spend. */
   createKeypair(privKey = randomField()) {
     return { privKey, pubKey: this.hash(privKey) };
+  }
+
+  /**
+   * A full wallet account: spending key pair + encryption key. Its SHIELDED ADDRESS
+   * `{ pubKey, encryptionKey }` is what you hand out to get paid.
+   */
+  createAccount(privKey) {
+    const k = this.createKeypair(privKey);
+    const enc = createEncryptionKey();
+    return { ...k, encryption: enc, address: { pubKey: k.pubKey, encryptionKey: enc.publicKey } };
+  }
+
+  /** Encrypt each output note to its receiver's address → { encryptedOutput1, encryptedOutput2 }. */
+  encryptOutputs(outputs) {
+    const enc = outputs.map(({ note, to }) => (to ? encryptNote(note, to.encryptionKey) : '0x'));
+    return { encryptedOutput1: enc[0] ?? '0x', encryptedOutput2: enc[1] ?? '0x' };
+  }
+
+  /**
+   * Wallet scan: find this account's unspent notes from chain data alone.
+   * @param commitments  [{ commitment, index, encryptedOutput }] from NewCommitment events, in order
+   * @param spent        Set of nullifiers from NewNullifier events
+   * @returns { notes: [{ note, index, nullifier }], balance }
+   * A decrypted note is accepted only if Poseidon(amount, pubKey, blinding) equals the on-chain
+   * commitment — a sender cannot fool the wallet with a ciphertext for a note that doesn't exist.
+   */
+  scan(account, commitments, spent = new Set()) {
+    const notes = [];
+    for (const { commitment, index, encryptedOutput } of commitments) {
+      if (!encryptedOutput || encryptedOutput === '0x') continue;
+      const d = decryptNote(encryptedOutput, account.encryption.privateKey);
+      if (!d) continue; // not ours
+      const note = { amount: d.amount, pubKey: account.pubKey, blinding: d.blinding, commitment: this.hash(d.amount, account.pubKey, d.blinding) };
+      if (note.commitment !== BigInt(commitment)) continue; // decrypts, but isn't the committed note
+      const nullifier = this.noteNullifier(note, account.privKey);
+      if (spent.has(nullifier)) continue;
+      notes.push({ note, index, nullifier });
+    }
+    return { notes, balance: notes.reduce((t, n) => t + n.note.amount, 0n) };
   }
 
   /** A note of `amount` owned by `pubKey`. Only `commitment` goes on-chain. */

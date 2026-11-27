@@ -8,9 +8,9 @@
 > [§13](#13-complete-reference).
 
 ```bash
-node docs/zk/js/run-all.mjs                 # Node ≥ 18, zero dependencies: 8 protocol examples (~16 s)
-cd docs/zk && npm install && npm test       # + compile all .sol, run 87 tests on a real EVM, mutation-test every proof
-npm run build && npm run e2e                # + a live flow: fresh identities, fresh proofs, bound scope (38 checks)
+node docs/zk/js/run-all.mjs                 # Node ≥ 18, zero dependencies: 9 protocol examples (~16 s)
+cd docs/zk && npm install && npm test       # + compile all .sol, run 88 tests on a real EVM, mutation-test every proof
+npm run build && npm run e2e                # + a live flow: fresh identities, fresh proofs, bound scope (44 checks)
 ```
 
 The JavaScript examples use only `BigInt` and `node:crypto`. The library
@@ -499,11 +499,14 @@ const p = await zk.proveMembership({ secret: me.secret, leaves, message: BigInt(
   ✓ recipient got 990, the PROVEN relayer 10, the submitter 0
   ✓ flagged depositor #2 cannot build a private-withdrawal witness
   ✓ #2 ragequits: full 1,000 back to the original address
-8. variable pool: deposit 100 → Alice pays Bob 70 privately → Bob withdraws 40 (+5 fee)
-  ✓ private transfer accepted, publicAmount 0: no amount, sender or receiver on-chain
-  ✓ Bob cannot spend Alice's change note with his own key
-  ✓ pool holds 55 = Alice's 30 + Bob's 25, split invisible on-chain
-e2e: all checks passed          (38 checks)
+8. variable pool: deposit 100 → Alice pays Bob 70 privately → Bob finds it by scanning → withdraws 40 (+5 fee)
+  ✓ relayer re-encrypting Bob's note to someone else → InvalidExtData
+  ✓ private payment accepted, publicAmount 0
+  ✓ Bob's wallet scan finds the payment: balance 70 (from events alone)
+  ✓ Eve scans the same events: balance 0, learns nothing
+  ✓ a decoy ciphertext promising Bob 1,000,000 is ignored: it does not match its commitment
+  ✓ wallet balances from events: Alice 30, Bob 25 — exactly what the pool holds (55)
+e2e: all checks passed          (44 checks)
 ```
 
 Two things only this run can show. First, the **scope is bound to the deployment**:
@@ -543,11 +546,11 @@ test/Credential.t.sol:CredentialTest            6 passed   (Groth16 verify, 5 pu
 test/UnderConstrained.t.sol:UnderConstrainedTest 2 passed  (⚠ the forged proof IS accepted — §12.1)
 test/ShieldedPool.t.sol:ShieldedPoolTest        8 passed   (deposit ≈ 389k gas · private withdraw ≈ 276k gas)
 test/CompliantPool.t.sol:CompliantPoolTest     16 passed   (compliant withdraw ≈ 322k gas · ragequit ≈ 99k gas)
-test/VariablePool.t.sol:VariablePoolTest       11 passed   (deposit ≈ 792k · private transfer ≈ 666k · withdraw ≈ 714k gas)
+test/VariablePool.t.sol:VariablePoolTest       12 passed   (deposit ≈ 796k · private transfer ≈ 669k · withdraw ≈ 718k gas)
 test/ProofSystems.t.sol:ProofSystemsTest        4 passed   (Groth16 198k · PLONK ≈270k · FFLONK 193k)
 test/CubeGate.t.sol:CubeGateTest                6 passed
 interop: JS prover → KeyRegistry                2 passed
-87 passed, 0 failed                             (+ 272 mutation checks, + 38 live checks in `npm run e2e`)
+88 passed, 0 failed                             (+ 272 mutation checks, + 44 live checks in `npm run e2e`)
 ```
 
 ### 10.1 One circuit, many applications: `membership.circom`
@@ -936,8 +939,9 @@ nullifier  = Poseidon(commitment, privKey)       only the owner can spend, only 
 One `transact` covers everything. `extAmount > 0` is a **deposit**, `= 0` a **private
 transfer** that reveals nothing at all, and `< 0` a **withdrawal** with a relayer fee. Inputs of
 amount 0 are dummies that skip the Merkle check, so a deposit needs no existing notes.
-Recipient, relayer, fee and `extAmount` enter the proof as **one** public input,
-`extDataHash = keccak256(abi.encode(extData)) mod r`, which the contract recomputes.
+Recipient, relayer, fee, `extAmount` and the two **encrypted notes** enter the proof as **one**
+public input, which the contract recomputes:
+`extDataHash = keccak256(abi.encode(recipient, extAmount, relayer, fee, keccak256(enc1), keccak256(enc2))) mod r`.
 
 **The subtle part is conservation over a field.** "Equal mod p" is not "equal". An output of
 amount `p − 10` behaves like −10, so `110 + (p − 10) ≡ 100` would balance and mint 10 tokens.
@@ -967,13 +971,36 @@ the same with fresh random keys.
 about 1M gas per transaction. They are siblings, so they share every ancestor.
 [`ZkGroup.joinPair`](zk/foundry/src/ZkGroup.sol) inserts both in one pass, with 10 Poseidon
 hashes instead of 20, and `test_joinPairEqualsTwoJoins` proves it gives the identical root.
-Measured: deposit ≈ 792k, private transfer ≈ 666k, withdrawal ≈ 714k gas, about 30% less.
+Measured: deposit ≈ 796k, private transfer ≈ 669k, withdrawal ≈ 718k gas, about 30% less.
 Most of what remains is on-chain Poseidon. Production pools go further, with cheaper hash
 contracts and batched insertions proven off-chain.
 
-> Left to the application: the receiver must learn each note's `amount` and `blinding` to spend
-> it. Production systems encrypt them to the receiver's key in an event. There is also no
-> compliance layer here; §10.8's association set applies the same way, at withdrawal.
+**How the receiver finds the money: encrypted notes and wallet scanning.** Bob can't spend a
+note without its `amount` and `blinding`, and the chain only holds a hash. So a **shielded
+address** is two keys: the spending `pubKey`, and an X25519 **encryption key**. For each output,
+the sender encrypts `(amount, blinding)` to the receiver
+([`js/sdk/note-crypto.mjs`](zk/js/sdk/note-crypto.mjs): X25519 + HKDF + ChaCha20-Poly1305,
+124 bytes, a fresh ephemeral key per note). The pool emits it in
+`NewCommitment(commitment, index, encryptedOutput)`. Bob's wallet then works from events alone:
+
+```js
+const view = zk.scan(bob, commitmentEvents, nullifierEvents);   // → { notes, balance }
+```
+
+`scan` tries every ciphertext and keeps those that decrypt. It accepts a note only if
+`Poseidon(amount, pubKey, blinding)` equals the on-chain commitment, so a sender can't fake a
+payment with a decoy. Finally it drops notes whose nullifier has appeared. The live run (§9.5)
+shows this working: Bob finds Alice's payment without any message from her, Eve scanning the
+same chain sees nothing, a decoy promising 1,000,000 is ignored, and at the end the two wallets'
+balances (30 + 25) equal exactly what the pool holds.
+
+The ciphertexts are inside `extDataHash`, and that matters. Otherwise a relayer could re-encrypt
+Bob's note to someone else, so the payment lands but Bob never finds it.
+`test_relayerCannotSwapEncryptedNotes` and the live run both show this is rejected.
+
+> Still open: there is no compliance layer here (§10.8's association set applies the same way,
+> at withdrawal), and the encryption key is separate from the spending key. Production wallets
+> derive both from one seed.
 
 ### 10.10 More advanced patterns (with reference implementations)
 
@@ -985,7 +1012,7 @@ These are beyond the scope of runnable code here, but each builds on the pieces 
 | **ZK coprocessors** | prove a computation over historical chain data (e.g. "this address held ≥ X LUV at block N") and consume the result in a contract | membership proofs (storage tries) | [Axiom](https://github.com/axiom-crypto/axiom-eth) (archived), [Brevis](https://github.com/brevis-network/brevis-sdk) |
 | **ZK light clients / bridges** | prove another chain's consensus in a SNARK, so bridges trust math instead of a multisig. Relevant to LUV's multichain doctrine | zkVMs + Groth16 wrap | [SP1 Helios](https://github.com/succinctlabs/sp1-helios) |
 | **Proof of reserves / solvency** | commit to all balances in a Merkle-sum tree and prove each user's inclusion plus total liabilities ≤ assets, without publishing balances | §7 commitments, §10.1 Merkle proofs, range checks | [Summa](https://github.com/summa-dev/summa-solvency) |
-| **Private payments at scale** | encrypted note delivery, more inputs and outputs, multi-asset notes, several ASPs. §10.7–10.9 implement fixed and variable amounts | §7 commitments + range proofs, §10.7–10.8 | [Privacy Pools](https://github.com/0xbow-io/privacy-pools-core), [Zcash spec](https://zips.z.cash/protocol/protocol.pdf) |
+| **Private payments at scale** | more inputs and outputs, multi-asset notes, viewing keys for auditors, several ASPs. §10.7–10.9 implement fixed and variable amounts with encrypted note delivery | §7 commitments + range proofs, §10.7–10.8 | [Privacy Pools](https://github.com/0xbow-io/privacy-pools-core), [Zcash spec](https://zips.z.cash/protocol/protocol.pdf) |
 | **Credentials from the real world** | prove facts about a passport, national ID, email (DKIM) or TLS session without revealing it ("over 18", "works at X") | signature verification in-circuit | [ZK Email](https://github.com/zkemail/zk-email-verify), [Anon Aadhaar](https://github.com/anon-aadhaar/anon-aadhaar), [ZKPassport](https://github.com/zkpassport) |
 | **zkML** | prove a model produced an output (or that a hidden model meets a benchmark) | arithmetised neural nets, lookups | [EZKL](https://github.com/zkonduit/ezkl) |
 | **Recursion / aggregation** | verify proofs inside proofs: many claims settle as one ~200k-gas verification | Halo / PLONK recursion, Groth16 wrap | [Halo2](https://github.com/zcash/halo2), [eprint 2019/1021](https://eprint.iacr.org/2019/1021) |
@@ -1153,6 +1180,9 @@ Most real-world ZK failures come from the bug classes below. The
 - [ ] Expect a malformed proof point to make the precompile fail, which **consumes all the gas
       forwarded to it**. `test_tamperedProofFails` shows a tampered proof burning the call's
       gas instead of reverting cheaply. Relayers should simulate before they submit.
+- [ ] **Everything the receiver depends on is bound.** Encrypted notes go inside the proof's
+      external-data hash, and wallets re-check every decrypted note against its on-chain
+      commitment (§10.9).
 - [ ] **Balance equations are range-checked.** Any `Σ in = Σ out` over a field needs every
       amount bounded (`Num2Bits`) and public amounts bounded on-chain, or "negative" notes
       mint money (§10.9, `txNegative`).
@@ -1180,7 +1210,8 @@ Most real-world ZK failures come from the bug classes below. The
 | [`docs/zk/js/07-r1cs-qap.mjs`](zk/js/07-r1cs-qap.mjs) | R1CS → QAP over BN254; the Schwartz–Zippel check |
 | [`docs/zk/js/bn254.mjs`](zk/js/bn254.mjs) | dependency-free BN254 G1 arithmetic plus Solidity-compatible encoding |
 | [`docs/zk/js/08-schnorr-bn254.mjs`](zk/js/08-schnorr-bn254.mjs) | off-chain prover for `KeyRegistry`; the challenge matches the contract byte for byte |
-| [`docs/zk/js/sdk/zk-client.mjs`](zk/js/sdk/zk-client.mjs) | client SDK: identities, tree from events, bound scope, fresh proofs, Solidity formatting |
+| [`docs/zk/js/sdk/zk-client.mjs`](zk/js/sdk/zk-client.mjs) | client SDK: identities, accounts, tree from events, bound scope, fresh proofs, note encryption, wallet scanning, Solidity formatting |
+| [`docs/zk/js/sdk/note-crypto.mjs`](zk/js/sdk/note-crypto.mjs) · [`docs/zk/js/09-note-encryption.mjs`](zk/js/09-note-encryption.mjs) | encrypting notes to their receiver (X25519 + ChaCha20-Poly1305), zero dependencies, plus a runnable example |
 | [`docs/zk/js/run-all.mjs`](zk/js/run-all.mjs) | runs every JS example; fails loudly |
 | [`docs/zk/README.md`](zk/README.md) | quick start and folder map |
 | [`docs/zk/USAGE.md`](zk/USAGE.md) | how to run, rebuild, add a circuit, app recipes, LUV integration, mainnet checklist, troubleshooting |
@@ -1207,7 +1238,7 @@ Most real-world ZK failures come from the bug classes below. The
 | [`CredentialGate.sol`](zk/foundry/src/CredentialGate.sol) | private issuer-backed attribute check (age ≥ 18) |
 | [`ShieldedPool.sol`](zk/foundry/src/ShieldedPool.sol) | fixed-denomination private transfers on the membership circuit + `ZkGroup` |
 | [`CompliantPool.sol`](zk/foundry/src/CompliantPool.sol) | the pool with an association-set proof, a bound relayer fee and a ragequit exit |
-| [`VariablePool.sol`](zk/foundry/src/VariablePool.sol) | hidden-amount join-split pool: deposit, private transfer, withdrawal + fee |
+| [`VariablePool.sol`](zk/foundry/src/VariablePool.sol) | hidden-amount join-split pool: deposit, private transfer, withdrawal + fee, encrypted note events |
 | [`ScopeLib.sol`](zk/foundry/src/ScopeLib.sol) | nullifier scope bound to chain id + contract address + round |
 | [`AgeGate.sol`](zk/foundry/src/AgeGate.sol) | ⚠ a correct contract on a broken circuit, the §12.1 victim |
 | [`generated/PoseidonT3.sol`](zk/foundry/src/generated/PoseidonT3.sol) · [`generated/PoseidonT2.sol`](zk/foundry/src/generated/PoseidonT2.sol) | Poseidon(2) and Poseidon(1) bytecode + deployers, bit-identical to the circuit's hashes |
@@ -1221,7 +1252,7 @@ Most real-world ZK failures come from the bug classes below. The
 | [`CubeGate.t.sol`](zk/foundry/test/CubeGate.t.sol) · [`ZkAirdrop.t.sol`](zk/foundry/test/ZkAirdrop.t.sol) · [`ZkGroup.t.sol`](zk/foundry/test/ZkGroup.t.sol) · [`ZkVote.t.sol`](zk/foundry/test/ZkVote.t.sol) · [`KeyRegistry.t.sol`](zk/foundry/test/KeyRegistry.t.sol) · [`Credential.t.sol`](zk/foundry/test/Credential.t.sol) · [`UnderConstrained.t.sol`](zk/foundry/test/UnderConstrained.t.sol) · [`ProofSystems.t.sol`](zk/foundry/test/ProofSystems.t.sol) · [`ShieldedPool.t.sol`](zk/foundry/test/ShieldedPool.t.sol) · [`CompliantPool.t.sol`](zk/foundry/test/CompliantPool.t.sol) · [`VariablePool.t.sol`](zk/foundry/test/VariablePool.t.sol) | valid proofs, tampering, replay, front-running, double use, scope separation, on-chain/off-chain root equality, the forged-proof attack, credential binding, and a three-system gas comparison |
 | [`fixtures/`](zk/foundry/test/fixtures/) | generated real proofs (Groth16, PLONK, FFLONK) and `ZkConstants.sol` (group members, issuer key) |
 | [`docs/zk/evm/run-tests.mjs`](zk/evm/run-tests.mjs) | forge-style runner on ethereumjs, plus a JS ↔ Solidity interop check and the `GAS.md` writer |
-| [`docs/zk/evm/e2e.mjs`](zk/evm/e2e.mjs) | the live flow: deploy, join, fresh proofs, claims, attacks, a vote, a compliant pool with ragequit, a variable pool (38 checks) |
+| [`docs/zk/evm/e2e.mjs`](zk/evm/e2e.mjs) | the live flow: deploy, join, fresh proofs, claims, attacks, a vote, a compliant pool with ragequit, a variable pool with encrypted notes and wallet scanning (44 checks) |
 | [`docs/zk/evm/mutation.mjs`](zk/evm/mutation.mjs) | mutation-tests every committed proof against its verifier (13 fixtures, 272 calls) |
 | [`docs/zk/circom/scaling.sh`](zk/circom/scaling.sh) | constraint counts vs Merkle depth (`npm run scaling`) |
 | [`docs/zk/evm/lib.mjs`](zk/evm/lib.mjs) | shared compile / EVM / ABI helpers |

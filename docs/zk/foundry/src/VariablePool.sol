@@ -30,9 +30,10 @@ interface ITransactionVerifier {
 /// extDataHash = keccak256(abi.encode(extData)) mod r: the contract recomputes it, so a relayer
 /// can change none of it, and adding fields later costs no circuit change.
 ///
-/// To pay someone you need only their public key (pubKey = Poseidon(privKey)). The receiver
-/// must also learn the note's amount and blinding to spend it — production systems encrypt
-/// them to the receiver in an event; here that hand-off is left to the application.
+/// To pay someone you need their SHIELDED ADDRESS: spending pubKey = Poseidon(privKey) plus an
+/// X25519 encryption key. Each output's (amount, blinding) is encrypted to the receiver and
+/// emitted in NewCommitment; the receiver's wallet finds its notes by scanning events alone.
+/// The ciphertexts are part of extDataHash, so they are as tamper-proof as the recipient.
 ///
 /// Both output commitments are inserted as siblings with ZkGroup.joinPair (10 Poseidon hashes,
 /// not 20), so the tree costs half what two separate joins would.
@@ -50,7 +51,9 @@ contract VariablePool {
     error ZeroAddress();
     error TransferFailed();
 
-    event NewCommitment(uint256 indexed commitment, uint256 index);
+    /// `encryptedOutput` = the note's (amount, blinding) encrypted to its receiver (js/sdk/note-crypto.mjs).
+    /// Wallets scan these events, keep what decrypts, and re-check it against `commitment`.
+    event NewCommitment(uint256 indexed commitment, uint256 index, bytes encryptedOutput);
     event NewNullifier(uint256 indexed nullifier);
 
     struct ExtData {
@@ -58,6 +61,8 @@ contract VariablePool {
         int256 extAmount;
         address relayer;
         uint256 fee;
+        bytes encryptedOutput1; // ciphertext for outputCommitments[0]
+        bytes encryptedOutput2; // ciphertext for outputCommitments[1]
     }
 
     struct Proof {
@@ -95,8 +100,22 @@ contract VariablePool {
         return pa >= 0 ? uint256(pa) : FIELD - uint256(-pa);
     }
 
+    /// keccak256(abi.encode(recipient, extAmount, relayer, fee, keccak256(enc1), keccak256(enc2))) mod r.
+    /// Hashing the ciphertexts first keeps the encoded tuple static (6 words) and cheap to mirror
+    /// off-chain. Binding them means a relayer cannot swap a ciphertext to hide a payment.
     function extDataHashOf(ExtData calldata ext) public pure returns (uint256) {
-        return uint256(keccak256(abi.encode(ext))) % FIELD;
+        return uint256(
+            keccak256(
+                abi.encode(
+                    ext.recipient,
+                    ext.extAmount,
+                    ext.relayer,
+                    ext.fee,
+                    keccak256(ext.encryptedOutput1),
+                    keccak256(ext.encryptedOutput2)
+                )
+            )
+        ) % FIELD;
     }
 
     function transact(Proof calldata p, ExtData calldata ext) external {
@@ -122,8 +141,8 @@ contract VariablePool {
             emit NewNullifier(p.inputNullifiers[i]);
         }
         uint256 index = tree.joinPair(p.outputCommitments[0], p.outputCommitments[1]); // one pass, 10 hashes
-        emit NewCommitment(p.outputCommitments[0], index);
-        emit NewCommitment(p.outputCommitments[1], index + 1);
+        emit NewCommitment(p.outputCommitments[0], index, ext.encryptedOutput1);
+        emit NewCommitment(p.outputCommitments[1], index + 1, ext.encryptedOutput2);
 
         if (ext.extAmount > 0) {
             // deposit: whoever submits pays. (Copying someone's deposit proof just gifts them notes.)

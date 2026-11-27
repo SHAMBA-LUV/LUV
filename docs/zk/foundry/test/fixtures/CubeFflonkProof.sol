@@ -4,30 +4,30 @@ pragma solidity ^0.8.24;
 
 library CubeFflonkProof {
     function get() internal pure returns (bytes32[24] memory proof, uint256[1] memory pub) {
-        proof[0] = bytes32(0x0dcd984b027bcaab022b3202326e268b13f20043e3f2ba9cd7cd4ff7721ef73c);
-        proof[1] = bytes32(0x1846a189c580a1b7e02006e526c5ae0493369f12203c072cd61fdeae55de5959);
-        proof[2] = bytes32(0x0c6d0938d5d5509a8e953d0c0c70ec04339ad9e8f1859d8d65e5a8001d188360);
-        proof[3] = bytes32(0x256abc88581fb1b8b3058e1aa0ba1d154e3bcf4f9239f11cd78845a245139cc0);
-        proof[4] = bytes32(0x288128a82cd84ba5aae11772d2ca3a31efd42736017cabf8bfccff4070df17f9);
-        proof[5] = bytes32(0x025da3aabc9dfff2a0d18c2e7bbf09ac1b9718adb0a787b604c7913646e231bb);
-        proof[6] = bytes32(0x06d498553a8d761219d23aa31237a5c836c018be3cbf02a292f2156a302bfe63);
-        proof[7] = bytes32(0x10d05bf975194dfc6361f4fb10d60bf04d5a91cda20c7b03cb69b55e5244fc29);
-        proof[8] = bytes32(0x26a8cc020a378ea215b7dd0012a98ecf8ba398d25bcdfb19d8b8813a7a889cd9);
-        proof[9] = bytes32(0x238413fb57639b70dd276a49d2280fbd8ca9acc56cc832756107807c8cdcc5d9);
-        proof[10] = bytes32(0x0f27f33fe9e508c146792163dfd3ff3144aa3e085fc141a12ee88aed6bc435e4);
-        proof[11] = bytes32(0x2375c3916bc76677a9fc68183be1b723938b0502059ccb241d4cb88374afb62e);
-        proof[12] = bytes32(0x2df5686d9c7a6a167cef6d700d65b9e7ef77aa89e356941643810e4bc949bcc8);
-        proof[13] = bytes32(0x18d0090fe8e8f77ec65372dc7a83dc71bd11c4a12decea11531058374a2cc262);
-        proof[14] = bytes32(0x1eade2d3a2698f161101af71a610aad1010b861f0285633ba8f0bf928fac975d);
-        proof[15] = bytes32(0x0b15a196a879ab952625a6cc1dea6d663bfb06cc02cb3eccb0cc260139f177ee);
-        proof[16] = bytes32(0x021eb20812893563776e510eb0d892b720ba1c3da004e71a44ad41c8105f3a50);
-        proof[17] = bytes32(0x2a64be6299ff8b7f7d057451b31aad47ab936cb7d0d1e3d2a70d1b73161a205a);
-        proof[18] = bytes32(0x231dc0e6b3125c0f12c5513263480dc8adebe841e44644bfc4e4a13051f3066a);
-        proof[19] = bytes32(0x195c841e12602c51f1c1d71763a9a92b9df5441f7b358919b6d1e01c38f4c74b);
-        proof[20] = bytes32(0x29f642c486859be195885625cbeb9457f4f3c3fa3bc6bb927650cbb51ed2336a);
-        proof[21] = bytes32(0x2ad2f5c597be34074100f38b77ec51235fc6f74eea03a904170c10d58055ca4b);
-        proof[22] = bytes32(0x08ee7d38faa27ba1d66c9543b73b96aa07b5ef588ee7b950077cfd8962336bea);
-        proof[23] = bytes32(0x03f91a328901f1704be5ca61d69fe155e4ffb3c2581d788e3e333be2fc2dbd7b);
+        proof[0] = bytes32(0x27380df1d7c9576132d25419a699f1b65559d8d1193cfa23a6758d798c44528c);
+        proof[1] = bytes32(0x1eba74d7575049bc5f432ec6ab2a9e491cafcda642916eab4fe2d1a20eb6d269);
+        proof[2] = bytes32(0x17bbb2c4b4084792f1d2a91a24bff7ab6431f606cb543d906c5026c7b6bfb9cd);
+        proof[3] = bytes32(0x1fd3d675cfac8d01d48fd6a070b254d95c78a34ef6ca5c36ea3428af1d38e932);
+        proof[4] = bytes32(0x0856891454e0eb82be96724bbc1fa2f036da579f494f1628e6e316b06ef78761);
+        proof[5] = bytes32(0x064bf0e7f2497e53d15a7858a96b421338112d5a3d78fec07a772e0595d3d1de);
+        proof[6] = bytes32(0x1fba8605ffaf7f99dbb6abd6277b285372851fde58922b3ae5aaef7a3e53ac20);
+        proof[7] = bytes32(0x0f31a513f6dddc377ef2ce5df1239f8879910204697fc1cd882d7e865b442740);
+        proof[8] = bytes32(0x24bd51b57c8a06d383d4ce85166e3e4afd9bff7d5c2e5e8270ae4ef1a517fa3e);
+        proof[9] = bytes32(0x20b0b2e89f4d7e8809674a202a93c865ea33fabd7882ca72dfcdb7b2d6d314a1);
+        proof[10] = bytes32(0x0a25702ab6b1d7d09f581a581b38274d3a737a9c94dafea74f2e8918f6dd15b3);
+        proof[11] = bytes32(0x239db355b4d880542a007cd7ea3a006ed1691ab91657ddfb16c3956cdffc4ac8);
+        proof[12] = bytes32(0x02905e3b165518092d9e9c6e720976e04659c70df2605f701ed7c13df22f24c2);
+        proof[13] = bytes32(0x18625fb4a74c7fc8c0f19653d0ad8bcac783a732d80e9fbcf8b2565e967c524f);
+        proof[14] = bytes32(0x1367bbc209bf78f54505da1a525dc56752da5904b5c636f045f02e0060588155);
+        proof[15] = bytes32(0x10118806f15f0056751a8ce48100e43ba3f3414a9ddf85fc4f52bebe69de89ed);
+        proof[16] = bytes32(0x2497adfc059427fb058c0837f29639160b3971d2d14865b05b1536c1f8258079);
+        proof[17] = bytes32(0x16cc5ed075fa9362031690de12ad1859b462e7321204acb15d9698efa7a632df);
+        proof[18] = bytes32(0x2f98237f9c31473cb54482495092ca9a153f0bfe0ab7e9f18741b611d754d014);
+        proof[19] = bytes32(0x276a5fee205c5aa3296c8807205c4979fedf5f763e42d14a1414e9075dc4cffa);
+        proof[20] = bytes32(0x1e1d646a3b193322a6aa4aedf3403d06dd5f7b145468bab98bad146fa4dcf808);
+        proof[21] = bytes32(0x14388d9a556400f45cd52a43473fb2265bcc5a8d42661e7de0db520ff98b8160);
+        proof[22] = bytes32(0x007ad6b50a2ddb84a4ab3e5a36cc45edcdab5f6dbc4ac5923c91fb41334327f0);
+        proof[23] = bytes32(0x104bf827cc8791ca394d4164db26f2fb195125df3c3722e99c888e2cbd011646);
         pub[0] = 35;
     }
 }

@@ -4,10 +4,10 @@ Everything here backs [`../ZERO_KNOWLEDGE_PROOFS.md`](../ZERO_KNOWLEDGE_PROOFS.m
 it is executed, not just written.
 
 ```bash
-node js/run-all.mjs        # 8 protocol examples, zero dependencies (Node ≥ 18)
+node js/run-all.mjs        # 9 protocol examples, zero dependencies (Node ≥ 18)
 
 npm install                # circom (WASM), snarkjs, circomlib(js), solc, ethereumjs
-npm test                   # examples + 87 Solidity tests on a real EVM + 272 mutation checks
+npm test                   # examples + 88 Solidity tests on a real EVM + 272 mutation checks
 npm run build              # optional: regenerate circuits, dev ceremony, proofs, verifiers, fixtures (~5 min)
 
 npm run e2e                # live flow with FRESH proofs via the client SDK (needs `npm run build` once)
@@ -23,7 +23,7 @@ cd foundry && forge test -vv   # the same Solidity tests under Foundry (no forge
 
 | folder | contents |
 |---|---|
-| `js/` | Schnorr (interactive, simulator, extractor, Fiat–Shamir), Pedersen, Chaum–Pedersen, R1CS→QAP, BN254 Schnorr prover, `sdk/zk-client.mjs` (client SDK) |
+| `js/` | Schnorr (interactive, simulator, extractor, Fiat–Shamir), Pedersen, Chaum–Pedersen, R1CS→QAP, BN254 Schnorr prover, note encryption, `sdk/` (client SDK: proofs, encrypted notes, wallet scanning) |
 | `circom/` | circuits (`cube`, `membership`, `compliant_withdraw`, `transaction` (join-split), `credential`, ⚠ `age_buggy` + `attack/age_forger`), `build.sh`, input and fixture generators |
 | `foundry/src/` | `ZkAirdrop`, `ZkGroup`, `OwnerRoots`, `ShieldedPool`, `CompliantPool`, `VariablePool`, `ZkVote`, `ScopeLib`, `KeyRegistry` + `BN254`, `CredentialGate`, `CubeGate`, ⚠ `AgeGate`, generated verifiers and Poseidon |
 | `foundry/test/` | 11 suites + generated proof fixtures + `ZkTest.sol` (cheatcode-free base) |
