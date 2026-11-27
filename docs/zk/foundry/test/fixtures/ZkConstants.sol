@@ -10,6 +10,10 @@ library ZkConstants {
     /// Baby Jubjub public key of the demo credential issuer
     uint256 internal constant ISSUER_AX = 14438288584632036862276351806537794564014736721499014093954830380441404853107;
     uint256 internal constant ISSUER_AY = 13045839166505783249965299474918740784226889811433209037039573578674167451364;
+    /// TEST-ONLY secrets (deterministic, published): a ragequit reveals the note's secret
+    /// on-chain, so the ragequit tests need them. Member #3 is the ASP-flagged depositor.
+    uint256 internal constant FLAGGED_SECRET = 9921288181285891809971837348728760545551016927114789688333901081115250128232;
+    uint256 internal constant MEMBER5_SECRET = 2803881533311345482241525757417736235976524337362446663736990142617566341783;
     uint256 internal constant CURRENT_YEAR = 2026;
     uint256 internal constant MIN_AGE = 18;
 

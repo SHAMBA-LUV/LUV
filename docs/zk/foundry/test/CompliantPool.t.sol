@@ -6,7 +6,8 @@ import {ZkConstants} from "./fixtures/ZkConstants.sol";
 // member #5 withdraws to 0xB0B, relayer 0xFEE1, fee 10 tokens, scope 1; the association set
 // is every depositor except the flagged member #3
 import {CompliantWithdrawProof} from "./fixtures/CompliantWithdrawProof.sol";
-import {PoseidonT3Deployer} from "../src/generated/PoseidonT3.sol";
+import {PoseidonT3Deployer, IPoseidonT3} from "../src/generated/PoseidonT3.sol";
+import {PoseidonT2Deployer, IPoseidonT2} from "../src/generated/PoseidonT2.sol";
 import {CompliantWithdrawVerifier} from "../src/verifiers/CompliantWithdrawVerifier.sol";
 import {CompliantPool, ICompliantWithdrawVerifier} from "../src/CompliantPool.sol";
 import {IERC20Pull} from "../src/ShieldedPool.sol";
@@ -25,6 +26,7 @@ contract CompliantPoolTest is ZkTest {
     OwnerRoots asp; // the Association Set Provider publishes accepted association roots
     CompliantPool pool;
     Actor submitter; // whoever lands the transaction — NOT the paid relayer
+    Actor[8] depositors; // depositors[i] paid for member i's commitment
 
     function setUp() public {
         token = new MockToken(100 * DENOM);
@@ -35,6 +37,7 @@ contract CompliantPoolTest is ZkTest {
         uint256[8] memory m = ZkConstants.members();
         for (uint256 i; i < 8; ++i) {
             Actor depositor = new Actor();
+            depositors[i] = depositor;
             token.transfer(address(depositor), DENOM);
             mustSucceed(depositor, address(token), abi.encodeCall(MockToken.approve, (address(pool), DENOM)));
             mustSucceed(depositor, address(pool), abi.encodeCall(CompliantPool.deposit, (m[i])));
@@ -49,6 +52,7 @@ contract CompliantPoolTest is ZkTest {
             maxFee,
             ICompliantWithdrawVerifier(address(verifier)),
             PoseidonT3Deployer.deploy(),
+            PoseidonT2Deployer.deploy(),
             IRootSource(address(asp)),
             1
         );
@@ -134,5 +138,51 @@ contract CompliantPoolTest is ZkTest {
     function test_feeAboveThePoolCapIsRejected() public {
         CompliantPool stingy = _newPool(5 ether);
         expectRevert(submitter, address(stingy), _ok(), CompliantPool.FeeTooHigh.selector);
+    }
+
+    // ── ragequit: the public exit for depositors the ASP left out ─────────────
+
+    /// On-chain Poseidon(1) and Poseidon(2) agree with the circuit: the hashes of the flagged
+    /// member's secret are exactly their deposited commitment and their in-circuit nullifier.
+    function test_onchainCommitmentMatchesCircuit() public view {
+        uint256[8] memory m = ZkConstants.members();
+        assertEq(pool.hasher1().poseidon([ZkConstants.FLAGGED_SECRET]), m[3]);
+        assertEq(uint160(pool.depositorOf(m[3])), uint160(address(depositors[3])));
+    }
+
+    /// The flagged depositor (#3) cannot prove (build.sh shows that) — but is not trapped.
+    function test_flaggedDepositorRagequitsToOriginalAddress() public {
+        uint256 g = gasleft();
+        mustSucceed(depositors[3], address(pool), abi.encodeCall(CompliantPool.ragequit, (ZkConstants.FLAGGED_SECRET)));
+        emit log_named_uint("gas: CompliantPool.ragequit (Poseidon(1) + Poseidon(2) on-chain + transfer)", g - gasleft());
+        assertEq(token.balanceOf(address(depositors[3])), DENOM); // full amount, no fee, back where it came from
+        assertEq(token.balanceOf(address(pool)), 7 * DENOM);
+    }
+
+    function test_onlyTheOriginalDepositorCanRagequit() public {
+        expectRevert(submitter, address(pool), abi.encodeCall(CompliantPool.ragequit, (ZkConstants.FLAGGED_SECRET)), CompliantPool.NotDepositor.selector);
+        expectRevert(depositors[4], address(pool), abi.encodeCall(CompliantPool.ragequit, (ZkConstants.FLAGGED_SECRET)), CompliantPool.NotDepositor.selector);
+    }
+
+    function test_ragequitOnlyOnce() public {
+        mustSucceed(depositors[3], address(pool), abi.encodeCall(CompliantPool.ragequit, (ZkConstants.FLAGGED_SECRET)));
+        expectRevert(depositors[3], address(pool), abi.encodeCall(CompliantPool.ragequit, (ZkConstants.FLAGGED_SECRET)), CompliantPool.NullifierUsed.selector);
+    }
+
+    /// Ragequit and private withdrawal share ONE nullifier: a note exits exactly once, either way.
+    function test_ragequitThenPrivateWithdrawalIsBlocked() public {
+        mustSucceed(depositors[5], address(pool), abi.encodeCall(CompliantPool.ragequit, (ZkConstants.MEMBER5_SECRET)));
+        expectRevert(submitter, address(pool), _ok(), CompliantPool.NullifierUsed.selector);
+    }
+
+    function test_privateWithdrawalThenRagequitIsBlocked() public {
+        mustSucceed(submitter, address(pool), _ok());
+        expectRevert(depositors[5], address(pool), abi.encodeCall(CompliantPool.ragequit, (ZkConstants.MEMBER5_SECRET)), CompliantPool.NullifierUsed.selector);
+    }
+
+    /// A non-canonical secret (s + r) must not mint a second, different nullifier.
+    function test_nonCanonicalSecretRejected() public {
+        uint256 r = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
+        expectRevert(depositors[3], address(pool), abi.encodeCall(CompliantPool.ragequit, (ZkConstants.FLAGGED_SECRET + r)), CompliantPool.SecretOutOfField.selector);
     }
 }

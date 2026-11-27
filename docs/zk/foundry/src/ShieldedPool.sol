@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import {IMembershipVerifier} from "./interfaces/IMembershipVerifier.sol";
 import {IPoseidonT3} from "./generated/PoseidonT3.sol";
 import {ZkGroup} from "./ZkGroup.sol";
+import {ScopeLib} from "./ScopeLib.sol";
 
 interface IERC20Pull {
     function transfer(address to, uint256 amount) external returns (bool);
@@ -25,8 +26,8 @@ interface IERC20Pull {
 /// Privacy = the anonymity set: a withdrawal is hidden among all deposits made before its root.
 /// Fixed denominations matter — a unique amount would link deposit and withdrawal by value.
 ///
-/// ⚠ TEACHING CONTRACT, deliberately minimal: no relayer fee, a dev-ceremony verifier, a depth-10
-///   tree (1,024 deposits). Unrestricted mixers have been abused for laundering and sanctioned;
+/// ⚠ TEACHING CONTRACT, deliberately minimal: no relayer fee, no ragequit (see CompliantPool),
+///   a dev-ceremony verifier, a depth-10 tree (1,024 deposits). Unrestricted mixers have been abused for laundering and sanctioned;
 ///   production designs add COMPLIANCE, e.g. Privacy Pools' association sets — withdrawers also
 ///   prove membership in a set that excludes flagged deposits
 ///   (https://github.com/0xbow-io/privacy-pools-core). Check the law where you deploy.
@@ -60,6 +61,15 @@ contract ShieldedPool {
         verifier = verifier_;
         scope = scope_;
         tree = new ZkGroup(hasher, address(this));
+    }
+
+    /// See ScopeLib: deploy with scope_ == boundScope(round) (address predicted from the nonce).
+    function boundScope(uint256 round) public view returns (uint256) {
+        return ScopeLib.derive(block.chainid, address(this), round);
+    }
+
+    function isScopeBound(uint256 round) external view returns (bool) {
+        return scope == boundScope(round);
     }
 
     function deposit(uint256 commitment) external {

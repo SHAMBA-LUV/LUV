@@ -9,8 +9,8 @@
 
 ```bash
 node docs/zk/js/run-all.mjs                 # Node ≥ 18, zero dependencies: 8 protocol examples (~16 s)
-cd docs/zk && npm install && npm test       # + compile all .sol and run 67 tests on a real EVM
-npm run build && npm run e2e                # + a live flow: fresh identities, fresh proofs, bound scope
+cd docs/zk && npm install && npm test       # + compile all .sol, run 74 tests on a real EVM, mutation-test every proof
+npm run build && npm run e2e                # + a live flow: fresh identities, fresh proofs, bound scope (28 checks)
 ```
 
 The JavaScript examples use only `BigInt` and `node:crypto`. The library
@@ -493,7 +493,13 @@ const p = await zk.proveMembership({ secret: me.secret, leaves, message: BigInt(
 6. member #4 votes anonymously on a proposal (scope = proposal id)
   ✓ relayer flipping the vote to "no" → InvalidProof
   ✓ vote "yes" tallied
-e2e: all checks passed          (19 checks)
+7. compliant pool: 5 depositors, the ASP flags one, private withdrawal with a fee, ragequit
+  ✓ ASP published an association set of 4 (depositor #2 excluded)
+     compliant proof generated in 0.6 s
+  ✓ recipient got 990, the PROVEN relayer 10, the submitter 0
+  ✓ flagged depositor #2 cannot build a private-withdrawal witness
+  ✓ #2 ragequits: full 1,000 back to the original address
+e2e: all checks passed          (28 checks)
 ```
 
 Two things only this run can show. First, the **scope is bound to the deployment**:
@@ -531,11 +537,11 @@ test/KeyRegistry.t.sol:KeyRegistryTest          7 passed   (register from an EOA
 test/Credential.t.sol:CredentialTest            6 passed   (Groth16 verify, 5 public inputs ≈ 225k gas)
 test/UnderConstrained.t.sol:UnderConstrainedTest 2 passed  (⚠ the forged proof IS accepted — §12.1)
 test/ShieldedPool.t.sol:ShieldedPoolTest        8 passed   (deposit ≈ 389k gas · private withdraw ≈ 276k gas)
-test/CompliantPool.t.sol:CompliantPoolTest      9 passed   (compliant withdraw ≈ 322k gas)
+test/CompliantPool.t.sol:CompliantPoolTest     16 passed   (compliant withdraw ≈ 322k gas · ragequit ≈ 99k gas)
 test/ProofSystems.t.sol:ProofSystemsTest        4 passed   (Groth16 198k · PLONK ≈271k · FFLONK 193k)
 test/CubeGate.t.sol:CubeGateTest                6 passed
 interop: JS prover → KeyRegistry                2 passed
-67 passed, 0 failed                             (+ 19 live checks in `npm run e2e`)
+74 passed, 0 failed                             (+ 200 mutation checks, + 28 live checks in `npm run e2e`)
 ```
 
 ### 10.1 One circuit, many applications: `membership.circom`
@@ -566,6 +572,20 @@ d[i] <== pathIndices[i] * (pathElements[i] - level[i]);     // d = s·(sibling �
 h[i].inputs[0] <== level[i] + d[i];                         // left
 h[i].inputs[1] <== pathElements[i] - d[i];                  // right
 ```
+
+**How it scales** (`npm run scaling` compiles both membership circuits at several depths):
+
+| depth | capacity | membership constraints | compliant_withdraw constraints | ptau power needed (compliant) |
+|---:|---:|---:|---:|---:|
+| 10 | 1,024 | 6,143 | 11,355 | 2^14 |
+| 16 | 65,536 | 9,269 | 17,607 | 2^15 |
+| 20 | 1,048,576 | 11,353 | 21,775 | 2^15 |
+| 24 | 16,777,216 | 13,437 | 25,943 | 2^15 |
+| 32 | 4,294,967,296 | 17,605 | 34,279 | 2^16 |
+
+Each extra tree level costs about 521 constraints (one Poseidon(2) plus the swap), and the
+compliant circuit pays it twice. A million-member group (depth 20) is still a small circuit.
+The contract side grows the same way: `ZkGroup.join` costs about 38k gas per level.
 
 `make-inputs.mjs` builds a real Poseidon tree of 8 members (with
 [circomlibjs](https://github.com/iden3/circomlibjs)). It writes three witnesses: member #5
@@ -854,12 +874,39 @@ anonymity. The tests show the limits hold:
 | `test_revokedAssociationSetIsRejected` | when the ASP withdraws a set, proofs against it stop working |
 | `test_proofIsTiedToItsAssociationSet` | naming a different accepted set doesn't help |
 | `test_feeAboveThePoolCapIsRejected` · `test_doubleWithdrawalReverts` | pool-level cap and nullifier |
+| `test_flaggedDepositorRagequitsToOriginalAddress` · `test_onlyTheOriginalDepositorCanRagequit` · `test_ragequitOnlyOnce` | the public exit works, but only for the depositor, and only once |
+| `test_ragequitThenPrivateWithdrawalIsBlocked` · `test_privateWithdrawalThenRagequitIsBlocked` | one shared nullifier: a note exits exactly once |
+| `test_onchainCommitmentMatchesCircuit` · `test_nonCanonicalSecretRejected` | on-chain Poseidon(1) and (2) equal the circuit's; no secret aliases |
 
 A compliant withdrawal costs ≈ 322k gas: 7 public inputs instead of 4, and two transfers.
 
-> Still missing for production: a *ragequit* path so a flagged depositor can reclaim funds
-> publicly to the original deposit address, several competing ASPs, and of course a real
-> ceremony. See [Privacy Pools](https://github.com/0xbow-io/privacy-pools-core).
+**Ragequit: nobody is trapped.** Compliance must not mean confiscation. A depositor the ASP
+left out can call `ragequit(secret)`, which returns the full amount, with no fee, to the
+**original deposit address**:
+
+```solidity
+function ragequit(uint256 secret) external {
+    if (secret >= FIELD) revert SecretOutOfField();               // no aliases of the secret
+    uint256 commitment = hasher1.poseidon([secret]);               // Poseidon(1), on-chain
+    if (depositorOf[commitment] != msg.sender) revert NotDepositor();
+    uint256 nullifierHash = hasher2.poseidon([secret, scope]);     // the circuit's own nullifier
+    if (nullifierUsed[nullifierHash]) revert NullifierUsed();
+    nullifierUsed[nullifierHash] = true;
+    token.transfer(msg.sender, denomination);
+}
+```
+
+It is public by design: it reveals the secret and links the exit to the deposit. The key
+detail is that it burns the **same nullifier** the circuit uses, so a note leaves exactly once:
+privately, or by ragequit, never both. Tests cover both orders, as well as a stranger
+ragequitting someone else's note and a non-canonical `secret + r`. The tests also check that the
+on-chain Poseidon(1) of the flagged member's secret equals their deposited commitment, so the
+contracts and the circuit agree. A ragequit costs ≈ 99k gas. The live run (§9.5) does it
+end to end: the ASP builds its set from the `Deposit` log, flags one depositor, and that
+depositor exits publicly.
+
+> Still missing for production: several competing ASPs, variable amounts, and of course a
+> real ceremony. See [Privacy Pools](https://github.com/0xbow-io/privacy-pools-core).
 
 ### 10.9 More advanced patterns (with reference implementations)
 
@@ -955,7 +1002,35 @@ self-asserted either. Static analysers such as
 [circomspect](https://github.com/trailofbits/circomspect) flag `<--` assignments that have no
 matching constraint.
 
-### 12.2 Checklist
+### 12.2 Mutation testing the verifiers
+
+File: [`evm/mutation.mjs`](zk/evm/mutation.mjs) (part of `npm test`)
+
+A test that only checks *"the valid proof verifies"* would also pass with a verifier that
+returns `true` for everything. So every committed proof is checked against its on-chain
+verifier unchanged (it must pass), and then under **every single-point mutation** (each must
+fail):
+
+| mutation | what it catches |
+|---|---|
+| each proof word + 1 | a verifier that doesn't really check the proof |
+| each public signal + 1 | a proof that isn't bound to one statement |
+| each public signal + r (the same value mod r) | **non-canonical aliases**: without a field check, one statement has many encodings, a classic way around nullifiers |
+| G2 coordinates un-swapped (Groth16) | the most common integration bug (EIP-197 order) |
+
+```
+  ✓ CompliantWithdrawProof   groth16 original verifies: yes · 23/23 mutants rejected
+  ✓ CubePlonkProof           plonk   original verifies: yes · 26/26 mutants rejected
+  ✓ CubeFflonkProof          fflonk  original verifies: yes · 26/26 mutants rejected
+  …
+mutation: 10/10 fixtures clean (200 verifier calls)
+```
+
+Note what it *cannot* catch. `AgeForgedProof` passes too, because it is a perfectly valid proof
+of a false statement. Mutation testing checks the **verifier**. Only constraint review checks
+the **circuit** (§12.1).
+
+### 12.3 Checklist
 
 Most real-world ZK failures come from the bug classes below. The
 [0xPARC zk-bug-tracker](https://github.com/0xPARC/zk-bug-tracker) catalogues incidents for each.
@@ -972,6 +1047,8 @@ Most real-world ZK failures come from the bug classes below. The
 - [ ] Constrain division-by-zero cases (`IsZero` patterns).
 - [ ] Never trust a value only because the *honest* witness generator computes it correctly.
       An attacker runs their own witness generator ([§12.1](#121-anatomy-of-an-under-constrained-circuit-attack)).
+- [ ] Contract-side hashes that must match the circuit (Poseidon(1) commitments, Poseidon(2)
+      nullifiers) are tested against circuit-derived values, not just against themselves.
 - [ ] Self-asserted private inputs (a birth year, a balance) prove nothing. They must be signed
       by an issuer, committed on-chain, or derived from something that is.
 
@@ -1008,6 +1085,10 @@ Most real-world ZK failures come from the bug classes below. The
 - [ ] Expect a malformed proof point to make the precompile fail, which **consumes all the gas
       forwarded to it**. `test_tamperedProofFails` shows a tampered proof burning the call's
       gas instead of reverting cheaply. Relayers should simulate before they submit.
+- [ ] Every verifier is mutation-tested: each proof word, each public signal, and each
+      non-canonical alias must be rejected (§12.2).
+- [ ] Funds can always leave. A compliance gate on *private* exit needs a public exit
+      (ragequit) that burns the same nullifier.
 - [ ] Gas cost is measured (`forge test --gas-report`, or the per-test gas in `npm run test:evm`).
 
 ---
@@ -1053,10 +1134,10 @@ Most real-world ZK failures come from the bug classes below. The
 | [`ZkGroup.sol`](zk/foundry/src/ZkGroup.sol) · [`OwnerRoots.sol`](zk/foundry/src/OwnerRoots.sol) · [`interfaces/IRootSource.sol`](zk/foundry/src/interfaces/IRootSource.sol) | the two root sources: on-chain Poseidon tree vs operator-published roots |
 | [`CredentialGate.sol`](zk/foundry/src/CredentialGate.sol) | private issuer-backed attribute check (age ≥ 18) |
 | [`ShieldedPool.sol`](zk/foundry/src/ShieldedPool.sol) | fixed-denomination private transfers on the membership circuit + `ZkGroup` |
-| [`CompliantPool.sol`](zk/foundry/src/CompliantPool.sol) | the pool with an association-set proof and a bound relayer fee |
+| [`CompliantPool.sol`](zk/foundry/src/CompliantPool.sol) | the pool with an association-set proof, a bound relayer fee and a ragequit exit |
 | [`ScopeLib.sol`](zk/foundry/src/ScopeLib.sol) | nullifier scope bound to chain id + contract address + round |
 | [`AgeGate.sol`](zk/foundry/src/AgeGate.sol) | ⚠ a correct contract on a broken circuit, the §12.1 victim |
-| [`generated/PoseidonT3.sol`](zk/foundry/src/generated/PoseidonT3.sol) | Poseidon(2) bytecode + deployer, bit-identical to the circuit's hash |
+| [`generated/PoseidonT3.sol`](zk/foundry/src/generated/PoseidonT3.sol) · [`generated/PoseidonT2.sol`](zk/foundry/src/generated/PoseidonT2.sol) | Poseidon(2) and Poseidon(1) bytecode + deployers, bit-identical to the circuit's hashes |
 | [`ZkVote.sol`](zk/foundry/src/ZkVote.sol) | anonymous voting on the same circuit and verifier |
 | [`KeyRegistry.sol`](zk/foundry/src/KeyRegistry.sol) | Schnorr proof-of-possession verified with precompiles, no trusted setup |
 | [`BN254.sol`](zk/foundry/src/BN254.sol) | G1 add/mul/on-curve library over the EIP-196 precompiles |
@@ -1067,7 +1148,9 @@ Most real-world ZK failures come from the bug classes below. The
 | [`CubeGate.t.sol`](zk/foundry/test/CubeGate.t.sol) · [`ZkAirdrop.t.sol`](zk/foundry/test/ZkAirdrop.t.sol) · [`ZkGroup.t.sol`](zk/foundry/test/ZkGroup.t.sol) · [`ZkVote.t.sol`](zk/foundry/test/ZkVote.t.sol) · [`KeyRegistry.t.sol`](zk/foundry/test/KeyRegistry.t.sol) · [`Credential.t.sol`](zk/foundry/test/Credential.t.sol) · [`UnderConstrained.t.sol`](zk/foundry/test/UnderConstrained.t.sol) · [`ProofSystems.t.sol`](zk/foundry/test/ProofSystems.t.sol) · [`ShieldedPool.t.sol`](zk/foundry/test/ShieldedPool.t.sol) · [`CompliantPool.t.sol`](zk/foundry/test/CompliantPool.t.sol) | valid proofs, tampering, replay, front-running, double use, scope separation, on-chain/off-chain root equality, the forged-proof attack, credential binding, and a three-system gas comparison |
 | [`fixtures/`](zk/foundry/test/fixtures/) | generated real proofs (Groth16, PLONK, FFLONK) and `ZkConstants.sol` (group members, issuer key) |
 | [`docs/zk/evm/run-tests.mjs`](zk/evm/run-tests.mjs) | forge-style runner on ethereumjs, plus a JS ↔ Solidity interop check and the `GAS.md` writer |
-| [`docs/zk/evm/e2e.mjs`](zk/evm/e2e.mjs) | the live flow: deploy, join, fresh proofs, claims, attacks, a vote (19 checks) |
+| [`docs/zk/evm/e2e.mjs`](zk/evm/e2e.mjs) | the live flow: deploy, join, fresh proofs, claims, attacks, a vote, a compliant pool with ragequit (28 checks) |
+| [`docs/zk/evm/mutation.mjs`](zk/evm/mutation.mjs) | mutation-tests every committed proof against its verifier (200 calls) |
+| [`docs/zk/circom/scaling.sh`](zk/circom/scaling.sh) | constraint counts vs Merkle depth (`npm run scaling`) |
 | [`docs/zk/evm/lib.mjs`](zk/evm/lib.mjs) | shared compile / EVM / ABI helpers |
 | [`contracts/ShambaLuvAirdrop.sol`](../contracts/ShambaLuvAirdrop.sol) | the signature-gated airdrop that §10.2 contrasts with `ZkAirdrop` |
 

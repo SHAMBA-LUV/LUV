@@ -7,21 +7,22 @@
 
 | operation | gas |
 |---|---:|
-| CompliantPool.withdraw (2 Merkle proofs in-circuit, 7 public inputs) | 322,219 |
+| CompliantPool.ragequit (Poseidon(1) + Poseidon(2) on-chain + transfer) | 98,607 |
+| CompliantPool.withdraw (2 Merkle proofs in-circuit, 7 public inputs) | 322,264 |
 | FFLONK verifyProof | 192,936 |
 | Groth16 verify, 5 public inputs (credential) | 225,278 |
 | Groth16 verifyProof | 198,346 |
 | KeyRegistry.register from an EOA (Schnorr on precompiles, no setup) | 93,450 |
 | PLONK verifyProof | 271,686 |
 | ShieldedPool.deposit (transferFrom + tree insert) | 389,173 |
-| ShieldedPool.withdraw (proof + transfer, via relayer) | 275,788 |
+| ShieldedPool.withdraw (proof + transfer, via relayer) | 275,810 |
 | ZkGroup.join (depth 10, 10 Poseidon hashes) | 379,655 |
 
 ## Test suites
 
 | suite | tests passed |
 |---|---:|
-| `CompliantPoolTest` | 9 / 9 |
+| `CompliantPoolTest` | 16 / 16 |
 | `CredentialTest` | 6 / 6 |
 | `CubeGateTest` | 6 / 6 |
 | `KeyRegistryTest` | 7 / 7 |
@@ -32,4 +33,4 @@
 | `ZkGroupTest` | 8 / 8 |
 | `ZkVoteTest` | 6 / 6 |
 | JS ↔ Solidity interop | 2 / 2 |
-| **total** | **67** |
+| **total** | **74** |

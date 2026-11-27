@@ -137,6 +137,10 @@ library ZkConstants {
     /// Baby Jubjub public key of the demo credential issuer
     uint256 internal constant ISSUER_AX = ${Ax};
     uint256 internal constant ISSUER_AY = ${Ay};
+    /// TEST-ONLY secrets (deterministic, published): a ragequit reveals the note's secret
+    /// on-chain, so the ragequit tests need them. Member #${FLAGGED} is the ASP-flagged depositor.
+    uint256 internal constant FLAGGED_SECRET = ${members[FLAGGED]};
+    uint256 internal constant MEMBER5_SECRET = ${members[5]};
     uint256 internal constant CURRENT_YEAR = ${CURRENT_YEAR};
     uint256 internal constant MIN_AGE = ${MIN_AGE};
 

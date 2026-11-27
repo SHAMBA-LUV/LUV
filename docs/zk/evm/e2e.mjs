@@ -3,7 +3,9 @@
 //   deploy Poseidon + ZkGroup + verifier + token + ZkAirdrop (scope BOUND to chain + address)
 //   → random identities join on-chain → the client SDK rebuilds the tree from MemberAdded
 //   events → generates fresh Groth16 proofs with snarkjs → relayed claims and a vote succeed;
-//   replays, redirects and cross-deployment reuse fail.
+//   replays, redirects and cross-deployment reuse fail. Then a CompliantPool: deposits from
+//   random EOAs, an ASP builds its set from the Deposit log and flags one depositor, a relayed
+//   withdrawal pays recipient and relayer, the flagged depositor ragequits.
 //
 // Run (from docs/zk):  npm run build   (once — needs circom/build/membership_final.zkey)
 //                      npm run e2e
@@ -18,7 +20,8 @@ import { compile, freshVM, deploy, call, encodeCall, decodeUint, eventsOf, addre
 import { ZkClient, deriveScope, artifacts } from '../js/sdk/zk-client.mjs';
 
 const files = artifacts('membership');
-if (!existsSync(files.zkey) || !existsSync(files.wasm)) {
+const cfiles = artifacts('compliant_withdraw');
+if (![files.zkey, files.wasm, cfiles.zkey, cfiles.wasm].every(existsSync)) {
   console.error('circuit artefacts missing — run `npm run build` first (they are not committed)');
   process.exit(2);
 }
@@ -34,7 +37,11 @@ const C = {
   airdrop: get('src/ZkAirdrop.sol', 'ZkAirdrop'),
   vote: get('src/ZkVote.sol', 'ZkVote'),
   token: get('test/ZkTest.sol', 'MockToken'),
+  cpool: get('src/CompliantPool.sol', 'CompliantPool'),
+  cverifier: get('src/verifiers/CompliantWithdrawVerifier.sol', 'CompliantWithdrawVerifier'),
+  asp: get('src/OwnerRoots.sol', 'OwnerRoots'),
 };
+const CWITHDRAW = 'withdraw(uint256,uint256,uint256,address,address,uint256,uint256[2],uint256[2][2],uint256[2])';
 const CLAIM = 'claim(uint256,uint256,address,uint256[2],uint256[2][2],uint256[2])';
 const VOTE = 'vote(uint256,uint256,uint256,uint256[2],uint256[2][2],uint256[2])';
 const AMOUNT = 10n ** 30n; // 1 trillion tokens, 18 decimals
@@ -141,6 +148,63 @@ const r8 = await call(vm, vote, voteData(1n), relayer);
 ok(r8.ok, `vote "yes" tallied (${r8.gas} gas)`);
 ok((await view(vote, C.vote, 'tally(uint256,uint256)', [proposalId, 1n])) === 1n, 'tally[yes] == 1');
 ok(pv.nullifierHash !== p.nullifierHash, 'member #4\'s vote nullifier is unlinkable to their airdrop nullifier');
+
+// ── 7. compliant pool: association set, relayer fee, ragequit ───────────────
+console.log('7. compliant pool: 5 depositors, the ASP flags one, private withdrawal with a fee, ragequit');
+const DENOM = 1000n * 10n ** 18n, FEE = 10n * 10n ** 18n;
+const hasher1 = await deploy(vm, poseidonContract.createCode(1));
+const cverifier = await deploy(vm, C.cverifier.evm.bytecode.object);
+const asp = await deploy(vm, C.asp.evm.bytecode.object);            // the ASP's root registry
+const n3 = (await vm.stateManager.getAccount(DEPLOYER)).nonce;
+const poolAddr = createContractAddress(DEPLOYER, n3).toString();
+const poolScope = deriveScope(chainId, poolAddr, 1n);
+const cpool = await deploy(vm, C.cpool.evm.bytecode.object,
+  [token.toString(), DENOM, 50n * 10n ** 18n, cverifier.toString(), hasher.toString(), hasher1.toString(), asp.toString(), poolScope]);
+ok(cpool.toString() === poolAddr && (await view(cpool, C.cpool, 'isScopeBound(uint256)', [1n])) === 1n, 'pool deployed with a bound scope');
+
+const notes = Array.from({ length: 5 }, () => ({ ...zk.createIdentity(), from: randomAddress() }));
+const depositLog = [];
+for (const n of notes) {
+  await call(vm, token, encodeCall(C.token, 'transfer(address,uint256)', [n.from, DENOM]));
+  await call(vm, token, encodeCall(C.token, 'approve(address,uint256)', [cpool.toString(), DENOM]), address(n.from));
+  const r = await call(vm, cpool, encodeCall(C.cpool, 'deposit(uint256)', [n.commitment]), address(n.from));
+  if (!r.ok) throw new Error('deposit failed: ' + decodeRevert(r.ret));
+  for (const e of eventsOf(r.rawLogs, 'Deposit(uint256,uint256,address)')) depositLog.push({ commitment: e.topics[1], depositor: e.topics[2] });
+}
+const depositLeaves = depositLog.map((d) => d.commitment);
+const poolTree = await view(cpool, C.cpool, 'tree()');
+ok(zk.buildTree(depositLeaves).root === (await view(address('0x' + poolTree.toString(16).padStart(40, '0')), C.group, 'root()')),
+  'deposit tree rebuilt from Deposit events == the pool tree root');
+
+// the ASP reviews the Deposit log (who paid for what) and leaves out depositor #2
+const FLAG = 2;
+const flaggedFrom = BigInt(notes[FLAG].from);
+const associationLeaves = depositLog.filter((d) => d.depositor !== flaggedFrom).map((d) => d.commitment);
+const assocRoot = zk.buildTree(associationLeaves).root;
+await call(vm, asp, encodeCall(C.asp, 'addRoot(uint256)', [assocRoot]));
+ok(associationLeaves.length === 4, 'ASP published an association set of 4 (depositor #2 excluded)');
+
+const to = randomAddress(), feeTo = randomAddress(), sender = randomAddress();
+t = Date.now();
+const cw = await zk.proveCompliantWithdraw({ secret: notes[0].secret, depositLeaves, associationLeaves, recipient: to, relayer: feeTo, fee: FEE, scope: poolScope });
+console.log(`     compliant proof generated in ${((Date.now() - t) / 1000).toFixed(1)} s`);
+const cwData = (p, recip, rel, fee) => encodeCall(C.cpool, CWITHDRAW, [p.root, p.associationRoot, p.nullifierHash, recip, rel, fee, p.a, p.b, p.c]);
+const r9 = await call(vm, cpool, cwData(cw, sender, feeTo, FEE), address(sender));
+ok(!r9.ok && decodeRevert(r9.ret).startsWith('InvalidProof'), 'submitter redirecting the payout to itself → InvalidProof');
+const r10 = await call(vm, cpool, cwData(cw, to, feeTo, FEE), address(sender));
+ok(r10.ok, `compliant withdrawal accepted (${r10.gas} gas)`);
+const bal = (a) => view(token, C.token, 'balanceOf(address)', [a]);
+ok((await bal(to)) === DENOM - FEE && (await bal(feeTo)) === FEE && (await bal(sender)) === 0n,
+  'recipient got 990, the PROVEN relayer 10, the submitter 0');
+
+let flaggedBlocked = false;
+try { zk.compliantWithdrawInput({ secret: notes[FLAG].secret, depositLeaves, associationLeaves, recipient: to, relayer: feeTo, fee: FEE, scope: poolScope }); }
+catch (e) { flaggedBlocked = /association set/.test(e.message); }
+ok(flaggedBlocked, 'flagged depositor #2 cannot build a private-withdrawal witness');
+const r11 = await call(vm, cpool, encodeCall(C.cpool, 'ragequit(uint256)', [notes[FLAG].secret]), address(randomAddress()));
+ok(!r11.ok && decodeRevert(r11.ret).startsWith('NotDepositor'), 'someone else trying to ragequit #2\'s note → NotDepositor');
+const r12 = await call(vm, cpool, encodeCall(C.cpool, 'ragequit(uint256)', [notes[FLAG].secret]), address(notes[FLAG].from));
+ok(r12.ok && (await bal(notes[FLAG].from)) === DENOM, `#2 ragequits: full 1,000 back to the original address (${r12.gas} gas)`);
 
 console.log(`\n${failed ? `${failed} check(s) FAILED` : 'e2e: all checks passed'}`);
 process.exit(failed ? 1 : 0); // snarkjs keeps worker threads alive; exit explicitly

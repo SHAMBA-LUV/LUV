@@ -1,5 +1,5 @@
 // zk-client.mjs — a minimal client SDK for the membership apps (ZkAirdrop, ZkVote,
-// ShieldedPool): everything a wallet or dapp does OFF-chain.
+// ShieldedPool, CompliantPool): everything a wallet or dapp does OFF-chain.
 //
 //   const zk = await ZkClient.create();
 //   const me = zk.createIdentity();                         // keep me.secret private
@@ -124,6 +124,40 @@ export class ZkClient {
     const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, files.wasm, files.zkey);
     const pub = publicSignals.map(BigInt);
     return { ...toSolidity(proof), proof, publicSignals: pub, root: pub[0], nullifierHash: pub[1] };
+  }
+
+  /**
+   * Witness for compliant_withdraw.circom. The deposit and association trees are separate
+   * (an ASP publishes the association leaves). Throws if the note was left out of the
+   * association set — such a depositor cannot withdraw privately and should `ragequit`.
+   */
+  compliantWithdrawInput({ secret, depositLeaves, associationLeaves, recipient, relayer, fee, scope }) {
+    const commitment = this.hash(secret);
+    const di = depositLeaves.map(BigInt).indexOf(commitment);
+    if (di < 0) throw new Error('note is not in the deposit tree');
+    const ai = associationLeaves.map(BigInt).indexOf(commitment);
+    if (ai < 0) throw new Error('note is not in the association set — private exit unavailable, use ragequit');
+    const dep = this.buildTree(depositLeaves), asc = this.buildTree(associationLeaves);
+    const dp = dep.path(di), ap = asc.path(ai);
+    return {
+      depositRoot: String(dep.root), associationRoot: String(asc.root),
+      nullifierHash: String(this.nullifier(secret, scope)),
+      recipient: String(BigInt(recipient)), relayer: String(BigInt(relayer)), fee: String(fee), scope: String(scope),
+      secret: String(secret),
+      depositPathElements: dp.pathElements, depositPathIndices: dp.pathIndices,
+      associationPathElements: ap.pathElements, associationPathIndices: ap.pathIndices,
+    };
+  }
+
+  /**
+   * Generate a compliant withdrawal proof.
+   * publicSignals = [depositRoot, associationRoot, nullifierHash, recipient, relayer, fee, scope]
+   */
+  async proveCompliantWithdraw(args, files = artifacts('compliant_withdraw')) {
+    const input = this.compliantWithdrawInput(args);
+    const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, files.wasm, files.zkey);
+    const pub = publicSignals.map(BigInt);
+    return { ...toSolidity(proof), proof, publicSignals: pub, root: pub[0], associationRoot: pub[1], nullifierHash: pub[2] };
   }
 
   /** Check a proof off-chain against the verification key (what a relayer does before paying gas). */

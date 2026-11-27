@@ -89,7 +89,8 @@ prove() {
 
 echo "── inputs, group + issuer constants, Poseidon contract"
 node make-inputs.mjs "$B" "$FIX"
-node gen-poseidon.mjs > "$GEN/PoseidonT3.sol"
+node gen-poseidon.mjs 2 > "$GEN/PoseidonT3.sol"
+node gen-poseidon.mjs 1 > "$GEN/PoseidonT2.sol"
 
 # 1. the running example: x³ + x + 5 = 35
 setup cube CubeVerifier

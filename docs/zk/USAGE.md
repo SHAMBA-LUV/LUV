@@ -26,7 +26,7 @@ solc-js, and contracts execute on ethereumjs.
 cd docs/zk
 node js/run-all.mjs      # 1. the 8 protocol examples: zero dependencies, ~16 s
 npm install              # 2. toolchain
-npm test                 # 3. examples + compile every .sol + 67 tests on a real EVM (~10 s)
+npm test                 # 3. examples + 74 Solidity tests on a real EVM + 200 mutation checks (~25 s)
 ```
 
 Expected tail of `npm test`:
@@ -37,7 +37,10 @@ gas report (measured with gasleft() around the call):
   gas: PLONK verifyProof: 270744
   gas: FFLONK verifyProof: 192936
   …
-67 passed, 0 failed
+74 passed, 0 failed
+  ✓ CubeProof                groth16 original verifies: yes · 11/11 mutants rejected
+  …
+mutation: 10/10 fixtures clean (200 verifier calls)
 ```
 
 ### All commands
@@ -46,9 +49,11 @@ gas report (measured with gasleft() around the call):
 |---|---|---|
 | `npm run examples` | `js/run-all.mjs`: Schnorr, simulator, extractor, Fiat–Shamir, Pedersen, DLEQ, R1CS→QAP, BN254 Schnorr | ~16 s |
 | `npm run test:evm` | compile `foundry/` with solc 0.8.24 and run every `test_*` on ethereumjs, plus JS↔Solidity interop | ~10 s |
-| `npm test` | both of the above | ~25 s |
+| `npm run mutation` | mutation-test every committed proof: each proof word, each public signal, each non-canonical alias, un-swapped G2 | ~7 s |
+| `npm test` | examples + `test:evm` + `mutation` | ~30 s |
 | `npm run build` | compile all circuits; run the setup for new or changed ones (unchanged circuits keep their keys); regenerate proofs and fixtures; run the attack and the must-fail checks. `FORCE=1 npm run build` redoes every ceremony | ~1 min incremental, ~8 min from scratch |
-| `npm run e2e` | the **live** flow: deploy, join, generate fresh proofs with the SDK, claim, attack, vote. Needs `npm run build` first | ~10 s |
+| `npm run e2e` | the **live** flow: deploy, join, generate fresh proofs with the SDK, claim, attack, vote, then a compliant pool with an ASP, a relayer fee and a ragequit (28 checks). Needs `npm run build` first | ~11 s |
+| `npm run scaling` | constraint counts for membership and compliant withdrawal at depths 10–32 (compile only) | ~12 s |
 | `npm run gas` | run the tests and regenerate [GAS.md](GAS.md) from the measurements | ~10 s |
 | `npm run package` | build `complete zk.zip` from git-tracked files, unpack it in a temp dir and run the tests there | ~30 s |
 | `cd foundry && forge test -vv` | the same Solidity tests under Foundry (prints the gas logs too) | — |
@@ -140,7 +145,8 @@ On-chain:
 | admit a member (registrar) | `ZkGroup.join(commitment)` |
 | airdrop claim | `ZkAirdrop.claim(root, nullifierHash, recipient, a, b, c)` with input `message = recipient`, `scope = round` |
 | shielded deposit / withdraw | `ShieldedPool.deposit(commitment)` (approve first) · `withdraw(root, nullifierHash, recipient, a, b, c)` |
-| compliant withdraw | `CompliantPool.withdraw(root, associationRoot, nullifierHash, recipient, relayer, fee, a, b, c)`, proving with `compliant_withdraw.circom`. The association path comes from the ASP's published set |
+| compliant withdraw | `zk.proveCompliantWithdraw({ secret, depositLeaves, associationLeaves, recipient, relayer, fee, scope })` → `CompliantPool.withdraw(p.root, p.associationRoot, p.nullifierHash, recipient, relayer, fee, p.a, p.b, p.c)`. `depositLeaves` come from `Deposit` events, `associationLeaves` from the ASP |
+| left out by the ASP | the SDK throws *"not in the association set — use ragequit"*. Call `CompliantPool.ragequit(secret)` **from the original deposit address**: the full amount returns there, publicly |
 | vote | `ZkVote.vote(id, nullifierHash, option, a, b, c)` with `message = option`, `scope = id` |
 
 The prover needs the Merkle path: rebuild the tree from the `MemberAdded` / `Deposit` events in
@@ -189,8 +195,10 @@ own issuer, deploy `CredentialGate` with that issuer's Baby Jubjub public key (`
 - [ ] **Scope binding.** Deploy with `scope = ScopeLib.derive(chainid, address(this), round)`
       (predict the address from the deployer nonce or use CREATE2, as `evm/e2e.mjs` does), and
       assert `isScopeBound(round)` after deployment.
-- [ ] **Tree depth** big enough for your population (depth 20 = 1M members). Re-measure
-      constraints and gas.
+- [ ] **Tree depth** big enough for your population (depth 20 = 1M members). `npm run scaling`
+      gives the constraint counts and the ptau power you'll need. Re-measure gas.
+- [ ] **Mutation-test** the production verifiers (`npm run mutation`, after regenerating fixtures).
+- [ ] **Exit guarantee.** Any gate on private exit (an ASP) comes with a public exit (ragequit).
 - [ ] **Hasher.** Deploy `PoseidonT3` once and share it. Re-check the test vector on the
       target chain.
 - [ ] **Admission policy** for `ZkGroup` (registrar vs open) and its Sybil story.
@@ -214,5 +222,6 @@ own issuer, deploy `CredentialGate` with that issuer's Baby Jubjub public key (`
 | a fixture suddenly fails `verifyProof` | verifier and fixture come from different build runs. Run `npm run build` again (it regenerates both) |
 | a proof verifies off-chain but not in Solidity | public-signal order (outputs first), or a missing G2 swap. Use `gen-fixture.mjs` / `soliditycalldata` |
 | a tampered proof costs a huge amount of gas | a failing BN254 precompile consumes all forwarded gas, which is expected. Relayers should `eth_call` first |
+| `NotDepositor` on ragequit | send it from the address that made the deposit. Ragequit never pays anyone else |
 | `UnknownRoot` after many joins | root history is 32. Rebuild the path against a recent root |
 | `forge test` can't find `forge-std` | it doesn't need it. Run from `docs/zk/foundry` (its own `foundry.toml`, `libs = []`) |

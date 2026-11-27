@@ -3,7 +3,7 @@
 // Regenerate: cd docs/zk && npm run build      (bytecode is GPL-3.0, like circomlibjs)
 pragma solidity ^0.8.24;
 
-/// Poseidon hash of 2 field elements — identical to circomlib's Poseidon(2) circuit template.
+/// Poseidon hash of 2 field elements (Merkle nodes and nullifiers) — identical to circomlib's Poseidon(2).
 interface IPoseidonT3 {
     function poseidon(uint256[2] calldata inputs) external pure returns (uint256);
 }
