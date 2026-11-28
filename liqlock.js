@@ -17,6 +17,11 @@ const PAIR = "0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31";
 const LUV = "0x2711111111683B8708cb9a48cBf36a51315F8254";
 const TREASURY = "0x10f7Ee226B16bea7f365Dc1eDEF159Fc1957D169";
 const EXPLORER = "https://etherscan.io";
+const ROUTER = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"; // Uniswap V2 router (the token's own constant)
+// liquidity_zap — the forced lock as a service (SHAMBA-LUV/liq-locker src/liquidity_zap.sol, published with its deploy).
+// Tested on a mainnet fork against this pair and this locker; NOT DEPLOYED until the OVERLORD signs.
+// Set the address here once it is deployed and verified; until then the forced-lock option says so.
+const ZAP = null;
 const DAY = 86400;
 const DEFAULT_DAYS = 90;            // DEFAULT_LOCK_DURATION
 const MAX_DAYS = 73050;             // MAX_LOCK_DURATION (≈ 200 years)
@@ -37,6 +42,11 @@ const SEL = {
   extend_by: "0x670b98b6",            // extend_by(uint256,uint256)       +seconds on the CURRENT maturity
   lock_for: "0xa7864665",             // lock_for(address,uint256,uint256,address)
   approve: "0x095ea7b3",              // approve(address,uint256)
+  locks_of: "0xdb83f4ca",             // locks_of(address) → uint256[]
+  getReserves: "0x0902f1ac",          // pair: (reserve0 = LUV, reserve1 = WETH, ts)
+  isExcludedFromFee: "0x5342acb4",    // LUV: isExcludedFromFee(address)
+  addLiquidityETH: "0xf305d719",      // router: addLiquidityETH(token, amountTokenDesired, amountTokenMin, amountETHMin, to, deadline)
+  add_and_lock: "0xf85f0861",         // zap: add_and_lock(token_amount, token_min, eth_min, duration, beneficiary, deadline)
 };
 const ERRORS = {
   "0xb06bc0f2": "not_beneficiary — only the lock's beneficiary can do this",
@@ -319,10 +329,9 @@ async function connect() {
     const chain = await window.ethereum.request({ method: "eth_chainId" });
     if (chain !== "0x1") await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x1" }] });
     ACCOUNT = a;
-    const ben = LOCKS.some((l) => same(l.beneficiary, a));
-    $("who").textContent = `connected ${a} — ${ben ? "the beneficiary: the options above are armed" : "not a beneficiary of any lock: you can see every option, and lock your own LP"}`;
     $("connect").textContent = "connected";
     DESK_KEY = ""; await refresh();
+    await showRoles();
   } catch (e) { $("who").textContent = `not connected: ${e.message || e}`; }
 }
 
@@ -341,7 +350,8 @@ async function send(btn, data, what, to = LOCKER) {
       if (rc) {
         const ok = rc.status === "0x1";
         line.lastChild.textContent = ok ? ` · ✓ mined in block ${Number(BigInt(rc.blockNumber))}` : " · ✗ reverted";
-        DESK_KEY = ""; await refresh();
+        DESK_KEY = ""; await refresh(); await showRoles();
+        btn.disabled = false;
         return ok;
       }
     }
@@ -362,6 +372,127 @@ async function lockAfresh(btn, amount, days) {
   await send(btn, SEL.lock_for + pad(PAIR) + pad(amount) + pad(BigInt(days * DAY)) + pad(ACCOUNT), `lock ${lp(amount)} for ${days} days`);
 }
 
+/* ── who is connected: the roles the chain gives this address ───────────────── */
+async function showRoles() {
+  if (!ACCOUNT) return;
+  const [lpBal] = words(await call(PAIR, SEL.balanceOf + pad(ACCOUNT)));
+  const [luvBal] = words(await call(LUV, SEL.balanceOf + pad(ACCOUNT)));
+  const ids = words(await call(LOCKER, SEL.locks_of + pad(ACCOUNT))).slice(2).map(String);
+  const live = LOCKS.filter((l) => same(l.beneficiary, ACCOUNT) && !l.withdrawn);
+  const lockedLp = live.reduce((t, l) => t + l.amount, 0n);
+  const roles = [];
+  if (lockedLp > 0n) roles.push(`LP OWNER — ${lp(lockedLp)} in the locker (lock${live.length > 1 ? "s" : ""} ${live.map((l) => "#" + l.id).join(", ")})`);
+  if (lpBal > 0n) roles.push(`LP OWNER — ${lp(lpBal)} in your wallet, unlocked`);
+  if (ids.length && !live.length) roles.push(`past beneficiary of lock${ids.length > 1 ? "s" : ""} #${ids.join(", #")} (redeemed)`);
+  if (luvBal > 0n) roles.push(`LUV holder — ${fmt18(luvBal, 0)} LUV`);
+  const who = $("who"); who.replaceChildren();
+  who.append(el("b", null, short(ACCOUNT)), " · ");
+  if (!roles.length) who.append("no LP, no lock, no LUV yet — every option is visible; add liquidity below to become an LP owner");
+  roles.forEach((r, i) => { if (i) who.append(" · "); who.append(el("span", r.startsWith("LP OWNER") ? "state-ok" : "state-muted", r)); });
+  if (live.length) who.append(el("div", "fine", "Your locks' options above are armed: redeem at maturity, or continue by extending."));
+  renderAdd();
+}
+
+/* ── add to the liquidity: keep it, lock it, or have it locked for you ──────── */
+let RES = null, FEE = { you: false, zap: false };
+async function readPool() {
+  const w = words(await call(PAIR, SEL.getReserves));
+  RES = { luv: w[0], eth: w[1] };
+  if (ACCOUNT) FEE.you = words(await call(LUV, SEL.isExcludedFromFee + pad(ACCOUNT)))[0] !== 0n;
+  if (ZAP) FEE.zap = words(await call(LUV, SEL.isExcludedFromFee + pad(ZAP)))[0] !== 0n;
+}
+const toWei = (x) => { const [w, f = ""] = String(x).trim().split("."); return BigInt(w || "0") * 10n ** 18n + BigInt((f + "0".repeat(18)).slice(0, 18) || "0"); };
+
+async function renderAdd() {
+  const box = $("add-body"); if (!box) return;
+  await readPool();
+  box.replaceChildren();
+  const eth = el("input", "inp"); eth.type = "text"; eth.value = "0.01"; eth.style.width = "8em";
+  const days = el("input", "inp"); days.type = "number"; days.min = "1"; days.max = String(MAX_DAYS); days.value = String(DEFAULT_DAYS);
+  const slip = el("input", "inp"); slip.type = "number"; slip.min = "1"; slip.max = "50"; slip.value = "10"; slip.style.width = "5em";
+  const mode = el("select", "inp"); mode.style.width = "auto";
+  [["keep", "keep the LP — unlocked, in my wallet"], ["lock", "add, then lock it (optional lock)"], ["force", "forced lock — one transaction, the LP never touches my wallet"]]
+    .forEach(([v, t]) => { const o = el("option", null, t); o.value = v; mode.append(o); });
+  const out = el("div", "d");
+  const go = button("add liquidity", true, false, (b) => addLiquidity(b, eth.value, Number(days.value), Number(slip.value), mode.value));
+  const row1 = el("div", "row"); row1.append(eth, el("span", "fine", "ETH  +  the matching LUV"), slip, el("span", "fine", "% slippage"));
+  const row2 = el("div", "row"); row2.append(mode, days, el("span", "fine", "days locked"), go);
+  box.append(row1, row2, out);
+  const sync = () => {
+    let e = 0n; try { e = toWei(eth.value); } catch (_) {}
+    const luv = RES && RES.eth > 0n ? RES.luv * e / RES.eth : 0n;
+    const m = mode.value;
+    days.disabled = m === "keep";
+    const taxed = m === "force" ? (FEE.zap ? 0 : 2) : (FEE.you ? 0 : 1);
+    const lines = [
+      `Adds ${fmt18(e, 4)} ETH and about ${fmt18(luv, 0)} LUV (+ headroom for the fee; what the router does not take comes back) at the pool's ratio right now.`,
+      taxed === 0 ? "No transfer fee on this path: the sender is fee-exempt." :
+        `LUV is fee-on-transfer: about 5% of the LUV leg goes to the token's fee (3% to holders, 1% to liquidity, 1% to the team)${taxed === 2 ? ", charged twice on the zap path (you → zap, zap → pair) unless the token owner exempts the zap" : ""}. The matching share of the ETH leg stays in the pool, deepening it. Your LP reflects what the pair actually received.`,
+      m === "keep" ? "Two signatures at most: approve LUV for the router (once), then add. The LP lands in your wallet, unlocked: you may lock it later here." :
+      m === "lock" ? `Up to four signatures: approve LUV, add, approve the LP for the locker, lock for ${days.value} days. Optional means optional: until the last signature the LP is in your wallet and you may stop.` :
+        (ZAP ? `Two signatures: approve LUV for the zap (once), then one transaction that adds and locks for ${days.value} days. The LP goes from the pair straight into the lock, with you as the beneficiary.` :
+               "Not available yet: the zap contract (liquidity_zap) is written and tested on a mainnet fork against this pair and this locker, and waits for the OVERLORD's deploy signature. Until then, use \"add, then lock\"."),
+      m !== "keep" ? `Redemption from maturity: after ${days.value} days the lock appears in the desk above for you alone — redeem it (the LP comes back, to the wei) or continue it (extend from the old maturity). Nobody can open it early, you included.` : "",
+    ].filter(Boolean);
+    out.replaceChildren(...lines.map((t) => el("p", "body", t)));
+    go.disabled = !ACCOUNT || e === 0n || (m === "force" && !ZAP);
+    go.textContent = !ACCOUNT ? "connect to add" : m === "force" ? "add + lock (one tx)" : m === "lock" ? "add, then lock" : "add liquidity";
+  };
+  [eth, days, slip, mode].forEach((x) => x.addEventListener("input", sync));
+  sync();
+}
+
+async function balanceOf(token, who) { return words(await call(token, SEL.balanceOf + pad(who)))[0]; }
+
+async function addLiquidity(btn, ethTxt, days, slipPct, mode) {
+  try {
+    const eth = toWei(ethTxt); await readPool();
+    days = Math.floor(days); if (mode !== "keep" && !(days >= 1 && days <= MAX_DAYS)) throw new Error(`choose 1 to ${MAX_DAYS} days`);
+    const slip = BigInt(Math.min(50, Math.max(1, Math.floor(slipPct || 10))));
+    const luv = RES.luv * eth / RES.eth * 110n / 100n;                  // +10% headroom for the fee and drift
+    const luvBal = await balanceOf(LUV, ACCOUNT);
+    if (luvBal < luv) throw new Error(`needs ~${fmt18(luv, 0)} LUV, wallet holds ${fmt18(luvBal, 0)}`);
+    const ethMin = eth * (100n - slip) / 100n;
+    const deadline = BigInt(Math.floor(Date.now() / 1000) + 1200);
+    const spender = mode === "force" ? ZAP : ROUTER;
+    const [allow] = words(await call(LUV, SEL.allowance + pad(ACCOUNT) + pad(spender)));
+    if (allow < luv && !(await send(btn, SEL.approve + pad(spender) + pad(luv), `approve ${fmt18(luv, 0)} LUV for the ${mode === "force" ? "zap" : "router"}`, LUV))) return;
+    if (mode === "force") {
+      await sendValue(btn, ZAP, SEL.add_and_lock + pad(luv) + pad(0n) + pad(ethMin) + pad(BigInt(days * DAY)) + pad(0n) + pad(deadline), eth,
+        `add ${fmt18(eth, 4)} ETH + LUV and lock the LP for ${days} days`);
+      return;
+    }
+    const lp0 = await balanceOf(PAIR, ACCOUNT);
+    if (!(await sendValue(btn, ROUTER, SEL.addLiquidityETH + pad(LUV) + pad(luv) + pad(0n) + pad(ethMin) + pad(ACCOUNT) + pad(deadline), eth,
+      `add ${fmt18(eth, 4)} ETH + LUV to the pair`))) return;
+    if (mode === "lock") {
+      const got = (await balanceOf(PAIR, ACCOUNT)) - lp0;
+      if (got <= 0n) throw new Error("no new LP measured in the wallet");
+      await lockAfresh(btn, got, days);
+    }
+  } catch (e) { log(el("div", null, `add liquidity: ${e.message || e}`)); }
+}
+
+// like send(), with ETH attached
+async function sendValue(btn, to, data, value, what) {
+  btn.disabled = true;
+  const line = el("div", null, `${what}: simulating…`); log(line);
+  try {
+    try { await rpc("eth_call", [{ from: ACCOUNT, to, data, value: "0x" + value.toString(16) }, "latest"]); }
+    catch (e) { const d = typeof e.data === "string" ? e.data : ""; line.textContent = `${what}: not sent — ${ERRORS[d.slice(0, 10)] || e.message}`; btn.disabled = false; return false; }
+    line.textContent = `${what}: waiting for your signature…`;
+    const hash = await window.ethereum.request({ method: "eth_sendTransaction", params: [{ from: ACCOUNT, to, data, value: "0x" + value.toString(16) }] });
+    line.textContent = `${what}: sent · `; line.append(link(`${EXPLORER}/tx/${hash}`, hash.slice(0, 22) + "… ↗"), " · waiting for the block…");
+    for (let i = 0; i < 90; i++) {
+      await new Promise((r) => setTimeout(r, 4000));
+      const rc = await rpc("eth_getTransactionReceipt", [hash]);
+      if (rc) { const ok = rc.status === "0x1"; line.lastChild.textContent = ok ? ` · ✓ mined in block ${Number(BigInt(rc.blockNumber))}` : " · ✗ reverted"; DESK_KEY = ""; await refresh(); await showRoles(); btn.disabled = false; return ok; }
+    }
+    line.lastChild.textContent = " · not mined yet — reload later; the chain will say";
+  } catch (e) { line.textContent = `${what}: ${e.message || e}`; }
+  btn.disabled = false; return false;
+}
+
 function mountStatic() {
   $("c-locker").replaceChildren(link(`${EXPLORER}/address/${LOCKER}#code`, LOCKER));
   $("c-pair").replaceChildren(link(`${EXPLORER}/address/${PAIR}`, PAIR));
@@ -380,5 +511,5 @@ function mountStatic() {
 }
 
 mountStatic();
-refresh();
+refresh().then(renderAdd);
 setInterval(refresh, 60_000);

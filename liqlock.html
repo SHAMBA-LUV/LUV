@@ -161,9 +161,19 @@ a:hover b,a:hover code,a:hover span{color:#0ecb81 !important}
       <b>simulated against Ethereum right now</b> as the beneficiary would send it, so you see whether it would
       succeed before anyone signs.</p>
     <div class="who-bar"><button class="act" id="connect" type="button">connect wallet</button>
-      <span id="who" class="fine" style="margin:0">read-only — connecting is only needed to sign, and only the beneficiary can sign these</span></div>
+      <span id="who" class="fine" style="margin:0">read-only — CONNECT recognizes what your address owns: LP in the locker, LP in your wallet, LUV. Only a lock’s beneficiary can sign its options.</span></div>
     <div id="opts"><p class="fine">reading…</p></div>
     <div id="txlog" class="txlog"></div>
+  </div>
+
+  <div class="card" id="addliq">
+    <h2>Add to the liquidity — keep it, lock it, or have it locked for you</h2>
+    <p class="body">Anyone can add to the LUV/WETH pair from what they own, and choose what happens to the LP:
+      <b>keep it</b> unlocked in their wallet, <b>lock it</b> afterwards for as long as they choose, or take the
+      <b>forced lock</b> — a service: one transaction adds the liquidity and locks the LP for you, so it never
+      touches a wallet and cannot be sold before the lock exists. Every lock is redeemed the same way: at maturity,
+      by its beneficiary alone, from the desk above — or continued by extending it.</p>
+    <div id="add-body"><p class="fine">reading the pool…</p></div>
   </div>
 
   <div class="card">
@@ -254,7 +264,7 @@ a:hover b,a:hover code,a:hover span{color:#0ecb81 !important}
   <a href="chart.html">the price of LUV</a> · <a href="https://github.com/SHAMBA-LUV/LUV/blob/main/docs/LUV_ENGINE.md">the engine</a>
   &nbsp;·&nbsp; 1 LUV === 1 LUV
 </footer>
-<script src="liqlock.js?v=5"></script>
+<script src="liqlock.js?v=6"></script>
 <script src="substrate/luv-share.js?v=9"></script>
 <script src="substrate/luv-cardshare.js?v=1"></script>
 <script src="site.js?v=13"></script>
