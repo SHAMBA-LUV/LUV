@@ -3,7 +3,7 @@
 ## Verified facts (Ethereum mainnet, chainId 1)
 - Token: SHAMBA (LUV), 0x2711111111683B8708cb9a48cBf36a51315F8254 — source verified on Etherscan (the green checkmark). 18 decimals. Supply 111,111,111,111,111,111 LUV (repunit), no mint function.
 - Pair: Uniswap V2 LUV/WETH 0x57D2085Aa859a145cB107845AD03c0eAAFBD8a31. Seeded at 2^112-1 wei LUV (2026-07-27).
-- Liquidity lock: liquidity_locker 0x111111f70cb3469B5285862d7a4e7Cb53d04f502 (ownerless, extend-only) holds 100% of circulating LP; lock #1 matures 2026-11-22T21:57:23Z. Proof: https://luv.pythai.net/liqlock.html
+- Liquidity lock: liquidity_locker 0x111111f70cb3469B5285862d7a4e7Cb53d04f502 (ownerless, extend-only) holds 100% of circulating LP; lock #1 matured 2026-11-22T21:57:23Z by plan (a live test of redemption and/or continuation) and the LP is still in the locker, withdrawable or extendable by the beneficiary only. Proof: https://luv.pythai.net/liqlock.html
 - Treasury / owner / deployer: bankon.eth 0x10f7Ee226B16bea7f365Dc1eDEF159Fc1957D169.
 - Fee: 5% on trades through the pair, split 3 holders : 1 liquidity : 1 team. Wallet-to-wallet transfers: no fee, no minimum. 1 LUV == 1 LUV.
 - Max transaction: 1% of supply. Pair, treasury and platform contracts exempt.

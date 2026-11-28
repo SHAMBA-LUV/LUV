@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SHAMBA LUV — LUV is priceless</title>
-<meta name="description" content="SHAMBA LUV (LUV) on Ethereum. 1 LUV == 1 LUV. Hold LUV, earn LUV: 3% of every trade reflects to holders, the liquidity is locked in an ownerless timelock, the contract is source-verified. Buy on Uniswap.">
+<meta name="description" content="SHAMBA LUV (LUV) on Ethereum. 1 LUV == 1 LUV. Hold LUV, earn LUV: 3% of every trade reflects to holders, the liquidity sits in an ownerless, extend-only timelock, the contract is source-verified. Buy on Uniswap.">
 <link rel="image_src" href="https://luv.pythai.net/gfx/og-card.png?v=2">
 <link rel="canonical" href="https://luv.pythai.net/">
 <meta name="keywords" content="SHAMBA LUV, LUV token, reflection token, Ethereum, Uniswap, hold LUV earn LUV, emotonomics, locked liquidity, 1 LUV == 1 LUV">
@@ -16,7 +16,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:url" content="https://luv.pythai.net/">
 <meta property="og:title" content="SHAMBA LUV — LUV is priceless">
-<meta property="og:description" content="SHAMBA LUV (LUV) on Ethereum. 1 LUV == 1 LUV. Hold LUV, earn LUV: 3% of every trade reflects to holders, the liquidity is locked in an ownerless timelock, the contract is source-verified. Buy on Uniswap.">
+<meta property="og:description" content="SHAMBA LUV (LUV) on Ethereum. 1 LUV == 1 LUV. Hold LUV, earn LUV: 3% of every trade reflects to holders, the liquidity sits in an ownerless, extend-only timelock, the contract is source-verified. Buy on Uniswap.">
 <meta property="og:image" content="https://luv.pythai.net/gfx/og-card.png?v=2">
 <meta property="og:image:secure_url" content="https://luv.pythai.net/gfx/og-card.png?v=2">
 <meta property="og:image:type" content="image/png">
@@ -27,7 +27,7 @@
 <meta name="twitter:site" content="@shambaluv">
 <meta name="twitter:creator" content="@shambaluv">
 <meta name="twitter:title" content="SHAMBA LUV — LUV is priceless">
-<meta name="twitter:description" content="SHAMBA LUV (LUV) on Ethereum. 1 LUV == 1 LUV. Hold LUV, earn LUV: 3% of every trade reflects to holders, the liquidity is locked in an ownerless timelock, the contract is source-verified. Buy on Uniswap.">
+<meta name="twitter:description" content="SHAMBA LUV (LUV) on Ethereum. 1 LUV == 1 LUV. Hold LUV, earn LUV: 3% of every trade reflects to holders, the liquidity sits in an ownerless, extend-only timelock, the contract is source-verified. Buy on Uniswap.">
 <meta name="twitter:image" content="https://luv.pythai.net/gfx/og-card.png?v=2">
 <meta name="twitter:image:alt" content="SHAMBA LUV: the gold binary heart. LUV is priceless. 1 LUV == 1 LUV.">
 <link rel="me" href="https://x.com/shambaluv">
@@ -104,8 +104,9 @@
     </details>
   </div></details>
 
-  <details class="depth"><summary><span class="jewel"></span><span><span class="t">The liquidity is locked</span><span class="s">100% of the LUV/WETH position, in a contract with no owner</span></span></summary><div class="body">
+  <details class="depth"><summary><span class="jewel"></span><span><span class="t">The liquidity lock</span><span class="s">100% of the LUV/WETH position in a contract with no owner — matured 2026-11-22 by plan</span></span></summary><div class="body">
     <p>The treasury's entire LP holding sits in an extend-only timelock. No pause, no rescue, no admin. Not even the team that deployed it can bring the maturity forward. You can read the lock from Ethereum with your own browser.</p>
+    <p><b>Now:</b> the lock matured on 2026-11-22, by plan, as a live test of redemption and/or continuation. The LP is still in the locker; only the beneficiary can redeem it or extend it, and the <a href="liqlock.html">lock page</a> shows its state and every option, read from the chain.</p>
     <details><summary>how it is engineered</summary>
       <p>Two gates, time and block height, must both pass. A lock can be made longer by its beneficiary, never shorter by anyone. The locker was deployed through the deterministic Create3d factory, so its six-leading-1s address is reproducible on every EVM chain, and only by the treasury.</p>
       <details><summary>the actuality</summary><ul class="acts">
